@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Setup Godot 4.7 Alias",
+  "description": "Creates a godot47 shell function that uses GODOT_BIN or the godot command for easy testing",
+  "version": "1",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "echo 'godot47(){ \"${GODOT_BIN:-godot}\" \"$@\"; }' >> ~/.bashrc && echo 'Godot 4.7 function added to ~/.bashrc. Set GODOT_BIN if godot is not on PATH, then run \"source ~/.bashrc\" or restart terminal.'"
+  }
+}

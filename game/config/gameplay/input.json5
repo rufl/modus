@@ -1,0 +1,66 @@
+// Input Configuration
+// Use standard key names (e.g. "W", "Space", "Shift", "Ctrl")
+{
+  "actions": {
+    "up": {
+      "default": "W",
+      "label": "Move Forward"
+    },
+    "down": {
+      "default": "S",
+      "label": "Move Backward"
+    },
+    "left": {
+      "default": "A",
+      "label": "Move Left"
+    },
+    "right": {
+      "default": "D",
+      "label": "Move Right"
+    },
+    "jump": {
+      "default": "Space",
+      "label": "Jump"
+    },
+    "crouch": {
+      "default": "Ctrl",
+      "label": "Crouch"
+    },
+    "sprint": {
+      "default": "Shift",
+      "label": "Sprint"
+    },
+    "shoot": {
+      "default": "MouseLeft",
+      "label": "Fire Weapon"
+    },
+    "interact": {
+      "default": "E",
+      "label": "Interact"
+    },
+    "reload": {
+      "default": "R",
+      "label": "Reload"
+    },
+    "melee": {
+      "default": "V",
+      "label": "Melee"
+    },
+    "inventory": {
+      "default": "I",
+      "label": "Inventory"
+    },
+    "skill_tree": {
+      "default": "K",
+      "label": "Skill Tree"
+    },
+    "pause": {
+      "default": "Escape",
+      "label": "Pause Menu"
+    },
+    "quick_weapon_switch": {
+      "default": "Q",
+      "label": "Quick Switch"
+    }
+  }
+}

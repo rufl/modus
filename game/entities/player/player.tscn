@@ -1,0 +1,362 @@
+[gd_scene load_steps=37 format=3 uid="uid://b2qhxdrnviyqf"]
+
+[ext_resource type="Script" path="res://game/entities/player/player.gd" id="1_8tdgl"]
+[ext_resource type="Script" path="res://game/scripts/components/status_effect_manager.gd" id="1_status_mgr"]
+[ext_resource type="Script" path="res://game/ui/hud/movement_hud.gd" id="1_movement_hud"]
+[ext_resource type="Script" path="res://game/ui/hud/level_up_notification.gd" id="1_levelup"]
+[ext_resource type="PackedScene" path="res://game/art/models/pistol.glb" id="2_0s6en"]
+[ext_resource type="Texture2D" uid="uid://ctosmto80mu2s" path="res://game/art/textures/kenney_particle_pack/star_05.png" id="3_ep0ec"]
+[ext_resource type="Texture2D" uid="uid://duu4nryr7idps" path="res://game/art/textures/kenney_particle_pack/circle_05.png" id="4_ssmal"]
+[ext_resource type="Script" path="res://game/ui/hud/crosshair.gd" id="5_fnci2"]
+[ext_resource type="Script" path="res://game/ui/hud/damage_indicator_manager.gd" id="6_damage_mgr"]
+[ext_resource type="PackedScene" uid="uid://cammo_hud_ui" path="res://game/ui/hud/ammo_hud.tscn" id="7_ammo"]
+[ext_resource type="PackedScene" uid="uid://chealth_hud_ui" path="res://game/ui/hud/health_hud.tscn" id="8_health"]
+[ext_resource type="PackedScene" path="res://game/ui/hud/scoreboard.tscn" id="9_scoreboard"]
+[ext_resource type="PackedScene" path="res://game/ui/hud/kill_feed.tscn" id="10_killfeed"]
+[ext_resource type="PackedScene" path="res://game/ui/hud/match_hud.tscn" id="11_matchhud"]
+[ext_resource type="Script" path="res://game/ui/hud/blood_overlay.gd" id="12_blood"]
+[ext_resource type="PackedScene" uid="uid://inventory_ui" path="res://game/ui/hud/inventory_ui.tscn" id="13_inventory"]
+[ext_resource type="PackedScene" uid="uid://compass_bar" path="res://game/ui/hud/compass_bar.tscn" id="14_compass"]
+[ext_resource type="PackedScene" uid="uid://minimap" path="res://game/ui/hud/minimap.tscn" id="15_minimap"]
+[ext_resource type="PackedScene" uid="uid://c3t8x9m2vnpkw" path="res://game/ui/hud/target_info_ui.tscn" id="16_targetinfo"]
+[ext_resource type="PackedScene" uid="uid://downed_state_hud" path="res://game/ui/hud/downed_state_hud.tscn" id="17_downedstate"]
+[ext_resource type="PackedScene" uid="uid://c8j7k2q4d3f1a" path="res://game/ui/hud/chat_ui.tscn" id="18_chatui"]
+[ext_resource type="Script" path="res://game/ui/hud/game_event_feed.gd" id="19_pickuplog"]
+[ext_resource type="Script" path="res://game/entities/player/movement_polish_system.gd" id="20_polish"]
+[ext_resource type="Script" path="res://game/entities/player/downed_state.gd" id="21_downed"]
+[ext_resource type="Script" path="res://game/entities/common/skeletal_character_visuals.gd" id="22_visuals"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_7800j"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_kk8xf"]
+
+[sub_resource type="Gradient" id="Gradient_054tn"]
+offsets = PackedFloat32Array(0, 0.15942, 1)
+colors = PackedColorArray(0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_e76al"]
+gradient = SubResource("Gradient_054tn")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_h4yve"]
+gravity = Vector3(0, 0, 0)
+color_ramp = SubResource("GradientTexture1D_e76al")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7dly5"]
+transparency = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_color = Color(0.952941, 1, 0.47451, 1)
+albedo_texture = ExtResource("3_ep0ec")
+billboard_mode = 3
+particles_anim_h_frames = 1
+particles_anim_v_frames = 1
+particles_anim_loop = false
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_fbvoh"]
+material = SubResource("StandardMaterial3D_7dly5")
+size = Vector2(0.5, 0.5)
+orientation = 2
+
+[sub_resource type="Animation" id="Animation_5woug"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Camera3D/WeaponHolder:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0.25, -0.25, -0.5)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Camera3D/WeaponHolder:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_hwk86"]
+resource_name = "idle"
+length = 3.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Camera3D/WeaponHolder:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1.5),
+"transitions": PackedFloat32Array(-2, -2),
+"update": 0,
+"values": [Vector3(0.25, -0.25, -0.5), Vector3(0.25, -0.3, -0.5)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Camera3D/WeaponHolder:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 1.5),
+"transitions": PackedFloat32Array(-2, -2),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(-0.122173, 0, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_yvvk7"]
+resource_name = "move"
+loop_mode = 1
+step = 0.25
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Camera3D/WeaponHolder:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.25, 0.5, 0.75),
+"transitions": PackedFloat32Array(0.5, 2, 0.5, 2),
+"update": 0,
+"values": [Vector3(0.5, -0.25, -0.5), Vector3(0.467158, -0.179294, -0.5), Vector3(0.5, -0.25, -0.5), Vector3(0.522576, -0.202587, -0.5)]
+}
+
+[sub_resource type="Animation" id="Animation_d7qmc"]
+resource_name = "shoot"
+length = 0.4
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Camera3D/WeaponHolder:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.4),
+"transitions": PackedFloat32Array(0.5, 1),
+"update": 0,
+"values": [Vector3(0.25, -0.178057, -0.5), Vector3(0.25, -0.25, -0.5)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Camera3D/WeaponHolder:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.4),
+"transitions": PackedFloat32Array(0.5, 1),
+"update": 0,
+"values": [Vector3(0.408843, 0, 0), Vector3(0, 0, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_melee"]
+resource_name = "melee"
+length = 0.3
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Camera3D/WeaponHolder:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.3),
+"transitions": PackedFloat32Array(0.5, 0.5, 1),
+"update": 0,
+"values": [Vector3(0.25, -0.25, -0.5), Vector3(0.05, -0.15, -0.8), Vector3(0.25, -0.25, -0.5)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Camera3D/WeaponHolder:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.3),
+"transitions": PackedFloat32Array(0.5, 0.5, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(-0.5, 0.3, 0.2), Vector3(0, 0, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_m8nyu"]
+_data = {
+"RESET": SubResource("Animation_5woug"),
+"idle": SubResource("Animation_hwk86"),
+"melee": SubResource("Animation_melee"),
+"move": SubResource("Animation_yvvk7"),
+"shoot": SubResource("Animation_d7qmc")
+}
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_m36li"]
+properties/0/path = NodePath(".:position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath(".:rotation")
+properties/1/spawn = true
+properties/1/replication_mode = 2
+properties/2/path = NodePath(".:current_weapon_index")
+properties/2/spawn = true
+properties/2/replication_mode = 2
+properties/3/path = NodePath(".:is_crouching")
+properties/3/spawn = true
+properties/3/replication_mode = 2
+properties/4/path = NodePath(".:is_sprinting")
+properties/4/spawn = true
+properties/4/replication_mode = 2
+properties/5/path = NodePath(".:is_dead")
+properties/5/spawn = true
+properties/5/replication_mode = 2
+properties/6/path = NodePath(".:health")
+properties/6/spawn = true
+properties/6/replication_mode = 2
+properties/7/path = NodePath(".:armor")
+properties/7/spawn = true
+properties/7/replication_mode = 2
+properties/8/path = NodePath(".:is_downed")
+properties/8/spawn = true
+properties/8/replication_mode = 2
+
+[node name="player" type="CharacterBody3D"]
+collision_layer = 2
+script = ExtResource("1_8tdgl")
+
+[node name="PlayerVisuals" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+script = ExtResource("22_visuals")
+color = Color(0.952941, 1, 0.47451, 1)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("CapsuleShape3D_kk8xf")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
+near = 0.01
+
+[node name="AudioListener3D" type="AudioListener3D" parent="Camera3D"]
+current = true
+
+[node name="GunshotSound" type="AudioStreamPlayer3D" parent="Camera3D"]
+unique_name_in_owner = true
+bus = &"SFX"
+
+[node name="RayCast3D" type="RayCast3D" parent="Camera3D"]
+target_position = Vector3(0, 0, -50)
+collision_mask = 7
+
+[node name="WeaponHolder" type="Node3D" parent="Camera3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, -0.25, -0.5)
+
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_m8nyu")
+}
+autoplay = "idle"
+playback_default_blend_time = 0.05
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_m36li")
+
+[node name="StatusEffectManager" type="Node" parent="."]
+script = ExtResource("1_status_mgr")
+
+[node name="MovementPolishSystem" type="Node" parent="."]
+script = ExtResource("20_polish")
+
+[node name="DownedHandler" type="Node" parent="."]
+script = ExtResource("21_downed")
+
+[node name="HUDLayer" type="CanvasLayer" parent="."]
+
+[node name="Crosshair" type="Control" parent="HUDLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("5_fnci2")
+
+[node name="DamageIndicatorManager" type="Control" parent="HUDLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("6_damage_mgr")
+
+[node name="BloodOverlay" type="Control" parent="HUDLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("12_blood")
+
+
+[node name="AmmoHUD" parent="HUDLayer" instance=ExtResource("7_ammo")]
+
+[node name="HealthHUD" parent="HUDLayer" instance=ExtResource("8_health")]
+
+[node name="MatchHUD" parent="HUDLayer" instance=ExtResource("11_matchhud")]
+
+[node name="KillFeed" parent="HUDLayer" instance=ExtResource("10_killfeed")]
+
+[node name="Scoreboard" parent="HUDLayer" instance=ExtResource("9_scoreboard")]
+
+[node name="InventoryUI" parent="HUDLayer" instance=ExtResource("13_inventory")]
+
+[node name="CompassBar" parent="HUDLayer" instance=ExtResource("14_compass")]
+
+[node name="Minimap" parent="HUDLayer" instance=ExtResource("15_minimap")]
+
+
+
+[node name="DownedStateHUD" parent="HUDLayer" instance=ExtResource("17_downedstate")]
+
+[node name="ChatUI" parent="HUDLayer" instance=ExtResource("18_chatui")]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -200.0
+offset_right = 400.0
+
+[node name="MovementHUD" type="Control" parent="HUDLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_movement_hud")
+
+[node name="LevelUpNotification" type="Control" parent="HUDLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_levelup")
+
+[node name="PickupLog" type="VBoxContainer" parent="HUDLayer"]
+anchors_preset = 0
+offset_left = 10.0
+offset_top = 80.0
+offset_right = 300.0
+offset_bottom = 200.0
+mouse_filter = 2
+script = ExtResource("19_pickuplog")
+
+

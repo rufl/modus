@@ -1,0 +1,83 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/ui/hud/match_hud.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://c8j7k2q4d3f1a" path="res://game/ui/hud/chat_ui.tscn" id="2_chat"]
+[ext_resource type="PackedScene" uid="uid://c3t8x9m2vnpkw" path="res://game/ui/hud/target_info_ui.tscn" id="3_target"]
+[ext_resource type="PackedScene" path="res://game/ui/hud/game_event_feed.tscn" id="4_feed"]
+
+[node name="MatchHUD" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_script")
+
+[node name="Background" type="ColorRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.490196)
+mouse_filter = 2
+
+[node name="TimerLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -50.0
+offset_top = 10.0
+offset_right = 50.0
+offset_bottom = 50.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 32
+text = "10:00"
+horizontal_alignment = 1
+
+[node name="StateLabel" type="Label" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -50.0
+offset_right = 300.0
+offset_bottom = 50.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 64
+text = "MATCH ENDED"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ChatUI" parent="." instance=ExtResource("2_chat")]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -250.0
+offset_right = 400.0
+offset_bottom = 0.0
+grow_vertical = 0
+
+[node name="TargetInfoUI" parent="." instance=ExtResource("3_target")]
+layout_mode = 1
+
+[node name="GameEventFeed" parent="." instance=ExtResource("4_feed")]
+layout_mode = 1
+anchors_preset = 0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 420.0
+offset_bottom = 220.0
+
+

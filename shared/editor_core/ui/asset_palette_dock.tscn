@@ -1,0 +1,67 @@
+[gd_scene format=3 uid="uid://bpq7k3m2xh8da"]
+
+[ext_resource type="Script" path="res://shared/editor_core/ui/asset_palette_dock.gd" id="1_palette"]
+
+
+[node name="AssetPaletteDock" type="Control"]
+custom_minimum_size = Vector2(250, 400)
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_palette")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "📦 Asset Palette"
+
+[node name="SearchBar" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+
+[node name="SearchLabel" type="Label" parent="VBox/SearchBar"]
+layout_mode = 2
+text = "🔍"
+
+[node name="SearchLine" type="LineEdit" parent="VBox/SearchBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Search assets..."
+
+[node name="CategoryTabs" type="TabBar" parent="VBox"]
+layout_mode = 2
+clip_tabs = false
+tab_count = 6
+tab_0/title = "Blocks"
+tab_1/title = "Entities"
+tab_2/title = "Props"
+tab_3/title = "Interactables"
+tab_4/title = "Hazards"
+tab_5/title = "Spawn Points"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="AssetGrid" type="GridContainer" parent="VBox/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/h_separation = 4
+theme_override_constants/v_separation = 4
+columns = 3
+
+[node name="InfoLabel" type="Label" parent="VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 1)
+theme_override_font_sizes/font_size = 11
+text = "0 items"
+horizontal_alignment = 1

@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://deov1u3q5j2y6"]
+
+[ext_resource type="Script" uid="uid://2iwvdhpppt7v" path="res://game/world/actors/volumes/environment_volume.gd" id="1_v4m8g"]
+
+[node name="EnvironmentVolume" type="Area3D"]
+script = ExtResource("1_v4m8g")

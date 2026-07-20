@@ -1,0 +1,23 @@
+{
+	"id": "example_mod",
+	"name": "Example Mod",
+	"version": "1.0.0",
+	"author": "Thauma",
+	"description": "A sample mod demonstrating config overrides and script injection.",
+	"priority": 100,
+	"enabled": false,
+	"config_overrides": {
+		"weapons": {
+			"pistol": {
+				"display_name": "Modded Pistol",
+				"damage": 50
+			}
+		},
+		"loot": {
+			"drop_rate_multiplier": 2.0
+		}
+	},
+	"scripts": [
+		"scripts/hello_world.gd"
+	]
+}

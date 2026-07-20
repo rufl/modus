@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3 uid="uid://bullet_hole_procedural"]
+
+[ext_resource type="Script" path="res://game/scenes/effects/bullet_hole.gd" id="1_script"]
+
+[node name="BulletHole" type="Decal"]
+script = ExtResource("1_script")
+size = Vector3(0.15, 0.1, 0.15)
+cull_mask = 1048573
+upper_fade = 0.0
+lower_fade = 0.0
+distance_fade_enabled = false

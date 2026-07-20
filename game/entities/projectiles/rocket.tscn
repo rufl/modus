@@ -1,0 +1,106 @@
+[gd_scene format=3 uid="uid://c5j8k2nan4p1"]
+
+[ext_resource type="Script" uid="uid://bvek0xonv47y" path="res://game/entities/projectiles/rocket.gd" id="1_script"]
+
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_rocket"]
+radius = 0.15
+height = 1.0
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_rocket"]
+radius = 0.15
+height = 1.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rocket"]
+albedo_color = Color(0.4, 0.4, 0.45, 1)
+metallic = 0.8
+roughness = 0.4
+emission_enabled = true
+emission = Color(1, 0.3, 0, 1)
+emission_energy_multiplier = 0.5
+
+
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_rep"]
+properties/0/path = NodePath(":position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath(":rotation")
+properties/1/spawn = true
+properties/1/replication_mode = 1
+properties/2/path = NodePath(":velocity")
+properties/2/spawn = true
+properties/2/replication_mode = 1
+properties/3/path = NodePath(":shooter_id")
+properties/3/spawn = true
+properties/3/replication_mode = 1
+
+
+[sub_resource type="Curve" id="Curve_trail_scale"]
+_data = [Vector2(0, 0.4), 0.0, 0.0, 0, 0, Vector2(1, 1.8), 1.4, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="ParticleProcessMaterial" id="PPM_smoke_trail"]
+emission_shape = 1
+emission_sphere_radius = 0.1
+gravity = Vector3(0, 0, 0)
+scale_curve = SubResource("Curve_trail_scale")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_smoke"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.5, 0.5, 0.5, 0.6)
+billboard_mode = 3
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ember"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(1.0, 0.5, 0.1, 0.9)
+emission_enabled = true
+emission = Color(1.0, 0.4, 0.0, 1.0)
+emission_energy_multiplier = 2.0
+billboard_mode = 3
+
+[sub_resource type="QuadMesh" id="QuadMesh_smoke_trail"]
+material = SubResource("StandardMaterial3D_smoke")
+size = Vector2(0.5, 0.5)
+
+[sub_resource type="QuadMesh" id="QuadMesh_ember_trail"]
+material = SubResource("StandardMaterial3D_ember")
+size = Vector2(0.3, 0.3)
+
+[node name="Rocket" type="CharacterBody3D"]
+collision_layer = 16
+collision_mask = 7
+script = ExtResource("1_script")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
+shape = SubResource("CapsuleShape3D_rocket")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("CapsuleMesh_rocket")
+surface_material_override/0 = SubResource("StandardMaterial3D_rocket")
+
+[node name="SmokeTrail" type="GPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.5)
+amount = 100
+lifetime = 1.2
+local_coords = false
+process_material = SubResource("PPM_smoke_trail")
+draw_pass_1 = SubResource("QuadMesh_smoke_trail")
+
+[node name="EmberTrail" type="GPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.5)
+amount = 60
+lifetime = 0.5
+local_coords = false
+process_material = SubResource("PPM_smoke_trail")
+draw_pass_1 = SubResource("QuadMesh_ember_trail")
+
+[node name="VisibleOnScreenNotifier3D" type="VisibleOnScreenNotifier3D" parent="."]
+aabb = AABB(-0.2, -0.2, -0.6, 0.4, 0.4, 1.2)
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_rep")
+

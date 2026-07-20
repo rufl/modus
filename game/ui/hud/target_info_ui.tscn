@@ -1,0 +1,104 @@
+[gd_scene load_steps=3 format=3 uid="uid://c3t8x9m2vnpkw"]
+
+[ext_resource type="Script" path="res://game/ui/hud/target_info_ui.gd" id="1_script"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fill"]
+bg_color = Color(0.8, 0.2, 0.2, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[node name="TargetInfoUI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_script")
+
+[node name="Container" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -100.0
+offset_top = 75.0
+offset_right = 100.0
+offset_bottom = 150.0
+grow_horizontal = 2
+mouse_filter = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="Container"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="VBox" type="VBoxContainer" parent="Container/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="TopRow" type="HBoxContainer" parent="Container/MarginContainer/VBox"]
+layout_mode = 2
+
+[node name="LevelLabel" type="Label" parent="Container/MarginContainer/VBox/TopRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 8
+theme_override_colors/font_color = Color(0.8, 0.8, 0.2, 1)
+text = "Lv.1"
+
+[node name="TierLabel" type="Label" parent="Container/MarginContainer/VBox/TopRow"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 8
+theme_override_colors/font_color = Color(1, 0.5, 0, 1)
+text = "ELITE"
+
+[node name="NameLabel" type="Label" parent="Container/MarginContainer/VBox/TopRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
+text = "Enemy Name"
+horizontal_alignment = 1
+
+[node name="StateLabel" type="Label" parent="Container/MarginContainer/VBox/TopRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 8
+theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 1)
+text = "[IDLE]"
+
+[node name="DistanceLabel" type="Label" parent="Container/MarginContainer/VBox/TopRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 8
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+text = "25m"
+
+[node name="HealthBar" type="ProgressBar" parent="Container/MarginContainer/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 12)
+layout_mode = 2
+theme_override_styles/fill = SubResource("StyleBoxFlat_fill")
+max_value = 100.0
+value = 75.0
+show_percentage = false
+
+[node name="InfightingLabel" type="Label" parent="Container/MarginContainer/VBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 8
+theme_override_colors/font_color = Color(1, 0.4, 0, 1)
+text = "[INFIGHTING: Target]"
+horizontal_alignment = 1
+
+

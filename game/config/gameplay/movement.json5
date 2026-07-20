@@ -1,0 +1,159 @@
+{
+  // Movement system configuration
+  // Controls player and entity movement, physics, and locomotion
+  
+  "movement": {
+    // Basic movement parameters
+    "walk_speed": 5.0,              // Walking speed in meters/second
+    "run_speed": 8.0,               // Running/sprinting speed in meters/second
+    "crouch_speed": 2.5,            // Crouching movement speed
+    "crawl_speed": 1.5,             // Crawling/prone movement speed
+    "backwards_multiplier": 0.7,    // Speed multiplier when moving backwards
+    "strafe_multiplier": 0.9,       // Speed multiplier when strafing
+    
+    // Acceleration and deceleration
+    "acceleration": 20.0,           // How quickly speed increases (m/s²)
+    "deceleration": 25.0,           // How quickly speed decreases (m/s²)
+    "air_acceleration": 5.0,        // Acceleration while airborne
+    "friction": 8.0,                // Ground friction coefficient
+    "air_friction": 0.5,            // Air resistance
+    
+    // Jumping mechanics
+    "jump": {
+      "enabled": true,
+      "jump_velocity": 6.0,         // Initial upward velocity
+      "jump_height": 1.8,           // Approximate jump height in meters
+      "double_jump_enabled": false, // Allow double jumping
+      "coyote_time": 0.15,          // Grace period after leaving ground (seconds)
+      "jump_buffer": 0.1,           // Input buffer before landing (seconds)
+      "variable_height": true,      // Allow variable jump height by holding button
+      "min_jump_velocity": 3.0,     // Minimum jump velocity for variable jumps
+      "air_jumps": 0                // Number of additional air jumps (0 = none)
+    },
+    
+    // Sprinting system
+    "sprint": {
+      "enabled": true,
+      "stamina_enabled": false,     // Require stamina to sprint
+      "max_stamina": 100.0,         // Maximum stamina
+      "stamina_drain_rate": 10.0,   // Stamina consumed per second while sprinting
+      "stamina_regen_rate": 15.0,   // Stamina regenerated per second when not sprinting
+      "stamina_regen_delay": 1.0,   // Delay before stamina starts regenerating
+      "can_sprint_backwards": false, // Allow sprinting while moving backwards
+      "fov_increase": 5.0           // Field of view increase while sprinting (degrees)
+    },
+    
+    // Crouching and stance
+    "crouch": {
+      "enabled": true,
+      "crouch_height": 0.9,         // Height multiplier when crouched (0.0-1.0)
+      "transition_speed": 8.0,      // How quickly to transition between stances
+      "can_crouch_in_air": false,   // Allow crouching while airborne
+      "slide_enabled": false,       // Enable sliding when crouching while sprinting
+      "slide_speed": 10.0,          // Initial slide speed
+      "slide_friction": 15.0,       // How quickly slide loses speed
+      "slide_duration": 1.0         // Maximum slide duration
+    },
+    
+    // Climbing and ladders
+    "climbing": {
+      "enabled": true,
+      "climb_speed": 3.0,           // Vertical climbing speed
+      "climb_acceleration": 10.0,   // How quickly climb speed is reached
+      "can_jump_off_ladder": true,  // Allow jumping while on ladder
+      "ladder_jump_velocity": 5.0,  // Jump velocity when leaving ladder
+      "auto_grab_ladder": true      // Automatically grab nearby ladders
+    },
+    
+    // Swimming mechanics
+    "swimming": {
+      "enabled": true,
+      "swim_speed": 3.5,            // Swimming speed
+      "swim_acceleration": 8.0,     // Acceleration in water
+      "surface_speed": 4.0,         // Speed when swimming on surface
+      "dive_speed": 4.5,            // Speed when diving down
+      "float_force": 2.0,           // Upward force when in water
+      "oxygen_enabled": false,      // Require oxygen/breath system
+      "max_oxygen": 100.0,          // Maximum oxygen
+      "oxygen_drain_rate": 10.0,    // Oxygen consumed per second underwater
+      "oxygen_regen_rate": 50.0     // Oxygen regenerated per second above water
+    },
+    
+    // Gravity and physics
+    "physics": {
+      "gravity": 20.0,              // Gravity acceleration (m/s²)
+      "max_fall_speed": 30.0,       // Terminal velocity
+      "mass": 70.0,                 // Entity mass in kg
+      "step_height": 0.4,           // Maximum height that can be stepped up
+      "slope_limit": 45.0,          // Maximum walkable slope angle (degrees)
+      "snap_distance": 0.5,         // Distance to snap to ground
+      "floor_max_angle": 46.0       // Maximum floor angle (degrees)
+    },
+    
+    // Wall interaction
+    "wall_interaction": {
+      "wall_jump_enabled": false,   // Enable wall jumping
+      "wall_jump_velocity": 7.0,    // Velocity of wall jump
+      "wall_jump_angle": 45.0,      // Angle away from wall (degrees)
+      "wall_slide_enabled": false,  // Enable sliding down walls
+      "wall_slide_speed": 2.0,      // Speed of wall sliding
+      "wall_cling_duration": 1.0    // How long can cling to wall (seconds)
+    },
+    
+    // Dashing mechanics
+    "dash": {
+      "enabled": false,             // Enable dash ability
+      "dash_speed": 15.0,           // Dash velocity
+      "dash_duration": 0.2,         // Dash duration in seconds
+      "dash_cooldown": 1.5,         // Cooldown between dashes
+      "dash_charges": 1,            // Number of dash charges
+      "charge_regen_time": 3.0,     // Time to regenerate one charge
+      "can_dash_in_air": true,      // Allow dashing while airborne
+      "dash_direction_lock": true   // Lock movement direction during dash
+    },
+    
+    // Dodge/Roll mechanics (double-tap to dodge)
+    "dodge": {
+      "enabled": true,              // Enable dodge ability
+      "speed": 15.0,                // Dodge speed
+      "duration": 0.2,              // Dodge duration in seconds
+      "cooldown": 1.0,              // Cooldown between dodges
+      "air_dodge_enabled": true,    // Allow dodging while airborne
+      "air_dodge_speed_multiplier": 0.7, // Speed multiplier for air dodges
+      "input_mode": "DOUBLE_TAP",   // Input mode: DOUBLE_TAP, DEDICATED_KEY, or BOTH
+      "double_tap_window": 0.25,    // Time window for double-tap detection (seconds)
+      "require_release": true       // Require key release between taps
+    },
+    
+    // Movement restrictions
+    "restrictions": {
+      "can_move_while_shooting": true,  // Allow movement while attacking
+      "can_jump_while_shooting": true,  // Allow jumping while attacking
+      "movement_penalty_while_aiming": 0.5, // Speed multiplier when aiming (0.0-1.0)
+      "movement_penalty_while_reloading": 0.8, // Speed multiplier when reloading
+      "can_sprint_while_shooting": false, // Allow sprinting while shooting
+      "stop_sprint_on_shoot": true      // Automatically stop sprinting when shooting
+    },
+    
+    // Camera and look
+    "camera": {
+      "mouse_sensitivity": 0.3,     // Mouse look sensitivity
+      "controller_sensitivity": 2.0, // Controller look sensitivity
+      "invert_y_axis": false,       // Invert vertical look axis
+      "smooth_camera": true,        // Enable camera smoothing
+      "camera_smoothing": 10.0,     // Camera interpolation speed
+      "head_bob_enabled": true,     // Enable head bobbing while moving
+      "head_bob_intensity": 0.05,   // Head bob intensity (0.0-1.0)
+      "head_bob_frequency": 2.0     // Head bob frequency (Hz)
+    },
+    
+    // Network and prediction
+    "network": {
+      "client_prediction": true,    // Enable client-side prediction
+      "server_reconciliation": true, // Enable server reconciliation
+      "interpolation": true,        // Enable position interpolation
+      "interpolation_delay": 0.1,   // Interpolation delay in seconds
+      "max_position_error": 0.5     // Maximum position error before snap (meters)
+    }
+  }
+}

@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://cblood_decal"]
+
+[ext_resource type="Script" path="res://game/scenes/effects/blood_decal.gd" id="1_script"]
+
+[node name="BloodDecal" type="Decal"]
+script = ExtResource("1_script")
+size = Vector3(0.5, 0.1, 0.5)
+modulate = Color(0.5, 0, 0, 0.9)
+cull_mask = 1048573

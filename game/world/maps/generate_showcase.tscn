@@ -1,0 +1,7 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://x7n0kidkot0p" path="res://game/world/maps/generate_showcase_level.gd" id="1_gen"]
+
+
+[node name="GeneratorRunner" type="Node"]
+script = ExtResource("1_gen")

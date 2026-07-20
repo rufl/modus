@@ -1,0 +1,93 @@
+=============================================
+     MODUS - HOW TO EDIT GAME DATA FILES
+=============================================
+
+Welcome! This guide explains how to customize game settings
+using simple text files. No programming required!
+
+
+GETTING STARTED
+---------------
+
+1. Open any .json5 file in Notepad, VS Code, or any text editor
+2. Lines starting with // are comments (ignored by the game)
+3. Change numbers and save the file
+4. Restart the game to see your changes!
+
+
+EXAMPLE - Make Shotgun More Powerful
+------------------------------------
+
+Open weapons.json5, find "shotgun", change:
+
+    "damage": 8,    -->    "damage": 20,
+
+Save the file and restart. Shotgun now does 20 damage!
+
+
+FOLDER GUIDE
+------------
+
+game/data/ = WHAT things ARE
+  - enemies.json5   : Enemy health, damage, behavior
+  - weapons.json5   : Weapon damage, fire rate, ammo
+  - loot_tables.json5 : What enemies drop when killed
+  - skills.json5    : Skill tree abilities
+
+game/config/ = HOW the game BEHAVES
+  - gameplay/gameplay.json5 : Global gameplay rules and balance
+  - gameplay/movement.json5 : Player speed, jump height
+  - gameplay/combat.json5   : Hit detection, cooldowns
+  - features.json5          : Feature profile toggles
+
+
+SYNTAX TIPS
+-----------
+
+✓ DO:
+  - Keep quotes around text values: "pistol"
+  - Use commas between items
+  - Trailing commas are OK (last item can have a comma)
+  - Add // comments to remember your changes
+
+✗ DON'T:
+  - Delete brackets { } or [ ]
+  - Put quotes around numbers: 10 not "10"
+  - Use single quotes: use "text" not 'text'
+
+
+EXAMPLE FILE FORMAT
+-------------------
+
+{
+  // Pistol - starter weapon
+  "pistol": {
+    "damage": 10,       // Damage per shot
+    "fire_rate": 0.3,   // Seconds between shots
+    "ammo": 12,         // Magazine size
+  },
+  
+  // Shotgun - close range powerhouse
+  "shotgun": {
+    "damage": 8,        // Damage per pellet
+    "pellets": 6,       // Number of pellets
+    "spread": 0.15,     // Spread angle
+  },
+}
+
+
+NEED HELP?
+----------
+
+If the game crashes after editing, you probably have a
+syntax error. Check for:
+  - Missing commas
+  - Missing quotes around text
+  - Deleted brackets
+
+When in doubt, restore the original file from a backup!
+
+
+=============================================
+     Happy Modding! - MODUS Framework
+=============================================

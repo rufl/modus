@@ -1,0 +1,21 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://dnb6jpbb7vkjd" path="res://game/world/actors/traversal/ladder.gd" id="1_ladder"]
+
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ladder"]
+size = Vector3(0.66, 4, 0.2)
+
+[node name="Ladder" type="Area3D"]
+script = ExtResource("1_ladder")
+width = 0.6
+ladder_material_type = "metal"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+shape = SubResource("BoxShape3D_ladder")
+
+[node name="TopMarker" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 0)
+
+[node name="BottomMarker" type="Marker3D" parent="."]

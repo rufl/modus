@@ -1,0 +1,43 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://3n12x18y0tg7" path="res://game/world/actors/hazards/turret.gd" id="1_turret"]
+
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_base"]
+top_radius = 0.3
+bottom_radius = 0.5
+height = 1.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_head"]
+size = Vector3(0.4, 0.4, 0.8)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_scan"]
+radius = 15.0
+
+[node name="Turret" type="Node3D"]
+script = ExtResource("1_turret")
+
+[node name="Base" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+mesh = SubResource("CylinderMesh_base")
+
+[node name="Head" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.2)
+mesh = SubResource("BoxMesh_head")
+
+[node name="BarrelEnd" type="Node3D" parent="Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.6)
+
+[node name="RayCast3D" type="RayCast3D" parent="Head"]
+target_position = Vector3(0, 0, -20)
+collision_mask = 2
+
+[node name="ScanArea" type="Area3D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ScanArea"]
+shape = SubResource("SphereShape3D_scan")

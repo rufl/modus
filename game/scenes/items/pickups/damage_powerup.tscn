@@ -1,0 +1,49 @@
+[gd_scene load_steps=6 format=3 uid="uid://cdamage_powerup"]
+
+[ext_resource type="Script" path="res://game/scenes/items/pickups/damage_powerup.gd" id="1_script"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_damage"]
+albedo_color = Color(1.0, 0.3, 0.2, 1.0)
+emission_enabled = true
+emission = Color(0.5, 0.15, 0.1, 1.0)
+emission_energy_multiplier = 1.5
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_damage"]
+top_radius = 0.2
+bottom_radius = 0.15
+height = 0.5
+material = SubResource("StandardMaterial3D_damage")
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_damage"]
+radius = 0.25
+height = 0.55
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_pickup"]
+properties/0/path = NodePath(".:position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath(".:rotation")
+properties/1/spawn = true
+properties/1/replication_mode = 1
+properties/2/path = NodePath(".:owner_peer_id")
+properties/2/spawn = true
+properties/2/replication_mode = 0
+
+[node name="DamagePowerup" type="RigidBody3D"]
+collision_layer = 16
+collision_mask = 1
+mass = 1.0
+linear_damp = 3.0
+angular_damp = 5.0
+script = ExtResource("1_script")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
+mesh = SubResource("CylinderMesh_damage")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
+shape = SubResource("CylinderShape3D_damage")
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_pickup")

@@ -1,0 +1,149 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://cqax20ot5l35f" path="res://game/world/world.gd" id="1_world"]
+[ext_resource type="PackedScene" path="res://game/world/actors/weather/weather_controller.tscn" id="2_weather"]
+[ext_resource type="PackedScene" path="res://game/world/maps/movement_lab.tscn" id="3_movlab"]
+[ext_resource type="PackedScene" path="res://game/world/maps/hazards_arena.tscn" id="4_hazards"]
+[ext_resource type="PackedScene" path="res://game/world/maps/interactables_demo.tscn" id="5_interact"]
+[ext_resource type="PackedScene" path="res://game/world/maps/traversal_course.tscn" id="6_traverse"]
+[ext_resource type="PackedScene" path="res://game/world/maps/projectile_range.tscn" id="7_range"]
+[ext_resource type="PackedScene" path="res://game/world/maps/visual_tweaking_lab.tscn" id="8_vizlab"]
+
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sky"]
+sky_top_color = Color(0.2, 0.3, 0.5, 1)
+sky_horizon_color = Color(0.4, 0.45, 0.55, 1)
+ground_bottom_color = Color(0.15, 0.12, 0.1, 1)
+ground_horizon_color = Color(0.3, 0.3, 0.35, 1)
+
+[sub_resource type="Sky" id="Sky_main"]
+sky_material = SubResource("ProceduralSkyMaterial_sky")
+
+[sub_resource type="Environment" id="Environment_main"]
+background_mode = 2
+background_energy_multiplier = 0.8
+sky = SubResource("Sky_main")
+ambient_light_source = 3
+ambient_light_energy = 0.5
+tonemap_mode = 2
+fog_enabled = true
+fog_light_color = Color(0.7, 0.75, 0.8, 1)
+fog_density = 0.002
+
+[sub_resource type="NavigationMesh" id="NavigationMesh_main"]
+vertices = PackedVector3Array(-75, 0, -75, 75, 0, -75, -75, 0, 75, 75, 0, 75)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 3, 2)])
+
+[node name="ComprehensiveShowcase" type="Node"]
+script = ExtResource("1_world")
+
+[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="."]
+spawn_path = NodePath("..")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_main")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.707107, -0.5, 0.5, 0, 0.707107, 0.707107, -0.707107, -0.5, 0.5, 5, 15, 5)
+shadow_enabled = true
+
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
+navigation_mesh = SubResource("NavigationMesh_main")
+
+[node name="HubFloor" type="CSGBox3D" parent="NavigationRegion3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+use_collision = true
+size = Vector3(150, 1, 150)
+
+[node name="WeatherController" parent="." instance=ExtResource("2_weather")]
+
+[node name="SpawnPoints" type="Node3D" parent="."]
+
+[node name="PlayerSpawn_01" type="Marker3D" parent="SpawnPoints" groups=["player_spawn"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+
+[node name="PlayerSpawn_02" type="Marker3D" parent="SpawnPoints" groups=["player_spawn"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 2, 0)
+
+[node name="PlayerSpawn_03" type="Marker3D" parent="SpawnPoints" groups=["player_spawn"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 2, 0)
+
+[node name="PlayerSpawn_04" type="Marker3D" parent="SpawnPoints" groups=["player_spawn"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 5)
+
+[node name="EnemySpawn_01" type="Marker3D" parent="SpawnPoints" groups=["enemy_spawn"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 1, 12)
+
+[node name="EnemySpawn_02" type="Marker3D" parent="SpawnPoints" groups=["enemy_spawn"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 1, -12)
+
+[node name="HubLabels" type="Node3D" parent="."]
+
+[node name="WelcomeSign" type="Label3D" parent="HubLabels"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 0)
+text = "COMPREHENSIVE SHOWCASE HUB
+All Game Features in One Map"
+font_size = 48
+modulate = Color(1, 1, 1, 1)
+
+[node name="Zone1Sign" type="Label3D" parent="HubLabels"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 2, -50)
+text = "← ZONE 1: MOVEMENT LAB"
+font_size = 24
+modulate = Color(0.5, 0.8, 1, 1)
+
+[node name="Zone2Sign" type="Label3D" parent="HubLabels"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 2, -50)
+text = "ZONE 2: HAZARDS ARENA →"
+font_size = 24
+modulate = Color(1, 0.3, 0.3, 1)
+
+[node name="Zone3Sign" type="Label3D" parent="HubLabels"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 2, 0)
+text = "← ZONE 3: INTERACTABLES"
+font_size = 24
+modulate = Color(1, 0.8, 0.3, 1)
+
+[node name="Zone4Sign" type="Label3D" parent="HubLabels"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 2, 0)
+text = "ZONE 4: ENEMY ZOO →"
+font_size = 24
+modulate = Color(0.8, 0.3, 0.8, 1)
+
+[node name="Zone5Sign" type="Label3D" parent="HubLabels"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 2, 50)
+text = "← ZONE 5: PROJECTILE RANGE"
+font_size = 24
+modulate = Color(1, 0.5, 0.2, 1)
+
+[node name="Zone6Sign" type="Label3D" parent="HubLabels"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, -60)
+text = "↑ ZONE 6: TRAVERSAL COURSE"
+font_size = 24
+modulate = Color(0.5, 0.8, 1, 1)
+
+[node name="Zone8Sign" type="Label3D" parent="HubLabels"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 60)
+text = "↓ ZONE 8: VISUAL TWEAKING LAB"
+font_size = 24
+modulate = Color(0.5, 1, 0.5, 1)
+
+[node name="Zones" type="Node3D" parent="."]
+
+[node name="Zone1_MovementLab" parent="Zones" instance=ExtResource("3_movlab")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 0, -50)
+
+[node name="Zone2_HazardsArena" parent="Zones" instance=ExtResource("4_hazards")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 0, -50)
+
+[node name="Zone3_Interactables" parent="Zones" instance=ExtResource("5_interact")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 0, 0)
+
+[node name="Zone5_ProjectileRange" parent="Zones" instance=ExtResource("7_range")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 0, 50)
+
+[node name="Zone6_TraversalCourse" parent="Zones" instance=ExtResource("6_traverse")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -60)
+
+[node name="Zone8_VisualTweakingLab" parent="Zones" instance=ExtResource("8_vizlab")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 60)

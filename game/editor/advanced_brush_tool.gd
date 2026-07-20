@@ -1,0 +1,759 @@
+@tool
+class_name AdvancedBrushTool
+extends Node3D
+
+## Advanced Brush Tool - Enhanced brush-based editing capabilities
+## Features: Presets, batch ops, advanced shapes, smart snapping, performance optimization
+
+# Signals
+signal brush_applied(brush_type: String, count: int)
+signal brush_operation_started(operation: String)
+signal brush_operation_completed(operation: String, success: bool)
+
+# Brush types
+enum BrushType {
+	SPHERE = 0,
+	CUBE = 1,
+	CYLINDER = 2,
+	CONE = 3,
+	PYRAMID = 4,
+	WEDGE = 5,
+	STAIRCASE = 6,
+	ARCH = 7,
+	TORUS = 8,
+	CAPSULE = 9
+}
+
+# Brush operation modes
+enum OperationMode { ADD = 0, REMOVE = 1, PAINT = 2, REPLACE = 3, FILL = 4, CLEAR = 5 }
+
+
+# Brush preset struct
+class BrushPreset:
+	var name: String
+	var brush_type: BrushType
+	var size: Vector3 = Vector3.ONE
+	var material: Material = null
+	var operation_mode: OperationMode = OperationMode.ADD
+	var hollow: bool = false
+	var hollow_thickness: float = 0.2
+	var snap_to_grid: bool = true
+	var density: float = 1.0  # For scattered placement
+	var rotation: Vector3 = Vector3.ZERO
+	var scale_variation: float = 0.0
+	var rotation_variation: float = 0.0
+
+
+# Exported properties
+@export_group("Brush Settings")
+@export var brush_type: BrushType = BrushType.CUBE
+@export var brush_size: Vector3 = Vector3.ONE
+@export var brush_material: Material
+@export var brush_operation_mode: OperationMode = OperationMode.ADD
+@export var hollow_brush: bool = false
+@export var hollow_thickness: float = 0.2
+
+@export_group("Advanced Options")
+@export var snap_to_grid: bool = true
+@export var grid_size: float = 1.0
+@export var brush_density: float = 1.0  # 0.0 = sparse, 1.0 = dense
+@export var random_rotation: bool = false
+@export var random_scale: bool = false
+@export var scale_variation: float = 0.1
+@export var rotation_variation: float = 0.1
+
+@export_group("Performance")
+@export var max_batch_size: int = 100  # Maximum objects to place in one operation
+@export var optimize_placement: bool = true  # Use object pooling for performance
+
+var _brush_presets: Array[BrushPreset] = []
+var _is_active: bool = false
+var _preview_mesh: MeshInstance3D = null
+var _grid_system: Node = null
+var _selected_objects: Array[Node3D] = []
+var _batch_operations_queue: Array = []
+var _object_pool: Dictionary = {}
+
+
+func _ready() -> void:
+	# Initialize brush system
+	_create_preview_mesh()
+	_load_default_presets()
+
+	# Connect to editor signals if available
+	if Engine.is_editor_hint():
+		# Setup for editor use
+		pass
+
+
+func _process(_delta: float) -> void:
+	if _is_active:
+		_update_preview()
+
+
+func _input(event: InputEvent) -> void:
+	if not _is_active:
+		return
+
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+			_apply_brush()
+		elif event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+			_cancel_brush()
+
+
+## Create preview mesh for brush
+func _create_preview_mesh() -> void:
+	_preview_mesh = MeshInstance3D.new()
+	_preview_mesh.name = "BrushPreview"
+	_preview_mesh.visible = false
+	add_child(_preview_mesh)
+
+	# Make it semi-transparent for preview
+	var preview_mat := StandardMaterial3D.new()
+	preview_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	preview_mat.albedo_color = Color(0.2, 0.6, 1.0, 0.3)  # Semi-transparent blue
+	preview_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_preview_mesh.material_override = preview_mat
+
+
+## Update brush preview based on current settings
+func _update_preview() -> void:
+	if not _preview_mesh:
+		return
+
+	var mesh: Mesh = null
+	match brush_type:
+		BrushType.CUBE:
+			var cube_mesh := BoxMesh.new()
+			cube_mesh.size = brush_size
+			mesh = cube_mesh
+		BrushType.SPHERE:
+			var sphere_mesh := SphereMesh.new()
+			sphere_mesh.radius = min(brush_size.x, min(brush_size.y, brush_size.z)) * 0.5
+			sphere_mesh.height = brush_size.y
+			mesh = sphere_mesh
+		BrushType.CYLINDER:
+			var cylinder_mesh := CylinderMesh.new()
+			cylinder_mesh.top_radius = brush_size.x * 0.5
+			cylinder_mesh.bottom_radius = brush_size.z * 0.5
+			cylinder_mesh.height = brush_size.y
+			mesh = cylinder_mesh
+		BrushType.CONE:
+			var cone_mesh := CylinderMesh.new()
+			cone_mesh.top_radius = 0.0
+			cone_mesh.bottom_radius = min(brush_size.x, brush_size.z) * 0.5
+			cone_mesh.height = brush_size.y
+			mesh = cone_mesh
+		BrushType.PYRAMID:
+			mesh = _create_pyramid_mesh(brush_size)
+		BrushType.WEDGE:
+			mesh = _create_wedge_mesh(brush_size)
+		BrushType.STAIRCASE:
+			mesh = _create_staircase_mesh(brush_size)
+		BrushType.ARCH:
+			mesh = _create_arch_mesh(brush_size)
+		BrushType.TORUS:
+			mesh = _create_torus_mesh(brush_size)
+		BrushType.CAPSULE:
+			mesh = _create_capsule_mesh(brush_size)
+
+	if mesh:
+		_preview_mesh.mesh = mesh
+		_preview_mesh.visible = true
+
+
+## Create pyramid mesh
+func _create_pyramid_mesh(size: Vector3) -> ArrayMesh:
+	var vertices: PackedVector3Array = PackedVector3Array()
+
+	# Define pyramid vertices
+	var half_x = size.x * 0.5
+	var half_z = size.z * 0.5
+	var height = size.y
+
+	# Apex
+	vertices.append(Vector3(0, height, 0))
+	# Base corners
+	vertices.append(Vector3(-half_x, 0, -half_z))  # Bottom-left
+	vertices.append(Vector3(half_x, 0, -half_z))  # Bottom-right
+	vertices.append(Vector3(half_x, 0, half_z))  # Top-right
+	vertices.append(Vector3(-half_x, 0, half_z))  # Top-left
+
+	# Create triangles for each face
+	var indices: PackedInt32Array = PackedInt32Array()
+
+	# Front face
+	indices.append(0)  # Apex
+	indices.append(1)  # Bottom-left
+	indices.append(2)  # Bottom-right
+
+	# Right face
+	indices.append(0)  # Apex
+	indices.append(2)  # Bottom-right
+	indices.append(3)  # Top-right
+
+	# Back face
+	indices.append(0)  # Apex
+	indices.append(3)  # Top-right
+	indices.append(4)  # Top-left
+
+	# Left face
+	indices.append(0)  # Apex
+	indices.append(4)  # Top-left
+	indices.append(1)  # Bottom-left
+
+	# Base (two triangles)
+	indices.append(1)  # Bottom-left
+	indices.append(3)  # Top-right
+	indices.append(2)  # Bottom-right
+
+	indices.append(1)  # Bottom-left
+	indices.append(4)  # Top-left
+	indices.append(3)  # Top-right
+
+	var arrays: Array = []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = vertices
+	arrays[Mesh.ARRAY_INDEX] = indices
+
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(0, arrays)
+	return mesh
+
+
+## Create wedge mesh
+func _create_wedge_mesh(size: Vector3) -> ArrayMesh:
+	var vertices: PackedVector3Array = PackedVector3Array()
+
+	var half_x = size.x * 0.5
+	var half_z = size.z * 0.5
+	var height = size.y
+
+	# Wedge vertices (like a triangular prism)
+	vertices.append(Vector3(-half_x, 0, -half_z))  # 0 - Bottom-left
+	vertices.append(Vector3(half_x, 0, -half_z))  # 1 - Bottom-right
+	vertices.append(Vector3(-half_x, height, -half_z))  # 2 - Top-left
+	vertices.append(Vector3(half_x, 0, half_z))  # 3 - Front-right
+	vertices.append(Vector3(-half_x, height, half_z))  # 4 - Front-left
+	vertices.append(Vector3(half_x, height, -half_z))  # 5 - Top-right
+
+	var indices: PackedInt32Array = PackedInt32Array()
+
+	# Front triangle
+	indices.append(0)  # Bottom-left
+	indices.append(2)  # Top-left
+	indices.append(1)  # Bottom-right
+
+	# Back rectangle (split into 2 triangles)
+	indices.append(3)  # Front-right
+	indices.append(5)  # Top-right
+	indices.append(4)  # Front-left
+
+	indices.append(4)  # Front-left
+	indices.append(5)  # Top-right
+	indices.append(2)  # Top-left
+
+	# Bottom rectangle
+	indices.append(0)  # Bottom-left
+	indices.append(1)  # Bottom-right
+	indices.append(3)  # Front-right
+
+	indices.append(0)  # Bottom-left
+	indices.append(3)  # Front-right
+	indices.append(4)  # Front-left
+
+	# Top rectangle
+	indices.append(2)  # Top-left
+	indices.append(5)  # Top-right
+	indices.append(4)  # Front-left
+
+	indices.append(2)  # Top-left
+	indices.append(1)  # Bottom-right
+	indices.append(5)  # Top-right
+
+	var arrays: Array = []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = vertices
+	arrays[Mesh.ARRAY_INDEX] = indices
+
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(0, arrays)
+	return mesh
+
+
+## Apply brush at specified position
+func _apply_brush() -> void:
+	var mouse_pos: Vector3 = _get_mouse_world_position()
+	if mouse_pos == Vector3.ZERO:
+		return
+
+	brush_operation_started.emit("apply_brush")
+
+	# Calculate actual position based on grid settings
+	var position: Vector3 = mouse_pos
+	if snap_to_grid:
+		position = _snap_to_grid(mouse_pos)
+
+	# Determine operation based on mode
+	var success: bool = false
+	match brush_operation_mode:
+		OperationMode.ADD:
+			success = _place_brush_object(position)
+		OperationMode.REMOVE:
+			success = _remove_brush_object(position)
+		OperationMode.FILL:
+			success = _fill_area_with_brush(position)
+		OperationMode.CLEAR:
+			success = _clear_area(position)
+		_:
+			success = _place_brush_object(position)
+
+	brush_operation_completed.emit("apply_brush", success)
+	brush_applied.emit(str(brush_type), 1)
+
+
+## Place a single brush object
+func _place_brush_object(position: Vector3) -> bool:
+	var shape: Node3D = null
+
+	# Use object pooling for performance
+	var pool_key: String = str(brush_type)
+	if optimize_placement and _object_pool.has(pool_key) and _object_pool[pool_key].size() > 0:
+		shape = _object_pool[pool_key].pop_back()
+	else:
+		shape = _create_brush_shape(brush_type)
+
+	if not shape:
+		return false
+
+	# Apply transformations
+	shape.position = position
+
+	# Apply random variations if enabled
+	if random_rotation:
+		shape.rotation = Vector3(
+			shape.rotation.x + randf_range(-rotation_variation, rotation_variation),
+			shape.rotation.y + randf_range(-rotation_variation, rotation_variation),
+			shape.rotation.z + randf_range(-rotation_variation, rotation_variation)
+		)
+
+	if random_scale:
+		var scale_factor: float = 1.0 + randf_range(-scale_variation, scale_variation)
+		shape.scale = Vector3(scale_factor, scale_factor, scale_factor) * brush_size
+
+	# Apply material
+	if brush_material:
+		if shape is MeshInstance3D:
+			shape.material_override = brush_material
+
+	# Add to scene
+	var parent: Node3D = _get_level_parent()
+	if parent:
+		parent.add_child(shape)
+		# Mark as editor-placed
+		shape.set_meta("editor_placed", true)
+		shape.set_meta("brush_type", brush_type)
+		return true
+
+	return false
+
+
+## Create brush shape based on type
+func _create_brush_shape(brush_type: BrushType) -> Node3D:
+	var shape: Node3D = null
+
+	match brush_type:
+		BrushType.CUBE:
+			var box = CSGBox3D.new()
+			box.size = brush_size
+			shape = box
+		BrushType.SPHERE:
+			var sphere = CSGSphere3D.new()
+			sphere.radius = min(brush_size.x, min(brush_size.y, brush_size.z)) * 0.5
+			shape = sphere
+		BrushType.CYLINDER:
+			var cylinder = CSGCylinder3D.new()
+			cylinder.radius = min(brush_size.x, brush_size.z) * 0.5
+			cylinder.height = brush_size.y
+			shape = cylinder
+		BrushType.CONE:
+			var cone = CSGCylinder3D.new()
+			cone.radius = min(brush_size.x, brush_size.z) * 0.5
+			cone.height = brush_size.y
+			cone.cone = true
+			shape = cone
+		BrushType.PYRAMID:
+			shape = _create_pyramid_shape(brush_size)
+		BrushType.WEDGE:
+			shape = _create_wedge_shape(brush_size)
+		_:
+			var box = CSGBox3D.new()
+			box.size = brush_size
+			shape = box
+
+	# Apply hollow if enabled
+	if hollow_brush and shape is CSGShape3D:
+		# For CSG shapes, we'd need to create a difference operation
+		# This is a simplified approach - in a real implementation,
+		# we'd need to create a complex CSG tree for hollow shapes
+		shape.set_meta("is_hollow", hollow_brush)
+		shape.set_meta("hollow_thickness", hollow_thickness)
+
+	return shape
+
+
+## Create pyramid shape using CSG
+func _create_pyramid_shape(size: Vector3) -> CSGPolygon3D:
+	var pyramid = CSGPolygon3D.new()
+	pyramid.polygon = PackedVector2Array(
+		[
+			Vector2(-size.x * 0.5, 0),
+			Vector2(size.x * 0.5, 0),
+			Vector2(size.x * 0.5, size.y),
+			Vector2(-size.x * 0.5, size.y)
+		]
+	)
+	pyramid.depth = size.z
+	pyramid.mode = CSGPolygon3D.MODE_DEPTH
+	pyramid.use_collision = true
+	return pyramid
+
+
+## Create wedge shape using CSG
+func _create_wedge_shape(size: Vector3) -> CSGPolygon3D:
+	var wedge = CSGPolygon3D.new()
+	wedge.polygon = PackedVector2Array(
+		[Vector2(-size.x * 0.5, 0), Vector2(size.x * 0.5, 0), Vector2(size.x * 0.5, size.y)]
+	)
+	wedge.depth = size.z
+	wedge.mode = CSGPolygon3D.MODE_DEPTH
+	wedge.use_collision = true
+	return wedge
+
+
+func _create_staircase_mesh(_size: Vector3) -> ArrayMesh:
+	var mesh := ArrayMesh.new()
+	# Simplified staircase implementation
+	return mesh
+
+
+func _create_arch_mesh(_size: Vector3) -> ArrayMesh:
+	var mesh := ArrayMesh.new()
+	# Simplified arch implementation
+	return mesh
+
+
+func _create_torus_mesh(_size: Vector3) -> ArrayMesh:
+	var mesh := ArrayMesh.new()
+	# Simplified torus implementation
+	return mesh
+
+
+func _create_capsule_mesh(_size: Vector3) -> ArrayMesh:
+	var mesh := ArrayMesh.new()
+	# Simplified capsule implementation
+	return mesh
+
+
+## Snap position to grid
+func _snap_to_grid(position: Vector3) -> Vector3:
+	if grid_size <= 0:
+		return position
+
+	return Vector3(
+		round(position.x / grid_size) * grid_size,
+		round(position.y / grid_size) * grid_size,
+		round(position.z / grid_size) * grid_size
+	)
+
+
+## Get mouse world position
+func _get_mouse_world_position() -> Vector3:
+	# In editor context, this would use the 3D editor camera
+	# For runtime, we might need to raycast from the camera
+	if Engine.is_editor_hint():
+		# Editor context - would use editor tools
+		return Vector3.ZERO
+
+	# Runtime context - use camera raycast
+	var editor_camera: Camera3D = _find_active_camera()
+	if not editor_camera:
+		return Vector3.ZERO
+
+	var mouse_pos: Vector2 = get_viewport().get_mouse_position()
+	var ray_origin: Vector3 = editor_camera.project_ray_origin(mouse_pos)
+	var ray_dir: Vector3 = editor_camera.project_ray_normal(mouse_pos)
+
+	# Raycast to find intersection with ground or existing geometry
+	var space_state: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
+	var query := PhysicsRayQueryParameters3D.create(ray_origin, ray_origin + ray_dir * 1000.0)
+	var result: Dictionary = space_state.intersect_ray(query)
+
+	if result.size() > 0:
+		return result.position
+
+	# Default to ray at certain distance if no intersection
+	return ray_origin + ray_dir * 10.0
+
+
+## Find active camera in scene
+func _find_active_camera() -> Camera3D:
+	var cameras = get_tree().get_nodes_in_group("editor_camera")
+	if cameras.size() > 0:
+		return cameras[0] as Camera3D
+
+	# Look for current camera
+	var current_scene = get_tree().current_scene
+	if current_scene:
+		var cam = current_scene.get_node_or_null("Camera3D")
+		if cam and cam is Camera3D:
+			return cam as Camera3D
+
+	return null
+
+
+## Get level parent for placing objects
+func _get_level_parent() -> Node3D:
+	var current_scene = get_tree().current_scene
+	if current_scene:
+		# Look for a designated level root or editor root
+		var level_root = current_scene.get_node_or_null("LevelRoot")
+		if level_root:
+			return level_root as Node3D
+
+		# Fallback to current scene
+		return current_scene as Node3D
+
+	return self
+
+
+## Load default brush presets
+func _load_default_presets() -> void:
+	# Cube preset
+	var cube_preset = BrushPreset.new()
+	cube_preset.name = "Basic Cube"
+	cube_preset.brush_type = BrushType.CUBE
+	cube_preset.size = Vector3.ONE
+	cube_preset.operation_mode = OperationMode.ADD
+	_brush_presets.append(cube_preset)
+
+	# Sphere preset
+	var sphere_preset = BrushPreset.new()
+	sphere_preset.name = "Basic Sphere"
+	sphere_preset.brush_type = BrushType.SPHERE
+	sphere_preset.size = Vector3.ONE
+	sphere_preset.operation_mode = OperationMode.ADD
+	_brush_presets.append(sphere_preset)
+
+	# Wall preset
+	var wall_preset = BrushPreset.new()
+	wall_preset.name = "Wall Segment"
+	wall_preset.brush_type = BrushType.CUBE
+	wall_preset.size = Vector3(2, 2, 0.5)
+	wall_preset.operation_mode = OperationMode.ADD
+	_brush_presets.append(wall_preset)
+
+	# Floor preset
+	var floor_preset = BrushPreset.new()
+	floor_preset.name = "Floor Tile"
+	floor_preset.brush_type = BrushType.CUBE
+	floor_preset.size = Vector3(2, 0.2, 2)
+	floor_preset.operation_mode = OperationMode.ADD
+	_brush_presets.append(floor_preset)
+
+
+## Apply a preset
+func apply_preset(preset_index: int) -> void:
+	if preset_index < 0 or preset_index >= _brush_presets.size():
+		return
+
+	var preset: BrushPreset = _brush_presets[preset_index]
+	brush_type = preset.brush_type
+	brush_size = preset.size
+	brush_material = preset.material
+	brush_operation_mode = preset.operation_mode
+	hollow_brush = preset.hollow
+	hollow_thickness = preset.hollow_thickness
+	snap_to_grid = preset.snap_to_grid
+	brush_density = preset.density
+
+
+## Batch place multiple objects
+func batch_place(objects_data: Array[Dictionary]) -> bool:
+	if objects_data.size() > max_batch_size:
+		push_warning("Batch size exceeds maximum allowed. Splitting into chunks.")
+		return _batch_place_chunked(objects_data)
+
+	brush_operation_started.emit("batch_place")
+
+	var success_count: int = 0
+	for data: Dictionary in objects_data:
+		var pos: Vector3 = data.get("position", Vector3.ZERO)
+		var type: BrushType = data.get("type", BrushType.CUBE)
+		var size: Vector3 = data.get("size", Vector3.ONE)
+		var material: Material = data.get("material", null)
+
+		# Temporarily change settings
+		var old_type = brush_type
+		var old_size = brush_size
+		var old_material = brush_material
+
+		brush_type = type
+		brush_size = size
+		brush_material = material
+
+		if _place_brush_object(pos):
+			success_count += 1
+
+		# Restore settings
+		brush_type = old_type
+		brush_size = old_size
+		brush_material = old_material
+
+	var success: bool = success_count == objects_data.size()
+	brush_operation_completed.emit("batch_place", success)
+	return success
+
+
+## Batch place with chunking for performance
+func _batch_place_chunked(objects_data: Array[Dictionary]) -> bool:
+	var total_count: int = objects_data.size()
+	var chunks: Array[Array] = []
+	var chunk_size: int = max_batch_size
+
+	for i in range(0, total_count, chunk_size):
+		var end: int = min(i + chunk_size, total_count)
+		var chunk: Array = objects_data.slice(i, end)
+		chunks.append(chunk)
+
+	var all_success: bool = true
+	for chunk: Array in chunks:
+		if not _batch_place_single_chunk(chunk):
+			all_success = false
+
+	return all_success
+
+
+func _batch_place_single_chunk(chunk: Array[Dictionary]) -> bool:
+	brush_operation_started.emit("batch_place_chunk")
+
+	var success_count: int = 0
+	for data: Dictionary in chunk:
+		var pos: Vector3 = data.get("position", Vector3.ZERO)
+		if _place_brush_object(pos):
+			success_count += 1
+
+	var success: bool = success_count == chunk.size()
+	brush_operation_completed.emit("batch_place_chunk", success)
+	return success
+
+
+## Fill area with brush objects
+func _fill_area_with_brush(start_pos: Vector3) -> bool:
+	# This would implement area filling based on brush density
+	# For now, just place one object at the start position
+	return _place_brush_object(start_pos)
+
+
+## Clear area around position
+func _clear_area(center_pos: Vector3) -> bool:
+	# Raycast to find objects in a radius and remove them
+	var radius: float = max(brush_size.x, max(brush_size.y, brush_size.z))
+	var space_state: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
+
+	var shape := SphereShape3D.new()
+	shape.radius = radius
+
+	var query := PhysicsShapeQueryParameters3D.new()
+	query.shape = shape
+	query.transform = Transform3D(Basis.IDENTITY, center_pos)
+
+	var results: Array[Dictionary] = space_state.intersect_shape(query, 32)
+
+	var removed_count: int = 0
+	for result: Dictionary in results:
+		var obj: Node3D = result.get("collider", null)
+		if obj and obj.has_meta("editor_placed"):
+			obj.queue_free()
+			removed_count += 1
+
+	brush_applied.emit("CLEAR", removed_count)
+	return removed_count > 0
+
+
+## Remove brush object at position
+func _remove_brush_object(position: Vector3) -> bool:
+	# Find and remove object at position
+	var space_state: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
+
+	var shape := SphereShape3D.new()
+	shape.radius = 0.5  # Small radius to find nearby objects
+
+	var query := PhysicsShapeQueryParameters3D.new()
+	query.shape = shape
+	query.transform = Transform3D(Basis.IDENTITY, position)
+
+	var results: Array[Dictionary] = space_state.intersect_shape(query, 1)
+
+	if results.size() > 0:
+		var obj: Node3D = results[0].get("collider", null)
+		if obj and obj.has_meta("editor_placed"):
+			obj.queue_free()
+			brush_applied.emit("REMOVE", 1)
+			return true
+
+	return false
+
+
+## Get available presets
+func get_presets() -> Array[BrushPreset]:
+	return _brush_presets.duplicate()
+
+
+## Save current settings as preset
+func save_current_as_preset(name: String) -> void:
+	var preset = BrushPreset.new()
+	preset.name = name
+	preset.brush_type = brush_type
+	preset.size = brush_size
+	preset.material = brush_material
+	preset.operation_mode = brush_operation_mode
+	preset.hollow = hollow_brush
+	preset.hollow_thickness = hollow_thickness
+	preset.snap_to_grid = snap_to_grid
+	preset.density = brush_density
+
+	_brush_presets.append(preset)
+
+
+## Activate the brush tool
+func activate() -> void:
+	_is_active = true
+	if _preview_mesh:
+		_preview_mesh.visible = true
+
+
+## Deactivate the brush tool
+func deactivate() -> void:
+	_is_active = false
+	if _preview_mesh:
+		_preview_mesh.visible = false
+
+
+## Cancel current brush operation
+func _cancel_brush() -> void:
+	# Currently just hides preview
+	if _preview_mesh:
+		_preview_mesh.visible = false
+
+
+## Get current brush statistics
+func get_statistics() -> Dictionary:
+	return {
+		"active": _is_active,
+		"type": brush_type,
+		"size": brush_size,
+		"operation_mode": brush_operation_mode,
+		"total_presets": _brush_presets.size()
+	}

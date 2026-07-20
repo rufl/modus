@@ -1,0 +1,87 @@
+{
+	// Fine-tune weapon positioning and rotation per weapon
+	// Changes here are live-reloaded if enabled in settings
+	"weapon_adjustments": {
+		"Rifle": {
+			"position": {"x": 0, "y": -0.2, "z": 0.5},
+			"rotation": {"x": 5, "y": 0, "z": 0},
+			"scale": 1.0,
+			"muzzle_flash_offset": {"x": 0, "y": 0.1, "z": -0.8},
+			"tracer": {
+				"color": {"r": 1.0, "g": 0.9, "b": 0.3, "a": 1.0},
+				"width": 0.04
+			}
+		},
+		"Pistol": {
+			"position": {"x": 0.1, "y": -0.15, "z": 0.4},
+			"rotation": {"x": 0, "y": 0, "z": 0},
+			"scale": 1.0,
+			"muzzle_flash_offset": {"x": 0, "y": 0.05, "z": -0.5},
+			"tracer": {
+				"color": {"r": 1.0, "g": 0.8, "b": 0.2, "a": 1.0},
+				"width": 0.03
+			}
+		},
+		"Shotgun": {
+			"position": {"x": 0, "y": -0.25, "z": 0.45},
+			"rotation": {"x": 2, "y": 0, "z": 0},
+			"scale": 1.0,
+			"muzzle_flash_offset": {"x": 0, "y": 0.08, "z": -0.6},
+			"tracer": {
+				"color": {"r": 1.0, "g": 0.6, "b": 0.1, "a": 1.0},
+				"width": 0.06
+			}
+		},
+		"Machine Gun": {
+			"position": {"x": 0, "y": -0.2, "z": 0.5},
+			"rotation": {"x": 3, "y": 0, "z": 0},
+			"scale": 1.0,
+			"muzzle_flash_offset": {"x": 0, "y": 0.12, "z": -0.9},
+			"tracer": {
+				"color": {"r": 1.0, "g": 0.7, "b": 0.2, "a": 1.0},
+				"width": 0.035
+			}
+		},
+		"Rocket Launcher": {
+			"position": {"x": 0.05, "y": -0.3, "z": 0.4},
+			"rotation": {"x": 0, "y": 0, "z": 0},
+			"scale": 1.0,
+			"muzzle_flash_offset": {"x": 0, "y": 0, "z": -0.7},
+			"tracer": {
+				"color": {"r": 1.0, "g": 0.4, "b": 0.1, "a": 1.0},
+				"width": 0.08
+			}
+		},
+		"Railgun": {
+			"position": {"x": 0, "y": -0.18, "z": 0.5},
+			"rotation": {"x": 0, "y": 0, "z": 0},
+			"scale": 1.0,
+			"muzzle_flash_offset": {"x": 0, "y": 0.1, "z": -1.0},
+			"tracer": {
+				"color": {"r": 0.3, "g": 0.8, "b": 1.0, "a": 1.0},
+				"width": 0.1
+			}
+		}
+	},
+	
+	// Global muzzle flash settings
+	"muzzle_flash": {
+		"default_color": {"r": 1.0, "g": 0.6, "b": 0.2, "a": 1.0},
+		"default_scale": 1.0,
+		"particle_count": 20,
+		"lifetime": 0.15,
+		"spread": 15.0
+	},
+	
+	// Global tracer settings
+	"tracer": {
+		"default_color": {"r": 1.0, "g": 0.8, "b": 0.2, "a": 1.0},
+		"default_width": 0.05,
+		"lifetime": 0.1
+	},
+	
+	"hud_elements": {
+		"health_bar": {"position": "top_left", "opacity": 0.8},
+		"ammo_counter": {"position": "bottom_right", "opacity": 0.9}
+	}
+}

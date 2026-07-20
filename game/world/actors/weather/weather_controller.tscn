@@ -1,0 +1,79 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://cnghi8ye8reuj" path="res://game/world/actors/weather/weather_controller.gd" id="1_script"]
+
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_rain"]
+emission_shape = 3
+emission_box_extents = Vector3(20, 10, 20)
+direction = Vector3(0, -1, 0)
+spread = 5.0
+initial_velocity_min = 15.0
+initial_velocity_max = 20.0
+gravity = Vector3(0, 0, 0)
+color = Color(0.6, 0.7, 0.8, 0.5)
+collision_mode = 2
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rain_drop"]
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_color = Color(0.7, 0.8, 1, 0.6)
+billboard_mode = 2
+
+[sub_resource type="QuadMesh" id="QuadMesh_rain"]
+material = SubResource("StandardMaterial3D_rain_drop")
+size = Vector2(0.05, 0.5)
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_snow"]
+emission_shape = 3
+emission_box_extents = Vector3(20, 10, 20)
+direction = Vector3(0, -1, 0)
+spread = 20.0
+initial_velocity_min = 2.0
+initial_velocity_max = 5.0
+gravity = Vector3(0, -1, 0)
+turbulence_enabled = true
+turbulence_noise_strength = 2.0
+collision_mode = 2
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_snow_flake"]
+transparency = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_color = Color(1, 1, 1, 0.8)
+billboard_mode = 3
+particles_anim_h_frames = 1
+particles_anim_v_frames = 1
+particles_anim_loop = false
+
+[sub_resource type="QuadMesh" id="QuadMesh_snow"]
+material = SubResource("StandardMaterial3D_snow_flake")
+size = Vector2(0.1, 0.1)
+
+[node name="WeatherController" type="Node3D" node_paths=PackedStringArray("rain_particles", "snow_particles")]
+script = ExtResource("1_script")
+rain_particles = NodePath("RainParticles")
+snow_particles = NodePath("SnowParticles")
+
+[node name="RainParticles" type="GPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
+emitting = false
+amount = 1000
+lifetime = 1.5
+preprocess = 2.0
+process_material = SubResource("ParticleProcessMaterial_rain")
+draw_pass_1 = SubResource("QuadMesh_rain")
+
+[node name="SnowParticles" type="GPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
+emitting = false
+amount = 1000
+lifetime = 4.0
+preprocess = 2.0
+process_material = SubResource("ParticleProcessMaterial_snow")
+draw_pass_1 = SubResource("QuadMesh_snow")
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+bus = &"Ambience"

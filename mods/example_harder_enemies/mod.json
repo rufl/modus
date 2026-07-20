@@ -1,0 +1,21 @@
+{
+	"id": "example_harder_enemies",
+    "name": "Harder Enemies",
+    "version": "1.0.0",
+    "author": "Example",
+    "description": "Makes enemies tougher with more health and damage",
+    "priority": 100,
+    "enabled": false,
+    "dependencies": [],
+    "config_overrides": {
+        "enemies": {
+            "default": {
+                "health_multiplier": 1.5,
+                "damage_multiplier": 1.25,
+                "speed_multiplier": 1.1
+            }
+        }
+    },
+    "scripts": [],
+    "assets": {}
+}

@@ -1,0 +1,54 @@
+{
+  // Core system configuration for the game
+  // This file contains fundamental settings that affect the entire game
+  
+  "core": {
+    // Game state management
+    "state": {
+      "initial_state": "MENU",  // Starting state: MENU, LOADING, PLAYING, PAUSED, ENDED
+      "allow_pause": true,       // Whether the game can be paused
+      "pause_on_focus_loss": true // Auto-pause when window loses focus
+    },
+    
+    // Event system configuration
+    "events": {
+      "max_history": 100,        // Maximum number of events to keep in history
+      "enable_validation": true, // Validate event data against schemas
+      "log_events": false,       // Log all events to console (debug only)
+      "priority_levels": 10      // Number of priority levels for event listeners
+    },
+    
+    // Service locator settings
+    "services": {
+      "lazy_loading": true,      // Load services on-demand rather than at startup
+      "allow_override": false,   // Allow services to be replaced at runtime
+      "require_registration": true // Require explicit service registration
+    },
+    
+    // Configuration management
+    "config": {
+      "hot_reload": true,        // Enable hot-reloading in development mode
+      "validate_schemas": true,  // Validate config files against schemas
+      "cache_parsed": true,      // Cache parsed JSON5 files for performance
+      "fallback_to_defaults": true, // Use defaults when config values are invalid
+      "watch_files": true        // Watch config files for changes (dev mode)
+    },
+    
+    // Lifecycle management
+    "lifecycle": {
+      "startup_timeout": 10.0,   // Maximum seconds for initialization
+      "shutdown_timeout": 5.0,   // Maximum seconds for cleanup
+      "enable_profiling": false, // Profile initialization and frame times
+      "log_lifecycle": true      // Log lifecycle events (init, shutdown, etc.)
+    },
+    
+    // Debug settings
+    "debug": {
+      "verbose_logging": false,  // Enable detailed logging
+      "show_fps": false,         // Display FPS counter
+      "show_memory": false,      // Display memory usage
+      "enable_console": true,    // Enable in-game debug console
+      "log_level": "INFO"        // Logging level: DEBUG, INFO, WARN, ERROR
+    }
+  }
+}

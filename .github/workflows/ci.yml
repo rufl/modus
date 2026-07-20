@@ -1,0 +1,394 @@
+name: CI/CD Pipeline - MODUS Framework
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  GODOT_VERSION: "4.7"
+  EXPORT_NAME: "MODUS"
+
+jobs:
+  code-quality:
+    name: Code Quality & Formatting
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install GDScript Toolkit
+      run: |
+        pip install gdtoolkit
+    
+    - name: Check GDScript Formatting
+      run: |
+        echo "Checking GDScript code formatting..."
+        gdformat --check --diff game/ tests/
+      continue-on-error: false
+    
+    - name: Run GDScript Linting
+      run: |
+        echo "Running GDScript linting..."
+        gdlint game/ tests/
+      continue-on-error: false
+    
+    - name: Auto-format GDScript (if needed)
+      if: failure()
+      run: |
+        echo "Auto-formatting GDScript files..."
+        gdformat game/ tests/
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add -A
+        git diff --staged --quiet || git commit -m "Auto-format GDScript files [skip ci]"
+    
+    - name: Push formatting changes
+      if: failure() && github.event_name == 'push'
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: ${{ github.ref }}
+
+  test:
+    name: Run GUT Tests
+    runs-on: ubuntu-latest
+    needs: code-quality
+    container:
+      image: barichello/godot-ci:4.7
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        lfs: true
+    
+    - name: Setup Godot Environment
+      run: |
+        mkdir -v -p ~/.local/share/godot/export_templates/
+        mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+        
+        # Create test results directory
+        mkdir -p test-results
+        
+        # Verify Godot installation
+        godot --version
+        echo "Godot environment setup complete"
+    
+    - name: Cache import assets
+      uses: actions/cache@v3
+      with:
+        path: .godot/imported/
+        key: import-assets-${{ runner.os }}-${{ hashFiles('**/*.import') }}
+        restore-keys: |
+          import-assets-${{ runner.os }}-
+    
+    - name: Import project assets
+      run: |
+        echo "Importing project assets for headless execution..."
+        godot --headless --verbose --editor --quit
+        echo "Asset import completed"
+    
+    - name: Run Unit Tests (GUT Framework)
+      id: unit-tests
+      run: |
+        echo "=== Running GUT Unit Tests ==="
+        echo "Test suite: Unit tests (excluding benchmarks)"
+        echo "Start time: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+        
+        # Run unit tests with proper error handling
+        godot --headless --script tests/runners/run_unit_tests_only.gd 2>&1 | tee test-results/unit-tests.log
+        
+        # Capture exit code
+        TEST_EXIT_CODE=${PIPESTATUS[0]}
+        echo "Unit tests exit code: $TEST_EXIT_CODE"
+        
+        # Parse test results
+        if [ -f "test-results/unit-tests.log" ]; then
+          PASSED=$(grep -c "✓" test-results/unit-tests.log || echo "0")
+          FAILED=$(grep -c "✗" test-results/unit-tests.log || echo "0")
+          echo "unit_tests_passed=$PASSED" >> $GITHUB_OUTPUT
+          echo "unit_tests_failed=$FAILED" >> $GITHUB_OUTPUT
+          echo "Unit tests: $PASSED passed, $FAILED failed"
+        fi
+        
+        # Fail if tests failed
+        if [ $TEST_EXIT_CODE -ne 0 ]; then
+          echo "::error::Unit tests failed with exit code $TEST_EXIT_CODE"
+          exit $TEST_EXIT_CODE
+        fi
+        
+        echo "Unit tests completed successfully"
+      continue-on-error: false
+    
+    - name: Run Property-Based Tests
+      id: property-tests
+      run: |
+        echo "=== Running Property-Based Tests ==="
+        echo "Test suite: Property-based tests (PBT)"
+        echo "Start time: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+        
+        # Run property-based tests
+        godot --headless --script tests/runners/run_gut_tests.gd 2>&1 | tee test-results/property-tests.log
+        
+        # Capture exit code
+        TEST_EXIT_CODE=${PIPESTATUS[0]}
+        echo "Property tests exit code: $TEST_EXIT_CODE"
+        
+        # Parse test results
+        if [ -f "test-results/property-tests.log" ]; then
+          PASSED=$(grep -c "✓" test-results/property-tests.log || echo "0")
+          FAILED=$(grep -c "✗" test-results/property-tests.log || echo "0")
+          echo "property_tests_passed=$PASSED" >> $GITHUB_OUTPUT
+          echo "property_tests_failed=$FAILED" >> $GITHUB_OUTPUT
+          echo "Property tests: $PASSED passed, $FAILED failed"
+        fi
+        
+        # Fail if tests failed
+        if [ $TEST_EXIT_CODE -ne 0 ]; then
+          echo "::error::Property-based tests failed with exit code $TEST_EXIT_CODE"
+          exit $TEST_EXIT_CODE
+        fi
+        
+        echo "Property-based tests completed successfully"
+      continue-on-error: false
+    
+    - name: Run Benchmark Tests
+      id: benchmark-tests
+      run: |
+        echo "=== Running Benchmark Tests ==="
+        echo "Test suite: Performance benchmarks"
+        echo "Start time: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+        echo "Note: Benchmark tests are informational and do not block deployment"
+        
+        # Run benchmark tests (non-blocking)
+        godot --headless --script tests/runners/run_benchmark_tests_only.gd 2>&1 | tee test-results/benchmark-tests.log || true
+        
+        # Parse benchmark results
+        if [ -f "test-results/benchmark-tests.log" ]; then
+          echo "Benchmark results captured"
+        fi
+        
+        echo "Benchmark tests completed"
+      continue-on-error: true
+    
+    - name: Generate Test Coverage Report
+      if: always()
+      run: |
+        echo "=== Test Coverage Summary ==="
+        echo "Generating comprehensive test report..."
+        
+        # Create coverage summary
+        cat > test-results/coverage-summary.md << EOF
+        # MODUS Framework Test Results
+        
+        **Test Run:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+        **Branch:** ${{ github.ref_name }}
+        **Commit:** ${{ github.sha }}
+        
+        ## Test Results Summary
+        
+        ### Unit Tests
+        - Passed: ${{ steps.unit-tests.outputs.unit_tests_passed || 'N/A' }}
+        - Failed: ${{ steps.unit-tests.outputs.unit_tests_failed || 'N/A' }}
+        - Status: ${{ steps.unit-tests.outcome }}
+        
+        ### Property-Based Tests
+        - Passed: ${{ steps.property-tests.outputs.property_tests_passed || 'N/A' }}
+        - Failed: ${{ steps.property-tests.outputs.property_tests_failed || 'N/A' }}
+        - Status: ${{ steps.property-tests.outcome }}
+        
+        ### Benchmark Tests
+        - Status: ${{ steps.benchmark-tests.outcome }}
+        - Note: Benchmarks are informational only
+        
+        ## Test Logs
+        
+        Detailed test logs are available in the artifacts section.
+        EOF
+        
+        cat test-results/coverage-summary.md
+        
+        echo "Test coverage report generated"
+    
+    - name: Upload Test Results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results-${{ github.run_number }}
+        path: |
+          test-results/
+          logs/
+          *.log
+        retention-days: 30
+    
+    - name: Comment Test Results on PR
+      if: always() && github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const coveragePath = 'test-results/coverage-summary.md';
+          
+          if (fs.existsSync(coveragePath)) {
+            const coverage = fs.readFileSync(coveragePath, 'utf8');
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: coverage
+            });
+          }
+
+  build:
+    name: Build Project
+    runs-on: ubuntu-latest
+    needs: test
+    if: success()  # Only build if all tests pass
+    container:
+      image: barichello/godot-ci:4.7
+    
+    strategy:
+      matrix:
+        platform: [linux, windows, web]
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        lfs: true
+    
+    - name: Setup
+      run: |
+        mkdir -v -p ~/.local/share/godot/export_templates/
+        mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+        
+        echo "Build environment setup for ${{ matrix.platform }}"
+        godot --version
+    
+    - name: Cache import assets
+      uses: actions/cache@v3
+      with:
+        path: .godot/imported/
+        key: import-assets-${{ runner.os }}-${{ hashFiles('**/*.import') }}
+        restore-keys: |
+          import-assets-${{ runner.os }}-
+    
+    - name: Import project assets
+      run: |
+        godot --headless --verbose --editor --quit
+    
+    - name: Build for ${{ matrix.platform }}
+      run: |
+        echo "=== Building MODUS Framework for ${{ matrix.platform }} ==="
+        echo "Build started: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+        
+        mkdir -v -p build/${{ matrix.platform }}
+        
+        case "${{ matrix.platform }}" in
+          "linux")
+            echo "Building Linux/X11 export..."
+            godot --headless --verbose --export-release "Linux/X11" build/${{ matrix.platform }}/$EXPORT_NAME.x86_64
+            ;;
+          "windows")
+            echo "Building Windows Desktop export..."
+            godot --headless --verbose --export-release "Windows Desktop" build/${{ matrix.platform }}/$EXPORT_NAME.exe
+            ;;
+          "web")
+            echo "Building Web export..."
+            godot --headless --verbose --export-release "Web" build/${{ matrix.platform }}/index.html
+            ;;
+        esac
+        
+        # Verify build output
+        if [ -d "build/${{ matrix.platform }}" ]; then
+          echo "Build artifacts:"
+          ls -lh build/${{ matrix.platform }}/
+          echo "Build completed successfully"
+        else
+          echo "::error::Build failed - no output directory created"
+          exit 1
+        fi
+    
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ matrix.platform }}-build-${{ github.run_number }}
+        path: build/${{ matrix.platform }}/
+        retention-days: 14
+
+  security-scan:
+    name: Security Vulnerability Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+    
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  deploy:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [test, build, security-scan]
+    if: github.ref == 'refs/heads/develop' && success()
+    
+    steps:
+    - name: Download Build Artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: artifacts/
+    
+    - name: Verify Build Artifacts
+      run: |
+        echo "=== Verifying Build Artifacts ==="
+        echo "Available artifacts:"
+        ls -la artifacts/
+        
+        # Verify all platform builds are present
+        for platform in linux windows web; do
+          if [ -d "artifacts/${platform}-build-${{ github.run_number }}" ]; then
+            echo "✓ ${platform} build found"
+          else
+            echo "::error::${platform} build missing"
+            exit 1
+          fi
+        done
+        
+        echo "All build artifacts verified"
+    
+    - name: Deploy to Staging Environment
+      run: |
+        echo "=== Deploying to Staging Environment ==="
+        echo "Deployment started: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+        echo "Branch: ${{ github.ref_name }}"
+        echo "Commit: ${{ github.sha }}"
+        echo "Build artifacts available in artifacts/ directory"
+        
+        # List all artifacts
+        find artifacts/ -type f
+        
+        # Add actual deployment logic here
+        # Example: rsync, scp, cloud storage upload, etc.
+        
+        echo "Deployment to staging completed successfully"

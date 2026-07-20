@@ -1,0 +1,22 @@
+[gd_scene load_steps=3 format=3 uid="uid://breakable_wood_plank"]
+
+[ext_resource type="Script" path="res://game/world/actors/props/breakable_wood_panel.gd" id="1"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_1"]
+size = Vector3(1.5, 0.05, 0.3)
+
+[node name="WoodPlank" type="StaticBody3D"]
+script = ExtResource("1")
+prop_type = "plank"
+prop_name = "Wood Plank"
+max_health = 30.0
+wood_type = "plank"
+panel_thickness = 0.05
+splinter_count = 10
+wood_color = Color(0.6, 0.4, 0.2, 1.0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_1")

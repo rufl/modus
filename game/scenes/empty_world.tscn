@@ -1,0 +1,17 @@
+[gd_scene format=3]
+
+[node name="World" type="Node3D"]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 10, 0)
+shadow_enabled = true
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0, 5, 10)
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+
+[node name="Label" type="Label" parent="."]
+offset_right = 400.0
+offset_bottom = 100.0
+text = "Empty World Scene - Replace with actual world.tscn after fixing dependencies"

@@ -1,0 +1,45 @@
+[gd_scene load_steps=2 format=3 uid="uid://item_tooltip"]
+
+[ext_resource type="Script" path="res://game/ui/hud/item_tooltip.gd" id="1_tooltip"]
+
+[node name="ItemTooltip" type="Control"]
+z_index = 100
+script = ExtResource("1_tooltip")
+
+[node name="Background" type="Panel" parent="."]
+custom_minimum_size = Vector2(200, 100)
+layout_mode = 1
+anchors_preset = 0
+offset_right = 200.0
+offset_bottom = 150.0
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 192.0
+offset_bottom = 142.0
+
+[node name="ItemName" type="Label" parent="VBox"]
+layout_mode = 2
+text = "Item Name"
+
+[node name="ItemType" type="Label" parent="VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "Common Weapon"
+
+[node name="HSeparator" type="HSeparator" parent="VBox"]
+layout_mode = 2
+
+[node name="Description" type="Label" parent="VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.8, 0.7, 1)
+theme_override_font_sizes/font_size = 11
+text = "Item description goes here."
+autowrap_mode = 2
+
+[node name="Stats" type="VBoxContainer" parent="VBox"]
+layout_mode = 2

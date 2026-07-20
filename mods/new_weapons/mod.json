@@ -1,0 +1,67 @@
+{
+    "name": "New Weapons Pack",
+    "id": "new_weapons",
+    "version": "1.0.0",
+    "author": "Template Team",
+    "description": "Adds new weapon types with unique stats and behaviors",
+    "priority": 100,
+    "dependencies": [],
+    "enabled": false,
+    "config_overrides": {
+        "weapons": {
+            "laser_rifle": {
+                "name": "Laser Rifle",
+                "damage": 50,
+                "fire_rate": 5.0,
+                "accuracy": 0.98,
+                "ammo_type": "energy",
+                "max_ammo": 100,
+                "reload_time": 2.0,
+                "weapon_slot": 7,
+                "auto_fire": true,
+                "muzzle_flash": true
+            },
+            "plasma_gun": {
+                "name": "Plasma Gun",
+                "damage": 80,
+                "fire_rate": 3.0,
+                "accuracy": 0.95,
+                "ammo_type": "plasma",
+                "max_ammo": 50,
+                "reload_time": 2.5,
+                "weapon_slot": 8,
+                "auto_fire": false,
+                "projectile_speed": 25.0,
+                "splash_damage": 40,
+                "splash_radius": 64.0
+            },
+            "minigun": {
+                "name": "Minigun",
+                "damage": 12,
+                "fire_rate": 15.0,
+                "accuracy": 0.75,
+                "ammo_type": "bullets",
+                "max_ammo": 500,
+                "reload_time": 4.0,
+                "weapon_slot": 9,
+                "auto_fire": true,
+                "spin_up_time": 0.8,
+                "spin_down_time": 1.2,
+                "eject_casings": true,
+                "muzzle_flash": true
+            }
+        },
+        "ammo_types": {
+            "energy": {
+                "name": "Energy Cells",
+                "max_capacity": 200,
+                "pickup_amount": 20
+            },
+            "plasma": {
+                "name": "Plasma Cells",
+                "max_capacity": 100,
+                "pickup_amount": 10
+            }
+        }
+    }
+}

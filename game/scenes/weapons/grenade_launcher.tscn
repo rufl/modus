@@ -1,0 +1,15 @@
+[gd_scene load_steps=4 format=3 uid="uid://grenade_launcher"]
+
+[ext_resource type="Script" path="res://game/weapons/grenade_launcher.gd" id="1_grenade"]
+[ext_resource type="Script" path="res://game/weapons/weapon_feedback_system.gd" id="2_feedback"]
+[ext_resource type="Script" path="res://game/weapons/weapon_effects.gd" id="3_effects"]
+
+[node name="GrenadeLauncher" type="Node3D"]
+script = ExtResource("1_grenade")
+
+[node name="WeaponFeedbackSystem" type="Node3D" parent="."]
+script = ExtResource("2_feedback")
+
+[node name="WeaponEffects" type="Node3D" parent="."]
+script = ExtResource("3_effects")
+eject_cartridges = false

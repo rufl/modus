@@ -1,0 +1,68 @@
+[gd_scene load_steps=4 format=3 uid="uid://cwg6lxpn5ymv8"]
+
+[ext_resource type="Script" path="res://game/ui/hud/progression_hud.gd" id="1_prog_hud"]
+[ext_resource type="PackedScene" path="res://game/ui/hud/mission_objectives.tscn" id="3_mission_hud"]
+
+[node name="ProgressionHUD" type="Control"]
+layout_mode = 3
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -100.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+script = ExtResource("1_prog_hud")
+
+[node name="MissionObjectives" parent="." instance=ExtResource("3_mission_hud")]
+layout_mode = 1
+anchors_preset = 0
+offset_left = 20.0
+offset_top = 100.0
+offset_right = 420.0
+offset_bottom = 300.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -150.0
+offset_top = -80.0
+offset_right = 150.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="LevelLabel" type="Label" parent="VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Level 1"
+theme_override_font_sizes/font_size = 18
+
+[node name="SkillPointsLabel" type="Label" parent="VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Skill Points: 0"
+horizontal_alignment = 2
+theme_override_font_sizes/font_size = 16
+
+[node name="XPBar" type="ProgressBar" parent="VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 25)
+layout_mode = 2
+max_value = 100.0
+value = 0.0
+show_percentage = false
+
+[node name="XPLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "XP: 0 / 100"
+theme_override_font_sizes/font_size = 14

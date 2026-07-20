@@ -1,0 +1,26 @@
+{
+	"name": "urban",
+	"description": "Urban environment with building-like rectangular shapes",
+	"room_metadata": {
+		"small": {
+			"lighting_intensity": 0.9,
+			"wall_height": 3.0
+		},
+		"medium": {
+			"lighting_intensity": 0.8,
+			"wall_height": 3.5
+		},
+		"large": {
+			"lighting_intensity": 0.7,
+			"wall_height": 4.0
+		},
+		"boss_arena": {
+			"lighting_intensity": 1.0,
+			"wall_height": 5.0
+		}
+	},
+	"shape_adjustments": {
+		"complexity_multiplier": 0.8,
+		"min_spacing": 2
+	}
+}

@@ -1,0 +1,121 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://bgtqd7m7e27oq" path="res://game/world/maps/visual_tweaking_lab.gd" id="1_vizlab"]
+[ext_resource type="PackedScene" path="res://game/entities/enemies/enemy.tscn" id="2_enemy"]
+[ext_resource type="Script" uid="uid://d33g5b53oagy1" path="res://game/entities/enemies/enemy.gd" id="3_enemyscript"]
+
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_button"]
+size = Vector3(2, 0.5, 2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_floor"]
+albedo_color = Color(0.15, 0.15, 0.2, 1)
+
+[node name="VisualTweakingLab" type="Node3D"]
+script = ExtResource("1_vizlab")
+
+[node name="LabFloor" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+use_collision = true
+size = Vector3(20, 1, 20)
+material = SubResource("StandardMaterial3D_floor")
+
+[node name="Walls" type="Node3D" parent="."]
+
+[node name="WallN" type="CSGBox3D" parent="Walls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -10)
+use_collision = true
+size = Vector3(20, 3, 0.5)
+
+[node name="WallS" type="CSGBox3D" parent="Walls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 10)
+use_collision = true
+size = Vector3(20, 3, 0.5)
+
+[node name="WallE" type="CSGBox3D" parent="Walls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 1.5, 0)
+use_collision = true
+size = Vector3(0.5, 3, 20)
+
+[node name="WallW" type="CSGBox3D" parent="Walls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 1.5, 0)
+use_collision = true
+size = Vector3(0.5, 3, 20)
+
+[node name="EnemySpawnPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.5, 0)
+
+[node name="ProjectileSpawnPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 1.5, 0)
+
+[node name="StatusLabel" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, -9)
+text = "Visual Tweaking Lab
+Press E on button to reload config"
+font_size = 32
+modulate = Color(0.5, 1, 0.5, 1)
+
+[node name="InstructionsLabel" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, -9)
+text = "Edit game/config/performance/visuals.json5
+Then step on the reload button"
+font_size = 20
+
+[node name="ReloadButtonArea" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, -5)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ReloadButtonArea"]
+shape = SubResource("BoxShape3D_button")
+
+[node name="ButtonVisual" type="CSGBox3D" parent="ReloadButtonArea"]
+size = Vector3(2, 0.3, 2)
+material_override = null
+
+[node name="ButtonLabel" type="Label3D" parent="ReloadButtonArea"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+text = "RELOAD CONFIG"
+font_size = 24
+modulate = Color(1, 1, 0, 1)
+
+[node name="ParticlePreview" type="GPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 5)
+emitting = true
+amount = 50
+lifetime = 2.0
+visibility_aabb = AABB(-2, -2, -2, 4, 4, 4)
+
+[node name="ParticleLabel" type="Label3D" parent="ParticlePreview"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+text = "Particle Preview
+(Controlled by visuals.json5)"
+font_size = 18
+
+[node name="PreviewEnemy" type="CharacterBody3D" parent="." instance=ExtResource("2_enemy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.5, 0)
+collision_layer = 4
+script = ExtResource("3_enemyscript")
+enemy_id = "dummy_bot"
+is_ai_active = false
+ai_state_name = "Idle"
+
+[node name="EnemyLabel" type="Label3D" parent="PreviewEnemy"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+billboard = 1
+text = "Preview Enemy
+(Respawns on config reload)"
+font_size = 18
+
+[node name="TargetDummy" type="CharacterBody3D" parent="." instance=ExtResource("2_enemy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0.5, 0)
+collision_layer = 4
+script = ExtResource("3_enemyscript")
+enemy_id = "dummy_bot"
+is_ai_active = false
+ai_state_name = "Idle"
+
+[node name="TargetLabel" type="Label3D" parent="TargetDummy"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+billboard = 1
+text = "Target Dummy
+(Test projectiles here)"
+font_size = 18

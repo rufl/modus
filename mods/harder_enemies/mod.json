@@ -1,0 +1,33 @@
+{
+    "name": "Harder Enemies",
+    "id": "harder_enemies",
+    "version": "1.0.0",
+    "author": "Template Team",
+    "description": "Increases enemy health, damage, and speed for a greater challenge",
+    "priority": 100,
+    "dependencies": [],
+    "enabled": false,
+    "config_overrides": {
+        "enemies": {
+            "troo": {
+                "health": 120,
+                "damage": 30,
+                "speed": 10.0,
+                "attack_range": 80.0
+            },
+            "cpos": {
+                "health": 140,
+                "damage": 20,
+                "fire_rate": 0.1,
+                "accuracy": 0.9,
+                "speed": 7.0
+            },
+            "pain": {
+                "health": 600,
+                "speed": 5.0,
+                "max_spawns": 5,
+                "spawn_cooldown": 1.5
+            }
+        }
+    }
+}

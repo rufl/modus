@@ -1,0 +1,53 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://dpn6y81kganq1" path="res://game/world/actors/hazards/spikes.gd" id="1_spikes"]
+
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_spikes"]
+size = Vector3(2, 0.5, 2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_spikes"]
+albedo_color = Color(0.8, 0.1, 0.1, 1)
+
+[node name="Spikes" type="Area3D"]
+collision_layer = 0
+collision_mask = 6
+script = ExtResource("1_spikes")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
+shape = SubResource("BoxShape3D_spikes")
+
+[node name="MeshInstance3D" type="Node3D" parent="."]
+
+[node name="Base" type="CSGBox3D" parent="MeshInstance3D"]
+size = Vector3(2, 0.1, 2)
+material_override = null
+
+[node name="Spike1" type="CSGCylinder3D" parent="MeshInstance3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, 0.3, -0.5)
+radius = 0.1
+height = 0.6
+cone = true
+material_override = SubResource("StandardMaterial3D_spikes")
+
+[node name="Spike2" type="CSGCylinder3D" parent="MeshInstance3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0.3, -0.5)
+radius = 0.1
+height = 0.6
+cone = true
+material_override = SubResource("StandardMaterial3D_spikes")
+
+[node name="Spike3" type="CSGCylinder3D" parent="MeshInstance3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, 0.3, 0.5)
+radius = 0.1
+height = 0.6
+cone = true
+material_override = SubResource("StandardMaterial3D_spikes")
+
+[node name="Spike4" type="CSGCylinder3D" parent="MeshInstance3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0.3, 0.5)
+radius = 0.1
+height = 0.6
+cone = true
+material_override = SubResource("StandardMaterial3D_spikes")

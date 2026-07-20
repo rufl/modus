@@ -1,0 +1,87 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="PackedScene" path="res://game/scenes/environment/hazards/spikes.tscn" id="1_spikes"]
+[ext_resource type="PackedScene" path="res://game/scenes/environment/hazards/crusher.tscn" id="2_crusher"]
+[ext_resource type="PackedScene" path="res://game/scenes/environment/hazards/turret.tscn" id="3_turret"]
+[ext_resource type="PackedScene" path="res://game/scenes/environment/hazards/hazard_volume.tscn" id="4_hazard"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_floor"]
+albedo_color = Color(0.25, 0.15, 0.15, 1)
+
+[node name="HazardsArena" type="Node3D"]
+
+[node name="Floor" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+use_collision = true
+size = Vector3(25, 1, 20)
+material = SubResource("StandardMaterial3D_floor")
+
+[node name="TitleLabel" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, -9)
+text = "Hazards Arena
+All Hazard Types"
+font_size = 32
+modulate = Color(1, 0.3, 0.3, 1)
+
+[node name="SpikesSection" type="Node3D" parent="."]
+
+[node name="Label" type="Label3D" parent="SpikesSection"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 1.5, -5)
+text = "Spikes"
+font_size = 20
+
+[node name="Spikes" parent="SpikesSection" instance=ExtResource("1_spikes")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0, -5)
+
+[node name="CrusherSection" type="Node3D" parent="."]
+
+[node name="Label" type="Label3D" parent="CrusherSection"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 3, -5)
+text = "Crusher"
+font_size = 20
+
+[node name="Crusher" parent="CrusherSection" instance=ExtResource("2_crusher")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, -5)
+
+[node name="TurretSection" type="Node3D" parent="."]
+
+[node name="Label" type="Label3D" parent="TurretSection"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 2, -5)
+text = "Turret"
+font_size = 20
+
+[node name="Turret" parent="TurretSection" instance=ExtResource("3_turret")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, -5)
+
+[node name="LavaSection" type="Node3D" parent="."]
+
+[node name="Label" type="Label3D" parent="LavaSection"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 1.5, -5)
+text = "Lava Pit"
+font_size = 20
+
+[node name="LavaPit" parent="LavaSection" instance=ExtResource("4_hazard")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, -5)
+
+[node name="DamageFloorSection" type="Node3D" parent="."]
+
+[node name="Label" type="Label3D" parent="DamageFloorSection"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 3)
+text = "Damage Floor"
+font_size = 20
+
+[node name="DamageFloor" parent="DamageFloorSection" instance=ExtResource("4_hazard")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 5)
+
+[node name="SafeZone" type="Node3D" parent="."]
+
+[node name="SafeLabel" type="Label3D" parent="SafeZone"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 9)
+text = "Safe Zone"
+font_size = 18
+modulate = Color(0, 1, 0, 1)
+
+[node name="SafePlatform" type="CSGBox3D" parent="SafeZone"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 9)
+use_collision = true
+size = Vector3(6, 0.2, 3)

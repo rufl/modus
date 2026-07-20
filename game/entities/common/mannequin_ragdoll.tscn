@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://mannequin_ragdoll"]
+
+[ext_resource type="Script" path="res://game/entities/common/mannequin_ragdoll.gd" id="1_script"]
+
+[node name="MannequinRagdoll" type="Node3D"]
+script = ExtResource("1_script")

@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "GDLint Project-Wide",
+  "description": "Runs gdlint on all GDScript files in the project to check for style issues and potential problems across the entire codebase",
+  "version": "1",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Run gdlint on all GDScript files in the project to check for style issues. Use the command: find . -name '*.gd' -not -path './addons/*' -not -path './.godot/*' | xargs gdlint"
+  }
+}

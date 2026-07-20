@@ -1,0 +1,36 @@
+{
+  // Debug Configuration
+  // Controls debug output and development features
+  // Set values to false for production builds
+  
+  // Skeleton and Animation Debug
+  "skeleton_setup": false,        // Log skeleton loading and animation setup
+  "animation_verbose": false,     // Log animation state changes
+  
+  // Network Debug
+  "network_verbose": false,       // Log network events and RPC calls
+  "network_sync_debug": false,    // Log synchronization details
+  
+  // Physics Debug
+  "physics_debug": false,         // Show physics collision shapes
+  "raycast_debug": false,         // Visualize raycasts
+  
+  // AI Debug
+  "ai_verbose": false,            // Log AI state changes
+  "pathfinding_debug": false,     // Visualize navigation paths
+  
+  // Performance Debug
+  "show_fps_overlay": true,       // Show FPS counter
+  "show_memory_stats": false,     // Show memory usage
+  "lod_debug": false,             // Log LOD level changes
+  
+  // Combat Debug
+  "damage_numbers": true,         // Show floating damage numbers
+  "hitbox_debug": false,          // Visualize hitboxes
+  
+  // Editor Debug
+  "editor_verbose": false,        // Log editor operations
+  
+  // General
+  "verbose_logging": false        // Enable verbose logging globally
+}

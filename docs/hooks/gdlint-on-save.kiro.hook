@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "GDLint on Save",
+  "description": "Automatically runs gdlint on GDScript files when they are saved to check for style issues and potential problems",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "*.gd"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Run gdlint on the edited GDScript file to check for style issues and report any problems found. Use the command: gdlint [filename]"
+  }
+}

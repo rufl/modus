@@ -1,0 +1,129 @@
+[gd_scene format=3 uid="uid://df4m8k2vnrp5q"]
+
+[ext_resource type="Script" path="res://game/code/ui/menus/mod_manager_ui.gd" id="1_script"]
+
+[node name="ModManagerUI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Background" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+modulate = Color(0, 0, 0, 0.8)
+
+[node name="MainContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -400.0
+offset_top = -250.0
+offset_right = 400.0
+offset_bottom = 250.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 20
+
+[node name="LeftPanel" type="VBoxContainer" parent="MainContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="MainContainer/LeftPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "Mod Manager"
+horizontal_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MainContainer/LeftPanel"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ModList" type="VBoxContainer" parent="MainContainer/LeftPanel/ScrollContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 5
+
+[node name="ButtonRow" type="HBoxContainer" parent="MainContainer/LeftPanel"]
+layout_mode = 2
+
+[node name="MoveUpButton" type="Button" parent="MainContainer/LeftPanel/ButtonRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "▲ Move Up"
+
+[node name="MoveDownButton" type="Button" parent="MainContainer/LeftPanel/ButtonRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "▼ Move Down"
+
+[node name="RightPanel" type="VBoxContainer" parent="MainContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="InfoTitle" type="Label" parent="MainContainer/RightPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Mod Information"
+horizontal_alignment = 1
+
+[node name="InfoPanel" type="PanelContainer" parent="MainContainer/RightPanel"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="InfoVBox" type="VBoxContainer" parent="MainContainer/RightPanel/InfoPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="DescriptionLabel" type="Label" parent="MainContainer/RightPanel/InfoPanel/InfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Select a mod to view details"
+autowrap_mode = 2
+
+[node name="AuthorLabel" type="Label" parent="MainContainer/RightPanel/InfoPanel/InfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+text = "Author: -"
+
+[node name="VersionLabel" type="Label" parent="MainContainer/RightPanel/InfoPanel/InfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+text = "Version: -"
+
+[node name="ActionButtons" type="HBoxContainer" parent="MainContainer/RightPanel"]
+layout_mode = 2
+
+[node name="EnableButton" type="Button" parent="MainContainer/RightPanel/ActionButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Enable/Disable"
+
+[node name="ReloadButton" type="Button" parent="MainContainer/RightPanel/ActionButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Reload Mods"
+
+[node name="CloseButton" type="Button" parent="MainContainer/RightPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Close"

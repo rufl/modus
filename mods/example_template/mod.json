@@ -1,0 +1,46 @@
+{
+	"id": "example_template",
+    "name": "Mod Template",
+    "version": "1.0.0",
+    "author": "Your Name",
+    "description": "A complete template mod showing all features",
+    "priority": 100,
+    "enabled": false,
+    "dependencies": [],
+    "config_overrides": {
+        "systems": {
+            "gore": true,
+            "dismemberment": true,
+            "dodge": true
+        },
+        "weapons": {
+            "pistol": {
+                "damage": 25,
+                "fire_rate": 0.2,
+                "magazine_size": 15
+            }
+        },
+        "enemies": {
+            "zombie": {
+                "health": 100,
+                "damage": 10,
+                "speed": 3.0
+            }
+        },
+        "loot": {
+            "drop_rate_multiplier": 1.0,
+            "rare_chance_bonus": 0.0
+        }
+    },
+    "scripts": [
+        "scripts/main.gd"
+    ],
+    "assets": {
+        "textures": {
+            "res://game/art/textures/enemy.png": "assets/textures/custom_enemy.png"
+        },
+        "audio": {
+            "res://game/art/audio/gunshot.ogg": "assets/audio/custom_gunshot.ogg"
+        }
+    }
+}

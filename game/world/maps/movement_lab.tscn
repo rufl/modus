@@ -1,0 +1,129 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://bhmn2liu3levx" path="res://game/world/maps/movement_lab_controller.gd" id="1_movlab"]
+
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ramp"]
+albedo_color = Color(0.3, 0.3, 0.35, 1)
+
+[node name="MovementLab" type="Node3D"]
+script = ExtResource("1_movlab")
+
+[node name="LabFloor" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+use_collision = true
+size = Vector3(30, 1, 20)
+
+[node name="TitleLabel" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, -9)
+text = "Movement Lab
+Test Bunny Hopping & Strafe Running"
+font_size = 32
+modulate = Color(0.5, 0.8, 1, 1)
+
+[node name="SpeedLabel" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 2, 0)
+text = "Speed: 0.0 u/s
+Peak: 0.0 u/s"
+font_size = 24
+modulate = Color(1, 1, 1, 1)
+
+[node name="BhopCounterLabel" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 1.2, 0)
+text = "Bhops: 0"
+font_size = 20
+
+[node name="TechniqueLabel" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0.5, 0)
+text = ""
+font_size = 28
+modulate = Color(0, 1, 1, 1)
+
+[node name="Ramps" type="Node3D" parent="."]
+
+[node name="Ramp15Deg" type="CSGBox3D" parent="Ramps"]
+transform = Transform3D(1, 0, 0, 0, 0.965926, 0.258819, 0, -0.258819, 0.965926, -8, 1, 5)
+use_collision = true
+size = Vector3(4, 0.5, 8)
+material = SubResource("StandardMaterial3D_ramp")
+
+[node name="Ramp15Label" type="Label3D" parent="Ramps/Ramp15Deg"]
+transform = Transform3D(1, 0, 0, 0, 0.965926, -0.258819, 0, 0.258819, 0.965926, 0, 1, 0)
+text = "15°"
+font_size = 24
+
+[node name="Ramp30Deg" type="CSGBox3D" parent="Ramps"]
+transform = Transform3D(1, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0, 1.5, 5)
+use_collision = true
+size = Vector3(4, 0.5, 8)
+material = SubResource("StandardMaterial3D_ramp")
+
+[node name="Ramp30Label" type="Label3D" parent="Ramps/Ramp30Deg"]
+transform = Transform3D(1, 0, 0, 0, 0.866025, -0.5, 0, 0.5, 0.866025, 0, 1, 0)
+text = "30°"
+font_size = 24
+
+[node name="Ramp45Deg" type="CSGBox3D" parent="Ramps"]
+transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 8, 2, 5)
+use_collision = true
+size = Vector3(4, 0.5, 8)
+material = SubResource("StandardMaterial3D_ramp")
+
+[node name="Ramp45Label" type="Label3D" parent="Ramps/Ramp45Deg"]
+transform = Transform3D(1, 0, 0, 0, 0.707107, -0.707107, 0, 0.707107, 0.707107, 0, 1, 0)
+text = "45°"
+font_size = 24
+
+[node name="BhopCourse" type="Node3D" parent="."]
+
+[node name="CourseStart" type="Marker3D" parent="BhopCourse"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 0, -5)
+
+[node name="CourseMarker1" type="CSGBox3D" parent="BhopCourse"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0.1, -5)
+use_collision = true
+size = Vector3(1, 0.2, 3)
+
+[node name="CourseMarker2" type="CSGBox3D" parent="BhopCourse"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0.1, -5)
+use_collision = true
+size = Vector3(1, 0.2, 3)
+
+[node name="CourseMarker3" type="CSGBox3D" parent="BhopCourse"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0.1, -5)
+use_collision = true
+size = Vector3(1, 0.2, 3)
+
+[node name="CourseMarker4" type="CSGBox3D" parent="BhopCourse"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0.1, -5)
+use_collision = true
+size = Vector3(1, 0.2, 3)
+
+[node name="CourseEnd" type="CSGBox3D" parent="BhopCourse"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0.1, -5)
+use_collision = true
+size = Vector3(2, 0.2, 3)
+
+[node name="CourseEndLabel" type="Label3D" parent="BhopCourse/CourseEnd"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+text = "FINISH"
+font_size = 24
+modulate = Color(0, 1, 0, 1)
+
+[node name="StrafeCorridor" type="Node3D" parent="."]
+
+[node name="CorridorWallL" type="CSGBox3D" parent="StrafeCorridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 1, 0)
+use_collision = true
+size = Vector3(0.5, 2, 15)
+
+[node name="CorridorWallR" type="CSGBox3D" parent="StrafeCorridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 1, 0)
+use_collision = true
+size = Vector3(0.5, 2, 15)
+
+[node name="CorridorLabel" type="Label3D" parent="StrafeCorridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, -7)
+text = "Strafe Corridor
+Practice air control"
+font_size = 18

@@ -1,0 +1,103 @@
+[gd_scene load_steps=2 format=3 uid="uid://bvqx8ywj3qn7h"]
+
+[ext_resource type="Script" path="res://game/ui/menus/skill_tree_ui.gd" id="1_skill_tree"]
+
+[node name="SkillTreeUI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_skill_tree")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -400.0
+offset_top = -300.0
+offset_right = 400.0
+offset_bottom = 300.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Header" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="SkillPointsLabel" type="Label" parent="Panel/VBoxContainer/Header"]
+layout_mode = 2
+text = "Skill Points: 0"
+
+[node name="PlayerLevelLabel" type="Label" parent="Panel/VBoxContainer/Header"]
+layout_mode = 2
+text = "Level: 1"
+
+[node name="CloseButton" type="Button" parent="Panel/VBoxContainer/Header"]
+layout_mode = 2
+text = "Close"
+
+[node name="CategoryTabs" type="TabContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Footer" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="ResetButton" type="Button" parent="Panel/VBoxContainer/Footer"]
+layout_mode = 2
+text = "Reset Skills"
+
+[node name="SkillDetailPanel" type="Panel" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -200.0
+offset_bottom = 200.0
+grow_horizontal = 0
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="SkillDetailPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="SkillName" type="Label" parent="SkillDetailPanel/VBox"]
+layout_mode = 2
+text = "Skill Name"
+
+[node name="Description" type="RichTextLabel" parent="SkillDetailPanel/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+text = "Skill description"
+
+[node name="LevelInfo" type="Label" parent="SkillDetailPanel/VBox"]
+layout_mode = 2
+text = "Level: 0 / 5"
+
+[node name="Requirements" type="Label" parent="SkillDetailPanel/VBox"]
+layout_mode = 2
+text = "Requirements: None"
+
+[node name="UnlockButton" type="Button" parent="SkillDetailPanel/VBox"]
+layout_mode = 2
+text = "Unlock"

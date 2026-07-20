@@ -1,0 +1,100 @@
+// Local Splitscreen Multiplayer Configuration
+// Feature: local-splitscreen-multiplayer
+// Enables 4-6 players to play simultaneously on a single device using individual gamepads
+
+{
+  // Feature toggle - set to false to completely disable splitscreen functionality
+  "enabled": true,
+  
+  // Player count settings
+  "min_players": 4,
+  "max_players": 6,
+  "default_player_count": 4,
+  
+  // Session settings
+  "session_timeout_seconds": 300,
+  "auto_pause_on_disconnect": true,
+  
+  // Viewport configuration
+  "viewport": {
+    // Layout options: "auto", "2x2", "2x3", "3x2"
+    // "auto" automatically selects best layout based on player count
+    "default_layout": "auto",
+    
+    // Maximum allowed aspect ratio variance between viewports (0.05 = 5%)
+    "aspect_ratio_variance_threshold": 0.05,
+    
+    // Background color for viewport borders
+    "clear_color": "#000000",
+    
+    // Multi-sample anti-aliasing: "disabled", "2x", "4x", "8x"
+    "msaa": "2x",
+    
+    // Fast approximate anti-aliasing
+    "fxaa": true,
+    
+    // Shadow quality per viewport: "low", "medium", "high"
+    "shadow_quality": "medium"
+  },
+  
+  // Performance settings
+  "performance": {
+    // Target frames per second
+    "target_fps": 60,
+    
+    // Acceptable FPS variance (0.1 = 10%)
+    "fps_variance_threshold": 0.1,
+    
+    // Enable automatic quality adjustment to maintain target FPS
+    "adaptive_quality_enabled": true,
+    
+    // How often to check and adjust quality (in seconds)
+    "quality_adjustment_interval_seconds": 5.0,
+    
+    // Quality presets for adaptive scaling
+    "quality_levels": {
+      "high": {
+        "msaa": "4x",
+        "shadow_quality": "high",
+        "render_scale": 1.0
+      },
+      "medium": {
+        "msaa": "2x",
+        "shadow_quality": "medium",
+        "render_scale": 0.85
+      },
+      "low": {
+        "msaa": "disabled",
+        "shadow_quality": "low",
+        "render_scale": 0.7
+      }
+    }
+  },
+  
+  // Input settings
+  "input": {
+    // Maximum time to wait for all players to assign gamepads (in seconds)
+    "assignment_timeout_seconds": 30,
+    
+    // Enable gamepad vibration feedback
+    "vibration_enabled": true,
+    
+    // Analog stick deadzone (0.0 - 1.0)
+    "analog_deadzone": 0.15,
+    
+    // Trigger activation threshold (0.0 - 1.0)
+    "trigger_threshold": 0.1
+  },
+  
+  // UI settings
+  "ui": {
+    // Show player number labels in each viewport
+    "show_player_labels": true,
+    
+    // Show gamepad device indicators
+    "show_device_indicators": true,
+    
+    // Theme for assignment UI: "default"
+    "assignment_ui_theme": "default"
+  }
+}

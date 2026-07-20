@@ -1,0 +1,23 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" uid="uid://cyotmmc7piyvh" path="res://game/art/shaders/retro_water.gdshader" id="1_water"]
+
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_water")
+shader_parameter/shallow_color = Color(0.15, 0.5, 0.65, 0.7)
+shader_parameter/deep_color = Color(0.05, 0.2, 0.35, 0.85)
+shader_parameter/color_depth_factor = 1.0
+shader_parameter/wave_speed = 1.0
+shader_parameter/wave_scale = 0.3
+shader_parameter/wave_amplitude = 0.1
+shader_parameter/wave_direction = Vector2(1, 0.5)
+shader_parameter/distortion_strength = 0.05
+shader_parameter/noise_scale = 2.0
+shader_parameter/fresnel_power = 3.0
+shader_parameter/fresnel_opacity = 0.5
+shader_parameter/foam_enabled = true
+shader_parameter/foam_color = Color(1, 1, 1, 0.8)
+shader_parameter/foam_threshold = 0.3
+shader_parameter/foam_softness = 0.1

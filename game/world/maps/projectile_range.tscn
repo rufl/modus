@@ -1,0 +1,94 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="PackedScene" path="res://game/scenes/items/pickups/pistol_pickup.tscn" id="1_pistol"]
+[ext_resource type="PackedScene" path="res://game/scenes/items/pickups/shotgun_pickup.tscn" id="2_shotgun"]
+[ext_resource type="PackedScene" path="res://game/scenes/items/pickups/machinegun_pickup.tscn" id="3_machinegun"]
+[ext_resource type="PackedScene" path="res://game/scenes/items/pickups/rocket_launcher_pickup.tscn" id="4_rocket"]
+[ext_resource type="PackedScene" path="res://game/entities/enemies/enemy.tscn" id="5_enemy"]
+
+[node name="ProjectileRange" type="Node3D"]
+
+[node name="Floor" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+use_collision = true
+size = Vector3(15, 1, 60)
+
+[node name="TitleLabel" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 28)
+text = "Projectile Range
+All Weapons + Distance Markers"
+font_size = 32
+modulate = Color(1, 0.5, 0.2, 1)
+
+[node name="WeaponRack" type="Node3D" parent="."]
+
+[node name="RackLabel" type="Label3D" parent="WeaponRack"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 25)
+text = "Weapon Rack"
+font_size = 20
+
+[node name="Pistol" parent="WeaponRack" instance=ExtResource("1_pistol")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 1, 25)
+
+[node name="Shotgun" parent="WeaponRack" instance=ExtResource("2_shotgun")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 1, 25)
+
+[node name="Machinegun" parent="WeaponRack" instance=ExtResource("3_machinegun")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1, 25)
+
+[node name="RocketLauncher" parent="WeaponRack" instance=ExtResource("4_rocket")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1, 25)
+
+[node name="FiringLine" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 20)
+
+[node name="FiringLineLabel" type="Label3D" parent="FiringLine"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+text = "FIRING LINE"
+font_size = 24
+modulate = Color(1, 1, 0, 1)
+
+[node name="DistanceMarkers" type="Node3D" parent="."]
+
+[node name="Marker10m" type="Label3D" parent="DistanceMarkers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 10)
+text = "10m"
+font_size = 32
+modulate = Color(0, 1, 0, 1)
+
+[node name="Marker25m" type="Label3D" parent="DistanceMarkers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -5)
+text = "25m"
+font_size = 32
+modulate = Color(1, 1, 0, 1)
+
+[node name="Marker50m" type="Label3D" parent="DistanceMarkers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -30)
+text = "50m"
+font_size = 32
+modulate = Color(1, 0.5, 0, 1)
+
+[node name="Targets" type="Node3D" parent="."]
+
+[node name="Target10m" parent="Targets" instance=ExtResource("5_enemy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 10)
+collision_layer = 4
+enemy_id = "dummy_bot"
+is_ai_active = false
+
+[node name="Target25m" parent="Targets" instance=ExtResource("5_enemy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -5)
+collision_layer = 4
+enemy_id = "dummy_bot"
+is_ai_active = false
+
+[node name="Target50m" parent="Targets" instance=ExtResource("5_enemy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -30)
+collision_layer = 4
+enemy_id = "dummy_bot"
+is_ai_active = false
+
+[node name="BackWall" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, -30)
+use_collision = true
+size = Vector3(15, 4, 1)

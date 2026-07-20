@@ -1,0 +1,97 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="PackedScene" path="res://game/scenes/environment/traversal/ladder.tscn" id="1_ladder"]
+[ext_resource type="PackedScene" path="res://game/scenes/environment/traversal/slipgate.tscn" id="2_slipgate"]
+[ext_resource type="PackedScene" path="res://game/scenes/environment/traversal/jump_pod.tscn" id="3_jumppod"]
+[ext_resource type="PackedScene" path="res://game/scenes/environment/interactables/teleporter.tscn" id="4_teleporter"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_floor"]
+albedo_color = Color(0.15, 0.2, 0.25, 1)
+
+[node name="TraversalCourse" type="Node3D"]
+
+[node name="Floor" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+use_collision = true
+size = Vector3(40, 1, 15)
+material = SubResource("StandardMaterial3D_floor")
+
+[node name="TitleLabel" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, -6)
+text = "Traversal Course
+Ladders, Ropes, Slipgates, Teleporters"
+font_size = 32
+modulate = Color(0.5, 0.8, 1, 1)
+
+[node name="LadderSection" type="Node3D" parent="."]
+
+[node name="Label" type="Label3D" parent="LadderSection"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, 3, 0)
+text = "Ladder"
+font_size = 20
+
+[node name="Ladder" parent="LadderSection" instance=ExtResource("1_ladder")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, 0, 0)
+
+[node name="LadderPlatform" type="CSGBox3D" parent="LadderSection"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, 4, -2)
+use_collision = true
+size = Vector3(3, 0.5, 3)
+
+[node name="SlipgateSection" type="Node3D" parent="."]
+
+[node name="Label" type="Label3D" parent="SlipgateSection"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 3, 0)
+text = "Slipgate Portal"
+font_size = 20
+
+[node name="SlipgateA" parent="SlipgateSection" instance=ExtResource("2_slipgate")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 0, 0)
+
+[node name="SlipgateB" parent="SlipgateSection" instance=ExtResource("2_slipgate")]
+transform = Transform3D(-1, 0, -1.50996e-07, 0, 1, 0, 1.50996e-07, 0, -1, -6, 0, 0)
+
+[node name="JumpPodSection" type="Node3D" parent="."]
+
+[node name="Label" type="Label3D" parent="JumpPodSection"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
+text = "Jump Pod"
+font_size = 20
+
+[node name="JumpPod" parent="JumpPodSection" instance=ExtResource("3_jumppod")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="LandingPlatform" type="CSGBox3D" parent="JumpPodSection"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, -4)
+use_collision = true
+size = Vector3(4, 0.5, 4)
+
+[node name="TeleporterSection" type="Node3D" parent="."]
+
+[node name="Label" type="Label3D" parent="TeleporterSection"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 2, 0)
+text = "Teleporter Pair"
+font_size = 20
+
+[node name="TeleporterA" parent="TeleporterSection" instance=ExtResource("4_teleporter")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 0)
+
+[node name="TeleporterB" parent="TeleporterSection" instance=ExtResource("4_teleporter")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, 0)
+
+[node name="ElevatorSection" type="Node3D" parent="."]
+
+[node name="Label" type="Label3D" parent="ElevatorSection"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 3, 0)
+text = "Elevator"
+font_size = 20
+
+[node name="ElevatorPlatform" type="CSGBox3D" parent="ElevatorSection"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 0.25, 0)
+use_collision = true
+size = Vector3(3, 0.5, 3)
+
+[node name="ElevatorTopPlatform" type="CSGBox3D" parent="ElevatorSection"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 6, -3)
+use_collision = true
+size = Vector3(4, 0.5, 4)

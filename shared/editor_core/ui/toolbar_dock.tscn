@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://ctba2mwx5vqy6"]
+
+[ext_resource type="Script" path="res://shared/editor_core/ui/toolbar_dock.gd" id="1_toolbar"]
+
+
+[node name="ToolbarDock" type="HBoxContainer"]
+custom_minimum_size = Vector2(0, 36)
+script = ExtResource("1_toolbar")

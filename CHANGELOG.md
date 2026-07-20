@@ -1,0 +1,166 @@
+# MODUS Changelog
+
+> **Documentation status: maintained reference.** Project-wide readiness and test totals are defined by `docs/DOCUMENTATION_TRUTH.md` and the generated readiness reports; narrower claims in this file apply only to the named subsystem or workflow.
+
+## Unreleased
+
+- Eliminated all 22 remaining GUT orphans by giving each ConfigurationManager unit fixture explicit GUT ownership. ConfigurationManager passes 22/22, Unit passes 1056/1056 with zero orphans, and the strict aggregate passes 1431/1431 with 20,362 assertions and zero orphans in 1770.186 seconds.
+- Stabilized the event-system frame-time property against host descheduling by trimming one scheduler outlier from each edge of its 30-frame sample; its focused 100-iteration proof and complete Property lane pass.
+- Closed all nine pending progression contracts by replacing tests for a retired global service with asserted coverage of the live per-player `PlayerProgression` component: XP thresholds, level signals, skill-point awards, and encrypted SaveService persistence. Added the public level/XP getters already consumed by progression UI.
+- Corrected breakable-prop RPC validation to use the whitelisted `_request_damage` method and explicitly closed test ENet peers so adjacent server cases can reuse their port.
+- Refreshed the category packet to fully green: Unit 1056/1056 with 0 pending and 22 orphans, Integration 200/200, and Property 175/175.
+- Closed the final 13 aggregate-only failures by making enemy alert RPCs and network statistics safe after integration teardown leaves no multiplayer peer. The complete strict aggregate now passes 1431/1431 with 20,362 assertions, no risky/pending tests, 22 orphans, and a 1292.096-second runtime; production readiness drops from three validator blockers to two.
+- Raised the production validator's default full-suite ceiling to the evidence-derived 2400 seconds and made timeout terminate the runner process group, preventing a timed-out Godot child from continuing to write while its log is compressed.
+- Closed the configuration-validation risk cluster: the three silent root-level probes now assert canonical `gameplay/gameplay.json5`, `gameplay/combat.json5`, and `performance/system.json5` paths, all ConfigurationManager fixtures are GUT-owned, and the short generated music clip is checked before it can finish. Focused proof passes configuration validation 14/14 and AudioSystem 12/12.
+- Refreshed the Unit lane to PASS at 1047/1056 with 0 failing, 9 pending progression contracts, and 22 orphans. The three risky configuration tests became asserted passes and fixture ownership removed 14 orphans.
+- Closed the ENet fallback Unit cluster: expected invalid-port and duplicate-bind engine errors are consumed explicitly, the configuration fixture is GUT-owned, and retained-log classification accepts complete no-failure summaries that contain pending tests. Focused proof passes 11/11 with 28 assertions.
+- Refreshed the Unit lane to PASS at 1044/1056 with 0 failing, 12 risky/pending, and 36 orphans. Integration remains 198/200 with two sandbox-blocked ENet cases, so the category packet remains non-green overall.
+- Closed the deterministic path/UI boundary cluster: GridLayoutManager A* now rejects non-walkable endpoints and neighbors instead of traversing empty cells, and the rapid HUD fixture asserts the actual ten-update sequence boundary. Focused proof passes pathfinding 7/7 and UI system 23/23.
+- Refreshed the Unit lane to 1042/1056 passing with 2 failing, 12 risky/pending, and 37 orphans, closing both targeted deterministic-boundary failures. The only Unit failures now sit in the ENet fallback fixture.
+- Closed the audio/telemetry API-contract cluster: music transition tests now call the maintained `play_next_track`/`play_previous_track` service API, and PerformanceLogger signal tests use mutable dictionary-backed callback observations. Focused proof passes AudioSystem 12/12 and PerformanceLogger 11/11.
+- Refreshed the Unit lane to 1040/1056 passing with 4 failing, 12 risky/pending, and 37 orphans, closing all three targeted audio/telemetry failures.
+- Closed the combat configuration/modifier cluster: FeatureModule initialization now preserves explicitly injected non-empty configuration, restoring configured critical bonuses and melee/explosive knockback multipliers; the combat fixture now enters the tree before assigning global transforms. Focused proof passes 20/20 with 30 assertions, with FeatureModule regression proof at 19/19.
+- Refreshed the Unit lane to 1037/1056 passing with 7 failing, 12 risky/pending, and 37 orphans, closing all three targeted combat failures.
+- Closed the individual-weapon contract cluster: WeaponData now defaults to zero projectile speed for hitscan content, weapon setup/switch coroutines are awaited, signal tests no longer assert a return value from `watch_signals`, and reload/ammo/switch fixtures resolve live weapon indices by name. Focused proof passes 58/58 with 76 assertions.
+- Refreshed the Unit lane to 1034/1056 passing with 10 failing, 12 risky/pending, and 37 orphans, closing all six targeted weapon failures.
+- Closed the feature lifecycle/toggle cluster: no-dependency FeatureModules validate without scene-tree/GameManager lookup, unattached config/dependency checks avoid absolute tree access, toggle tests distinguish enabled from loaded state, and feature fixtures use GUT ownership. Focused proof passes FeatureModule 19/19 and feature toggles 17/17.
+- Refreshed the Unit lane to 1028/1056 passing with 16 failing, 12 risky/pending, and 37 orphans. All six targeted feature failures closed and FeatureModule fixture ownership removed 19 reported orphans.
+- Closed the component lifecycle/signal-hygiene cluster: the test double now inherits the maintained legacy component contract instead of duplicating it incompletely, dynamic test signals use Godot 4.7's generic `Signal` API, and fixtures no longer remove GUT's internal awaiter during cleanup. Focused proof passes GameComponent 25/25 and component signal hygiene 5/5.
+- Refreshed the Unit lane to 1022/1056 passing with 22 failing, 12 risky/pending, and 56 orphans, closing all four targeted component failures.
+- Closed the splitscreen device/session contract-drift cluster: expected rejection diagnostics are now consumed by the tests, and player connectivity assertions use the live `connected` field instead of RefCounted's `is_connected` callable. Focused proof passes GamepadController 29/29 and SessionState 31/31.
+- Refreshed the Unit lane to 1018/1056 passing with 26 failing, 12 risky/pending, and 56 orphans. All nine targeted device/session failures closed, and the adjacent rate-limiter timing fixtures now use a small explicit boundary margin.
+- Closed the RPC validation/rate-limit test cluster: static dispatch now covers every whitelist validator, player lookup uses the live gameplay registry property, and the one-second stress model has deterministic allowance semantics. Focused proof passes RPC stress 12/12, weapon-switch validation 13/13, and NetworkManager 9/9.
+- Refreshed the Unit lane to 1009/1056 passing with 35 failing, 12 risky/pending, and 56 orphans. Integration 198/200 and Property 175/175 are retained from July 18; the complete aggregate remains the July 18 1354/1431 result.
+- Closed the advanced-movement/configuration cluster: added an overridable grounded query while preserving runtime floor checks, bounded bunny-hop gain at the configured cap, preserved successful-hop chain/signals, aligned signal observation with current GUT, guarded dodge RPC synchronization behind peer presence, and replaced RocketJumpSystem's strict parse of the wrong commented file with canonical gameplay JSON5 loading. Focused and aggregate movement proof both pass 36/36; focused assertions are 51.
+- Refreshed the complete category packet to Unit 996/1056, Integration 198/200, and Property 175/175. This removes all nine movement Unit failures while adding one canonical configuration contract.
+- Refreshed the strict aggregate to 1354/1431 passing, 65 failing, 12 risky/pending, and 56 GUT orphans in 1398.724 seconds. The aggregate improves by ten passes over the preceding retained baseline; production readiness remains NOT READY with three validator-tracked blockers.
+- Canonicalized the stale source-shape/resource/editor-registry cluster: environment and level tests now target maintained world/map paths, resource compatibility constants agree on canonical scene/data roots, every built-in editor actor resolves and instantiates its native script base, loot props expose unsupported content honestly, and the wood-crate fixture frees its temporary particle node. Focused proof is 37/37 with 172 assertions and zero GUT orphans.
+- Refreshed the complete category packet to Unit 986/1055, Integration 198/200, and Property 175/175. The source-shape closure removes 18 Unit failures without changing test inventory.
+- Refreshed the strict aggregate to 1343/1430 passing, 75 failing, 12 risky/pending, and 56 GUT orphans in 1139.833 seconds under the evidence-derived 2400-second ceiling. This improves the preceding retained baseline by 17 passes; production readiness remains NOT READY with three validator-tracked blockers.
+- Closed the visual-configuration/property cluster: normalized gameplay consumers on the canonical `visuals.*` namespace, aligned graphics presets with `graphics.quality_preset`, made every ConfigurationManager reload subscriber accept the emitted file path, repaired full-state editor undo/redo snapshots without fixture orphans, and replaced a scheduler-sensitive lazy-loading microbenchmark with a deterministic deferred-construction contract. Focused editor/lazy/graphics/map proof is 52/52 with 443 assertions; frame-time proof is 5/5 at default counts.
+- Hardened the category runner so green GUT summaries without an explicit zero-failure row remain PASS and added `--reuse-logs` for deterministic report regeneration. The preceding lanes were Unit 968/1055, Integration 198/200, and Property 175/175.
+- Hardened the production-readiness validator so a later documentation-only invocation reuses a complete retained aggregate log instead of downgrading current full-suite evidence to BLOCKED.
+- Refreshed the preceding strict aggregate to 1326/1430 passing, 92 failing, 12 risky/pending, and 56 GUT orphans in 1407.761 seconds under the evidence-derived 2400-second ceiling. That checkpoint is superseded by the latest Unreleased aggregate entry above.
+- Repaired the splitscreen property/layout/error-recovery cluster: five-player layouts now fill the screen with five equal 20% regions, property fixtures use legal lifecycle transitions and consume expected diagnostics, border-only contact is not treated as viewport overlap, and rate-limit tests no longer depend on wall-clock scheduling. Focused proof is 83/83 with 334 assertions.
+- Repaired the next Phase 0 no-peer authority cluster across enemy setup, world navigation/stuck recovery, match/player synchronization, difficulty, and LOD paths so single-player fixtures do not invoke peer-only server/RPC APIs. Enemy regression proof is 139/139 with 367 assertions.
+- Hardened breakable glass/wood behavior for single-player damage, material access, zero/negative damage, destruction effects, debris/audio parentage, and immediate cleanup. Focused breakable proof is 15/17; the two remaining cases require ENet server sockets and are blocked by the restricted sandbox.
+- Refreshed the earlier July 18 category baselines to Unit 948/1055, Integration 198/200, and Property 168/175. Those figures are superseded by the latest Unreleased entries above.
+- Revalidated reference integrity, map playability, the maintained showcase, and MatchService together at 61/61 with 232 assertions under Godot 4.7.
+- Replaced the stale July 10 strict baseline with an earlier complete July 18 aggregate at 1299/1430 passing. That checkpoint is superseded by the latest Unreleased aggregate entry above.
+- Repaired generated-map serialization and teardown: recursively owned PackedScene descendants, freed packed source trees and detached cancellation/failure roots, and verified the threaded lane at 8/8 with 30 assertions and zero GUT orphans versus 20,421 before the repair.
+- Repaired map-export validation teardown by immediately freeing detached scene instances in production and fixtures; the focused export lane remains 10/10 with 34 assertions and now reports zero GUT orphans versus 40 before the repair.
+- Repaired frame-time property lifecycle by freeing each generated GameManager/service tree per iteration. The default-count lane now completes 5/5 in 219.696s with zero GUT orphans; the bounded lane is 5/5 in 2.453s.
+- Refreshed complete July 17 category baselines: Unit 944/1055, Integration 149/200, and Property 157/175. These isolated summaries remain non-green and do not replace a complete aggregate result.
+- Hardened the strict production-readiness runner with streamed durable logging, rejection of missing GUT summaries, configurable log paths, and a positive 900-second default ceiling. The latest strict aggregate attempt timed out during Unit execution, so the retained July 10 complete baseline remains authoritative.
+- Reconciled the maintained and archived documentation corpus against live source and current evidence: rewrote current entry points and operator guides, marked obsolete architecture/testing/migration/shader material as unvalidated historical snapshots, documented unresolved asset provenance, and added a documentation truth gate.
+- Added the first measured showcase performance baseline: 66.4 seconds and 130 PerformanceLogger samples, with a passing strict evidence validator; documented unthrottled/render-scope limits and observed extreme enemy-position warnings.
+- Repaired the splitscreen assignment-UI signal contract for Godot 4.7 by using generic signal connect/emit APIs in production and tests, and made the expected duplicate-device diagnostic explicit. Focused proof is 15/15 with 21 assertions; aggregate Phase 0 readiness remains open.
+- Repaired the map-generator unit contract cluster: consumed the expected invalid-cell diagnostic, bounded distant-room hallway generation, and restricted A* room traversal to connection endpoints. The full map-generator unit group now passes 79/79 tests with 5,439 assertions; aggregate Phase 0 readiness remains open.
+- Repaired the stale world compatibility scene by routing it to the maintained comprehensive showcase, adding valid navigation/enemy-spawn content, and attaching integration fixtures before global-transform assertions. Map playability proof now passes 15/15 with 40 assertions.
+- Revalidated the maintained showcase integration: 4 player spawns, 2 enemy spawns, 1 navigation region, 1 directional light, 6 omni lights, collision, environment, and 539 total nodes. Focused proof is 17/17 with 46 assertions; manual golden-demo evidence remains open.
+- Reran the reference and migration compatibility contracts under Godot 4.7: reference integrity passes 21/21 with 116 assertions and migration compatibility passes 13/13 with 21 assertions. Existing duplicate core-service warnings remain bounded diagnostics, not test failures.
+- Reran map-generator export proof at 10/10 with 34 assertions and seed/RNG proof at 8/8 with 29 assertions. Updated threaded metadata fixtures to the live seconds-based `generation_time` field and cleaned their lint debt; the later July 17 threading run supersedes the earlier incomplete summary.
+- Added local Workshop simulation proof: `tests/integration/test_workshop_local_simulation.gd` passes 1/1 with 13 assertions for upload, metadata/cache, download, browse, subscription, and unsubscribe; real Steam Workshop proof remains explicitly blocked.
+- Added focused editor authoring round-trip proof: `tests/integration/test_editor_roundtrip.gd` passes 1/1 with 15 assertions for save, mod-folder export, reload, and actor survival; fixed root-level `LevelRoot` discovery and export-directory/save-result handling.
+- Hardened runtime log-directory creation for isolated Godot headless runs by making `user://logs` recursively.
+- Removed injected `undefined` statements that prevented five property-test scripts from parsing under Godot 4.7.
+- Repaired map-generator Resource/RefCounted property access, validation position typing, and deferred warning/error dispatch; restored animation compatibility mappings and aligned audio tests with the AudioStream music API.
+- Hardened Godot launch/headless runners with isolated writable runtime directories and import preflight, and prevented incomplete GUT lane logs from being reported as green.
+- Added the documented showcase route and closed the configuration migration truth guard; repaired embedded teleporter/jump-pad scripts to use the GameManager service locator and made showcase-map fixtures attach scenes before checking global transforms.
+- Reconciled the public data/configuration story in README and JSON schema documentation, with reference-integrity proof for content data, runtime configuration, and mod overrides.
+- Extended current focused reference-integrity proof to 21/21 after adding an executable ownership-boundary contract for data, runtime config, and mod overrides.
+- Defined the Steam/GodotSteam evidence boundary in the integration guide and project truth gate; ENet fallback and real Steam proof are no longer conflated.
+- Recorded the Godot 4.7 Steam/ENet smoke boundary: non-Steam checks run, while localhost ENet creation is blocked by the sandbox socket policy; no multiplayer runtime claim was promoted.
+- Added and validated the explicit `multiplayer_demo` feature profile plus a profile-launch smoke command; profile startup passes while peer-connectivity proof remains open.
+- Added a two-process ENet localhost host/join smoke with deterministic teardown and conservative BLOCKED reporting for restricted socket environments.
+- Added the `mods/modus_sdk_sample` reference mod and green 2/2 SDK proof for data overrides, event exchange, and script hooks.
+- Added structural mod package validation and conflict diagnostics; repository scan is 9 packages, 0 errors, 8 disabled warnings, with focused tests at 4/4.
+- Refreshed launch, evidence, release, and production-readiness reports on July 13; launch smoke and one bounded performance-evidence gate pass while manual, release, and full-suite readiness remain blocked.
+- Repaired the map-generator threaded lifecycle and stale component API calls across cave, boss, prefab, gameplay, key-lock, navigation, LOD, and occlusion phases; three focused threading/metadata tests now pass individually under Godot 4.7.
+- Repaired feature/configuration contract fixtures: mutable closure state now survives event callbacks, and intentional configuration loader/validation diagnostics are consumed; focused proof is feature integration 10/10 and configuration manager 22/22 under Godot 4.7.
+- Repaired the next property-contract group: maintained gameplay config path, feature/state signal closure fixtures, lazy feature-unload assumptions, and dependency fixture isolation; configuration caching is 5/5, feature toggles 9/9, and state transitions 6/6. Dependency validation remains 5/7 pending startup-diagnostic isolation.
+- Closed dependency-validation property drift: startup diagnostics are drained before each callback, disabled dependencies now assert the single diagnostic actually emitted, and the full Godot 4.7 property file passes 7/7 with 407 assertions in 107.007s.
+- Completed the adjacent configuration fallback/validation repair: typed `ConfigurationManager` property fixtures, made malformed JSON5 inputs deterministic, preserved callback signal state, and consumed deferred parser diagnostics. Godot 4.7 focused proof is fallback 8/8, validation 6/6, and dependency validation 7/7.
+- Completed configuration-loading correctness triage: typed the remaining manager fixtures and removed the file's legacy lint debt. Godot 4.7 focused proof is 4/4, with GDScript lint passing.
+- Completed modding conflict-contract triage: aligned the duplicate-feature property with the live ModLoader conflict wording and cleaned both mod property files. Godot 4.7 focused proof is mod loading 4/4 and conflict detection 6/6, with lint passing.
+- Completed mod dependency-resolution triage: aligned topological-sort, circular-dependency, and missing-dependency properties with the live ModLoader implementation. Godot 4.7 focused proof is 4/4, with GDScript lint passing.
+- Completed weapon-state synchronization triage: verified rate-limit history isolation and rapid-switching properties, cleaned legacy whitespace, and recorded Godot 4.7 proof at 6/6 with 750 assertions.
+- Completed event-bus lifecycle verification: subscribe, unsubscribe, and multi-listener behavior pass under Godot 4.7 at 3/3 with 9 assertions, and the unit file is lint clean.
+- Completed GameManager lifecycle verification: aligned unload-feature coverage with the non-lazy loaded-state API while preserving intentional lazy reload behavior. Godot 4.7 proof is 28/28 with 102 assertions, and lint passes.
+- Completed the performance-property lifecycle slice: memory usage passes 4/4 in 69.909s, lazy loading passes 4/4 in 57.766s, and the bounded frame-time smoke passes 5/5. The later July 17 per-iteration teardown repair supersedes the former default-lane timeout.
+- Bounded the archived legacy-adapter property lane behind an explicit GUT skip so placeholder adapters no longer create false runtime/API failures; the lane re-enables when the adapter scripts are restored.
+- Fixed the property-test harness to await async callbacks and updated 117 property-lane invocations to await the harness.
+- Hardened JSON5 parse diagnostics and configuration fallback properties against engine-error side effects and inputs accepted by trailing-comma normalization.
+- Registered configuration managers created by property tests with GUT cleanup to eliminate repeated orphan leaks across configuration lanes.
+- Moved GameManager state and feature property fixtures to GUT-owned cleanup to eliminate service-tree orphan accumulation.
+- Fixed feature integration lifecycle drift: canonicalized the config service lookup, freed unloaded feature nodes, exposed non-lazy loaded-state checks, and restored explicit core-feature reloads.
+- Attached GameManager-owned configuration managers to the scene tree so integration teardown does not orphan them.
+- Added ModLoader registration and conflict-query APIs for feature, component, entity, and resource ownership collisions.
+- Wired manifest-declared features, components, and entities into ModLoader registration during enabled-mod loading.
+- Reset ModLoader registration and conflict state on every full mod reload to prevent stale duplicate reports.
+- Fixed weapon-sync rate-limit property isolation by clearing simulated request history between independent windows.
+- Made GameManager event-listener teardown deterministic by avoiding registry mutation during iteration.
+- Moved feature dependency property fixtures to GUT-owned GameManager cleanup to reduce orphan noise.
+- Moved frame-time, memory, and lazy-loading property fixtures to GUT-owned cleanup.
+- Restored the canonical showcase scene path and completed its player-spawn/navigation metadata.
+- Restored legacy `game/levels/` compatibility paths for the maintained showcase sub-scenes.
+- Restored legacy component and player-service script paths as forwarding compatibility shims.
+- Registered script-backed core services in GameManager so gameplay and loot service discovery works through the service locator.
+- Declared the map-generator autoload script as the global `MapGenerator` class for isolated unit fixtures.
+- Removed redundant manual teardown from map-generator unit fixtures already managed by GUT.
+- Corrected GameplaySvc service discovery to use GameManager's canonical core-system locator.
+- Added a backward-compatible GameManager.get_service() delegate for migrated service callers.
+- Hardened EntityService and PerformanceService static lookups for partial startup and test trees.
+- Hardened CombatSvc, PlayerSvc, and LootSvc static lookups against partial GameManager startup.
+- Hardened MissionMgr, EnemyTrkr, PlayerStateSvc, and InventoryMgr static lookups against partial GameManager startup.
+- Made object-pool property fixtures free immediately after clearing generated pools, reducing deferred orphan accumulation across the five 100-iteration cases.
+- Added explicit teardown for the standalone editor property fixture and its UndoRedo state.
+- Made detached animation and signal-hygiene unit fixtures free immediately after exit-tree cleanup.
+- Made GameComponent, CombatFeature, and InventoryFeature unit fixtures free immediately during teardown.
+- Made unattached map-export and generated-GLTF test scenes free immediately.
+- Made player/HUD integration roots and the NetworkEditor signal test root free immediately during teardown.
+- Removed redundant UI teardown because GUT already owns those add_child_autofree fixtures.
+- Removed redundant manual teardown from GUT-owned splitscreen and revive fixtures while retaining explicit subsystem cleanup.
+- Removed redundant manual teardown from GUT-owned splitscreen integration fixtures while retaining explicit session shutdown.
+- Removed remaining redundant GamepadController/error-recovery teardown and immediately freed unattached input-property components.
+- Cleaned generated analyzer property-test directories after temporary scripts and dependency fixtures are removed.
+- Updated enemy reference-integrity coverage to the maintained enemy, corpse, and dummy scene paths instead of stale optional names.
+- Aligned the effects-service unit path check with the maintained feature implementation path.
+- Updated service and modding documentation to use maintained service and configuration paths.
+- Refreshed service, configuration, Steam, editor, and dedicated-server documentation paths against the live tree.
+- Updated live showcase/tool guidance and GameplaySvc comments to use current config and feature paths.
+- Updated the editing guide and indentation helper to use live config ownership and repo-relative paths.
+- Aligned balance, movement, technical-reference, and performance documentation with live configuration files.
+- Added a project-truth guard for retired configuration path claims.
+- Documented the ownership boundary between content data, runtime config, feature profiles, and mod overrides.
+- Expanded reference-integrity coverage across feature, network, performance, entity, item, and loot-table paths.
+- Repaired the JSON schema weapon example to use only live pistol registry fields and paths.
+- Updated getting-started configuration examples to use the live ConfigurationManager API.
+- Updated troubleshooting and technical-reference examples to use live GameManager service and logging APIs.
+- Updated modding examples to use GameManager event, config, and core-system APIs.
+- Updated the service architecture guide to document GameManager core-system access and registration.
+- Updated technical examples for service lookup, component config, and configuration hot-reload APIs.
+- Strengthened project truth checks for live autoload declarations and data/config ownership documentation.
+- Fixed the Godot 4.7 MapGenerator autoload/class-name collision and updated isolated unit fixtures to preload the script.
+- Fixed invalid runtime property-introspection calls in network movement validation and Steam/ENet fallback setup.
+- Fixed unit runtime blockers in GameComponent mocks, GameManager initialization checks, and RPC stress-test doubles.
+- Moved the GameComponent unit mock into a standalone script to preserve inherited lifecycle methods under Godot 4.7.
+- Updated the current-facing release-notes effects example to use GameManager core-system lookup.
+- Improved the strict full Godot 4.7/GUT baseline across three splitscreen slices from 894/1417 passing and 509 failing to 1061/1421 passing and 346 failing; risky/pending remains 14.
+- Added injectable gamepad discovery, coherent feature reinitialization proof, bounded performance sampling, deterministic accumulated session duration, and expected corruption handling; feature/gameplay/stress lanes are now 10/10, 34/34, and 20/20.
+- Repaired stale splitscreen lifecycle fixtures, made expected error assertions explicit, and brought manager tests to 28/28 and multiplayer-compatibility tests to 16/16.
+- Normalized JSON numeric player counts in splitscreen configuration, made manager initialization idempotent, fixed controller-error formatting, and added a green 3/3 contract lane.
+- Hardened always-on network processing for the normal no-peer state and logger teardown against writes through a closed file handle.
+- Updated the production-readiness validator to preserve the full GUT log and include the final suite totals instead of a truncated startup banner.
+- Refreshed current-facing docs on 2026-07-09 after Phase 0 focused contract repairs.
+- Added `docs/AUTOMATED_TEST_LANES_REPORT.md` and upgraded `tests/runners/run_tests_by_category.sh` to produce per-lane failure triage.
+- Recorded the latest batched lane result: Unit 813/1047 passing, Integration 93/195 passing, Property 114/175 passing, Benchmark skipped.
+- Recorded focused Godot 4.7/GUT proof: save 6/6, network manager 9/9, RPC whitelist 9/9, mod loading 12/12, enemy AI 13/13, enemy AI system 126/126, AI LOD update rate 13/13.
+- Kept the full-suite boundary open because the refreshed aggregate run remains non-green and order-sensitive.
+- Initialized project-control documentation from an OVERZEER audit on 2026-07-07.
+
+## Notes
+
+- Record user-visible changes, verification-gate changes, migration notes, and release-affecting fixes here.
+- Keep historical entries factual and sync current work back to `BACKLOG.md`, `BACKLOG_ARCHIVE.md`, and `ROADMAP.md`.
+- Stack signals: Godot 4.7+, GDScript, GUT, JSON/JSON5, shell/Python maintenance tools.

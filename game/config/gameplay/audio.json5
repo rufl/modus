@@ -1,0 +1,19 @@
+{
+	"volumes": {
+		"master": -3.0,
+		"sfx": -3.0,
+		"music": -10.0,
+		"ambient": -5.0
+	},
+	"events": {
+		"slide_start": { "volume": -5.0, "pitch_var": 0.05 },
+		"slide_stop": { "volume": -8.0, "pitch_var": 0.0 },
+		"jump": { "volume": -2.0, "pitch_var": 0.0 },
+		"land": { "volume": 0.0, "pitch_var": 0.0 },
+		"footstep_concrete": { "volume": -5.0, "pitch_var": 0.1 },
+		"reload": { "volume": -5.0, "pitch_var": 0.05 },
+		"weapon_switch": { "volume": -10.0, "pitch_var": 0.0 },
+		"ui_click": { "volume": -5.0, "pitch_var": 0.0 },
+		"ui_hover": { "volume": -8.0, "pitch_var": 0.0 }
+	}
+}

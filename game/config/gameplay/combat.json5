@@ -1,0 +1,110 @@
+{
+  // Combat system configuration
+  // Controls damage calculation, hit validation, knockback, and combat mechanics
+  
+  "combat": {
+    // General combat settings
+    "max_damage": 1000.0,           // Maximum damage that can be dealt in a single hit
+    "min_damage": 0.1,              // Minimum damage (prevents zero damage hits)
+    "damage_falloff_enabled": true, // Enable distance-based damage falloff
+    "friendly_fire": false,         // Whether allies can damage each other
+    
+    // Critical hit system
+    "critical_hits_enabled": true,
+    "critical_multiplier": 2.0,     // Damage multiplier for critical hits
+    "critical_chance_base": 0.05,   // Base 5% critical hit chance
+    "critical_headshot_bonus": 0.15, // Additional 15% crit chance for headshots
+    
+    // Hit validation and anti-cheat
+    "hit_validation": {
+      "enabled": true,
+      "max_range_tolerance": 1.15,  // 15% tolerance for network latency
+      "raycast_validation": true,   // Validate hits with raycast
+      "check_line_of_sight": true,  // Ensure clear line of sight
+      "max_angle_deviation": 15.0   // Maximum degrees off-target allowed
+    },
+    
+    // Lag compensation for multiplayer
+    "lag_compensation": {
+      "enabled": true,
+      "max_rewind_time": 0.2,       // Maximum 200ms rewind for hit detection
+      "interpolation_enabled": true, // Smooth position interpolation
+      "buffer_size": 60             // Number of frames to buffer for rewind
+    },
+    
+    // Knockback system
+    "knockback": {
+      "enabled": true,
+      "base_force": 5.0,            // Base knockback force
+      "damage_multiplier": 0.1,     // Additional force per damage point
+      "max_force": 20.0,            // Maximum knockback force
+      "vertical_multiplier": 0.5,   // Reduce vertical knockback
+      "duration": 0.3,              // Knockback effect duration in seconds
+      "recovery_time": 0.5          // Time before player regains full control
+    },
+    
+    // Damage types and modifiers
+    "damage_types": {
+      "melee": {
+        "armor_penetration": 0.5,   // 50% armor penetration
+        "knockback_multiplier": 1.5, // 50% more knockback
+        "critical_bonus": 0.1       // +10% crit chance
+      },
+      "bullet": {
+        "armor_penetration": 0.7,   // 70% armor penetration
+        "knockback_multiplier": 0.8, // 20% less knockback
+        "critical_bonus": 0.05      // +5% crit chance
+      },
+      "explosive": {
+        "armor_penetration": 0.9,   // 90% armor penetration
+        "knockback_multiplier": 2.0, // Double knockback
+        "aoe_radius": 5.0,          // Area of effect radius in meters
+        "aoe_falloff": 0.5,         // Damage falloff at edge of AOE
+        "critical_bonus": 0.0       // No crit bonus for explosives
+      },
+      "fire": {
+        "armor_penetration": 0.3,   // 30% armor penetration
+        "knockback_multiplier": 0.5, // Half knockback
+        "dot_enabled": true,        // Enable damage over time
+        "dot_duration": 3.0,        // Burn duration in seconds
+        "dot_tick_rate": 0.5,       // Damage tick every 0.5 seconds
+        "dot_damage_percent": 0.2   // 20% of initial damage per tick
+      },
+      "poison": {
+        "armor_penetration": 1.0,   // Ignores armor
+        "knockback_multiplier": 0.0, // No knockback
+        "dot_enabled": true,
+        "dot_duration": 5.0,
+        "dot_tick_rate": 1.0,
+        "dot_damage_percent": 0.15
+      }
+    },
+    
+    // Armor system
+    "armor": {
+      "enabled": true,
+      "damage_reduction_formula": "linear", // linear, exponential, or logarithmic
+      "max_reduction": 0.75,      // Maximum 75% damage reduction
+      "armor_break_threshold": 100.0, // Damage needed to break armor
+      "regeneration_enabled": false // Whether armor regenerates over time
+    },
+    
+    // Hitbox configuration
+    "hitboxes": {
+      "headshot_multiplier": 2.5,  // 2.5x damage for headshots
+      "bodyshot_multiplier": 1.0,  // Normal damage for body shots
+      "limbshot_multiplier": 0.75, // 75% damage for limb shots
+      "enable_hitbox_debug": false // Show hitbox visualization (debug)
+    },
+    
+    // Combat feedback
+    "feedback": {
+      "damage_numbers": true,      // Show floating damage numbers
+      "hit_markers": true,         // Show hit confirmation markers
+      "kill_feed": true,           // Show kill notifications
+      "hit_sounds": true,          // Play hit confirmation sounds
+      "screen_shake_on_hit": true, // Camera shake when taking damage
+      "screen_shake_intensity": 0.3 // Shake intensity (0.0 to 1.0)
+    }
+  }
+}

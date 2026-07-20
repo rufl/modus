@@ -1,0 +1,519 @@
+{
+    // =============================================================================
+    // VISUALS & UI CONFIGURATIONS
+    // =============================================================================
+    // Contains: top-level ui plus visuals.hud, visuals.screen_shake,
+    //           visuals.gore, visuals.targeting, visuals.quality_presets,
+    //           visuals.scoreboard, visuals.death_messages, and visuals.chat
+    // =============================================================================
+
+    "ui": {
+        "theme": {
+            "current": "default",
+            "follow_system": false
+        },
+        "transitions": {
+            "enabled": true,
+            "duration": 0.3,
+            "type": "fade"
+        },
+        "accessibility": {
+            "reduced_motion": false,
+            "high_contrast": false,
+            "large_text": false,
+            "screen_reader": false
+        },
+        "focus": {
+            "wrap_navigation": true,
+            "show_focus_highlight": true,
+            "analog_deadzone": 0.3,
+            "repeat_delay": 0.4,
+            "repeat_rate": 0.08
+        },
+        "cache": {
+            "max_screens": 5,
+            "preload_screens": []
+        },
+        "audio": {
+            "enabled": true,
+            "sounds": {
+                "navigate": "ui_navigate",
+                "select": "ui_select",
+                "back": "ui_back",
+                "error": "ui_error"
+            }
+        }
+    },
+
+    "visuals": {
+        "hud": {
+        "minimap": {
+            "map_size": 150.0,
+            "zoom_level": 5.0,
+            "min_zoom": 2.0,
+            "max_zoom": 20.0,
+            "rotation_smooth": 8.0,
+            "track_radius_multiplier": 1.0,
+            "colors": {
+                "player": { "r": 0.2, "g": 0.6, "b": 1.0 },
+                "ally": { "r": 0.2, "g": 0.8, "b": 0.2 },
+                "enemy": { "r": 1.0, "g": 0.2, "b": 0.2 },
+                "item": { "r": 1.0, "g": 0.9, "b": 0.3 },
+                "objective": { "r": 1.0, "g": 0.5, "b": 0.0 }
+            }
+        },
+        "compass": {
+            "width": 400.0,
+            "marker_spacing": 100.0,
+            "smooth_speed": 10.0,
+            "marker_colors": {
+                "quest": { "r": 1.0, "g": 0.85, "b": 0.0 },
+                "enemy": { "r": 1.0, "g": 0.2, "b": 0.2 },
+                "ally": { "r": 0.2, "g": 0.8, "b": 0.2 },
+                "item": { "r": 0.8, "g": 0.8, "b": 0.8 },
+                "location": { "r": 0.4, "g": 0.7, "b": 1.0 }
+            }
+        },
+        "damage_indicator": {
+            "fade_time": 1.5,
+            "max_indicators": 5,
+            "radius": 150.0,
+            "color": { "r": 1.0, "g": 0.0, "b": 0.0, "a": 0.8 }
+        },
+        "kill_feed": {
+            "max_entries": 3,
+            "duration": 5.0
+        },
+        "layout": {
+            "target_info": {
+                "anchor_preset": "TOP_CENTER",
+                "position": { "offset_x": 0, "offset_y": 35 },
+                "z_index": 15
+            },
+            "compass": {
+                "anchor_preset": "TOP_WIDE",
+                "position": { "offset_y": 10 },
+                "z_index": 10
+            },
+            "minimap": {
+                "anchor_preset": "BOTTOM_RIGHT",
+                "position": { "offset_x": -20, "offset_y": -20 },
+                "z_index": 5
+            },
+            "crosshair": {
+                "anchor_preset": "CENTER",
+                "position": { "offset_x": 0, "offset_y": 0 },
+                "z_index": 20
+            },
+            "health_bar": {
+                "anchor_preset": "BOTTOM_LEFT",
+                "position": { "offset_x": 20, "offset_y": -100 },
+                "z_index": 5
+            },
+            "ammo_display": {
+                "anchor_preset": "BOTTOM_RIGHT",
+                "position": { "offset_x": -20, "offset_y": -200 },
+                "z_index": 5
+            },
+            "damage_indicator": {
+                "anchor_preset": "FULL_RECT",
+                "z_index": 25
+            },
+            "objective_tracker": {
+                "anchor_preset": "TOP_LEFT",
+                "position": { "offset_x": 20, "offset_y": 60 },
+                "z_index": 5
+            }
+        },
+        "typography": {
+            "fonts": {
+                "primary": "default",
+                "bold": "default",
+                "light": "default",
+                "mono": "default"
+            },
+            "sizes": {
+                "heading": 32,
+                "subheading": 24,
+                "body": 16,
+                "small": 12,
+                "tiny": 10
+            },
+            "target_info": {
+                "name_font": "bold",
+                "name_size": 28,
+                "label_font": "primary",
+                "label_size": 16,
+                "label_color": { "r": 1.0, "g": 1.0, "b": 1.0, "a": 1.0 }
+            },
+            "pickup_tooltip": {
+                "font_size": 24,
+                "pixel_size": 0.01,
+                "outline_size": 8,
+                "text_color": { "r": 1.0, "g": 1.0, "b": 0.8, "a": 1.0 },
+                "outline_color": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }
+            },
+            "pickup_icon": {
+                "font_size": 48,
+                "pixel_size": 0.01,
+                "outline_size": 4,
+                "outline_color": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }
+            },
+            "item_tooltip": {
+                "name_font": "bold",
+                "name_size": 20,
+                "body_font": "primary",
+                "body_size": 14,
+                "background_color": { "r": 0.1, "g": 0.1, "b": 0.15, "a": 0.95 },
+                "border_width": 2,
+                "border_color": { "r": 0.4, "g": 0.4, "b": 0.5, "a": 1.0 }
+            }
+        },
+        "dimensions": {
+            "target_info": { "width": 400, "height": "auto" },
+            "minimap": { "width": 150, "height": 150 },
+            "compass": { "width": 400, "height": 50 }
+        }
+    },
+
+    "screen_shake": {
+        "trauma_decay": {
+            "max_trauma": 1.0,
+            "trauma_decay_rate": 1.2,
+            "trauma_power": 2.0
+        },
+        "weapon_trauma": {
+            "light": { "trauma": 0.08, "description": "Pistols, SMGs" },
+            "medium": { "trauma": 0.15, "description": "Rifles, Shotguns" },
+            "heavy": { "trauma": 0.25, "description": "Rockets, Snipers, Machine guns" }
+        },
+        "explosion_trauma": {
+            "close": { "trauma": 0.7, "distance_ratio": 0.3, "description": "Within 30% of max distance" },
+            "medium": { "trauma": 0.4, "distance_ratio": 0.6, "description": "Within 30-60% of max distance" },
+            "far": { "trauma": 0.15, "distance_ratio": 1.0, "description": "Beyond 60% of max distance" }
+        },
+        "damage_trauma": {
+            "light": { "trauma": 0.15, "damage_ratio": 0.05, "description": "Less than 5% of max health" },
+            "medium": { "trauma": 0.25, "damage_ratio": 0.15, "description": "5-15% of max health" },
+            "heavy": { "trauma": 0.4, "damage_ratio": 0.3, "description": "More than 30% of max health" }
+        },
+        "landing_trauma": {
+            "light": { "trauma": 0.1, "velocity_ratio": 0.3, "description": "Soft landing" },
+            "medium": { "trauma": 0.25, "velocity_ratio": 0.6, "description": "Medium landing" },
+            "heavy": { "trauma": 0.5, "velocity_ratio": 1.0, "description": "Hard landing" }
+        },
+        "shake_intensity": {
+            "max_rotation_shake": 3.0,
+            "max_position_shake": 0.08,
+            "max_fov_shake": 2.0
+        },
+        "shake_frequency": {
+            "rotation_frequency": 25.0,
+            "position_frequency": 18.0,
+            "fov_frequency": 12.0
+        }
+    },
+
+    "gore": {
+        "spawn_gibs": true,
+        "gib_count_min": 1,
+        "gib_count_max": 2,
+        "gib_lifetime": 10.0,
+        "gib_force_multiplier": 5.0,
+        "blood_spray": {
+            "intensity": 1.0,
+            "decal_count": 6,
+            "color": { "r": 0.6, "g": 0.0, "b": 0.0 }
+        },
+        "blood_pools": {
+            "enabled": true,
+            "intensity": 1.0,
+            "trail_enabled": true,
+            "trail_density": 3
+        },
+        "screen_blood": {
+            "enabled": true,
+            "max_intensity": 0.7,
+            "blood_per_damage": 0.015,
+            "fade_delay": 0.5,
+            "fade_duration": 1.0,
+            "vignette_enabled": true,
+            "vignette_intensity": 0.3,
+            "splatter_count": 2,
+            "blood_color": { "r": 0.5, "g": 0.0, "b": 0.0, "a": 0.0 }
+        },
+        "damage_indicator": {
+            "fade_duration": 0.5,
+            "max_opacity": 0.8,
+            "colors": {
+                "default": { "r": 1.0, "g": 0.0, "b": 0.0, "a": 0.8 },
+                "critical": { "r": 1.0, "g": 1.0, "b": 0.0, "a": 0.9 }
+            }
+        },
+        "gibs": {
+            "blood_trail_enabled": true,
+            "blood_trail_rate": 0.05,
+            "splat_sound_enabled": true,
+            "gib_sound_enabled": true,
+            "size_range": { "min": 0.1, "max": 0.25 },
+            "velocity_range": { "min": 5.0, "max": 15.0 },
+            "upward_force": 3.0
+        },
+        "advanced_gore": {
+            "directional_spray_enabled": true,
+            "dismemberment_enabled": true,
+            "organ_gibs_enabled": true
+        },
+        "dismemberment": {
+            "overkill_threshold": 50,
+            "separation_force": 8.0,
+            "lifetime": 20.0,
+            "mass": 0.8,
+            "bounce": 0.4,
+            "friction": 0.8,
+            "gravity_scale": 1.5,
+            "blood_fountain": true
+        },
+        "organs": {
+            "spawn_chance": 0.7,
+            "count_min": 2,
+            "count_max": 6,
+            "velocity_base": 10.0,
+            "lifetime": 25.0,
+            "mass": 0.5,
+            "bounce": 0.3,
+            "friction": 0.8,
+            "gravity_scale": 1.6
+        }
+    },
+
+    "targeting": {
+        "targeting": {
+            "range": 50.0,
+            "angle": 30.0,
+            "sticky_targeting": true,
+            "sticky_duration": 0.5
+        },
+        "visuals": {
+            "show_health_bar": true,
+            "show_distance": true,
+            "highlight_color": { "r": 1.0, "g": 0.3, "b": 0.3, "a": 1.0 }
+        },
+        "target_info": {
+            "show_name": true,
+            "show_level": true,
+            "show_health_number": false
+        }
+    },
+
+    "quality_presets": {
+        "low": {
+            "name": "Low",
+            "shadow_enabled": false,
+            "shadow_size": 1024,
+            "ssao_enabled": false,
+            "ssr_enabled": false,
+            "sdfgi_enabled": false,
+            "volumetric_fog": false,
+            "glow_enabled": false,
+            "max_particles": 50,
+            "lod_bias": 4.0,
+            "entity_draw_distance": 75.0,
+            "effect_quality": 0.25,
+            "ai_update_interval": 0.2
+        },
+        "medium": {
+            "name": "Medium",
+            "shadow_enabled": true,
+            "shadow_size": 2048,
+            "ssao_enabled": false,
+            "ssr_enabled": false,
+            "sdfgi_enabled": false,
+            "volumetric_fog": false,
+            "glow_enabled": true,
+            "max_particles": 100,
+            "lod_bias": 2.0,
+            "entity_draw_distance": 100.0,
+            "effect_quality": 0.5,
+            "ai_update_interval": 0.15
+        },
+        "high": {
+            "name": "High",
+            "shadow_enabled": true,
+            "shadow_size": 4096,
+            "ssao_enabled": true,
+            "ssr_enabled": false,
+            "sdfgi_enabled": false,
+            "volumetric_fog": true,
+            "glow_enabled": true,
+            "max_particles": 200,
+            "lod_bias": 1.0,
+            "entity_draw_distance": 150.0,
+            "effect_quality": 0.75,
+            "ai_update_interval": 0.1
+        },
+        "ultra": {
+            "name": "Ultra",
+            "shadow_enabled": true,
+            "shadow_size": 8192,
+            "ssao_enabled": true,
+            "ssr_enabled": true,
+            "sdfgi_enabled": true,
+            "volumetric_fog": true,
+            "glow_enabled": true,
+            "max_particles": 500,
+            "lod_bias": 0.5,
+            "entity_draw_distance": 200.0,
+            "effect_quality": 1.0,
+            "ai_update_interval": 0.05
+        }
+    },
+
+    "scoreboard": {
+        "status_colors": {
+            "ALIVE": { "r": 0.0, "g": 1.0, "b": 0.0 },
+            "DEAD": { "r": 1.0, "g": 0.0, "b": 0.0 },
+            "DOWNED": { "r": 1.0, "g": 1.0, "b": 0.0 },
+            "SPEC": { "r": 0.5, "g": 0.5, "b": 0.5 },
+            "EDIT": { "r": 0.58, "g": 0.44, "b": 0.86 },
+            "AFK": { "r": 1.0, "g": 0.5, "b": 0.0 },
+            "MENU": { "r": 0.0, "g": 1.0, "b": 1.0 }
+        },
+        "highlight_local_player": true,
+        "local_player_color": { "r": 0.4, "g": 0.8, "b": 1.0 },
+        "kills_color": { "r": 0.3, "g": 1.0, "b": 0.3 },
+        "deaths_color": { "r": 1.0, "g": 0.3, "b": 0.3 },
+        "show_health_column": false,
+        "show_ping_column": false,
+        "column_widths": {
+            "kills": 50,
+            "deaths": 50,
+            "health": 60,
+            "ping": 50
+        }
+    },
+
+    "death_messages": {
+        "default": [
+            "{victim} decided to stop existing.",
+            "{victim} has left the building.",
+            "{victim} requires reassembly.",
+            "{victim} was turned into a fine red mist."
+        ],
+        "telefrag": [
+            "{killer} telefragged {victim}",
+            "{killer} materialized inside {victim}",
+            "{victim} was in the wrong place at the wrong time",
+            "{killer} occupied {victim}'s space",
+            "{victim} was atomized by {killer}'s arrival"
+        ],
+        "suicide": [
+            "{victim} fought the wall and the wall won.",
+            "{victim} demonstrated improper safety protocols.",
+            "{victim} is their own worst enemy.",
+            "{victim} successfully failed to exist.",
+            "{victim} tested friendly fire on themselves."
+        ],
+        "void": [
+            "{victim} discovered a wormhole.",
+            "{victim} went to explore the bottom of the void.",
+            "{victim} is technically still falling.",
+            "{victim} took a long walk off a short platform.",
+            "{victim} found a hole in the fabric of space."
+        ],
+        "weapons": {
+            "rocket_launcher": [
+                "{victim} intercepted a high-velocity gift from {killer}.",
+                "{victim} was violently expanded by {killer}.",
+                "{victim} was redistributed across the map by {killer}.",
+                "{victim} failed the reflex check against {killer}.",
+                "{killer} applied explosive decompression to {victim}."
+            ],
+            "shotgun": [
+                "{victim} respected {killer}'s personal space too late.",
+                "{victim} was rearranged at close range by {killer}.",
+                "{victim} caught all the pellets from {killer}.",
+                "{killer} wiped {victim} off the face of the map.",
+                "{victim} was scattered to the winds by {killer}."
+            ],
+            "railgun": [
+                "{victim} was pierced by {killer}'s aim.",
+                "{killer} clicked on {victim} with extreme prejudice.",
+                "{victim} was instantly ventilated by {killer}.",
+                "{killer} threaded the needle through {victim}.",
+                "{victim} didn't see that coming from {killer}."
+            ],
+            "blaster": [
+                "{victim} was melted by {killer}'s plasma stream.",
+                "{victim} caught too many hot balls from {killer}.",
+                "{killer} turned {victim} into glowing goo.",
+                "{victim} was cooked medium-well by {killer}.",
+                "{victim} absorbed a high-energy discharge from {killer}."
+            ],
+            "melee": [
+                "{victim} lost a fistfight to a gunfight with {killer}.",
+                "{killer} pressed the advantage against {victim}.",
+                "{victim} was bonked by {killer}."
+            ]
+        },
+        "generic_kill": [
+            "{victim} was dismantled by {killer}.",
+            "{victim} is now spectating {killer}.",
+            "{victim} lost the argument with {killer}.",
+            "{killer} sent {victim} back to the spawn queue.",
+            "{victim} served as a target for {killer}."
+        ],
+        "unknown_killer": [
+            "{victim} died mysteriously.",
+            "{victim} experienced a critical failure.",
+            "{victim} reached the end of the road."
+        ]
+    },
+
+    "chat": {
+        "max_message_length": 256,
+        "rate_limit_seconds": 0.5,
+        "show_timestamps": true,
+        "history_size": 50
+    },
+
+    "day_night": {
+        "enabled": true,
+        "cycle_duration_minutes": 10.0,
+        "start_hour": 8.0,
+        "sunrise_hour": 6.0,
+        "sunset_hour": 18.0,
+        "colors": {
+            "sun_day": { "r": 1.0, "g": 0.95, "b": 0.85 },
+            "sun_sunset": { "r": 1.0, "g": 0.5, "b": 0.2 },
+            "sun_night": { "r": 0.2, "g": 0.2, "b": 0.4 },
+            "sky_top_day": { "r": 0.3, "g": 0.5, "b": 0.9 },
+            "sky_top_night": { "r": 0.05, "g": 0.05, "b": 0.15 },
+            "ambient_day": { "r": 0.4, "g": 0.45, "b": 0.55 },
+            "ambient_night": { "r": 0.05, "g": 0.05, "b": 0.15 }
+        },
+        "intensity": {
+            "sun_day": 1.0,
+            "sun_night": 0.1
+        }
+    },
+
+    "boss_effects": {
+        "size_multiplier": 1.5,
+        "glow_enabled": true,
+        "glow_intensity": 2.0,
+        "glow_color": { "r": 1.0, "g": 0.3, "b": 1.0, "a": 0.8 },
+        "aura_enabled": true,
+        "aura_color": { "r": 0.8, "g": 0.2, "b": 0.8, "a": 0.5 },
+        "elite_size_multiplier": 1.2,
+        "elite_glow_intensity": 1.0
+    },
+    
+    "weapon_visuals": {
+        "global_offset": { "x": 0.0, "y": 0.0, "z": 0.0 },
+        "global_rotation": { "x": 0.0, "y": 0.0, "z": 0.0 },
+        "bob_intensity": 1.0,
+        "sway_intensity": 1.0
+    }
+    }
+}

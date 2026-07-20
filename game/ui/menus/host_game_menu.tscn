@@ -1,0 +1,125 @@
+[gd_scene load_steps=2 format=3 uid="uid://host_game_menu"]
+
+[ext_resource type="Script" path="res://game/ui/menus/host_game_menu.gd" id="1_host_menu"]
+
+[node name="HostGameMenu" type="PanelContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_host_menu")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Host Game"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 32
+
+[node name="ConnectionSettings" type="VBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ConnectionTitle" type="Label" parent="MarginContainer/VBoxContainer/ConnectionSettings"]
+layout_mode = 2
+text = "Connection Settings"
+theme_override_font_sizes/font_size = 20
+
+[node name="MaxPlayersHBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer/ConnectionSettings"]
+layout_mode = 2
+
+[node name="MaxPlayersLabel" type="Label" parent="MarginContainer/VBoxContainer/ConnectionSettings/MaxPlayersHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Max Players:"
+
+[node name="MaxPlayersSpin" type="SpinBox" parent="MarginContainer/VBoxContainer/ConnectionSettings/MaxPlayersHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 2.0
+max_value = 16.0
+value = 8.0
+
+[node name="PortHBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer/ConnectionSettings"]
+layout_mode = 2
+
+[node name="PortLabel" type="Label" parent="MarginContainer/VBoxContainer/ConnectionSettings/PortHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Port:"
+
+[node name="PortSpin" type="SpinBox" parent="MarginContainer/VBoxContainer/ConnectionSettings/PortHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 1024.0
+max_value = 65535.0
+value = 9999.0
+
+[node name="UPNPHBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer/ConnectionSettings"]
+layout_mode = 2
+
+[node name="UPNPLabel" type="Label" parent="MarginContainer/VBoxContainer/ConnectionSettings/UPNPHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Use UPNP:"
+
+[node name="UPNPCheck" type="CheckBox" parent="MarginContainer/VBoxContainer/ConnectionSettings/UPNPHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+
+[node name="MatchSettings" type="VBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="MatchTitle" type="Label" parent="MarginContainer/VBoxContainer/MatchSettings"]
+layout_mode = 2
+text = "Match Settings"
+theme_override_font_sizes/font_size = 20
+
+[node name="DifficultyHBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer/MatchSettings"]
+layout_mode = 2
+
+[node name="DifficultyLabel" type="Label" parent="MarginContainer/VBoxContainer/MatchSettings/DifficultyHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Difficulty:"
+
+[node name="DifficultyOption" type="OptionButton" parent="MarginContainer/VBoxContainer/MatchSettings/DifficultyHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+selected = 0
+item_count = 3
+popup/item_0/text = "Easy"
+popup/item_0/id = 0
+popup/item_1/text = "Normal"
+popup/item_1/id = 1
+popup/item_2/text = "Hard"
+popup/item_2/id = 2
+
+[node name="Buttons" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="BackButton" type="Button" parent="MarginContainer/VBoxContainer/Buttons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Back"
+
+[node name="HostButton" type="Button" parent="MarginContainer/VBoxContainer/Buttons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Host Game"
+
+[connection signal="pressed" from="MarginContainer/VBoxContainer/Buttons/BackButton" to="." method="_on_back_pressed"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/Buttons/HostButton" to="." method="_on_host_pressed"]

@@ -1,0 +1,37 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://ck1dkigkv5bce" path="res://game/world/actors/effects/fog_zone.gd" id="1_script"]
+[ext_resource type="Shader" uid="uid://b6sk1ppj5fwe" path="res://game/world/actors/effects/fog.gdshader" id="2_shader"]
+
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_fog"]
+shader = ExtResource("2_shader")
+shader_parameter/density = 0.5
+shader_parameter/albedo = Color(1, 1, 1, 1)
+shader_parameter/emission_strength = 0.0
+shader_parameter/height_falloff = 1.0
+shader_parameter/edge_fade = 0.1
+shader_parameter/noise_scale = Vector3(1, 1, 1)
+shader_parameter/noise_velocity = Vector3(0, 0, 0)
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_noise"]
+noise_type = 2
+frequency = 0.05
+fractal_type = 2
+
+[sub_resource type="NoiseTexture3D" id="NoiseTexture3D_fog"]
+width = 64
+height = 64
+depth = 64
+seamless = true
+noise = SubResource("FastNoiseLite_noise")
+
+[node name="FogZone" type="Node3D"]
+script = ExtResource("1_script")
+size = Vector3(10, 5, 10)
+density = 0.1
+
+[node name="FogVolume" type="FogVolume" parent="."]
+size = Vector3(10, 5, 10)
+shape = 0
+material = SubResource("ShaderMaterial_fog")

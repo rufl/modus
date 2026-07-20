@@ -1,0 +1,85 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://dwyywp4kogwei" path="res://game/world/actors/door.gd" id="1_door"]
+[ext_resource type="Script" uid="uid://cjj80k2h73gy5" path="res://game/scripts/components/interactable.gd" id="2_interact"]
+[ext_resource type="Script" uid="uid://37es6ssiisq8" path="res://game/world/actors/trigger_zone.gd" id="3_trigger"]
+
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_door"]
+size = Vector3(1.2, 2.2, 0.2)
+
+[sub_resource type="Animation" id="Animation_open"]
+resource_name = "open"
+length = 0.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Visuals/Panel:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(0, 1.1, 0), Vector3(0, 3.3, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_door"]
+_data = {
+"open": SubResource("Animation_open")
+}
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_trigger"]
+size = Vector3(2, 2.2, 2)
+
+[node name="Door" type="Node3D"]
+script = ExtResource("1_door")
+
+[node name="Visuals" type="Node3D" parent="."]
+
+[node name="Frame" type="CSGBox3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.7, 1.1, 0)
+size = Vector3(0.2, 2.2, 0.2)
+material_override = null
+
+[node name="Frame2" type="CSGBox3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.7, 1.1, 0)
+size = Vector3(0.2, 2.2, 0.2)
+material_override = null
+
+[node name="Frame3" type="CSGBox3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.3, 0)
+size = Vector3(1.6, 0.2, 0.2)
+material_override = null
+
+[node name="Panel" type="CSGBox3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+size = Vector3(1.2, 2.2, 0.1)
+material_override = null
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Visuals/Panel"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Visuals/Panel/StaticBody3D"]
+shape = SubResource("BoxShape3D_door")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_door")
+}
+
+[node name="Interactable" type="Area3D" parent="."]
+collision_layer = 8
+collision_mask = 0
+script = ExtResource("2_interact")
+prompt_text = "Open"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Interactable"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+shape = SubResource("BoxShape3D_trigger")
+
+[node name="TriggerZone" type="Area3D" parent="."]
+script = ExtResource("3_trigger")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="TriggerZone"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+shape = SubResource("BoxShape3D_trigger")

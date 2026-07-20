@@ -1,0 +1,120 @@
+{
+    "basic_loot": {
+        "rolls": 1,
+        "entries": [
+            {
+                "item_id": "health_small",
+                "weight": 40
+            },
+            {
+                "item_id": "ammo_clip",
+                "weight": 40
+            },
+            {
+                "is_empty": true,
+                "weight": 20
+            }
+        ]
+    },
+    "tier1_loot": {
+        "rolls": 1,
+        "entries": [
+            {
+                "item_id": "health_small",
+                "weight": 30
+            },
+            {
+                "item_id": "ammo_clip",
+                "weight": 30
+            },
+            {
+                "item_id": "health_medium",
+                "weight": 10
+            },
+            {
+                "is_empty": true,
+                "weight": 30
+            }
+        ]
+    },
+    "tier2_loot": {
+        "rolls": 1,
+        "entries": [
+            {
+                "item_id": "health_medium",
+                "weight": 35
+            },
+            {
+                "item_id": "ammo_box",
+                "weight": 35
+            },
+            {
+                "item_id": "health_large",
+                "weight": 10
+            },
+            {
+                "is_empty": true,
+                "weight": 20
+            }
+        ]
+    },
+    "tier3_loot": {
+        "rolls": 2,
+        "entries": [
+            {
+                "item_id": "health_large",
+                "weight": 40
+            },
+            {
+                "item_id": "ammo_box",
+                "weight": 40
+            },
+            {
+                "item_id": "health_mega",
+                "weight": 10
+            },
+            {
+                "is_empty": true,
+                "weight": 10
+            }
+        ]
+    },
+    "tier4_boss_loot": {
+        "rolls": 3,
+        "entries": [
+            {
+                "item_id": "health_mega",
+                "weight": 50
+            },
+            {
+                "item_id": "ammo_box",
+                "weight": 50
+            },
+            {
+                "item_id": "weapon_rocket_launcher",
+                "weight": 30
+            },
+            {
+                "item_id": "health_large",
+                "weight": 20
+            }
+        ]
+    },
+    "boss_loot": {
+        "rolls": 3,
+        "entries": [
+            {
+                "item_id": "health_large",
+                "weight": 100
+            },
+            {
+                "item_id": "ammo_box",
+                "weight": 100
+            },
+            {
+                "item_id": "weapon_rocket_launcher",
+                "weight": 50
+            }
+        ]
+    }
+}

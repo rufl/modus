@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "GDLint Modified Files",
+  "description": "Runs gdlint only on modified GDScript files to quickly check for issues without processing the entire project",
+  "version": "1",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Run gdlint only on GDScript files that have been modified (staged or unstaged changes in git). Use the command: git diff --name-only HEAD | grep '\\.gd$' | grep -v '^addons/' | xargs -r gdlint"
+  }
+}

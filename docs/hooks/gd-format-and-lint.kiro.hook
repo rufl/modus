@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "GDScript Format & Lint",
+  "description": "Runs both gdformat and gdlint on GDScript files when they are saved - first formats the code, then checks for any remaining issues",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "*.gd"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "First run gdformat on the edited GDScript file to format it, then run gdlint to check for any style issues or problems. Use these commands in sequence: gdformat [filename] && gdlint [filename]"
+  }
+}

@@ -1,0 +1,28 @@
+[gd_scene load_steps=5 format=3 uid="uid://button_stand_scene"]
+
+[ext_resource type="Script" path="res://game/scenes/environment/interactables/button_stand.gd" id="1_btn"]
+[ext_resource type="Script" path="res://game/scripts/components/interactable.gd" id="2_interactable"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_interact"]
+size = Vector3(1, 1.5, 1)
+
+[node name="ButtonStand" type="Node3D"]
+script = ExtResource("1_btn")
+
+[node name="Stand" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+size = Vector3(0.4, 1.0, 0.4)
+
+[node name="ButtonMesh" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.05, 0)
+size = Vector3(0.2, 0.1, 0.2)
+material_override = null
+
+[node name="Interactable" type="Area3D" parent="."]
+script = ExtResource("2_interactable")
+prompt_text = "Press Button"
+cooldown = 0.2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Interactable"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+shape = SubResource("BoxShape3D_interact")

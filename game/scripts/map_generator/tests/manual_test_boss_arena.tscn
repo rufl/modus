@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://c8yvxqr5yjxqh"]
+
+[ext_resource type="Script" path="res://game/scripts/map_generator/tests/manual_test_boss_arena.gd" id="1_boss_arena"]
+
+[node name="ManualTestBossArena" type="Node2D"]
+script = ExtResource("1_boss_arena")

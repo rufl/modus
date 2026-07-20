@@ -1,0 +1,359 @@
+[gd_scene format=3 uid="uid://ct7hvxdxb37a3"]
+
+[ext_resource type="Script" uid="uid://cqax20ot5l35f" path="res://game/world/world.gd" id="1_ho7yh"]
+[ext_resource type="PackedScene" uid="uid://cwg6lxpn5ymv8" path="res://game/ui/hud/progression_hud.tscn" id="2_prog_hud"]
+[ext_resource type="PackedScene" uid="uid://bpfh8dskxp8rx" path="res://game/ui/skill_tree_ui.tscn" id="2_skill_tree"]
+[ext_resource type="Script" path="res://game/world/loot_spawner.gd" id="loot_spawner_script"]
+[ext_resource type="PackedScene" uid="uid://cweapon_pickup_pistol" path="res://game/scenes/items/pickups/pistol_pickup.tscn" id="pistol_pickup"]
+[ext_resource type="PackedScene" uid="uid://chealth_pickup" path="res://game/scenes/items/pickups/health_pickup.tscn" id="health_pickup"]
+[ext_resource type="Script" uid="uid://c2cgttnv3eyk4" path="res://game/ui/hud/fps_counter.gd" id="4_2328u"]
+[ext_resource type="Shader" uid="uid://b6ayymrhkylhq" path="res://game/art/shaders/blur.gdshader" id="4_p7mxg"]
+[ext_resource type="Script" uid="uid://b27aob5qnudbc" path="res://game/ui/menus/menu/options_button.gd" id="6_7g7sm"]
+[ext_resource type="Script" uid="uid://c2x5dfu5721f3" path="res://game/ui/menus/menu/pause/resume.gd" id="7_5cdyw"]
+[ext_resource type="Script" uid="uid://bwsx8kqlkw7j5" path="res://game/ui/menus/menu/pause/quit.gd" id="9_ucmny"]
+[ext_resource type="PackedScene" uid="uid://df4m8k2vnrp5q" path="res://game/ui/menus/mod_manager_ui.tscn" id="20_mod_manager"]
+[ext_resource type="PackedScene" path="res://game/ui/menus/options_menu.tscn" id="21_options_menu"]
+[ext_resource type="PackedScene" path="res://game/ui/menus/host_game_menu.tscn" id="22_host_menu"]
+[ext_resource type="PackedScene" path="res://game/ui/menus/save_load_menu.tscn" id="23_save_menu"]
+[ext_resource type="PackedScene" path="res://game/ui/menus/multiplayer_menu.tscn" id="24_mp_menu"]
+[ext_resource type="PackedScene" uid="uid://status_effects_hud" path="res://game/ui/hud/status_effects_hud.tscn" id="25_status_hud"]
+
+[sub_resource type="PhysicalSkyMaterial" id="PhysicalSkyMaterial_r06yd"]
+energy_multiplier = 1.25
+
+[sub_resource type="Sky" id="Sky_78err"]
+sky_material = SubResource("PhysicalSkyMaterial_r06yd")
+
+[sub_resource type="Environment" id="Environment_v7lsv"]
+background_mode = 2
+sky = SubResource("Sky_78err")
+tonemap_mode = 2
+tonemap_white = 6.0
+glow_blend_mode = 4
+fog_enabled = true
+fog_sun_scatter = 0.17
+fog_density = 0.0099
+fog_aerial_perspective = 1.0
+
+[sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_wntx8"]
+
+[sub_resource type="NavigationMesh" id="NavigationMesh_f8f7t"]
+
+[sub_resource type="Animation" id="Animation_ug7wi"]
+resource_name = "Dolly"
+length = 120.0
+loop_mode = 1
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("../DollyCamera:position:z")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0, 0, 0, 0),
+"points": PackedFloat32Array(0.659, -0.25, 0, 0.25, 0, -14.157, -0.25, 0, 0.25, 0, 13.2434, -0.25, 0, 0.25, 0, 0.659, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 30.0667, 89.9333, 120)
+}
+
+[sub_resource type="Animation" id="Animation_ei2s0"]
+length = 0.001
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("../DollyCamera:position:z")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(13.2434, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_lekn2"]
+_data = {
+&"Dolly": SubResource("Animation_ug7wi"),
+&"RESET": SubResource("Animation_ei2s0")
+}
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_nou27"]
+shader = ExtResource("4_p7mxg")
+shader_parameter/blur_amount = 2.0
+shader_parameter/mix_amount = 0.0
+shader_parameter/color_over = Color(0, 0, 0, 1)
+
+[sub_resource type="Theme" id="Theme_utqnk"]
+
+[node name="World" type="Node" unique_id=711411182]
+script = ExtResource("1_ho7yh")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=88852526 groups=["world_environment"]]
+environment = SubResource("Environment_v7lsv")
+camera_attributes = SubResource("CameraAttributesPractical_wntx8")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1500178898]
+transform = Transform3D(-0.835807, -0.47011, 0.283589, -0.375944, 0.866496, 0.328406, -0.400115, 0.167871, -0.900959, 0, 4.88489, 0)
+light_energy = 5.0
+shadow_enabled = true
+shadow_bias = 0.02
+directional_shadow_split_2 = 0.3
+directional_shadow_max_distance = 50.0
+
+[node name="FpsCounter" type="Label" parent="." unique_id=958106627]
+offset_right = 40.0
+offset_bottom = 23.0
+script = ExtResource("4_2328u")
+
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="." unique_id=238971701]
+navigation_mesh = SubResource("NavigationMesh_f8f7t")
+
+[node name="map" type="CSGCombiner3D" parent="NavigationRegion3D"]
+use_collision = true
+
+[node name="Floor" type="CSGBox3D" parent="NavigationRegion3D/map"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
+size = Vector3(50, 2, 50)
+
+[node name="Wall1" type="CSGBox3D" parent="NavigationRegion3D/map"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, -26)
+size = Vector3(52, 10, 2)
+
+[node name="Wall2" type="CSGBox3D" parent="NavigationRegion3D/map"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 26)
+size = Vector3(52, 10, 2)
+
+[node name="Wall3" type="CSGBox3D" parent="NavigationRegion3D/map"]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -26, 4, 0)
+size = Vector3(54, 10, 2)
+
+[node name="Wall4" type="CSGBox3D" parent="NavigationRegion3D/map"]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 26, 4, 0)
+size = Vector3(54, 10, 2)
+
+[node name="Platform" type="CSGBox3D" parent="NavigationRegion3D/map"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+size = Vector3(10, 4, 10)
+
+[node name="Ramp" type="CSGBox3D" parent="NavigationRegion3D/map"]
+transform = Transform3D(0.866025, -0.5, 0, 0.5, 0.866025, 0, 0, 0, 1, 10, 1, 0)
+operation = 0
+size = Vector3(12, 1, 4)
+
+[node name="PlayerSpawn1" type="Marker3D" parent="NavigationRegion3D/map" groups=["player_spawn"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 10)
+
+[node name="PlayerSpawn2" type="Marker3D" parent="NavigationRegion3D/map" groups=["player_spawn"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -10)
+
+[node name="WeaponSpawner1" type="Marker3D" parent="NavigationRegion3D/map"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+script = ExtResource("loot_spawner_script")
+item_scene = ExtResource("pistol_pickup")
+respawn_time = 5.0
+
+[node name="HealthSpawner1" type="Marker3D" parent="NavigationRegion3D/map"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0.5, 0)
+script = ExtResource("loot_spawner_script")
+item_scene = ExtResource("health_pickup")
+respawn_time = 10.0
+
+[node name="HealthSpawner2" type="Marker3D" parent="NavigationRegion3D/map"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 0.5, 0)
+script = ExtResource("loot_spawner_script")
+item_scene = ExtResource("health_pickup")
+respawn_time = 10.0
+
+[node name="Menu" type="CanvasLayer" parent="." unique_id=2099215771]
+layer = 100
+
+[node name="MenuMusic" type="AudioStreamPlayer" parent="Menu" unique_id=1277394163]
+unique_name_in_owner = true
+
+volume_db = -20.0
+autoplay = false
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Menu" unique_id=1526652328]
+root_node = NodePath("../Blur")
+libraries = {
+"": SubResource("AnimationLibrary_lekn2")
+}
+autoplay = &"Dolly"
+
+[node name="Blur" type="ColorRect" parent="Menu" unique_id=1358254535]
+material = SubResource("ShaderMaterial_nou27")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="DollyCamera" type="Camera3D" parent="Menu" unique_id=1599460800]
+transform = Transform3D(-1, 0, 8.74228e-08, 0, 1, 0, -8.74228e-08, 0, -1, 0, 0.702964, 13.2434)
+
+[node name="Options" parent="Menu" unique_id=130012252 instance=ExtResource("21_options_menu")]
+unique_name_in_owner = true
+z_index = 1
+visible = false
+
+[node name="HostGameMenu" parent="Menu" unique_id=1189288179 instance=ExtResource("22_host_menu")]
+unique_name_in_owner = true
+z_index = 1
+visible = false
+
+[node name="SaveLoadMenu" parent="Menu" unique_id=1015804778 instance=ExtResource("23_save_menu")]
+unique_name_in_owner = true
+z_index = 1
+visible = false
+
+[node name="MultiplayerMenu" parent="Menu" unique_id=148662410 instance=ExtResource("24_mp_menu")]
+unique_name_in_owner = true
+z_index = 1
+visible = false
+
+[node name="PauseMenu" type="PanelContainer" parent="Menu" unique_id=1888700205]
+z_index = 1
+visible = false
+anchors_preset = 13
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -180.0
+offset_right = 180.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="Menu/PauseMenu" unique_id=586118609]
+layout_mode = 2
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 15
+theme_override_constants/margin_bottom = 15
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Menu/PauseMenu/MarginContainer" unique_id=2042698271]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 10
+
+[node name="PauseLabel" type="Label" parent="Menu/PauseMenu/MarginContainer/VBoxContainer" unique_id=184749969]
+layout_mode = 2
+text = "Pause Menu
+"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Resume" type="Button" parent="Menu/PauseMenu/MarginContainer/VBoxContainer" unique_id=1556596936]
+layout_mode = 2
+text = "Resume"
+script = ExtResource("7_5cdyw")
+
+[node name="Options" type="Button" parent="Menu/PauseMenu/MarginContainer/VBoxContainer" unique_id=2082349371]
+layout_mode = 2
+text = "Options"
+
+[node name="Saves" type="Button" parent="Menu/PauseMenu/MarginContainer/VBoxContainer" unique_id=1591345955]
+layout_mode = 2
+text = "Save / Load"
+
+[node name="Quit" type="Button" parent="Menu/PauseMenu/MarginContainer/VBoxContainer" unique_id=103767450]
+layout_mode = 2
+text = "Quit"
+script = ExtResource("9_ucmny")
+
+[node name="MainMenu" type="PanelContainer" parent="Menu" unique_id=401271361]
+unique_name_in_owner = true
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_right = 391.0
+grow_vertical = 2
+theme = SubResource("Theme_utqnk")
+
+[node name="MarginContainer" type="MarginContainer" parent="Menu/MainMenu" unique_id=530909032]
+layout_mode = 2
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 15
+theme_override_constants/margin_bottom = 15
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Menu/MainMenu/MarginContainer" unique_id=880169613]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 10
+
+[node name="LobbyLabel" type="Label" parent="Menu/MainMenu/MarginContainer/VBoxContainer" unique_id=2053394476]
+layout_mode = 2
+text = "Main Menu"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="EditorButton" type="Button" parent="Menu/MainMenu/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Join as Editor"
+
+[node name="SinglePlayerButton" type="Button" parent="Menu/MainMenu/MarginContainer/VBoxContainer" unique_id=299256948]
+layout_mode = 2
+text = "Single Player"
+
+[node name="MultiplayerButton" type="Button" parent="Menu/MainMenu/MarginContainer/VBoxContainer" unique_id=991059733]
+layout_mode = 2
+text = "Multiplayer"
+
+[node name="LoadButton" type="Button" parent="Menu/MainMenu/MarginContainer/VBoxContainer" unique_id=580808169]
+layout_mode = 2
+text = "Load Profile"
+
+[node name="OptionsButton" type="Button" parent="Menu/MainMenu/MarginContainer/VBoxContainer" unique_id=653986106]
+layout_mode = 2
+toggle_mode = true
+text = "Options"
+script = ExtResource("6_7g7sm")
+
+[node name="Quit" type="Button" parent="Menu/MainMenu/MarginContainer/VBoxContainer" unique_id=1060452302]
+layout_mode = 2
+text = "Quit"
+script = ExtResource("9_ucmny")
+
+[node name="MusicToggle" type="CheckButton" parent="Menu/MainMenu" unique_id=1040360653]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 8
+button_pressed = true
+text = "Music"
+
+[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="." unique_id=975857570]
+_spawnable_scenes = PackedStringArray("uid://b2qhxdrnviyqf")
+spawn_path = NodePath("..")
+
+[node name="GameHUD" type="CanvasLayer" parent="." unique_id=117782054]
+
+[node name="ProgressionHUD" parent="GameHUD" unique_id=303164944 instance=ExtResource("2_prog_hud")]
+unique_name_in_owner = true
+visible = false
+
+[node name="SkillTreeUI" parent="GameHUD" unique_id=1686510513 instance=ExtResource("2_skill_tree")]
+visible = false
+
+[node name="ModManagerUI" parent="GameHUD" unique_id=1293478004 instance=ExtResource("20_mod_manager")]
+visible = false
+
+[node name="StatusEffectsHUD" parent="GameHUD" instance=ExtResource("25_status_hud")]
+unique_name_in_owner = true
+visible = false
+
+[connection signal="back_pressed" from="Menu/Options" to="." method="_on_back_pressed"]
+[connection signal="back_pressed" from="Menu/HostGameMenu" to="." method="_on_host_menu_back"]
+[connection signal="host_requested" from="Menu/HostGameMenu" to="." method="_on_host_requested"]
+[connection signal="back_pressed" from="Menu/SaveLoadMenu" to="." method="_on_save_menu_back"]
+[connection signal="play_requested" from="Menu/SaveLoadMenu" to="." method="_on_single_player_start_requested"]
+[connection signal="back_pressed" from="Menu/MultiplayerMenu" to="." method="_on_multiplayer_menu_back"]
+[connection signal="host_setup_requested" from="Menu/MultiplayerMenu" to="." method="_on_host_setup_requested"]
+[connection signal="join_requested" from="Menu/MultiplayerMenu" to="." method="_on_join_requested"]
+[connection signal="pressed" from="Menu/PauseMenu/MarginContainer/VBoxContainer/Resume" to="." method="_on_resume_pressed"]
+[connection signal="pressed" from="Menu/PauseMenu/MarginContainer/VBoxContainer/Options" to="." method="_on_options_pressed"]
+[connection signal="pressed" from="Menu/PauseMenu/MarginContainer/VBoxContainer/Saves" to="." method="_on_saves_pressed"]
+[connection signal="pressed" from="Menu/MainMenu/MarginContainer/VBoxContainer/EditorButton" to="." method="_on_editor_button_pressed"]
+[connection signal="pressed" from="Menu/MainMenu/MarginContainer/VBoxContainer/SinglePlayerButton" to="." method="_on_single_player_pressed"]
+[connection signal="pressed" from="Menu/MainMenu/MarginContainer/VBoxContainer/MultiplayerButton" to="." method="_on_multiplayer_pressed"]
+[connection signal="pressed" from="Menu/MainMenu/MarginContainer/VBoxContainer/LoadButton" to="." method="_on_load_profile_pressed"]
+[connection signal="toggled" from="Menu/MainMenu/MarginContainer/VBoxContainer/OptionsButton" to="." method="_on_options_button_toggled"]
+[connection signal="toggled" from="Menu/MainMenu/MusicToggle" to="." method="_on_music_toggle_toggled"]

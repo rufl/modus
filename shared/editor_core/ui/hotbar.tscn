@@ -1,0 +1,17 @@
+[gd_scene format=3 uid="uid://d3xm8qwv7k6nl"]
+
+[ext_resource type="Script" path="res://shared/editor_core/ui/hotbar.gd" id="1_hotbar"]
+
+
+[node name="Hotbar" type="HBoxContainer"]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -225.0
+offset_top = -60.0
+offset_right = 225.0
+grow_horizontal = 2
+grow_vertical = 0
+script = ExtResource("1_hotbar")

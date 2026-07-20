@@ -1,0 +1,10 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://cuwf8wke43m3y" path="res://game/world/actors/day_night_controller.gd" id="1_daynight"]
+
+
+[node name="DayNightController" type="Node3D"]
+script = ExtResource("1_daynight")
+cycle_enabled = true
+cycle_duration_minutes = 10.0
+start_hour = 8.0

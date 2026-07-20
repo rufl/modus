@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3 uid="uid://c8k3xnqm2yxoj"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_blood"]
+albedo_color = Color(0.6, 0, 0, 0.8)
+transparency = 1
+
+[node name="BloodDecal" type="Decal"]
+extents = Vector3(0.5, 0.1, 0.5)
+texture_albedo = null
+albedo_mix = 1.0
+modulate = Color(0.7, 0, 0, 0.8)
+cull_mask = 1048575
+normal_fade = 0.5

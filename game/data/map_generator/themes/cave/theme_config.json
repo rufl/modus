@@ -1,0 +1,26 @@
+{
+	"name": "cave",
+	"description": "Natural cave system with highly organic shapes",
+	"room_metadata": {
+		"small": {
+			"lighting_intensity": 0.4,
+			"wall_height": 2.0
+		},
+		"medium": {
+			"lighting_intensity": 0.3,
+			"wall_height": 2.5
+		},
+		"large": {
+			"lighting_intensity": 0.3,
+			"wall_height": 3.5
+		},
+		"boss_arena": {
+			"lighting_intensity": 0.5,
+			"wall_height": 6.0
+		}
+	},
+	"shape_adjustments": {
+		"complexity_multiplier": 1.8,
+		"min_spacing": 1
+	}
+}

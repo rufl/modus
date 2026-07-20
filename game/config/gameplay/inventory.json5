@@ -1,0 +1,36 @@
+{
+  // Inventory system configuration
+  // Controls item storage, capacity, and management
+  
+  "inventory": {
+    // General inventory settings
+    "default_max_slots": 20,        // Default maximum inventory slots
+    "allow_overflow": false,        // Whether items can exceed max slots
+    "auto_stack": true,             // Automatically stack stackable items
+    "auto_sort": false,             // Automatically sort items by type
+    
+    // Item stacking
+    "stacking": {
+      "enabled": true,
+      "default_max_stack": 99,      // Default max stack size
+      "consumable_max_stack": 10,   // Max stack for consumables
+      "ammo_max_stack": 100,        // Max stack for ammo
+      "material_max_stack": 99      // Max stack for materials
+    },
+    
+    // Item pickup
+    "pickup": {
+      "auto_pickup_enabled": true,  // Automatically pick up items
+      "pickup_range": 2.0,          // Range in meters for item pickup
+      "pickup_delay": 0.1,          // Delay between pickups in seconds
+      "show_pickup_notification": true
+    },
+    
+    // Item drop
+    "drop": {
+      "drop_distance": 1.5,         // Distance in front of player to drop items
+      "drop_force": 3.0,            // Initial force applied to dropped items
+      "drop_lifetime": 300.0        // Time before dropped items despawn (seconds)
+    }
+  }
+}

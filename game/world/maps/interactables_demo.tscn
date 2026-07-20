@@ -1,0 +1,114 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="PackedScene" path="res://game/scenes/environment/door.tscn" id="1_door"]
+[ext_resource type="PackedScene" path="res://game/scenes/environment/interactables/button_stand.tscn" id="2_button"]
+[ext_resource type="PackedScene" path="res://game/scenes/environment/interactables/lever.tscn" id="3_lever"]
+[ext_resource type="PackedScene" path="res://game/scenes/environment/moving_platform.tscn" id="4_platform"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_floor"]
+albedo_color = Color(0.2, 0.25, 0.2, 1)
+
+[sub_resource type="GDScript" id="GDScript_connector"]
+script/source = "extends Node3D
+
+## Interactables Demo Controller
+## Connects buttons/levers to doors/platforms
+
+@export var button1: Node3D
+@export var door1: Node3D
+@export var lever1: Node3D
+@export var platform1: Node3D
+
+func _ready() -> void:
+	# Connect button to door
+	if button1 and door1:
+		if button1.has_signal(\"activated\"):
+			button1.activated.connect(_on_button1_activated)
+		elif button1.has_signal(\"pressed\"):
+			button1.pressed.connect(_on_button1_activated)
+	
+	# Connect lever to platform
+	if lever1 and platform1:
+		if lever1.has_signal(\"toggled\"):
+			lever1.toggled.connect(_on_lever1_toggled)
+		elif lever1.has_signal(\"activated\"):
+			lever1.activated.connect(_on_lever1_activated)
+
+func _on_button1_activated() -> void:
+	if door1 and door1.has_method(\"toggle\"):
+		door1.toggle()
+	elif door1 and door1.has_method(\"open\"):
+		door1.open()
+
+func _on_lever1_toggled(is_on: bool) -> void:
+	if platform1 and platform1.has_method(\"set_active\"):
+		platform1.set_active(is_on)
+
+func _on_lever1_activated() -> void:
+	if platform1 and platform1.has_method(\"toggle\"):
+		platform1.toggle()
+"
+
+[node name="InteractablesDemo" type="Node3D"]
+script = SubResource("GDScript_connector")
+
+[node name="Floor" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+use_collision = true
+size = Vector3(20, 1, 20)
+material = SubResource("StandardMaterial3D_floor")
+
+[node name="TitleLabel" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, -9)
+text = "Interactables Demo
+Buttons, Levers, Doors, Platforms"
+font_size = 32
+modulate = Color(1, 0.8, 0.3, 1)
+
+[node name="ButtonDoorSection" type="Node3D" parent="."]
+
+[node name="SectionLabel" type="Label3D" parent="ButtonDoorSection"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 2, -5)
+text = "Button → Door"
+font_size = 20
+
+[node name="Button1" parent="ButtonDoorSection" instance=ExtResource("2_button")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, -3)
+
+[node name="Door1" parent="ButtonDoorSection" instance=ExtResource("1_door")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, 0)
+
+[node name="DoorFrame" type="CSGBox3D" parent="ButtonDoorSection"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 1.5, 0)
+operation = 2
+size = Vector3(2.5, 3, 1)
+
+[node name="LeverPlatformSection" type="Node3D" parent="."]
+
+[node name="SectionLabel" type="Label3D" parent="LeverPlatformSection"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 2, -5)
+text = "Lever → Platform"
+font_size = 20
+
+[node name="Lever1" parent="LeverPlatformSection" instance=ExtResource("3_lever")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, -3)
+
+[node name="Platform1" parent="LeverPlatformSection" instance=ExtResource("4_platform")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.5, 2)
+
+[node name="TriggerZoneSection" type="Node3D" parent="."]
+
+[node name="SectionLabel" type="Label3D" parent="TriggerZoneSection"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 5)
+text = "Trigger Zone
+(Walk through to activate)"
+font_size = 18
+
+[node name="TriggerArea" type="Area3D" parent="TriggerZoneSection"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 7)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="TriggerZoneSection/TriggerArea"]
+
+[node name="TriggerVisual" type="CSGBox3D" parent="TriggerZoneSection/TriggerArea"]
+transparency = 0.7
+size = Vector3(3, 2, 1)

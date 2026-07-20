@@ -1,0 +1,5 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://game/world/maps/comprehensive_showcase.tscn" id="1_showcase"]
+
+[node name="Showcase" instance=ExtResource("1_showcase")]

@@ -1,0 +1,14 @@
+{
+	"dimensions": [2.0, 2.0, 2.0],
+	"anchor_points": [
+		[0.0, 0.0, 0.0]
+	],
+	"required_theme": "tech",
+	"density_weight": 1.0,
+	"tags": ["prop", "cover"],
+	"collision_radius": 1.0,
+	"placement_rules": {
+		"min_distance_from_walls": 0.5,
+		"requires_floor": true
+	}
+}

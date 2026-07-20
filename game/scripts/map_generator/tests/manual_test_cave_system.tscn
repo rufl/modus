@@ -1,0 +1,60 @@
+[gd_scene load_steps=2 format=3 uid="uid://c8vqm7xk3ypn5"]
+
+[ext_resource type="Script" path="res://game/scripts/map_generator/tests/manual_test_cave_system.gd" id="1"]
+
+[node name="ManualTestCaveSystem" type="Node2D"]
+script = ExtResource("1")
+
+[node name="GridDisplay" type="TextureRect" parent="."]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 788.0
+offset_bottom = 788.0
+expand_mode = 1
+stretch_mode = 5
+
+[node name="InfoLabel" type="Label" parent="."]
+offset_left = 820.0
+offset_top = 20.0
+offset_right = 1140.0
+offset_bottom = 400.0
+theme_override_font_sizes/font_size = 16
+text = "Cave System Generator Test
+Seed: 0
+Cave Bias: 0.50
+Cave Regions: 0
+Cave Cells: 0
+Cave Entrances: 0
+Generation Time: 0 ms
+
+Colors:
+  White = Rooms
+  Gray = Hallways
+  Brown = Caves
+  Orange = Cave Entrances
+  Black = Empty"
+
+[node name="RegenerateButton" type="Button" parent="."]
+offset_left = 820.0
+offset_top = 420.0
+offset_right = 1020.0
+offset_bottom = 470.0
+text = "Regenerate (New Seed)"
+
+[node name="CaveBiasSlider" type="HSlider" parent="."]
+offset_left = 820.0
+offset_top = 500.0
+offset_right = 1020.0
+offset_bottom = 530.0
+min_value = 0.0
+max_value = 1.0
+step = 0.05
+value = 0.5
+
+[node name="CaveBiasLabel" type="Label" parent="."]
+offset_left = 820.0
+offset_top = 540.0
+offset_right = 1020.0
+offset_bottom = 570.0
+theme_override_font_sizes/font_size = 16
+text = "Cave Bias: 0.50"

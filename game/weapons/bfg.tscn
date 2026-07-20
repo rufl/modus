@@ -1,0 +1,30 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://game/weapons/weapon_feedback_system.gd" id="1_feedback"]
+[ext_resource type="Script" path="res://game/weapons/weapon_effects.gd" id="2_effects"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bfg"]
+albedo_color = Color(0.1, 0.9, 0.2, 1)
+emission_enabled = true
+emission = Color(0.1, 0.9, 0.2, 1)
+emission_energy_multiplier = 2.0
+roughness = 0.3
+
+[sub_resource type="BoxMesh" id="BoxMesh_bfg"]
+size = Vector3(0.12, 0.12, 0.5)
+material = SubResource("StandardMaterial3D_bfg")
+
+[node name="BFG" type="Node3D"]
+
+[node name="Model" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.15)
+mesh = SubResource("BoxMesh_bfg")
+
+[node name="WeaponFeedbackSystem" type="Node3D" parent="."]
+script = ExtResource("1_feedback")
+
+[node name="Muzzle" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.6)
+
+[node name="WeaponEffects" type="Node3D" parent="."]
+script = ExtResource("2_effects")

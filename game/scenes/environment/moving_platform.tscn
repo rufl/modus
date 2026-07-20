@@ -1,0 +1,29 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://by3vq0tvfrdg5" path="res://game/world/actors/moving_platform.gd" id="1_platform"]
+
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_collision"]
+size = Vector3(3, 0.2, 3)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_metal"]
+albedo_color = Color(0.4, 0.4, 0.5, 1)
+metallic = 0.8
+roughness = 0.5
+
+[sub_resource type="BoxMesh" id="BoxMesh_platform"]
+material = SubResource("StandardMaterial3D_metal")
+size = Vector3(3, 0.2, 3)
+
+[node name="MovingPlatform" type="AnimatableBody3D"]
+script = ExtResource("1_platform")
+speed = 4.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_collision")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_platform")
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = null

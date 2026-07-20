@@ -1,0 +1,96 @@
+[gd_scene load_steps=8 format=3 uid="uid://blood_integration_example"]
+
+[ext_resource type="Script" path="res://game/scenes/examples/blood_pool_integration_example.gd" id="1"]
+[ext_resource type="Script" path="res://shared/shaders/blood_pool.gd" id="2"]
+[ext_resource type="Shader" path="res://shared/shaders/blood_pool.gdshader" id="3"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_floor"]
+size = Vector2(20, 20)
+subdivide_width = 64
+subdivide_depth = 64
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_blood"]
+render_priority = 0
+shader = ExtResource("3")
+shader_parameter/blood_color = Color(0.35, 0.05, 0.05, 1)
+shader_parameter/blood_merge_factor = 0.25
+shader_parameter/blood_density_on_heightmap = false
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_floor"]
+size = Vector3(20, 0.2, 20)
+
+[sub_resource type="Environment" id="Environment_scene"]
+background_mode = 1
+background_color = Color(0.15, 0.15, 0.2, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.6, 0.6, 0.6, 1)
+ambient_light_energy = 0.8
+
+[node name="BloodPoolIntegrationExample" type="Node3D"]
+script = ExtResource("1")
+spawn_test_enemy = true
+auto_damage_enemy = true
+
+[node name="Floor" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor"]
+shape = SubResource("BoxShape3D_floor")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Floor"]
+mesh = SubResource("PlaneMesh_floor")
+
+[node name="BloodPool" type="MeshInstance3D" parent="." groups=["blood_pool"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0)
+mesh = SubResource("PlaneMesh_floor")
+surface_material_override/0 = SubResource("ShaderMaterial_blood")
+script = ExtResource("2")
+pool_size = 64
+growing_time = 0.15
+drying_time = 5.0
+delay_until_drying_starts = 0.3
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.642788, 0.766044, 0, -0.766044, 0.642788, 0, 10, 12)
+fov = 70.0
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, -0.75, 0.433013, 0, 10, 0)
+light_energy = 0.9
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_scene")
+
+[node name="UI" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Instructions" type="Label" parent="UI"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 150.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 14
+text = "Blood Pool Integration Example
+
+Press Keys to Test:
+1 - Spawn blood drop
+2 - Spawn blood splatter
+3 - Spawn blood trail
+4 - Spawn gore effect
+5 - Damage test enemy
+6 - Kill test enemy
+
+Watch the test enemy move and leave blood trail!"
+horizontal_alignment = 1
+vertical_alignment = 1

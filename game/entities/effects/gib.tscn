@@ -1,0 +1,104 @@
+[gd_scene format=3 uid="uid://b8k8y4q4y4q4"]
+
+[ext_resource type="Script" uid="uid://b1kofkl4bmbr5" path="res://game/entities/effects/gib.gd" id="1_gib"]
+[ext_resource type="PhysicsMaterial" uid="uid://c8k8y4q4y4q4" path="res://game/scripts/features/effects/effects/gib_physics.tres" id="2_physics"]
+[ext_resource type="Shader" uid="uid://43onwr3ifilk" path="res://game/art/shaders/gib_meat.gdshader" id="3_neats"]
+[ext_resource type="Shader" uid="uid://dfimxuomqhkmv" path="res://game/art/shaders/blood_trail.gdshader" id="4_trail"]
+[ext_resource type="Shader" uid="uid://04naaut23ut1" path="res://game/art/shaders/blood_decal.gdshader" id="5_decal"]
+[ext_resource type="Texture2D" uid="uid://m3bp7cywyd27" path="res://game/art/textures/decals/blood_splat.png" id="6_splat"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_1"]
+radius = 0.12
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_meat"]
+render_priority = 0
+shader = ExtResource("3_neats")
+shader_parameter/pixel_size = 12.0
+shader_parameter/anim_speed = 0.1
+shader_parameter/col_dark_meat = Color(0.25, 0.05, 0.05, 1)
+shader_parameter/col_meat = Color(0.5, 0.1, 0.1, 1)
+shader_parameter/col_pink = Color(0.6, 0.15, 0.15, 1)
+shader_parameter/col_blood = Color(0.5, 0.0, 0.0, 1)
+shader_parameter/col_bone = Color(0.8, 0.7, 0.6, 1)
+shader_parameter/roughness = 0.85
+shader_parameter/emission_strength = 0.15
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_trail"]
+shader = ExtResource("4_trail")
+shader_parameter/vortex_str = 25.0
+shader_parameter/initial_velocity_min = 15.0
+shader_parameter/initial_velocity_max = 20.0
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_blood"]
+emission_shape = 1
+emission_sphere_radius = 0.05
+direction = Vector3(0, -1, 0)
+spread = 30.0
+initial_velocity_min = 2.0
+initial_velocity_max = 5.0
+gravity = Vector3(0, -9.8, 0)
+scale_min = 0.8
+scale_max = 1.2
+color = Color(0.8, 0.0, 0.0, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_blood"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.8, 0.0, 0.0, 1)
+billboard_mode = 3
+particles_anim_h_frames = 1
+particles_anim_v_frames = 1
+particles_anim_loop = false
+
+[sub_resource type="QuadMesh" id="QuadMesh_trail"]
+material = SubResource("StandardMaterial3D_blood")
+size = Vector2(0.2, 0.2)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_decal"]
+render_priority = 0
+shader = ExtResource("5_decal")
+shader_parameter/color = Color(0.6, 0.0, 0.0, 1.0)
+
+[node name="Gib" type="RigidBody3D"]
+collision_layer = 0
+collision_mask = 1
+physics_material_override = ExtResource("2_physics")
+gravity_scale = 1.0
+linear_damp = 1.0
+angular_damp = 5.0
+continuous_cd = true
+contact_monitor = true
+max_contacts_reported = 1
+script = ExtResource("1_gib")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_1")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+cast_shadow = 0
+material_override = SubResource("ShaderMaterial_meat")
+
+[node name="BloodTrail" type="GPUParticles3D" parent="."]
+emitting = false
+amount = 100
+lifetime = 0.4
+process_material = SubResource("ParticleProcessMaterial_blood")
+draw_pass_1 = SubResource("QuadMesh_trail")
+
+[node name="BloodSpray" type="GPUParticles3D" parent="."]
+emitting = false
+amount = 15
+lifetime = 0.6
+one_shot = true
+process_material = SubResource("ParticleProcessMaterial_blood")
+draw_pass_1 = SubResource("QuadMesh_trail")
+
+[node name="Decal" type="Decal" parent="."]
+visible = false
+size = Vector3(0.5, 0.5, 0.5)
+target_normal_align_direction = 0
+texture_albedo = ExtResource("6_splat")
+script = null
+
+[node name="Timer" type="Timer" parent="."]
+one_shot = true

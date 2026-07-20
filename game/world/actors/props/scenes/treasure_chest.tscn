@@ -1,0 +1,68 @@
+[gd_scene format=3 uid="uid://bwchest001"]
+
+[ext_resource type="Script" uid="uid://c1204fmwygm3q" path="res://game/world/actors/props/treasure_chest.gd" id="1_script"]
+
+
+[sub_resource type="BoxMesh" id="BoxMesh_base"]
+size = Vector3(1.2, 0.6, 0.8)
+
+[sub_resource type="BoxMesh" id="BoxMesh_lid"]
+size = Vector3(1.2, 0.2, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mat"]
+albedo_color = Color(0.4, 0.25, 0.1, 1)
+metallic = 0.2
+roughness = 0.6
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_col"]
+size = Vector3(1.2, 0.8, 0.8)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_area"]
+radius = 2.5
+
+[node name="TreasureChest" type="StaticBody3D"]
+collision_layer = 1
+collision_mask = 1
+script = ExtResource("1_script")
+chest_name = "Treasure Chest"
+loot_table_id = "treasure_chest"
+glow_color = Color(1, 0.9, 0.5, 1)
+glow_intensity = 1.5
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+mesh = SubResource("BoxMesh_base")
+surface_material_override/0 = SubResource("StandardMaterial3D_mat")
+
+[node name="LidMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, -0.3)
+mesh = SubResource("BoxMesh_lid")
+surface_material_override/0 = SubResource("StandardMaterial3D_mat")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
+shape = SubResource("BoxShape3D_col")
+
+[node name="InteractionArea" type="Area3D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="InteractionArea"]
+shape = SubResource("SphereShape3D_area")
+
+[node name="GlowLight" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+light_color = Color(1, 0.9, 0.5, 1)
+light_energy = 1.5
+omni_range = 2.5
+omni_attenuation = 1.8
+
+[node name="InteractionLabel" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
+visible = false
+billboard = 1
+text = "Press E to open"
+font_size = 32
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_interval = 0.1

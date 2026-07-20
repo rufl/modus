@@ -1,0 +1,125 @@
+[gd_scene format=3 uid="uid://vtp6lw58000p"]
+
+[ext_resource type="Script" uid="uid://cqax20ot5l35f" path="res://game/world/world.gd" id="1_ho7yh"]
+[ext_resource type="PackedScene" uid="uid://cwg6lxpn5ymv8" path="res://game/ui/hud/progression_hud.tscn" id="2_prog_hud"]
+[ext_resource type="PackedScene" uid="uid://bpfh8dskxp8rx" path="res://game/ui/skill_tree_ui.tscn" id="2_skill_tree"]
+[ext_resource type="PackedScene" path="res://game/world/maps/comprehensive_showcase.tscn" id="3_fd0sg"]
+[ext_resource type="Script" uid="uid://c2cgttnv3eyk4" path="res://game/ui/hud/fps_counter.gd" id="4_2328u"]
+[ext_resource type="Shader" uid="uid://b6ayymrhkylhq" path="res://game/art/shaders/blur.gdshader" id="4_p7mxg"]
+[ext_resource type="Script" uid="uid://b27aob5qnudbc" path="res://game/ui/menus/menu/options_button.gd" id="6_7g7sm"]
+[ext_resource type="Script" uid="uid://c2x5dfu5721f3" path="res://game/ui/menus/menu/pause/resume.gd" id="7_5cdyw"]
+[ext_resource type="Script" uid="uid://bwsx8kqlkw7j5" path="res://game/ui/menus/menu/pause/quit.gd" id="9_ucmny"]
+[ext_resource type="PackedScene" uid="uid://df4m8k2vnrp5q" path="res://game/ui/menus/mod_manager_ui.tscn" id="20_mod_manager"]
+[ext_resource type="PackedScene" path="res://game/ui/menus/options_menu.tscn" id="21_options_menu"]
+[ext_resource type="PackedScene" path="res://game/ui/menus/host_game_menu.tscn" id="22_host_menu"]
+[ext_resource type="PackedScene" path="res://game/ui/menus/save_load_menu.tscn" id="23_save_menu"]
+[ext_resource type="PackedScene" path="res://game/ui/menus/multiplayer_menu.tscn" id="24_mp_menu"]
+[ext_resource type="PackedScene" path="res://game/ui/hud/status_effects_hud.tscn" id="25_status_hud"]
+[ext_resource type="Script" uid="uid://bbd1731k1jrst" path="res://game/world/cargo_container_blocker.gd" id="26_cargo_blocker"]
+
+[sub_resource type="PhysicalSkyMaterial" id="PhysicalSkyMaterial_r06yd"]
+energy_multiplier = 1.25
+
+[sub_resource type="Sky" id="Sky_78err"]
+sky_material = SubResource("PhysicalSkyMaterial_r06yd")
+
+[sub_resource type="Environment" id="Environment_v7lsv"]
+background_mode = 2
+sky = SubResource("Sky_78err")
+tonemap_mode = 2
+tonemap_white = 6.0
+glow_blend_mode = 4
+fog_enabled = true
+fog_sun_scatter = 0.17
+fog_density = 0.0099
+fog_aerial_perspective = 1.0
+
+
+
+[sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_wntx8"]
+
+[sub_resource type="NavigationMesh" id="NavigationMesh_f8f7t"]
+vertices = PackedVector3Array(-75, 0, -75, 75, 0, -75, -75, 0, 75, 75, 0, 75)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 3, 2)])
+
+[sub_resource type="Animation" id="Animation_ug7wi"]
+resource_name = "Dolly"
+length = 120.0
+loop_mode = 1
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("../DollyCamera:position:z")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0, 0, 0, 0),
+"points": PackedFloat32Array(0.659, -0.25, 0, 0.25, 0, -14.157, -0.25, 0, 0.25, 0, 13.2434, -0.25, 0, 0.25, 0, 0.659, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 30.0667, 89.9333, 120)
+}
+
+[sub_resource type="Animation" id="Animation_ei2s0"]
+length = 0.001
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("../DollyCamera:position:z")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(13.2434, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_lekn2"]
+_data = {
+&"Dolly": SubResource("Animation_ug7wi"),
+&"RESET": SubResource("Animation_ei2s0")
+}
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_nou27"]
+shader = ExtResource("4_p7mxg")
+shader_parameter/blur_amount = 2.0
+shader_parameter/mix_amount = 0.0
+shader_parameter/color_over = Color(0, 0, 0, 1)
+
+[sub_resource type="Theme" id="Theme_utqnk"]
+
+[node name="World" type="Node" unique_id=711411182]
+script = ExtResource("1_ho7yh")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=88852526 groups=["world_environment"]]
+environment = SubResource("Environment_v7lsv")
+camera_attributes = SubResource("CameraAttributesPractical_wntx8")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1500178898]
+transform = Transform3D(-0.835807, -0.47011, 0.283589, -0.375944, 0.866496, 0.328406, -0.400115, 0.167871, -0.900959, 0, 4.88489, 0)
+light_energy = 5.0
+shadow_enabled = true
+shadow_bias = 0.02
+directional_shadow_split_2 = 0.3
+directional_shadow_max_distance = 50.0
+
+[node name="CargoContainerBlocker" type="Node3D" parent="."]
+script = ExtResource("26_cargo_blocker")
+
+[node name="FpsCounter" type="Label" parent="." unique_id=958106627]
+offset_right = 40.0
+offset_bottom = 23.0
+script = ExtResource("4_2328u")
+
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="." unique_id=238971701]
+navigation_mesh = SubResource("NavigationMesh_f8f7t")
+
+[node name="map" parent="NavigationRegion3D" unique_id=1531780146 instance=ExtResource("3_fd0sg")]
+
+[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="." unique_id=975857570]
+_spawnable_scenes = PackedStringArray("uid://b2qhxdrnviyqf")
+spawn_path = NodePath("..")
+
+[node name="GameHUD" type="CanvasLayer" parent="." unique_id=117782054]
+
+[node name="StatusEffectsHUD" parent="GameHUD" instance=ExtResource("25_status_hud")]
+unique_name_in_owner = true
+visible = false

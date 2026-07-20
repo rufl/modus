@@ -1,0 +1,44 @@
+[gd_scene format=3 uid="uid://bwcrate001"]
+
+[ext_resource type="Script" uid="uid://b6l15yoadhnlc" path="res://game/world/actors/props/breakable_prop.gd" id="1_script"]
+
+
+[sub_resource type="BoxMesh" id="BoxMesh_mesh"]
+size = Vector3(1, 1, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mat"]
+albedo_color = Color(0.545098, 0.341176, 0.192157, 1)
+roughness = 0.8
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_col"]
+size = Vector3(1, 1, 1)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_area"]
+radius = 2.0
+
+[node name="BreakableCrate" type="StaticBody3D"]
+collision_layer = 1
+collision_mask = 1
+script = ExtResource("1_script")
+prop_type = "crate"
+prop_name = "Wooden Crate"
+max_health = 50.0
+break_particle_color = Color(0.6, 0.4, 0.2, 1)
+debris_count = 5
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_mesh")
+surface_material_override/0 = SubResource("StandardMaterial3D_mat")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_col")
+
+[node name="InteractionArea" type="Area3D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="InteractionArea"]
+shape = SubResource("SphereShape3D_area")
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_interval = 0.1

@@ -1,0 +1,49 @@
+{
+    "blood_effects": {
+        "enabled": true,
+        "retro_mode": true,
+        "auto_create_pools": true,
+        "pool_settings": {
+            "size": [
+                30,
+                30
+            ],
+            "subdivisions": 32,
+            "pool_count": 64,
+            "growing_time": 0.15,
+            "drying_time": 5.0
+        },
+        "retro_settings": {
+            "pixelation_amount": 8.0,
+            "color_bands": 8.0,
+            "texture_size": 64,
+            "enable_dithering": true
+        },
+        "blood_appearance": {
+            "color": {
+                "r": 0.4,
+                "g": 0.0,
+                "b": 0.0
+            },
+            "merge_factor": 0.3,
+            "intensity": 1.5
+        },
+        "trail_settings": {
+            "enabled": true,
+            "spawn_distance": 0.5,
+            "density": 3,
+            "only_when_damaged": true
+        }
+    },
+    "visuals": {
+        "gore": {
+            "spawn_gibs": true,
+            "blood_pools": {
+                "enabled": true,
+                "intensity": 1.5,
+                "trail_enabled": true,
+                "trail_density": 3
+            }
+        }
+    }
+}

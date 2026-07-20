@@ -1,0 +1,169 @@
+{
+  // Feature Toggle Configuration
+  // Defines all toggleable features, their dependencies, and profiles
+  
+  "features": {
+    // Combat System - Core gameplay mechanics for damage, hits, and knockback
+    "combat": {
+      "name": "Combat System",
+      "description": "Handles damage calculation, hit validation, and knockback mechanics",
+      "enabled": true,
+      "dependencies": ["physics"],
+      "config_file": "gameplay/combat.json5",
+      "module_path": "res://game/scripts/features/combat/combat_feature.gd"
+    },
+    
+    // Effects System - Visual effects, particles, decals, gore
+    "effects": {
+      "name": "Effects System",
+      "description": "Manages particles, decals, gore, tracers, and explosions",
+      "enabled": true,
+      "dependencies": ["particles"],
+      "config_file": "performance/graphics.json5",
+      "module_path": "res://game/scripts/features/effects/effects_feature.gd"
+    },
+    
+    // Match System - Game modes, scoring, timers
+    "match": {
+      "name": "Match System",
+      "description": "Manages match state, scores, timers, and game modes",
+      "enabled": true,
+      "dependencies": [],
+      "config_file": null,
+      "module_path": null,
+      "core_system": true
+    },
+    
+    // Player System - Player data, sessions, reconnection
+    "player": {
+      "name": "Player System",
+      "description": "Manages player data, sessions, and reconnection",
+      "enabled": true,
+      "dependencies": [],
+      "config_file": null,
+      "module_path": null,
+      "core_system": true
+    },
+    
+    // Gameplay System - Central gameplay hub
+    "gameplay": {
+      "name": "Gameplay System",
+      "description": "Central hub for gameplay subsystems",
+      "enabled": true,
+      "dependencies": ["combat", "match", "player"],
+      "config_file": null,
+      "module_path": null,
+      "core_system": true
+    },
+    
+    // Inventory System - Item storage and management
+    "inventory": {
+      "name": "Inventory System",
+      "description": "Manages item storage, pickup, and drop mechanics",
+      "enabled": true,
+      "dependencies": [],
+      "config_file": "gameplay/inventory.json5",
+      "module_path": "res://game/scripts/features/inventory/inventory_feature.gd"
+    },
+    
+    // Loot System - Item drops and loot tables
+    "loot": {
+      "name": "Loot System",
+      "description": "Handles loot generation, drop tables, and item spawning",
+      "enabled": true,
+      "dependencies": ["inventory"],
+      "config_file": "gameplay/loot.json5",
+      "module_path": "res://game/scripts/features/loot/loot_feature.gd"
+    },
+    
+    // Audio System - Sound effects and music
+    "audio": {
+      "name": "Audio System",
+      "description": "Manages sound effects, music, and audio playback",
+      "enabled": false,
+      "dependencies": [],
+      "config_file": "performance/audio.json5",
+      "module_path": "res://game/scripts/features/audio/audio_feature.gd"
+    },
+    
+    // Network System - Multiplayer and networking
+    "network": {
+      "name": "Network System",
+      "description": "Handles multiplayer networking, synchronization, and lag compensation",
+      "enabled": false,
+      "dependencies": [],
+      "config_file": "performance/network.json5",
+      "module_path": "res://game/scripts/features/network/network_feature.gd"
+    },
+    
+    // Gore System - Visual effects for damage
+    "gore": {
+      "name": "Gore System",
+      "description": "Manages blood effects, dismemberment, and damage visuals",
+      "enabled": false,
+      "dependencies": ["particles", "physics"],
+      "config_file": "gameplay/gore.json5",
+      "module_path": "res://game/scripts/features/gore/gore_feature.gd"
+    },
+    
+    // Physics System - Core physics engine integration
+    "physics": {
+      "name": "Physics System",
+      "description": "Core physics engine integration for collision and movement",
+      "enabled": true,
+      "dependencies": [],
+      "config_file": null,
+      "module_path": null,
+      "core_system": true
+    },
+    
+    // Particles System - Visual effects and particle systems
+    "particles": {
+      "name": "Particles System",
+      "description": "Manages particle effects for visuals and feedback",
+      "enabled": true,
+      "dependencies": [],
+      "config_file": "performance/graphics.json5",
+      "module_path": null,
+      "core_system": true
+    }
+  },
+  
+  // Feature Profiles - Predefined feature sets for different game modes
+  "profiles": {
+    // Minimal profile - Only essential features for basic gameplay
+    "minimal": {
+      "description": "Minimal feature set for testing and debugging",
+      "features": ["combat", "inventory", "physics", "audio", "match", "player", "gameplay"]
+    },
+    
+    // Standard profile - Default feature set for normal gameplay
+    "standard": {
+      "description": "Standard feature set for single-player gameplay",
+      "features": ["combat", "inventory", "loot", "effects", "match", "player", "gameplay", "physics", "particles"]
+    },
+
+    // Multiplayer demo profile - explicit network-enabled pitch path
+    "multiplayer_demo": {
+      "description": "Network-enabled demo profile for multiplayer launch validation",
+      "features": ["combat", "inventory", "loot", "effects", "network", "match", "player", "gameplay", "physics", "particles"]
+    },
+    
+    // Full profile - All features enabled including multiplayer
+    "full": {
+      "description": "Complete feature set with multiplayer support",
+      "features": ["combat", "inventory", "loot", "effects", "gore", "network", "match", "player", "gameplay", "physics", "particles", "audio"]
+    }
+  },
+  
+  // Active Profile - Currently selected feature profile
+  "active_profile": "standard",
+  
+  // Development Settings
+  "development": {
+    "hot_reload_enabled": true,
+    "validate_dependencies": true,
+    "log_feature_loading": true,
+    "fail_on_missing_dependencies": true
+  }
+}

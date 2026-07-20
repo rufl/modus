@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Run Unit Tests Only",
+  "description": "Runs only unit tests (excluding benchmarks) using Godot 4.7 for faster testing cycles",
+  "version": "1",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "\"${GODOT_BIN:-godot}\" --headless --script tests/runners/run_unit_tests_only.gd"
+  }
+}

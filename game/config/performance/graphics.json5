@@ -1,0 +1,161 @@
+{
+  // Graphics and rendering performance configuration
+  // Controls visual quality, rendering features, and performance optimizations
+  
+  "graphics": {
+    // Effects quality
+    "effect_quality": "MEDIUM",    // Effect quality: LOW, MEDIUM, HIGH, ULTRA
+    
+    // Display settings
+    "display": {
+      "resolution_width": 1920,     // Window width in pixels
+      "resolution_height": 1080,    // Window height in pixels
+      "fullscreen": false,          // Start in fullscreen mode
+      "borderless": false,          // Borderless window mode
+      "vsync_enabled": true,        // Enable vertical sync
+      "max_fps": 144,               // Maximum frames per second (0 = unlimited)
+      "target_fps": 60              // Target FPS for frame pacing
+    },
+    
+    // Rendering quality presets
+    // Options: "low", "medium", "high", "ultra", "custom"
+    "quality_preset": "high",
+    
+    // Rendering features
+    "rendering": {
+      "renderer": "forward_plus",   // forward_plus, mobile, or gl_compatibility
+      "msaa": "2x",                 // Anti-aliasing: disabled, 2x, 4x, 8x
+      "fxaa": true,                 // Fast approximate anti-aliasing
+      "taa": false,                 // Temporal anti-aliasing
+      "screen_space_aa": "fxaa",    // Screen-space AA method
+      "use_debanding": true,        // Reduce color banding
+      "use_hdr": true               // High dynamic range rendering
+    },
+    
+    // Shadows
+    "shadows": {
+      "enabled": true,
+      "quality": "high",            // low, medium, high, ultra
+      "directional_shadow_size": 4096, // Shadow map resolution
+      "positional_shadow_size": 2048,  // Point/spot light shadow resolution
+      "soft_shadows": true,         // Enable shadow filtering
+      "pcf_samples": 4,             // Shadow filter samples (0, 1, 4, 9, 16)
+      "shadow_distance": 100.0,     // Maximum shadow render distance
+      "shadow_fade_start": 0.8,     // Distance to start fading shadows (0.0-1.0)
+      "cascade_splits": [5.0, 15.0, 50.0, 100.0] // Directional shadow cascade distances
+    },
+    
+    // Lighting
+    "lighting": {
+      "gi_mode": "voxel_gi",        // Global illumination: disabled, voxel_gi, sdfgi
+      "gi_quality": "medium",       // low, medium, high
+      "ssao_enabled": true,         // Screen-space ambient occlusion
+      "ssao_quality": "medium",     // low, medium, high, ultra
+      "ssil_enabled": false,        // Screen-space indirect lighting
+      "sdfgi_enabled": false,       // Signed distance field GI (large scenes)
+      "volumetric_fog": true,       // Enable volumetric fog
+      "glow_enabled": true,         // Bloom/glow effect
+      "glow_intensity": 0.8,        // Glow intensity (0.0-1.0)
+      "glow_blend_mode": "additive" // additive, screen, softlight, replace
+    },
+    
+    // Post-processing effects
+    "post_processing": {
+      "tone_mapping": "aces",       // Tone mapping: linear, reinhard, filmic, aces
+      "exposure": 1.0,              // Exposure adjustment
+      "white_point": 8.0,           // White point for tone mapping
+      "auto_exposure": false,       // Automatic exposure adjustment
+      "ssr_enabled": true,          // Screen-space reflections
+      "ssr_quality": "medium",      // low, medium, high
+      "ssil_enabled": false,        // Screen-space indirect lighting
+      "dof_enabled": false,         // Depth of field
+      "dof_quality": "medium",      // low, medium, high
+      "motion_blur": false,         // Motion blur effect
+      "motion_blur_intensity": 0.5, // Motion blur strength (0.0-1.0)
+      "chromatic_aberration": false, // Chromatic aberration effect
+      "film_grain": false,          // Film grain effect
+      "vignette": false             // Vignette effect
+    },
+    
+    // Particles and effects
+    "particles": {
+      "max_particles": 10000,       // Maximum active particles
+      "particle_lod_enabled": true, // Level of detail for particles
+      "particle_distance": 50.0,    // Maximum particle render distance
+      "particle_quality": "high",   // low, medium, high
+      "gpu_particles": true,        // Use GPU for particle simulation
+      "particle_trails": true,      // Enable particle trails
+      "collision_enabled": true     // Enable particle collision
+    },
+    
+    // Mesh and geometry
+    "mesh": {
+      "lod_enabled": true,          // Level of detail for meshes
+      "lod_threshold": 1.0,         // LOD transition threshold
+      "mesh_distance": 200.0,       // Maximum mesh render distance
+      "occlusion_culling": true,    // Frustum and occlusion culling
+      "use_mesh_compression": true, // Compress mesh data
+      "max_lights_per_object": 8   // Maximum lights affecting one object
+    },
+    
+    // Textures
+    "textures": {
+      "texture_quality": "high",    // low, medium, high, ultra
+      "anisotropic_filter": "16x",  // Texture filtering: 1x, 2x, 4x, 8x, 16x
+      "mipmap_bias": 0.0,           // Mipmap LOD bias (-2.0 to 2.0)
+      "texture_streaming": true,    // Stream textures on demand
+      "max_texture_size": 4096,     // Maximum texture resolution
+      "compress_textures": true     // Use texture compression
+    },
+    
+    // View distance and culling
+    "view_distance": {
+      "far_plane": 500.0,           // Camera far clipping plane
+      "near_plane": 0.05,           // Camera near clipping plane
+      "lod_bias": 1.0,              // LOD distance multiplier
+      "cull_margin": 5.0,           // Extra margin for culling
+      "use_occlusion_culling": true // Enable occlusion culling
+    },
+    
+    // Performance optimizations
+    "optimization": {
+      "use_batching": true,         // Batch similar draw calls
+      "use_instancing": true,       // Use GPU instancing
+      "max_draw_calls": 2000,       // Maximum draw calls per frame
+      "async_shader_compilation": true, // Compile shaders asynchronously
+      "shader_cache": true,         // Cache compiled shaders
+      "threaded_rendering": true,   // Use multiple threads for rendering
+      "low_processor_mode": false,  // Reduce CPU usage when idle
+      "physics_jitter_fix": 1.0     // Physics interpolation (0.0-1.0)
+    },
+    
+    // Debug and profiling
+    "debug": {
+      "show_fps": false,            // Display FPS counter
+      "show_frame_time": false,     // Display frame time graph
+      "show_memory": false,         // Display memory usage
+      "show_draw_calls": false,     // Display draw call count
+      "wireframe_mode": false,      // Render in wireframe
+      "show_collision_shapes": false, // Visualize collision shapes
+      "show_navigation": false,     // Visualize navigation mesh
+      "show_light_probes": false    // Visualize light probes
+    },
+    
+    // Platform-specific overrides
+    "platform_overrides": {
+      "mobile": {
+        "quality_preset": "medium",
+        "msaa": "disabled",
+        "shadows.quality": "low",
+        "particles.max_particles": 2000,
+        "rendering.renderer": "mobile"
+      },
+      "web": {
+        "quality_preset": "medium",
+        "rendering.renderer": "gl_compatibility",
+        "shadows.quality": "medium",
+        "max_fps": 60
+      }
+    }
+  }
+}

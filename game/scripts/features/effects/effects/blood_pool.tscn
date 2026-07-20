@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3 uid="uid://b6jym3kp2qrvd"]
+
+[ext_resource type="Script" path="res://game/scenes/effects/blood_pool.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://c08tpoc6f3ba3" path="res://game/art/textures/decals/blood_splat.png" id="2_texture"]
+
+[node name="BloodPool" type="Decal"]
+extents = Vector3(0.5, 0.1, 0.5)
+texture_albedo = ExtResource("2_texture")
+albedo_mix = 1.0
+modulate = Color(0.6, 0, 0, 1)
+normal_fade = 0.5
+script = ExtResource("1_script")
+grow_time = 3.0
+lifetime = 60.0
+max_size = 1.6

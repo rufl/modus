@@ -1,0 +1,73 @@
+// Network Configuration
+// Controls all network-related settings for multiplayer gameplay
+
+{
+  // Client-side prediction settings
+  "prediction": {
+    "enabled": true,
+    "buffer_size": 64,                    // Maximum prediction buffer size
+    "reconciliation_threshold": 0.5,      // Position difference threshold for reconciliation (meters)
+    "interpolation_delay": 100            // Interpolation delay in milliseconds
+  },
+
+  // Tick rate settings
+  "tick_rate": {
+    "server": 60,                         // Server tick rate (Hz)
+    "client": 60,                         // Client tick rate (Hz)
+    "physics": 60                         // Physics tick rate (Hz)
+  },
+
+  // Lag compensation settings
+  "lag_compensation": {
+    "enabled": true,
+    "max_window_ms": 1000,                // Maximum lag compensation window (1 second)
+    "hitscan_only": true,                 // Only compensate hitscan, not projectiles
+    "history_duration": 1.0,              // How long to keep entity history (seconds)
+    "max_snapshot_history": 128           // Maximum snapshots per entity
+  },
+
+  // Bandwidth and compression settings
+  "bandwidth": {
+    "max_outgoing_kbps": 512,             // Maximum outgoing bandwidth (kbps)
+    "compression_enabled": true,          // Enable data compression
+    "delta_compression": true,            // Enable delta compression (only send changes)
+    "extrapolation_limit": 0.25           // Maximum extrapolation time (seconds)
+  },
+
+  // Connection settings
+  "connection": {
+    "timeout_seconds": 30,                // Connection timeout
+    "max_reconnect_attempts": 5,          // Maximum reconnection attempts
+    "reconnect_window_seconds": 60,       // Time window for reconnection
+    "reconnect_delay_ms": 2000,           // Delay between reconnection attempts
+    "heartbeat_interval": 5.0,            // Heartbeat interval (seconds)
+    "use_steam": true,                    // Prefer Steam networking
+    "fallback_to_enet": true,             // Fallback to ENet if Steam unavailable
+    "default_port": 9999,                 // Default port for ENet
+    "max_players": 16                     // Maximum players per server
+  },
+
+  // Anti-cheat settings
+  "anti_cheat": {
+    "speed_tolerance": 1.2,               // Maximum speed multiplier before flagging (20% over)
+    "position_threshold": 5.0,            // Maximum position discrepancy (meters)
+    "max_violations": 3,                  // Violations before kick
+    "validation_interval": 1.0,           // How often to validate (seconds)
+    "enable_behavioral_analysis": true,   // Enable behavioral pattern analysis
+    "suspicion_threshold": 0.7            // Suspicion score threshold (0.0-1.0)
+  },
+
+  // Network quantization (precision reduction for bandwidth)
+  "quantization": {
+    "position_precision": 0.01,           // Position precision (meters) - 1cm
+    "rotation_precision": 1.0,            // Rotation precision (degrees)
+    "velocity_precision": 0.1             // Velocity precision (m/s)
+  },
+
+  // Snapshot buffer settings
+  "snapshot_buffer": {
+    "max_buffer_duration": 1.0,           // Keep 1 second of snapshots
+    "interpolation_enabled": true,        // Enable snapshot interpolation
+    "extrapolation_enabled": true         // Enable extrapolation when needed
+  }
+}

@@ -1,0 +1,252 @@
+// =============================================================================
+// LOOT TABLES - Enemy Drop Configuration
+// =============================================================================
+// User Requirement: Every enemy drops loot, with configurable rarities
+// 
+// STRUCTURE:
+//   - "rolls": Number of items to drop per enemy kill
+//   - "entries": Array of possible drops with weighted chances
+//   - "weight": Relative drop probability (higher = more common)
+//   - "is_empty": true means "no drop" (removed for guaranteed drops)
+//
+// TIERS:
+//   - basic_loot: Swarmlings, low-tier fodder (30% drop was too low!)
+//   - tier1_loot: Standard enemies (Grunts, Imps)
+//   - tier2_loot: Advanced enemies (Healers, Assassins, Rally Captains)
+//   - tier3_loot: Elite enemies (Summoners)
+//   - tier4_boss_loot: Boss encounters
+// =============================================================================
+
+{
+  // ===========================
+  // BASIC LOOT - Swarmlings
+  // ===========================
+  // Changed: Removed empty slots, guaranteed drops now
+  "basic_loot": {
+    "rolls": 1,
+    "entries": [
+      {
+        "item_id": "health_small",
+        "weight": 50.0,          // 50% chance
+        "rarity": "common"
+      },
+      {
+        "item_id": "ammo_clip",
+        "weight": 45.0,          // 45% chance
+        "rarity": "common"
+      },
+      {
+        "item_id": "health_medium",
+        "weight": 5.0,           // 5% chance (rare upgrade)
+        "rarity": "uncommon"
+      }
+      // NO EMPTY SLOTS - every swarmling drops something
+    ]
+  },
+
+  // ===========================
+  // TIER 1 - Standard Enemies
+  // ===========================
+  // Grunts, Imps - common encounters
+  // Changed: Removed 30% empty weight, added weapon drops
+  "tier1_loot": {
+    "rolls": 1,
+    "entries": [
+      {
+        "item_id": "health_small",
+        "weight": 30.0,
+        "rarity": "common"
+      },
+      {
+        "item_id": "ammo_clip",
+        "weight": 30.0,
+        "rarity": "common"
+      },
+      {
+        "item_id": "health_medium",
+        "weight": 20.0,
+        "rarity": "uncommon"
+      },
+      {
+        "item_id": "ammo_box",
+        "weight": 10.0,
+        "rarity": "uncommon"
+      },
+      {
+        "item_id": "weapon_pistol",
+        "weight": 5.0,           // 5% weapon drop
+        "rarity": "uncommon"
+      },
+      {
+        "item_id": "weapon_shotgun",
+        "weight": 3.0,           // 3% weapon drop
+        "rarity": "rare"
+      },
+      {
+        "item_id": "armor_pickup",
+        "weight": 2.0,           // 2% armor drop
+        "rarity": "rare"
+      }
+      // 100% drop rate - no empty entries
+    ]
+  },
+
+  // ===========================
+  // TIER 2 - Advanced Enemies
+  // ===========================
+  // Healers, Assassins, Rally Captains
+  // Changed: Removed 20% empty weight, increased weapon drops
+  "tier2_loot": {
+    "rolls": 1,
+    "entries": [
+      {
+        "item_id": "health_medium",
+        "weight": 35.0,
+        "rarity": "common"
+      },
+      {
+        "item_id": "ammo_box",
+        "weight": 30.0,
+        "rarity": "common"
+      },
+      {
+        "item_id": "health_large",
+        "weight": 15.0,
+        "rarity": "uncommon"
+      },
+      {
+        "item_id": "weapon_machinegun",
+        "weight": 10.0,          // 10% weapon drop
+        "rarity": "rare"
+      },
+      {
+        "item_id": "weapon_shotgun",
+        "weight": 5.0,
+        "rarity": "rare"
+      },
+      {
+        "item_id": "armor_pickup",
+        "weight": 5.0,
+        "rarity": "rare"
+      }
+      // 100% drop rate
+    ]
+  },
+
+  // ===========================
+  // TIER 3 - Elite Enemies
+  // ===========================
+  // Summoners, Champions
+  // Changed: Removed 10% empty weight, guaranteed multi-drops
+  "tier3_loot": {
+    "rolls": 2,                  // Drops 2 items guaranteed
+    "entries": [
+      {
+        "item_id": "health_large",
+        "weight": 40.0,
+        "rarity": "uncommon"
+      },
+      {
+        "item_id": "ammo_box",
+        "weight": 35.0,
+        "rarity": "uncommon"
+      },
+      {
+        "item_id": "health_mega",
+        "weight": 15.0,
+        "rarity": "rare"
+      },
+      {
+        "item_id": "weapon_rocket_launcher",
+        "weight": 5.0,           // 5% rocket launcher
+        "rarity": "epic"
+      },
+      {
+        "item_id": "weapon_machinegun",
+        "weight": 3.0,
+        "rarity": "rare"
+      },
+      {
+        "item_id": "armor_pickup",
+        "weight": 2.0,
+        "rarity": "epic"
+      }
+      // Drops 2 items, 100% each roll
+    ]
+  },
+
+  // ===========================
+  // TIER 4 - BOSS LOOT
+  // ===========================
+  // Major boss encounters
+  // No changes needed - already guaranteed drops
+  "tier4_boss_loot": {
+    "rolls": 3,                  // Drops 3 items guaranteed
+    "entries": [
+      {
+        "item_id": "health_mega",
+        "weight": 50.0,
+        "rarity": "epic"
+      },
+      {
+        "item_id": "ammo_box",
+        "weight": 50.0,
+        "rarity": "epic"
+      },
+      {
+        "item_id": "weapon_rocket_launcher",
+        "weight": 30.0,
+        "rarity": "epic"
+      },
+      {
+        "item_id": "weapon_machinegun",
+        "weight": 20.0,
+        "rarity": "rare"
+      },
+      {
+        "item_id": "health_large",
+        "weight": 20.0,
+        "rarity": "uncommon"
+      },
+      {
+        "item_id": "armor_pickup",
+        "weight": 10.0,
+        "rarity": "legendary"
+      }
+    ]
+  },
+
+  // ===========================
+  // BOSS LOOT (Alternative)
+  // ===========================
+  "boss_loot": {
+    "rolls": 3,
+    "entries": [
+      {
+        "item_id": "health_large",
+        "weight": 100.0,
+        "rarity": "epic"
+      },
+      {
+        "item_id": "ammo_box",
+        "weight": 100.0,
+        "rarity": "epic"
+      },
+      {
+        "item_id": "weapon_rocket_launcher",
+        "weight": 50.0,
+        "rarity": "legendary"
+      },
+      {
+        "item_id": "weapon_machinegun",
+        "weight": 30.0,
+        "rarity": "epic"
+      },
+      {
+        "item_id": "armor_pickup",
+        "weight": 20.0,
+        "rarity": "legendary"
+      }
+    ]
+  }
+}

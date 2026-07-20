@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://fqxvn8j8qxqxu"]
+
+[ext_resource type="Script" path="res://game/weapons/weapon_base.gd" id="1_0000"]
+
+[node name="Knife" type="Node3D"]
+script = ExtResource("1_0000")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="."]

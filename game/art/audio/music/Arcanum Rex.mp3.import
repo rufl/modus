@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cnbg4xr371cxc"
+path="res://.godot/imported/Arcanum Rex.mp3-29a0c5dc3e2597d845b50dd86943b993.mp3str"
+
+[deps]
+
+source_file="res://game/art/audio/music/Arcanum Rex.mp3"
+dest_files=["res://.godot/imported/Arcanum Rex.mp3-29a0c5dc3e2597d845b50dd86943b993.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

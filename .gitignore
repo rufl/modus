@@ -7,8 +7,9 @@
 .import/
 /exports
 export.cfg
-export_presets.cfg
+# export_presets.cfg
 /addons
+!/addons/editor
 *.tmp
 
 # Imported translations (automatically generated from CSV files)
@@ -21,3 +22,5 @@ mono_crash.*.json
 
 #extra
 /.vscode
+/.archive
+.pi/

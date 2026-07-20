@@ -1,0 +1,6 @@
+{
+	"lsystem_rules": {
+		"F": "F+F-F-FF+F+F-F"
+	},
+	"description": "Tech theme uses clean geometric patterns with moderate complexity"
+}

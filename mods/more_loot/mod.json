@@ -1,0 +1,40 @@
+{
+    "name": "More Loot",
+    "id": "more_loot",
+    "version": "1.0.0",
+    "author": "Template Team",
+    "description": "Increases loot drop rates and guarantees more items per drop",
+    "priority": 100,
+    "dependencies": [],
+    "enabled": false,
+    "config_overrides": {
+        "loot_tables": {
+            "imp": {
+                "drop_chance": 0.9,
+                "guaranteed_drops": 2,
+                "rarity_weights": {
+                    "common": 30,
+                    "uncommon": 35,
+                    "rare": 25,
+                    "epic": 8,
+                    "legendary": 2
+                }
+            },
+            "chaingun_commando": {
+                "drop_chance": 1.0,
+                "guaranteed_drops": 3,
+                "rarity_weights": {
+                    "common": 20,
+                    "uncommon": 30,
+                    "rare": 30,
+                    "epic": 15,
+                    "legendary": 5
+                }
+            },
+            "pain_elemental": {
+                "drop_chance": 1.0,
+                "guaranteed_drops": 4
+            }
+        }
+    }
+}

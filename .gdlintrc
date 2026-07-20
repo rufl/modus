@@ -1,0 +1,25 @@
+# GDLint configuration
+# See: https://github.com/Scony/godot-gdscript-toolkit
+
+# Exclude third-party addons from linting
+excluded_directories:
+  - addons
+
+# Disable rules that conflict with project conventions
+disable:
+  # We use UPPER_CASE for constants intentionally
+  - class-variable-name
+  # Some functions legitimately need many return statements
+  - max-returns
+  # Large files are sometimes necessary for complex systems
+  - max-file-lines
+  # Some classes need many public methods (services, managers)
+  - max-public-methods
+  # Unused arguments are often intentional for interface compliance
+  - unused-argument
+  # Function preload naming is a style preference
+  - function-preload-variable-name
+  # Function variable naming with underscore prefix is intentional for unused vars
+  - function-variable-name
+  # Definition order is a style preference - we group by functionality
+  - class-definitions-order

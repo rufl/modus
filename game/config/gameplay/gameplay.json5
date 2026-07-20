@@ -1,0 +1,557 @@
+{
+    // =============================================================================
+    // GAMEPLAY CONFIGURATIONS
+    // =============================================================================
+    // Contains: ai_combat, movement, combat, loot, weapons, difficulty, balance,
+    //           game_rules, player_modes, fall_death, enemies
+    // =============================================================================
+
+    "ai_combat": {
+        "infighting": {
+            "enabled": true,
+            "retaliation_chance": 0.8,
+            "duration": 10.0,
+            "tier_aggression": {
+                "enabled": true,
+                "lower_tier_attacks_higher": false,
+                "same_tier_infighting": true,
+                "higher_tier_attacks_lower": true
+            }
+        },
+        "squad_tactics": {
+            "enabled": true,
+            "max_squad_size": 5,
+            "formation_spacing": 3.0,
+            "auto_join_squads": true,
+            "squad_search_radius": 20.0,
+            "flank_distance": 8.0
+        },
+        "damage_numbers": {
+            "enabled": true,
+            "rise_speed": 2.0,
+            "duration": 0.8,
+            "fade_start": 0.4,
+            "font_size": 64,
+            "critical_font_size": 80,
+            "outline_size": 8,
+            "high_damage_threshold": 50,
+            "colors": {
+                "normal": {
+                    "r": 1.0,
+                    "g": 1.0,
+                    "b": 1.0,
+                    "a": 1.0
+                },
+                "critical": {
+                    "r": 1.0,
+                    "g": 0.3,
+                    "b": 0.1,
+                    "a": 1.0
+                },
+                "high_damage": {
+                    "r": 1.0,
+                    "g": 0.8,
+                    "b": 0.2,
+                    "a": 1.0
+                }
+            }
+        },
+        "tier_system": {
+            "tier_1": {
+                "name": "Weak",
+                "health_max": 50,
+                "pain_resistance": 0.0
+            },
+            "tier_2": {
+                "name": "Medium",
+                "health_max": 150,
+                "pain_resistance": 0.0
+            },
+            "tier_3": {
+                "name": "Elite",
+                "health_max": 300,
+                "pain_resistance": 0.5
+            },
+            "tier_4": {
+                "name": "Boss",
+                "health_max": 1000,
+                "pain_resistance": 1.0
+            }
+        }
+    },
+
+    "movement": {
+        "advanced_movement": {
+            "enabled": true,
+            "air_movement": {
+                "air_acceleration": 800.0,
+                "air_strafe_speed": 30.0,
+                "max_air_speed": 12.0,
+                "air_control_power": 150.0
+            },
+            "bunny_hop": {
+                "enabled": true,
+                "speed_cap": 15.0,
+                "speed_gain": 0.1,
+                "timing_window": 0.1
+            },
+            "slide": {
+                "enabled": true,
+                "speed": 10.0,
+                "duration": 0.8,
+                "cooldown": 1.5,
+                "friction": 2.0
+            }
+        },
+        "dodge": {
+            "enabled": true,
+            "input_mode": "DOUBLE_TAP",
+            "speed": 15.0,
+            "duration": 0.2,
+            "cooldown": 1.0,
+            "air_dodge_enabled": true,
+            "air_dodge_speed_multiplier": 0.7,
+            "double_tap_window": 0.25,
+            "require_release": true
+        },
+        "rocket_jump": {
+            "enabled": true,
+            "velocity_multiplier": 1.5,
+            "min_boost_velocity": 8.0,
+            "max_boost_velocity": 25.0,
+            "air_control_multiplier": 1.2,
+            "duration": 0.5
+        },
+        "movement_polish": {
+            "enabled": true,
+            "landing_impact": {
+                "sound_volume": -5.0,
+                "hard_landing_threshold": 15.0
+            },
+            "footsteps": {
+                "interval_walk": 0.5,
+                "interval_run": 0.35,
+                "interval_crouch": 0.7,
+                "volume": -10.0
+            },
+            "slide_sound": {
+                "volume": -10.0,
+                "min_velocity": 3.0
+            },
+            "speed_effects": {
+                "boost_threshold": 10.0,
+                "fov_boost_amount": 5.0,
+                "fov_transition_speed": 5.0
+            }
+        }
+    },
+
+    "combat": {
+        "enable_blood": true,
+        "enable_damage_numbers": true,
+        "enable_gore": true,
+        "enable_explosions": true
+    },
+
+    "loot": {
+        "instanced_loot": false,
+        "drop_rate_multiplier": 1.0,
+        "rare_chance_bonus": 0.0,
+        "pickup_magnet_radius": 2.0,
+        "auto_pickup": true
+    },
+
+
+
+    "difficulty": {
+        "easy": {
+            "health": 0.7,
+            "damage": 0.7,
+            "loot_quality": 0.8,
+            "loot_quantity": 1.2
+        },
+        "normal": {
+            "health": 1.0,
+            "damage": 1.0,
+            "loot_quality": 1.0,
+            "loot_quantity": 1.0
+        },
+        "hard": {
+            "health": 1.5,
+            "damage": 1.3,
+            "loot_quality": 1.3,
+            "loot_quantity": 1.0
+        },
+        "nightmare": {
+            "health": 2.0,
+            "damage": 1.8,
+            "loot_quality": 1.6,
+            "loot_quantity": 0.9
+        }
+    },
+
+    "balance": {
+        "player": {
+            "base_health": 100,
+            "base_speed": 7.0,
+            "jump_height": 5.5,
+            "gravity": 20.0,
+            "standing_camera_height": 1.75,
+            "crouching_camera_height": 1.0,
+            "crouch_transition_speed": 10.0,
+            "crouch_multiplier": 0.5,
+            "sprint_multiplier": 1.5,
+            "ground_acceleration": 10.0,
+            "ground_friction": 6.0,
+            "air_acceleration": 800.0,
+            "air_speed_cap": 0.7,
+            "movement": {
+                "advanced_movement": {
+                    "enabled": true,
+                    "air_movement": {
+                        "air_acceleration": 800.0,
+                        "air_strafe_speed": 30.0,
+                        "max_air_speed": 12.0,
+                        "air_control_power": 150.0
+                    },
+                    "bunny_hop": {
+                        "enabled": true,
+                        "speed_cap": 15.0,
+                        "speed_gain": 0.1,
+                        "timing_window": 0.1
+                    },
+                    "slide": {
+                        "enabled": true,
+                        "speed": 10.0,
+                        "duration": 0.8,
+                        "cooldown": 1.5,
+                        "friction": 2.0
+                    }
+                },
+                "dodge": {
+                    "enabled": true,
+                    "input_mode": "DOUBLE_TAP",
+                    "speed": 15.0,
+                    "duration": 0.2,
+                    "cooldown": 1.0,
+                    "air_dodge_enabled": true,
+                    "air_dodge_speed_multiplier": 0.7,
+                    "double_tap_window": 0.25,
+                    "require_release": true
+                },
+                "rocket_jump": {
+                    "enabled": true,
+                    "velocity_multiplier": 1.5,
+                    "min_boost_velocity": 8.0,
+                    "max_boost_velocity": 25.0,
+                    "air_control_multiplier": 1.2,
+                    "duration": 0.5
+                },
+                "movement_polish": {
+                    "enabled": true,
+                    "landing_impact": {
+                        "sound_volume": -5.0,
+                        "hard_landing_threshold": 15.0
+                    },
+                    "footsteps": {
+                        "interval_walk": 0.5,
+                        "interval_run": 0.35,
+                        "interval_crouch": 0.7,
+                        "volume": -10.0
+                    },
+                    "slide_sound": {
+                        "volume": -10.0,
+                        "min_velocity": 3.0
+                    },
+                    "speed_effects": {
+                        "boost_threshold": 10.0,
+                        "fov_boost_amount": 5.0,
+                        "fov_transition_speed": 5.0
+                    }
+                }
+            }
+        },
+        "weapons": {
+            "pistol": {
+                "display_name": "Pistol",
+                "damage": 25,
+                "fire_rate": 0.5,
+                "mag_size": 12,
+                "reload_time": 1.5,
+                "projectile_speed": 100.0,
+                "is_hitscan": true
+            },
+            "shotgun": {
+                "display_name": "Shotgun",
+                "damage": 12,
+                "pellet_count": 8,
+                "fire_rate": 1.0,
+                "mag_size": 8,
+                "reload_time": 2.0,
+                "spread": 5.0,
+                "is_hitscan": true
+            },
+            "machinegun": {
+                "display_name": "Machine Gun",
+                "damage": 10,
+                "fire_rate": 0.1,
+                "mag_size": 40,
+                "reload_time": 2.5,
+                "spread": 2.0,
+                "is_hitscan": true
+            },
+            "rocket_launcher": {
+                "display_name": "Rocket Launcher",
+                "damage": 100,
+                "fire_rate": 1.2,
+                "mag_size": 6,
+                "reload_time": 3.0,
+                "projectile_speed": 25.0,
+                "radius": 4.0,
+                "is_hitscan": false
+            },
+            "railgun": {
+                "display_name": "Railgun",
+                "damage": 80,
+                "fire_rate": 1.5,
+                "mag_size": 5,
+                "reload_time": 2.0,
+                "is_hitscan": true
+            }
+        },
+        "enemies": {
+            "grunt": {
+                "health": 100,
+                "damage": 15,
+                "speed": 5.0,
+                "attack_range": 2.0,
+                "detection_radius": 20.0
+            }
+        },
+        "weapon_feel": {
+            "sway_amount": 0.015,
+            "sway_smooth": 10.0,
+            "sway_max": 0.06,
+            "bob_amount": 0.01,
+            "bob_frequency": 1.5
+        }
+    },
+
+    "game_rules": {
+        "respawn_time": 5.0,
+        "friendly_fire": false,
+        "frag_limit": 25,
+        "time_limit": 600,
+        "allow_spectators": true,
+        "allow_late_join": true,
+        "match_time_limit": 600,
+        "round_time_limit": 180,
+        "warmup_time": 10,
+        "sudden_death_enabled": true,
+        "afk_threshold": 30.0,
+        "enemy_out_of_bounds_y": -50.0
+    },
+
+    // Free roam mode for showcase — no win conditions
+    "free_roam": {
+        "frag_limit": 0,
+        "time_limit": 0,
+        "respawn_time": 1.0,
+        "friendly_fire": false
+    },
+
+    "player_modes": {
+        "spectator": {
+            "fly_speed": 15.0,
+            "mouse_sensitivity": 0.003,
+            "enable_countdown": true,
+            "allow_follow_mode": true,
+            "allow_first_person_mode": true,
+            "allow_free_fly": true,
+            "show_overlay": true,
+            "show_help_text": true,
+            "respawn_countdown_enabled": true,
+            "respawn_countdown_seconds": 5.0,
+            "max_distance_from_origin": 1000.0
+        },
+        "editor": {
+            "fly_speed": 15.0,
+            "sprint_speed": 30.0,
+            "acceleration": 10.0,
+            "friction": 5.0,
+            "mouse_sensitivity": 0.003,
+            "allow_place_blocks": true,
+            "allow_delete_nodes": true,
+            "allow_paint": true,
+            "allow_place_entities": true,
+            "allow_transform": true,
+            "sync_interval_ms": 100,
+            "validate_permissions": true,
+            "max_blocks_per_second": 10
+        },
+        "downed": {
+            "bleedout_time": 30.0,
+            "revive_time": 3.0,
+            "crawl_speed_multiplier": 0.3,
+            "revive_distance": 3.0,
+            "revive_health_percent": 0.3,
+            "show_bleedout_timer": true,
+            "show_revive_progress": true,
+            "allow_give_up": true
+        },
+        "status": {
+            "afk_threshold_seconds": 30.0,
+            "status_update_interval": 1.0,
+            "menu_detection_enabled": true
+        }
+    },
+
+    "map_settings": {
+        // Static overview texture path (leave empty for dynamic capture)
+        "map_texture_path": "res://game/levels/overviews/map_overview.png",
+        // World size that the minimap captures (units)
+        "minimap_capture_size": 150.0,
+        // Center of the capture area [x, y, z]
+        "minimap_center": [0, 0, 0],
+        // Camera height for capture
+        "capture_camera_height": 100.0
+    },
+
+    "fall_death": {
+        "death_y_threshold": -50.0,
+        "teleport_on_fall": false,
+        "warn_y_threshold": -30.0,
+        "show_warning_ui": true,
+        "warning_message": "LEAVING PLAYABLE AREA",
+        "damage_per_second_in_warning_zone": 0.0,
+        "godmode_bypasses_fall_death": true
+    },
+
+    "enemies": {
+        "grunt": {
+            "name": "Grunt",
+            "tier": 1,
+            "role": "basic",
+            "stats": {
+                "health": 30,
+                "damage": 5,
+                "move_speed": 4.5,
+                "attack_range": 2.5,
+                "attack_cooldown": 1.5,
+                "aggression": 0.6
+            },
+            "movement": {
+                "can_jump": true,
+                "jump_height": 2.0,
+                "can_dash": false,
+                "dash_speed": 10.0,
+                "dash_cooldown": 3.0
+            },
+            "patrol": {
+                "type": "random",
+                "radius": 8.0,
+                "hold_time": 2.0
+            },
+            "perception": {
+                "sight_range": 15.0,
+                "fov": 100.0,
+                "is_blind": false,
+                "is_deaf": false
+            },
+            "visuals": {
+                "color": "#e74c3c",
+                "scale": 1.0
+            }
+        },
+        "scout": {
+            "name": "Scout",
+            "tier": 2,
+            "role": "basic",
+            "stats": {
+                "health": 20,
+                "damage": 3,
+                "move_speed": 7.0,
+                "attack_range": 4.0,
+                "attack_cooldown": 1.0,
+                "aggression": 0.4
+            },
+            "movement": {
+                "can_jump": true,
+                "jump_height": 3.0,
+                "can_dash": true,
+                "dash_speed": 15.0,
+                "dash_cooldown": 2.0
+            },
+            "patrol": {
+                "type": "random",
+                "radius": 15.0,
+                "hold_time": 1.0
+            },
+            "perception": {
+                "sight_range": 25.0,
+                "fov": 120.0
+            },
+            "visuals": {
+                "color": "#f1c40f",
+                "scale": 0.8
+            }
+        },
+        "tank": {
+            "name": "Tank",
+            "tier": 3,
+            "role": "basic",
+            "stats": {
+                "health": 150,
+                "damage": 15,
+                "move_speed": 2.5,
+                "attack_range": 3.0,
+                "attack_cooldown": 2.0,
+                "aggression": 0.8
+            },
+            "movement": {
+                "can_jump": false,
+                "jump_height": 0.0,
+                "can_dash": false,
+                "dash_speed": 0.0,
+                "dash_cooldown": 0.0
+            },
+            "patrol": {
+                "type": "static",
+                "radius": 0.0,
+                "hold_time": 0.0
+            },
+            "perception": {
+                "sight_range": 20.0,
+                "fov": 90.0
+            },
+            "visuals": {
+                "color": "#2c3e50",
+                "scale": 1.4
+            }
+        },
+        "jumper": {
+            "name": "Jumper",
+            "tier": 2,
+            "role": "basic",
+            "stats": {
+                "health": 50,
+                "damage": 5,
+                "move_speed": 5.0,
+                "attack_range": 3.0,
+                "attack_cooldown": 1.5,
+                "aggression": 0.7
+            },
+            "movement": {
+                "can_jump": true,
+                "jump_height": 4.0,
+                "can_dash": true,
+                "dash_speed": 12.0,
+                "dash_cooldown": 2.5
+            },
+            "visuals": {
+                "color": "#9b59b6",
+                "scale": 1.0
+            }
+        }
+    }
+}

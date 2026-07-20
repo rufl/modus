@@ -1,0 +1,26 @@
+{
+	"name": "hell",
+	"description": "Demonic realm with irregular organic shapes",
+	"room_metadata": {
+		"small": {
+			"lighting_intensity": 0.6,
+			"wall_height": 2.5
+		},
+		"medium": {
+			"lighting_intensity": 0.5,
+			"wall_height": 3.0
+		},
+		"large": {
+			"lighting_intensity": 0.4,
+			"wall_height": 4.5
+		},
+		"boss_arena": {
+			"lighting_intensity": 0.8,
+			"wall_height": 8.0
+		}
+	},
+	"shape_adjustments": {
+		"complexity_multiplier": 1.5,
+		"min_spacing": 1
+	}
+}

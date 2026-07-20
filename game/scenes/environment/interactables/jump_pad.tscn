@@ -1,0 +1,67 @@
+[gd_scene load_steps=7 format=3 uid="uid://jump_pad"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_base"]
+albedo_color = Color(0.2, 0.6, 1.0, 1)
+emission_enabled = true
+emission = Color(0.1, 0.3, 0.5, 1)
+emission_energy_multiplier = 2.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_pad"]
+material = SubResource("StandardMaterial3D_base")
+size = Vector3(2, 0.2, 2)
+
+[sub_resource type="GDScript" id="GDScript_jump_pad"]
+script/source = "extends Area3D
+
+@export var launch_velocity: float = 25.0
+@export var sound_effect: String = \"jump_pad\"
+
+func _ready() -> void:
+	body_entered.connect(_on_body_entered)
+
+func _on_body_entered(body: Node3D) -> void:
+	if body is CharacterBody3D:
+		# Use velocity directly if it's a character
+		var vel = body.velocity
+		vel.y = launch_velocity
+		body.velocity = vel
+		
+		if body.has_method(\"on_launch\"):
+			body.on_launch()
+			
+		var game_manager := get_node_or_null(\"/root/GameManager\")
+		var audio_service: Node = game_manager.get_core_system(\"audio\") if game_manager else null
+		if audio_service and audio_service.has_method(\"play_sfx_at_position\"):
+			audio_service.play_sfx_at_position(sound_effect, global_position)
+			
+		# Feedback
+		var effects_service: Node = game_manager.get_core_system(\"effects\") if game_manager else null
+		if effects_service and effects_service.has_method(\"spawn_explosion\"):
+			effects_service.spawn_explosion.rpc(global_position, 0.3)
+"
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_trigger"]
+size = Vector3(1.8, 1, 1.8)
+
+[sub_resource type="Curve" id="Curve_glow"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0.2), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_glow"]
+curve = SubResource("Curve_glow")
+
+[node name="JumpPad" type="Area3D"]
+script = SubResource("GDScript_jump_pad")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_pad")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("BoxShape3D_trigger")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+light_color = Color(0.3, 0.7, 1, 1)
+light_energy = 2.0
+omni_range = 3.0

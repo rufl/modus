@@ -1,0 +1,14 @@
+[gd_scene load_steps=2 format=3 uid="uid://save_load_screen"]
+
+[ext_resource type="Script" path="res://shared/ui_core/screens/save_load_screen.gd" id="1_save"]
+
+[node name="SaveLoadScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_save")
+focus_group = "save_load"
+allow_back = true

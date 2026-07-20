@@ -1,0 +1,86 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://game/entities/enemies/enemy.gd" id="1_enemy"]
+[ext_resource type="Script" path="res://game/scripts/components/status_effect_manager.gd" id="2_status_mgr"]
+[ext_resource type="Script" path="res://game/entities/enemies/ai/infighting_system.gd" id="3_infighting"]
+[ext_resource type="Script" path="res://game/entities/enemies/ai/squad_tactics.gd" id="4_squad"]
+[ext_resource type="Script" path="res://game/entities/enemies/ai/cover_seeker.gd" id="5_cover"]
+[ext_resource type="Script" path="res://game/entities/common/skeletal_character_visuals.gd" id="6_skeletal"]
+
+
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_enemy"]
+radius = 0.4
+height = 1.8
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_enemy"]
+properties/0/path = NodePath(".:sync_position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath(".:sync_rotation")
+properties/1/spawn = true
+properties/1/replication_mode = 1
+properties/2/path = NodePath(".:health")
+properties/2/spawn = true
+properties/2/replication_mode = 1
+properties/3/path = NodePath(".:is_dead")
+properties/3/spawn = true
+properties/3/replication_mode = 1
+properties/4/path = NodePath(".:is_fleeing")
+properties/4/spawn = true
+properties/4/replication_mode = 1
+properties/5/path = NodePath(".:is_in_cover")
+properties/5/spawn = true
+properties/5/replication_mode = 1
+properties/6/path = NodePath(".:display_name")
+properties/6/spawn = true
+properties/6/replication_mode = 1
+properties/7/path = NodePath(".:tier")
+properties/7/spawn = true
+properties/7/replication_mode = 1
+properties/8/path = NodePath(".:debug_state_name")
+properties/8/spawn = true
+properties/8/replication_mode = 1
+properties/9/path = NodePath(".:is_aggro")
+properties/9/spawn = true
+properties/9/replication_mode = 1
+
+[node name="Enemy" type="CharacterBody3D"]
+collision_layer = 4
+collision_mask = 1
+script = ExtResource("1_enemy")
+
+
+
+[node name="Visuals" type="Node3D" parent="."]
+script = ExtResource("6_skeletal")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("CapsuleShape3D_enemy")
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
+path_desired_distance = 0.5
+target_desired_distance = 1.5
+avoidance_enabled = true
+radius = 0.8
+neighbor_distance = 5.0
+time_horizon_agents = 1.0
+max_speed = 6.0
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_interval = 0.033
+delta_interval = 0.0
+replication_config = SubResource("SceneReplicationConfig_enemy")
+
+[node name="StatusEffectManager" type="Node" parent="."]
+script = ExtResource("2_status_mgr")
+
+[node name="InfightingSystem" type="Node" parent="."]
+script = ExtResource("3_infighting")
+
+[node name="SquadTactics" type="Node" parent="."]
+script = ExtResource("4_squad")
+
+[node name="CoverSeeker" type="Node3D" parent="."]
+script = ExtResource("5_cover")

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <!-- Enemy Spawn Point - Red skull icon -->
+  <circle cx="8" cy="6" r="5" fill="none" stroke="#e05252" stroke-width="1.5"/>
+  <circle cx="6" cy="5" r="1.2" fill="#e05252"/>
+  <circle cx="10" cy="5" r="1.2" fill="#e05252"/>
+  <path d="M5 9 L6.5 8 L8 9 L9.5 8 L11 9" stroke="#e05252" stroke-width="1" fill="none"/>
+  <path d="M6 11 L6 14 M8 11 L8 14 M10 11 L10 14" stroke="#e05252" stroke-width="1.2"/>
+</svg>

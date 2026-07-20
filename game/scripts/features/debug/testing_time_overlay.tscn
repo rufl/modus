@@ -1,0 +1,35 @@
+[gd_scene load_steps=2 format=3 uid="uid://testing_time_overlay"]
+
+[ext_resource type="Script" path="res://game/scripts/features/debug/testing_time_overlay.gd" id="1"]
+
+[node name="TestingTimeOverlay" type="CanvasLayer"]
+layer = 128
+script = ExtResource("1")
+
+[node name="Panel" type="PanelContainer" parent="."]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -250.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = 100.0
+grow_horizontal = 0
+
+[node name="VBox" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+
+[node name="TimeLabel" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+text = "Testing: 0.00 hours"
+horizontal_alignment = 1
+
+[node name="StatsLabel" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+text = "Total: 0.00 hours | Sessions: 0"
+horizontal_alignment = 1
+
+[node name="MilestoneLabel" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+text = "Next: 1h (1.00h remaining)"
+horizontal_alignment = 1

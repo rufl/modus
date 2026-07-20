@@ -1,0 +1,15 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" uid="uid://bbxas2mjwugrn" path="res://game/art/shaders/retro_blood.gdshader" id="1_blood"]
+
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_blood")
+shader_parameter/deep_blood = Color(0.3, 0, 0, 1)
+shader_parameter/fresh_blood = Color(0.8, 0, 0, 1)
+shader_parameter/clot_color = Color(0.1, 0, 0, 1)
+shader_parameter/flow_speed = 0.1
+shader_parameter/flow_direction = Vector2(0, 1)
+shader_parameter/specular_intensity = 0.8
+shader_parameter/roughness_value = 0.2

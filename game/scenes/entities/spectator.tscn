@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://cspectator"]
+
+[ext_resource type="Script" uid="uid://ccay2g03e273r" path="res://game/entities/player/spectator.gd" id="1_script"]
+[ext_resource type="Shader" uid="uid://fir5y26gh47u" path="res://game/art/shaders/spectator.gdshader" id="2_shader"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ghost"]
+render_priority = 0
+shader = ExtResource("2_shader")
+shader_parameter/albedo = Color(0.4, 0.6, 1.0, 0.3)
+shader_parameter/wire_width = 1.0
+shader_parameter/wire_smoothness = 0.01
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_ghost"]
+material = SubResource("ShaderMaterial_ghost")
+
+[node name="Spectator" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="Visuals" type="MeshInstance3D" parent="."]
+mesh = SubResource("CapsuleMesh_ghost")
+cast_shadow = 0
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)

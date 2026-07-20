@@ -1,0 +1,27 @@
+{
+  "id": "modus_sdk_sample",
+  "name": "MODUS SDK Sample",
+  "version": "1.0.0",
+  "author": "MODUS Team",
+  "description": "Reference sample showing data overrides, a script hook, and event exchange.",
+  "priority": 100,
+  "enabled": true,
+  "dependencies": [],
+  "config_overrides": {
+    "weapons": {
+      "pistol": {
+        "display_name": "SDK Pistol",
+        "damage": 15
+      }
+    },
+    "enemies": {
+      "grunt": {
+        "health": 40
+      }
+    },
+    "loot": {
+      "drop_rate_multiplier": 1.25
+    }
+  },
+  "scripts": ["scripts/sample_mod.gd"]
+}

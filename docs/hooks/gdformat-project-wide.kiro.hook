@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "GDFormat Project-Wide",
+  "description": "Runs gdformat on all GDScript files in the project to ensure consistent formatting across the entire codebase",
+  "version": "1",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Run gdformat on all GDScript files in the project to format them consistently. Use the command: find . -name '*.gd' -not -path './addons/*' -not -path './.godot/*' | xargs gdformat"
+  }
+}

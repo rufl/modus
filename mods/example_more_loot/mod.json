@@ -1,0 +1,19 @@
+{
+	"id": "example_more_loot",
+	"name": "More Loot",
+	"version": "1.0.0",
+	"author": "Example",
+	"description": "Increases loot drop rates by 50%",
+	"priority": 100,
+	"enabled": false,
+	"dependencies": [],
+	"config_overrides": {
+		"loot": {
+			"drop_rate_multiplier": 1.5,
+			"rare_chance_bonus": 0.1,
+			"gold_multiplier": 1.25
+		}
+	},
+	"scripts": [],
+	"assets": {}
+}

@@ -1,0 +1,17 @@
+[gd_scene format=3]
+
+[sub_resource type="BoxMesh" id="BoxMesh_plank"]
+size = Vector3(2.0, 0.1, 4.0)
+
+[sub_resource type="BoxShape3D" id="BoxShape_plank"]
+size = Vector3(2.0, 0.1, 4.0)
+
+[node name="Plank" type="StaticBody3D"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+mesh = SubResource("BoxMesh_plank")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+shape = SubResource("BoxShape_plank")

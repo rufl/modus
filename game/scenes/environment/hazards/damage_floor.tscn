@@ -1,0 +1,33 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://4u63ox7fxtwg" path="res://game/world/actors/liquid_volume.gd" id="1_liquid"]
+
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_floor"]
+size = Vector3(4, 0.5, 4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_floor"]
+transparency = 1
+albedo_color = Color(1, 0, 0, 0.5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_floor"]
+material = SubResource("StandardMaterial3D_floor")
+size = Vector3(4, 0.5, 4)
+
+[node name="DamageFloor" type="Area3D"]
+script = ExtResource("1_liquid")
+liquid_type = "Acid"
+viscosity = 0.2
+damage_per_second = 10.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_floor")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_floor")
+
+[node name="Label3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+billboard = 1
+text = "Damage Zone"
+font_size = 32

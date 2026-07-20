@@ -1,0 +1,257 @@
+{
+	"xp_curve": {
+		"base_xp": 100,
+		"exponent": 1.5,
+		"max_level": 50
+	},
+	"skill_trees": {
+		"combat": [
+			{
+				"skill_id": "weapon_damage_1",
+				"display_name": "Weapon Damage I",
+				"icon_path": "res://game/ui/icons/weapons/machinegun.png",
+				"description": "+10% weapon damage",
+				"tree_type": "combat",
+				"tier": 1,
+				"prerequisites": [],
+				"effects": {
+					"weapon_damage_mult": 1.1
+				},
+				"cost": 1,
+				"position": [0, 0]
+			},
+			{
+				"skill_id": "weapon_damage_2",
+				"display_name": "Weapon Damage II",
+				"icon_path": "res://game/ui/icons/weapons/machinegun.png",
+				"description": "+20% weapon damage (total)",
+				"tree_type": "combat",
+				"tier": 2,
+				"prerequisites": ["weapon_damage_1"],
+				"effects": {
+					"weapon_damage_mult": 1.1
+				},
+				"cost": 1,
+				"position": [0, 100]
+			},
+			{
+				"skill_id": "weapon_damage_3",
+				"display_name": "Weapon Damage III",
+				"icon_path": "res://game/ui/icons/weapons/machinegun.png",
+				"description": "+30% weapon damage (total)",
+				"tree_type": "combat",
+				"tier": 3,
+				"prerequisites": ["weapon_damage_2"],
+				"effects": {
+					"weapon_damage_mult": 1.1
+				},
+				"cost": 1,
+				"position": [0, 200]
+			},
+			{
+				"skill_id": "crit_chance_1",
+				"display_name": "Critical Chance I",
+				"icon_path": "res://game/ui/icons/weapons/railgun.png",
+				"description": "+5% critical hit chance",
+				"tree_type": "combat",
+				"tier": 1,
+				"prerequisites": [],
+				"effects": {
+					"crit_chance": 0.05
+				},
+				"cost": 1,
+				"position": [200, 0]
+			},
+			{
+				"skill_id": "crit_damage",
+				"display_name": "Critical Damage",
+				"icon_path": "res://game/ui/icons/weapons/railgun.png",
+				"description": "Critical hits deal +50% damage (2x total)",
+				"tree_type": "combat",
+				"tier": 2,
+				"prerequisites": ["crit_chance_1"],
+				"effects": {
+					"crit_damage_mult": 1.33
+				},
+				"cost": 1,
+				"position": [200, 100]
+			},
+			{
+				"skill_id": "reload_speed",
+				"display_name": "Fast Reload",
+				"icon_path": "res://game/ui/icons/weapons/pistol.png",
+				"description": "+25% reload speed",
+				"tree_type": "combat",
+				"tier": 1,
+				"prerequisites": [],
+				"effects": {
+					"reload_speed_mult": 1.25
+				},
+				"cost": 1,
+				"position": [400, 0]
+			},
+			{
+				"skill_id": "fire_rate",
+				"display_name": "Rapid Fire",
+				"icon_path": "res://game/ui/icons/weapons/chaingun.png",
+				"description": "+15% fire rate",
+				"tree_type": "combat",
+				"tier": 2,
+				"prerequisites": ["reload_speed"],
+				"effects": {
+					"fire_rate_mult": 1.15
+				},
+				"cost": 1,
+				"position": [400, 100]
+			},
+			{
+				"skill_id": "ammo_capacity",
+				"display_name": "Ammo Capacity",
+				"icon_path": "res://game/ui/icons/weapons/shotgun.png",
+				"description": "+50% magazine size",
+				"tree_type": "combat",
+				"tier": 2,
+				"prerequisites": [],
+				"effects": {
+					"ammo_capacity": 0.5
+				},
+				"cost": 1,
+				"position": [200, 200]
+			}
+		],
+		"survival": [
+			{
+				"skill_id": "max_health_1",
+				"display_name": "Max Health I",
+				"description": "+20 maximum health",
+				"tree_type": "survival",
+				"tier": 1,
+				"prerequisites": [],
+				"effects": {
+					"max_health": 20.0
+				},
+				"cost": 1,
+				"position": [0, 0]
+			},
+			{
+				"skill_id": "max_health_2",
+				"display_name": "Max Health II",
+				"description": "+40 maximum health (total)",
+				"tree_type": "survival",
+				"tier": 2,
+				"prerequisites": ["max_health_1"],
+				"effects": {
+					"max_health": 20.0
+				},
+				"cost": 1,
+				"position": [0, 100]
+			},
+			{
+				"skill_id": "max_health_3",
+				"display_name": "Max Health III",
+				"description": "+60 maximum health (total)",
+				"tree_type": "survival",
+				"tier": 3,
+				"prerequisites": ["max_health_2"],
+				"effects": {
+					"max_health": 20.0
+				},
+				"cost": 1,
+				"position": [0, 200]
+			},
+			{
+				"skill_id": "max_armor_1",
+				"display_name": "Max Armor I",
+				"description": "+25 maximum armor",
+				"tree_type": "survival",
+				"tier": 1,
+				"prerequisites": [],
+				"effects": {
+					"max_armor": 25.0
+				},
+				"cost": 1,
+				"position": [200, 0]
+			},
+			{
+				"skill_id": "max_armor_2",
+				"display_name": "Max Armor II",
+				"description": "+50 maximum armor (total)",
+				"tree_type": "survival",
+				"tier": 2,
+				"prerequisites": ["max_armor_1"],
+				"effects": {
+					"max_armor": 25.0
+				},
+				"cost": 1,
+				"position": [200, 100]
+			},
+			{
+				"skill_id": "damage_resistance",
+				"display_name": "Damage Resistance",
+				"description": "Take 10% less damage",
+				"tree_type": "survival",
+				"tier": 2,
+				"prerequisites": [],
+				"effects": {
+					"damage_resistance": 0.1
+				},
+				"cost": 1,
+				"position": [100, 150]
+			}
+		],
+		"utility": [
+			{
+				"skill_id": "movement_speed_1",
+				"display_name": "Movement Speed I",
+				"description": "+10% movement speed",
+				"tree_type": "utility",
+				"tier": 1,
+				"prerequisites": [],
+				"effects": {
+					"movement_speed_mult": 1.1
+				},
+				"cost": 1,
+				"position": [0, 0]
+			},
+			{
+				"skill_id": "movement_speed_2",
+				"display_name": "Movement Speed II",
+				"description": "+20% movement speed (total)",
+				"tree_type": "utility",
+				"tier": 2,
+				"prerequisites": ["movement_speed_1"],
+				"effects": {
+					"movement_speed_mult": 1.1
+				},
+				"cost": 1,
+				"position": [0, 100]
+			},
+			{
+				"skill_id": "dodge_cooldown",
+				"display_name": "Dodge Mastery",
+				"description": "-20% dodge cooldown",
+				"tree_type": "utility",
+				"tier": 1,
+				"prerequisites": [],
+				"effects": {
+					"dodge_cooldown_reduction": 0.2
+				},
+				"cost": 1,
+				"position": [200, 0]
+			},
+			{
+				"skill_id": "sprint_efficiency",
+				"display_name": "Sprint Efficiency",
+				"description": "+15% sprint speed multiplier",
+				"tree_type": "utility",
+				"tier": 2,
+				"prerequisites": ["movement_speed_1"],
+				"effects": {
+					"sprint_mult_bonus": 0.15
+				},
+				"cost": 1,
+				"position": [100, 100]
+			}
+		]
+	}
+}

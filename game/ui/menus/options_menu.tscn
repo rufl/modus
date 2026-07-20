@@ -1,0 +1,161 @@
+[gd_scene load_steps=8 format=3 uid="uid://options_menu"]
+
+[ext_resource type="Script" path="res://game/ui/menus/options_menu.gd" id="1_options"]
+
+[ext_resource type="Script" path="res://game/ui/menus/menu/options/fullscreen.gd" id="2_fullscreen"]
+
+[ext_resource type="Script" path="res://game/ui/menus/menu/options/audio_options.gd" id="3_audio_options"]
+
+[ext_resource type="Script" path="res://game/ui/menus/menu/options/mouse_sensitivity.gd" id="4_mouse_sensitivity"]
+
+[ext_resource type="Script" path="res://game/ui/menus/menu/options/controller_sensitivity.gd" id="5_controller_sensitivity"]
+
+[ext_resource type="Script" path="res://game/ui/menus/menu/options/back.gd" id="6_back"]
+
+[ext_resource type="Script" path="res://game/ui/menus/menu/options/input_options_panel.gd" id="7_input_options"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.1, 0.1, 0.1, 0.9)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.3, 0.3, 0.3, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="Options" type="PanelContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
+script = ExtResource("1_options")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Options"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 32
+
+[node name="TabContainer" type="TabContainer" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Graphics" type="ScrollContainer" parent="MarginContainer/VBoxContainer/TabContainer"]
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="GraphicsVBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Graphics"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 15
+
+[node name="FullscreenLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Graphics/GraphicsVBox"]
+layout_mode = 2
+text = "Fullscreen"
+
+[node name="Fullscreen" type="CheckBox" parent="MarginContainer/VBoxContainer/TabContainer/Graphics/GraphicsVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("2_fullscreen")
+
+[node name="Audio" type="ScrollContainer" parent="MarginContainer/VBoxContainer/TabContainer"]
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="AudioVBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Audio"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 15
+script = ExtResource("3_audio_options")
+
+[node name="MasterVolumeLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Audio/AudioVBox"]
+layout_mode = 2
+text = "Master Volume"
+
+[node name="MasterVolumeSlider" type="HSlider" parent="MarginContainer/VBoxContainer/TabContainer/Audio/AudioVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 0.0
+max_value = 100.0
+value = 50.0
+
+[node name="SFXVolumeLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Audio/AudioVBox"]
+layout_mode = 2
+text = "SFX Volume"
+
+[node name="SFXVolumeSlider" type="HSlider" parent="MarginContainer/VBoxContainer/TabContainer/Audio/AudioVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 0.0
+max_value = 100.0
+value = 50.0
+
+[node name="MusicVolumeLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Audio/AudioVBox"]
+layout_mode = 2
+text = "Music Volume"
+
+[node name="MusicVolumeSlider" type="HSlider" parent="MarginContainer/VBoxContainer/TabContainer/Audio/AudioVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 0.0
+max_value = 100.0
+value = 50.0
+
+[node name="Controls" type="ScrollContainer" parent="MarginContainer/VBoxContainer/TabContainer"]
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="ControlsVBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Controls"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 15
+script = ExtResource("7_input_options")
+
+[node name="MouseSensitivityLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Controls/ControlsVBox"]
+layout_mode = 2
+text = "Mouse Sensitivity"
+
+[node name="MouseSensitivity" type="HSlider" parent="MarginContainer/VBoxContainer/TabContainer/Controls/ControlsVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 0.1
+max_value = 2.0
+step = 0.1
+value = 1.0
+script = ExtResource("4_mouse_sensitivity")
+
+[node name="ControllerSensitivityLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Controls/ControlsVBox"]
+layout_mode = 2
+text = "Controller Sensitivity"
+
+[node name="ControllerSensitivity" type="HSlider" parent="MarginContainer/VBoxContainer/TabContainer/Controls/ControlsVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 0.1
+max_value = 2.0
+step = 0.1
+value = 1.0
+script = ExtResource("5_controller_sensitivity")
+
+[node name="Back" type="Button" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+text = "Back"
+script = ExtResource("6_back")

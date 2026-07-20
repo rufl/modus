@@ -1,0 +1,6 @@
+{
+	"lsystem_rules": {
+		"F": "F+F-F-F+F"
+	},
+	"description": "Urban theme uses simpler, more rectangular patterns"
+}

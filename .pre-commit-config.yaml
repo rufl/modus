@@ -1,0 +1,49 @@
+# Pre-commit hooks for MODUS Framework
+# Install with: pip install pre-commit && pre-commit install
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: '\.md$'
+      - id: end-of-file-fixer
+        exclude: '\.import$'
+      - id: check-yaml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+      - id: mixed-line-ending
+        args: ['--fix=lf']
+
+  - repo: local
+    hooks:
+      - id: gdformat
+        name: GDScript Formatter
+        entry: gdformat
+        language: system
+        files: '\.gd$'
+        exclude: '^addons/'
+        args: ['--check', '--diff']
+        
+      - id: gdlint
+        name: GDScript Linter
+        entry: gdlint
+        language: system
+        files: '\.gd$'
+        exclude: '^addons/'
+
+  - repo: https://github.com/psf/black
+    rev: 23.3.0
+    hooks:
+      - id: black
+        language_version: python3
+        files: '\.py$'
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 6.0.0
+    hooks:
+      - id: flake8
+        files: '\.py$'
+        args: ['--max-line-length=88', '--extend-ignore=E203,W503']

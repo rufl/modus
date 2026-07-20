@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "GDFormat on Save",
+  "description": "Automatically formats GDScript files using gdformat when they are saved to maintain consistent code style",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "*.gd"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Run gdformat on the edited GDScript file to automatically format it according to GDScript style guidelines. Use the command: gdformat [filename]"
+  }
+}

@@ -1,0 +1,199 @@
+{
+  // Loot System Configuration
+  // Defines loot tables, drop rates, and item generation settings
+  
+  "loot": {
+    // Global loot settings
+    "enabled": true,
+    "loot_multiplier": 1.0,
+    "spawn_beacons": true,
+    "beacon_min_rarity": 1,
+    "instanced_loot": false,
+    "drop_rate_multiplier": 1.0,
+    "rare_chance_bonus": 0.0,
+    "pickup_magnet_radius": 2.0,
+    "auto_pickup": true,
+  
+  // Loot tables definition
+  "tables": {
+    // Basic enemy loot table
+    "enemy_basic": {
+      "min_drops": 0,
+      "max_drops": 2,
+      "entries": [
+        {
+          "item_id": "health_pack_small",
+          "weight": 50.0,
+          "min_quantity": 1,
+          "max_quantity": 1,
+          "tier": "common"
+        },
+        {
+          "item_id": "ammo_pistol",
+          "weight": 40.0,
+          "min_quantity": 5,
+          "max_quantity": 15,
+          "tier": "common"
+        },
+        {
+          "item_id": "credits",
+          "weight": 30.0,
+          "min_quantity": 10,
+          "max_quantity": 50,
+          "tier": "common"
+        },
+        {
+          "item_id": "health_pack_medium",
+          "weight": 15.0,
+          "min_quantity": 1,
+          "max_quantity": 1,
+          "tier": "uncommon"
+        },
+        {
+          "item_id": "weapon_upgrade_common",
+          "weight": 5.0,
+          "min_quantity": 1,
+          "max_quantity": 1,
+          "tier": "rare"
+        }
+      ]
+    },
+    
+    // Elite enemy loot table
+    "enemy_elite": {
+      "min_drops": 1,
+      "max_drops": 3,
+      "entries": [
+        {
+          "item_id": "health_pack_medium",
+          "weight": 40.0,
+          "min_quantity": 1,
+          "max_quantity": 2,
+          "tier": "uncommon"
+        },
+        {
+          "item_id": "ammo_rifle",
+          "weight": 35.0,
+          "min_quantity": 10,
+          "max_quantity": 30,
+          "tier": "uncommon"
+        },
+        {
+          "item_id": "credits",
+          "weight": 30.0,
+          "min_quantity": 50,
+          "max_quantity": 150,
+          "tier": "uncommon"
+        },
+        {
+          "item_id": "weapon_upgrade_rare",
+          "weight": 15.0,
+          "min_quantity": 1,
+          "max_quantity": 1,
+          "tier": "rare"
+        },
+        {
+          "item_id": "armor_piece",
+          "weight": 10.0,
+          "min_quantity": 1,
+          "max_quantity": 1,
+          "tier": "epic"
+        },
+        {
+          "item_id": "legendary_weapon",
+          "weight": 2.0,
+          "min_quantity": 1,
+          "max_quantity": 1,
+          "tier": "legendary"
+        }
+      ]
+    },
+    
+    // Boss loot table
+    "boss": {
+      "min_drops": 3,
+      "max_drops": 5,
+      "entries": [
+        {
+          "item_id": "health_pack_large",
+          "weight": 50.0,
+          "min_quantity": 1,
+          "max_quantity": 3,
+          "tier": "rare"
+        },
+        {
+          "item_id": "credits",
+          "weight": 40.0,
+          "min_quantity": 200,
+          "max_quantity": 500,
+          "tier": "rare"
+        },
+        {
+          "item_id": "weapon_upgrade_epic",
+          "weight": 30.0,
+          "min_quantity": 1,
+          "max_quantity": 2,
+          "tier": "epic"
+        },
+        {
+          "item_id": "armor_set",
+          "weight": 20.0,
+          "min_quantity": 1,
+          "max_quantity": 1,
+          "tier": "epic"
+        },
+        {
+          "item_id": "legendary_weapon",
+          "weight": 15.0,
+          "min_quantity": 1,
+          "max_quantity": 1,
+          "tier": "legendary"
+        },
+        {
+          "item_id": "unique_artifact",
+          "weight": 5.0,
+          "min_quantity": 1,
+          "max_quantity": 1,
+          "tier": "legendary"
+        }
+      ]
+    },
+    
+    // Container/chest loot table
+    "container_common": {
+      "min_drops": 1,
+      "max_drops": 2,
+      "entries": [
+        {
+          "item_id": "health_pack_small",
+          "weight": 40.0,
+          "min_quantity": 1,
+          "max_quantity": 2,
+          "tier": "common"
+        },
+        {
+          "item_id": "ammo_pistol",
+          "weight": 35.0,
+          "min_quantity": 10,
+          "max_quantity": 20,
+          "tier": "common"
+        },
+        {
+          "item_id": "credits",
+          "weight": 30.0,
+          "min_quantity": 20,
+          "max_quantity": 100,
+          "tier": "common"
+        },
+        {
+          "item_id": "consumable_buff",
+          "weight": 20.0,
+          "min_quantity": 1,
+          "max_quantity": 1,
+          "tier": "uncommon"
+        }
+      ]
+    }
+  }
+  }
+}

@@ -1,0 +1,39 @@
+// HudWeaponSettings - External configuration for HUD positioning and weapon visual adjustments
+// All positions are in normalized screen coordinates [horizontal, vertical] where:
+//   [0,0] = top-left, [1,1] = bottom-right
+// Offsets are in local weapon space: [right, up, forward] relative to weapon origin
+
+{
+  "defaults": {
+    "hud": {
+      "healthBarPosition": [0.02, 0.9],
+      "ammoCounterPosition": [0.85, 0.9],
+      "minimapPosition": [0.02, 0.02],
+      "killFeedPosition": [0.75, 0.05],
+      "crosshairData": {
+        "enabled": true,
+        "style": "dynamic"
+      }
+    },
+    "weapon": {
+        "muzzleFlashOffset": [0.0, 0.0, -0.5],
+        "tracerStartOffset": [0.0, 0.0, -0.5],
+        "tracer": {
+            "color": "#ffcc66",
+            "width": 0.05
+        },
+        "viewModelOffset": [0.25, -0.25, -0.5],
+        "viewModelRotation": [0.0, 0.0, 0.0],
+        "fov": 70
+    }
+  },
+  "weapons": {
+    "weapon_assault_rifle": {
+        "muzzleFlashOffset": [0.0, 0.1, -0.8],
+        "fov": 75
+    },
+    "weapon_shotgun": {
+        "muzzleFlashOffset": [0.0, 0.05, -0.6]
+    }
+  }
+}

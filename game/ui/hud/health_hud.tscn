@@ -1,0 +1,39 @@
+[gd_scene load_steps=2 format=3 uid="uid://chealth_hud_ui"]
+
+[ext_resource type="Script" path="res://game/ui/hud/health_hud.gd" id="1_health"]
+
+[node name="HealthHUD" type="Control"]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -100.0
+offset_right = 150.0
+grow_vertical = 0
+script = ExtResource("1_health")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 2
+
+[node name="HealthLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "HEALTH"
+horizontal_alignment = 1
+
+[node name="HealthCount" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "2"
+horizontal_alignment = 1
+
+[node name="HealthBar" type="ProgressBar" parent="VBoxContainer"]
+layout_mode = 2
+max_value = 2.0
+value = 2.0
+show_percentage = false

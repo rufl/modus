@@ -1,0 +1,18 @@
+{
+    "id": "mission_kill_all",
+    "name": "Target Practice",
+    "description": "Eliminate all hostiles in the area.",
+    "type": "standard",
+    "objectives": [
+        {
+            "id": "obj_kill_enemies",
+            "type": "eliminate_group",
+            "target_group": "enemies",
+            "required_count": -1,
+            "description": "Kill all enemies"
+        }
+    ],
+    "rewards": {
+        "xp": 100
+    }
+}

@@ -1,0 +1,22 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://game/core/tools/blood_pool.gd" id="1_script"]
+[ext_resource type="Shader" uid="uid://buuxi8ttvwb7p" path="res://game/art/shaders/blood_pool.gdshader" id="2_shader"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_blood"]
+shader = ExtResource("2_shader")
+shader_parameter/blood_color = Vector3(0.6, 0.0, 0.0)
+shader_parameter/blood_merge_factor = 0.2
+shader_parameter/blood_density_on_heightmap = true
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_blood"]
+material = SubResource("ShaderMaterial_blood")
+size = Vector2(4, 4)
+
+[node name="BloodPool" type="MeshInstance3D"]
+mesh = SubResource("PlaneMesh_blood")
+script = ExtResource("1_script")
+pool_size = 64
+growing_time = 0.2
+drying_time = 4.0
+delay_until_drying_starts = 0.2

@@ -1,0 +1,10 @@
+{
+    "name": "Example Mod",
+    "version": "1.0.0",
+    "description": "An example mod for the MODUS framework",
+    "author": "MODUS Team",
+    "dependencies": [],
+    "entry_point": "scripts/example_script.gd",
+    "enabled": false,
+    "mod_type": "gameplay"
+}

@@ -1,0 +1,755 @@
+// =============================================================================
+// MODUS ENEMIES DATA - Edit enemy stats and behavior here
+// =============================================================================
+// TIPS:
+//   - "tier" = difficulty tier (1=weak, 2=medium, 3=strong, 4=boss)
+//   - "role" = AI behavior type (basic, support, damage, swarm)
+//   - "health" = hit points before death
+//   - "damage" = damage dealt per attack
+//   - "speed" = movement speed (higher = faster)
+//   - "aggression" = how aggressively AI pursues targets (0.0 to 1.0)
+// =============================================================================
+
+{
+  // =====================
+  // TIER 1 - Basic Enemies
+  // =====================
+
+  // Dummy Bot - For Ragdoll Testing
+  "dummy_bot": {
+    "name": "Live Ragdoll Test",
+    "tier": 1,
+    "role": "basic",
+    "stats": {
+      "health": 100,
+      "damage": 0,
+      "speed": 1.0,
+      "aggression": 0.0,
+      "attack_range": 1.0,
+      "attack_cooldown": 5.0,
+    },
+    "visuals": {
+      "color": "#8888ff",
+      "visual_scene": "res://game/entities/enemies/dummy/dummy_skeletal.tscn",
+      "corpse_scene": "res://game/entities/enemies/dummy/dummy_ragdoll.tscn"
+    },
+    "combat": {
+        "attack_type": "melee"
+    },
+    "loot": {
+        "drop_chance": 0.0
+    }
+  },
+
+  // Grunt - Standard melee enemy, your bread-and-butter fodder
+  "grunt_basic": {
+
+    "name": "Grunt",
+    "tier": 1,
+    "role": "basic",
+    "stats": {
+      "health": 100,             // Standard health
+      "damage": 10,              // Moderate damage
+      "speed": 4.0,              // Average speed
+      "attack_range": 2.0,       // Melee range
+      "attack_cooldown": 1.5,    // Seconds between attacks
+      "aggression": 0.5,         // Moderate aggression
+    },
+    "combat": {
+      "attack_type": "melee",    // Gets up close
+      "projectile_speed": 0.0,   // N/A for melee
+    },
+    "movement": {
+      "can_fly": false,
+      "hover_height": 0.0,
+    },
+    "loot": {
+      "loot_table_id": "tier1_loot",
+      "drop_chance": 0.5,        // 50% to drop loot
+    },
+    "visuals": {
+      "color": "#cc4444",        // Red
+      "visual_scene": "res://game/entities/enemies/dummy/dummy_skeletal.tscn",
+      "corpse_scene": "res://game/entities/enemies/dummy/dummy_ragdoll.tscn"
+    },
+  },
+
+  // Alias for grunt_basic for backward compatibility
+  "grunt": {
+    "name": "Grunt",
+    "tier": 1,
+    "role": "basic",
+    "stats": {
+      "health": 100,
+      "damage": 10,
+      "speed": 4.0,
+      "attack_range": 2.0,
+      "attack_cooldown": 1.5,
+      "aggression": 0.5,
+    },
+    "combat": {
+      "attack_type": "melee",
+      "projectile_speed": 0.0,
+    },
+    "movement": {
+      "can_fly": false,
+      "hover_height": 0.0,
+    },
+    "loot": {
+      "loot_table_id": "tier1_loot",
+      "drop_chance": 0.5,
+    },
+    "visuals": {
+      "color": "#cc4444",
+      "visual_scene": "res://game/entities/enemies/dummy/dummy_skeletal.tscn",
+      "corpse_scene": "res://game/entities/enemies/dummy/dummy_ragdoll.tscn"
+    },
+  },
+
+  // Imp - Ranged attacker, throws fireballs
+  "imp": {
+    "name": "Imp",
+    "tier": 1,
+    "role": "basic",
+    "stats": {
+      "health": 60,              // Low health (glass cannon)
+      "damage": 8,               // decent per-hit damage
+      "speed": 5.0,              // Fast movement
+      "attack_range": 15.0,      // Long range
+      "attack_cooldown": 2.0,    // Slower attack rate
+      "aggression": 0.7,         // More aggressive
+    },
+    "combat": {
+      "attack_type": "ranged",
+      "projectile_speed": 15.0,  // Fireball speed
+      "projectile_scene": "res://game/entities/enemies/enemy_projectile.tscn"
+    },
+    "loot": {
+      "loot_table_id": "tier1_loot",
+      "drop_chance": 0.6,
+    },
+    "visuals": {
+      "color": "#ff8800",        // Orange
+      "visual_scene": "res://game/entities/enemies/dummy/dummy_skeletal.tscn",
+      "corpse_scene": "res://game/entities/enemies/dummy/dummy_ragdoll.tscn"
+    },
+  },
+
+  // Swarmling - Tiny, fast, attacks in groups
+  "swarmling": {
+    "name": "Swarmling",
+    "tier": 1,
+    "role": "swarm",
+    "stats": {
+      "health": 30,              // Very weak individually
+      "damage": 5,               // Tiny damage (but there are many!)
+      "speed": 6.0,              // Very fast
+      "attack_range": 1.5,       // Short melee range
+      "attack_cooldown": 0.5,    // Rapid attacks
+      "aggression": 0.8,         // Very aggressive
+    },
+    "combat": {
+      "attack_type": "melee",
+      "projectile_speed": 0.0,
+    },
+    "loot": {
+      "loot_table_id": "basic_loot",
+      "drop_chance": 0.3,        // Low drop chance
+    },
+    "visuals": {
+      "scale": 0.7,              // Small
+      "color": "#8b4513",        // Brown
+      "visual_scene": "res://game/entities/enemies/dummy/dummy_skeletal.tscn",
+      "corpse_scene": "res://game/entities/enemies/dummy/dummy_ragdoll.tscn"
+    },
+  },
+
+  // =====================
+  // TIER 2 - Advanced Enemies
+  // =====================
+
+  // Healer - Supports allies by healing them
+  "healer": {
+    "name": "Healer",
+    "tier": 2,
+    "role": "support",
+    "stats": {
+      "health": 80,
+      "damage": 5,               // Weak attack (focus on healing)
+      "speed": 3.5,              // Slower, stays back
+      "attack_range": 10.0,
+      "attack_cooldown": 3.0,
+      "aggression": 0.3,         // Low aggression, defensive
+    },
+    "combat": {
+      "attack_type": "hitscan",
+      "projectile_speed": 0.0,
+    },
+    "abilities": {
+      "heal_allies": true,       // Can heal other enemies!
+      "heal_radius": 8.0,        // Range to find wounded allies
+      "heal_amount": 10,         // HP healed per tick
+    },
+    "loot": {
+      "loot_table_id": "tier2_loot",
+      "drop_chance": 0.7,
+    },
+    "visuals": {
+      "color": "#44cc44",        // Green
+      "visual_scene": "res://game/entities/enemies/dummy/dummy_skeletal.tscn",
+      "corpse_scene": "res://game/entities/enemies/dummy/dummy_ragdoll.tscn"
+    },
+  },
+
+  // Assassin - High damage, uses backstabs
+  "assassin": {
+    "name": "Assassin",
+    "tier": 2,
+    "role": "damage",
+    "stats": {
+      "health": 70,              // Fragile but deadly
+      "damage": 25,              // HIGH damage
+      "speed": 7.0,              // Very fast
+      "attack_range": 2.5,
+      "attack_cooldown": 0.8,    // Rapid attacks
+      "aggression": 0.9,         // Very aggressive
+    },
+    "combat": {
+      "attack_type": "melee",
+      "projectile_speed": 0.0,
+    },
+    "abilities": {
+      "backstab_mult": 2.0,      // 2x damage from behind!
+    },
+    "loot": {
+      "loot_table_id": "tier2_loot",
+      "drop_chance": 0.8,
+    },
+    "visuals": {
+      "color": "#333333",        // Dark Gray
+      "visual_scene": "res://game/entities/enemies/dummy/dummy_skeletal.tscn",
+      "corpse_scene": "res://game/entities/enemies/dummy/dummy_ragdoll.tscn"
+    },
+  },
+
+  // Rally Captain - Buffs nearby allies
+  "rally": {
+    "name": "Rally Captain",
+    "tier": 2,
+    "role": "support",
+    "stats": {
+      "health": 120,
+      "damage": 15,
+      "speed": 4.0,
+      "attack_range": 3.0,
+      "attack_cooldown": 1.2,
+      "aggression": 0.6,
+    },
+    "combat": {
+      "attack_type": "melee",
+      "projectile_speed": 0.0,
+    },
+    "abilities": {
+      "rally_allies": true,      // Buffs nearby enemies
+      "rally_radius": 10.0,      // Buff range
+      "damage_buff": 1.25,       // +25% damage to allies
+    },
+    "loot": {
+      "loot_table_id": "tier2_loot",
+      "drop_chance": 0.8,
+    },
+    "visuals": {
+      "color": "#ffd700",        // Gold
+      "visual_scene": "res://game/entities/enemies/dummy/dummy_skeletal.tscn",
+      "corpse_scene": "res://game/entities/enemies/dummy/dummy_ragdoll.tscn"
+    },
+  },
+
+  // =====================
+  // TIER 3 - Elite Enemies
+  // =====================
+
+  // Summoner - Spawns swarmlings
+  "summoner": {
+    "name": "Summoner",
+    "tier": 3,
+    "role": "support",
+    "stats": {
+      "health": 150,              // Tanky
+      "damage": 10,
+      "speed": 3.0,              // Slow
+      "attack_range": 12.0,
+      "attack_cooldown": 4.0,
+      "aggression": 0.4,
+    },
+    "combat": {
+      "attack_type": "ranged",
+      "projectile_speed": 8.0,
+    },
+    "abilities": {
+      "summon_minions": true,
+      "minion_type": "swarmling", // What enemy type to spawn
+      "summon_count": 3,          // How many to spawn at once
+      "summon_cooldown": 10.0,    // Seconds between summons
+    },
+    "loot": {
+      "loot_table_id": "tier3_loot",
+      "drop_chance": 0.9,
+    },
+    "visuals": {
+      "color": "#9b30ff",        // Purple
+      "visual_scene": "res://game/entities/enemies/dummy/dummy_skeletal.tscn",
+      "corpse_scene": "res://game/entities/enemies/dummy/dummy_ragdoll.tscn"
+    },
+  },
+
+  // =====================
+  // TIER 4 - BOSS ENEMIES
+  // =====================
+
+  // Warlord - Heavy melee boss with devastating charge attack
+  "warlord": {
+    "name": "Warlord",
+    "tier": 4,
+    "role": "boss",
+    "stats": {
+      "health": 2000,            // Very tanky
+      "damage": 50,              // Devastating hits
+      "speed": 3.5,              // Slow but relentless
+      "attack_range": 3.5,       // Extended melee reach
+      "attack_cooldown": 2.0,    // Slower but harder hits
+      "aggression": 1.0,         // Maximum aggression
+    },
+    "combat": {
+      "attack_type": "melee",
+      "projectile_speed": 0.0,
+    },
+    "abilities": {
+      "charge_attack": true,     // Can charge at player
+      "charge_damage": 100,      // Huge charge damage
+      "charge_cooldown": 8.0,    // Cooldown between charges
+      "ground_pound": true,      // AoE stomp attack
+      "pound_radius": 5.0,       // AoE radius
+      "pound_damage": 40,        // Stomp damage
+    },
+    "loot": {
+      "loot_table_id": "boss_loot",
+      "drop_chance": 1.0,        // Always drops loot
+    },
+    "visuals": {
+      "scale": 1.5,              // 50% larger than normal
+      "color": "#8b0000",        // Dark red
+      "visual_scene": "res://game/entities/enemies/dummy/dummy_skeletal.tscn",
+      "corpse_scene": "res://game/entities/enemies/dummy/dummy_ragdoll.tscn"
+    },
+  },
+
+  // Infernal Lord - Ranged boss with summon abilities
+  "infernal_lord": {
+    "name": "Infernal Lord",
+    "tier": 4,
+    "role": "boss",
+    "stats": {
+      "health": 1500,            // Less tanky than Warlord
+      "damage": 30,              // Ranged damage per hit
+      "speed": 4.0,              // Moderate speed
+      "attack_range": 20.0,      // Long range caster
+      "attack_cooldown": 1.5,    // Faster attacks
+      "aggression": 0.8,         // Stays back and casts
+    },
+    "combat": {
+      "attack_type": "ranged",
+      "projectile_speed": 18.0,  // Fast projectiles
+      "projectile_scene": "res://game/entities/enemies/enemy_projectile.tscn"
+    },
+    "abilities": {
+      "summon_minions": true,    // Summons reinforcements
+      "minion_type": "imp",      // Summons imps
+      "summon_count": 4,         // 4 at a time
+      "summon_cooldown": 12.0,   // Every 12 seconds
+      "teleport": true,          // Can teleport away when hurt
+      "teleport_cooldown": 6.0,  // Teleport cooldown
+      "flame_wave": true,        // AoE fire attack
+      "flame_damage": 25,        // Flame wave damage
+      "flame_radius": 8.0,       // Large radius
+    },
+    "loot": {
+      "loot_table_id": "boss_loot",
+      "drop_chance": 1.0,
+    },
+    "visuals": {
+      "scale": 1.4,              // Larger but not as big as Warlord
+      "color": "#ff4500",        // Orange-red (fiery)
+      "visual_scene": "res://game/entities/enemies/dummy/dummy_skeletal.tscn",
+      "corpse_scene": "res://game/entities/enemies/dummy/dummy_ragdoll.tscn"
+    },
+  },
+
+  // =====================
+  // ARENA BOTS - Quake 3 Style
+  // =====================
+  // 8 unique bot personalities for arena combat
+
+  // Bot 1: Crash - Aggressive Rusher
+  "bot_crash": {
+    "name": "Crash",
+    "tier": 2,
+    "role": "basic",
+    "stats": {
+      "health": 100,
+      "damage": 12,
+      "speed": 6.5,              // Very fast
+      "attack_range": 2.5,
+      "attack_cooldown": 0.8,    // Rapid attacks
+      "aggression": 0.95,        // Extremely aggressive
+    },
+    "combat": {
+      "attack_type": "melee",
+      "projectile_speed": 0.0,
+    },
+    "movement": {
+      "can_dash": true,
+      "dash_speed": 12.0,
+      "dash_cooldown": 2.0,
+      "can_jump": true,
+      "jump_height": 2.5,
+    },
+    "ai_config": {
+      "accuracy": 0.6,           // Low accuracy, rushes in
+      "reaction_time": 0.1,      // Fast reactions
+      "combat_style": "aggressive",
+      "weapon_preference": "melee",
+      "uses_cover": false,
+      "flee_threshold": 0.0,     // Never flees
+    },
+    "loot": {
+      "loot_table_id": "tier2_loot",
+      "drop_chance": 0.5,
+    },
+    "visuals": {
+      "color": "#ff3333",        // Bright red
+      "visual_scene": "res://game/entities/enemies/dummy/dummy_skeletal.tscn",
+      "corpse_scene": "res://game/entities/enemies/dummy/dummy_ragdoll.tscn"
+    },
+  },
+
+  // Bot 2: Sarge - Balanced Veteran
+  "bot_sarge": {
+    "name": "Sarge",
+    "tier": 2,
+    "role": "basic",
+    "stats": {
+      "health": 120,
+      "damage": 15,
+      "speed": 4.5,              // Medium speed
+      "attack_range": 12.0,
+      "attack_cooldown": 1.2,
+      "aggression": 0.6,         // Balanced aggression
+    },
+    "combat": {
+      "attack_type": "ranged",
+      "projectile_speed": 20.0,
+      "projectile_scene": "res://game/entities/enemies/enemy_projectile.tscn"
+    },
+    "movement": {
+      "can_dash": false,
+      "can_jump": true,
+      "jump_height": 2.0,
+    },
+    "ai_config": {
+      "accuracy": 0.75,          // Good accuracy
+      "reaction_time": 0.3,      // Medium reactions
+      "combat_style": "balanced",
+      "weapon_preference": "balanced",
+      "uses_cover": true,
+      "flee_threshold": 0.2,     // Flees at 20% health
+    },
+    "loot": {
+      "loot_table_id": "tier2_loot",
+      "drop_chance": 0.6,
+    },
+    "visuals": {
+      "color": "#4444ff",        // Blue
+      "visual_scene": "res://game/entities/enemies/dummy/dummy_skeletal.tscn",
+      "corpse_scene": "res://game/entities/enemies/dummy/dummy_ragdoll.tscn"
+    },
+  },
+
+  // Bot 3: Doom - Heavy Tank
+  "bot_doom": {
+    "name": "Doom",
+    "tier": 3,
+    "role": "basic",
+    "stats": {
+      "health": 200,             // Very tanky
+      "damage": 25,              // High damage
+      "speed": 3.0,              // Slow
+      "attack_range": 3.0,
+      "attack_cooldown": 2.0,    // Slow but devastating
+      "aggression": 0.7,
+    },
+    "combat": {
+      "attack_type": "melee",
+      "projectile_speed": 0.0,
+    },
+    "movement": {
+      "can_dash": false,
+      "can_jump": false,
+    },
+    "ai_config": {
+      "accuracy": 0.8,           // High accuracy when he hits
+      "reaction_time": 0.5,      // Slower reactions
+      "combat_style": "aggressive",
+      "weapon_preference": "melee",
+      "uses_cover": false,
+      "flee_threshold": 0.0,     // Never flees
+    },
+    "loot": {
+      "loot_table_id": "tier3_loot",
+      "drop_chance": 0.7,
+    },
+    "visuals": {
+      "scale": 1.2,              // Larger
+      "color": "#663300",        // Dark brown
+      "visual_scene": "res://game/entities/enemies/dummy/dummy_skeletal.tscn",
+      "corpse_scene": "res://game/entities/enemies/dummy/dummy_ragdoll.tscn"
+    },
+  },
+
+  // Bot 4: Hunter - Sniper Specialist
+  "bot_hunter": {
+    "name": "Hunter",
+    "tier": 2,
+    "role": "basic",
+    "stats": {
+      "health": 80,              // Fragile
+      "damage": 20,              // High damage
+      "speed": 4.0,
+      "attack_range": 25.0,      // Very long range
+      "attack_cooldown": 2.5,    // Slow, precise shots
+      "aggression": 0.3,         // Cautious
+    },
+    "combat": {
+      "attack_type": "ranged",
+      "projectile_speed": 30.0,  // Fast projectiles
+      "projectile_scene": "res://game/entities/enemies/enemy_projectile.tscn"
+    },
+    "movement": {
+      "can_dash": false,
+      "can_jump": true,
+      "jump_height": 2.0,
+    },
+    "ai_config": {
+      "accuracy": 0.9,           // Very high accuracy
+      "reaction_time": 0.2,      // Quick reactions
+      "combat_style": "defensive",
+      "weapon_preference": "ranged",
+      "uses_cover": true,
+      "flee_threshold": 0.4,     // Flees at 40% health
+    },
+    "loot": {
+      "loot_table_id": "tier2_loot",
+      "drop_chance": 0.6,
+    },
+    "visuals": {
+      "color": "#00cc00",        // Green
+      "visual_scene": "res://game/entities/enemies/dummy/dummy_skeletal.tscn",
+      "corpse_scene": "res://game/entities/enemies/dummy/dummy_ragdoll.tscn"
+    },
+  },
+
+  // Bot 5: Slash - Evasive Acrobat
+  "bot_slash": {
+    "name": "Slash",
+    "tier": 2,
+    "role": "basic",
+    "stats": {
+      "health": 90,
+      "damage": 14,
+      "speed": 7.0,              // Very fast
+      "attack_range": 2.0,
+      "attack_cooldown": 0.6,    // Very rapid
+      "aggression": 0.8,
+    },
+    "combat": {
+      "attack_type": "melee",
+      "projectile_speed": 0.0,
+    },
+    "movement": {
+      "can_dash": true,
+      "dash_speed": 15.0,        // Extremely fast dash
+      "dash_cooldown": 1.5,      // Frequent dashing
+      "can_jump": true,
+      "jump_height": 3.0,        // High jumps
+    },
+    "ai_config": {
+      "accuracy": 0.7,
+      "reaction_time": 0.15,     // Very fast reactions
+      "combat_style": "aggressive",
+      "weapon_preference": "melee",
+      "uses_cover": false,
+      "flee_threshold": 0.15,    // Hit and run at low health
+    },
+    "loot": {
+      "loot_table_id": "tier2_loot",
+      "drop_chance": 0.5,
+    },
+    "visuals": {
+      "color": "#ff00ff",        // Magenta
+      "visual_scene": "res://game/entities/enemies/dummy/dummy_skeletal.tscn",
+      "corpse_scene": "res://game/entities/enemies/dummy/dummy_ragdoll.tscn"
+    },
+  },
+
+  // Bot 6: Visor - Tactical Flanker
+  "bot_visor": {
+    "name": "Visor",
+    "tier": 3,
+    "role": "basic",
+    "stats": {
+      "health": 110,
+      "damage": 18,
+      "speed": 5.0,
+      "attack_range": 15.0,
+      "attack_cooldown": 1.0,
+      "aggression": 0.65,
+    },
+    "combat": {
+      "attack_type": "ranged",
+      "projectile_speed": 22.0,
+      "projectile_scene": "res://game/entities/enemies/enemy_projectile.tscn"
+    },
+    "movement": {
+      "can_dash": true,
+      "dash_speed": 8.0,
+      "dash_cooldown": 3.0,
+      "can_jump": true,
+      "jump_height": 2.0,
+    },
+    "ai_config": {
+      "accuracy": 0.85,          // High accuracy
+      "reaction_time": 0.25,
+      "combat_style": "tactical",
+      "weapon_preference": "ranged",
+      "uses_cover": true,
+      "flee_threshold": 0.25,
+    },
+    "loot": {
+      "loot_table_id": "tier3_loot",
+      "drop_chance": 0.7,
+    },
+    "visuals": {
+      "color": "#00ffff",        // Cyan
+      "visual_scene": "res://game/entities/enemies/dummy/dummy_skeletal.tscn",
+      "corpse_scene": "res://game/entities/enemies/dummy/dummy_ragdoll.tscn"
+    },
+  },
+
+  // Bot 7: Xaero - Elite Boss
+  "bot_xaero": {
+    "name": "Xaero",
+    "tier": 4,
+    "role": "boss",
+    "stats": {
+      "health": 300,             // Very high health
+      "damage": 30,              // Very high damage
+      "speed": 5.5,              // Good speed
+      "attack_range": 18.0,
+      "attack_cooldown": 0.8,    // Fast attacks
+      "aggression": 0.85,
+    },
+    "combat": {
+      "attack_type": "ranged",
+      "projectile_speed": 25.0,
+      "projectile_scene": "res://game/entities/enemies/enemy_projectile.tscn"
+    },
+    "movement": {
+      "can_dash": true,
+      "dash_speed": 10.0,
+      "dash_cooldown": 2.5,
+      "can_jump": true,
+      "jump_height": 2.5,
+    },
+    "ai_config": {
+      "accuracy": 0.95,          // Nearly perfect accuracy
+      "reaction_time": 0.1,      // Lightning fast
+      "combat_style": "tactical",
+      "weapon_preference": "balanced",
+      "uses_cover": true,
+      "flee_threshold": 0.1,     // Rarely flees
+    },
+    "loot": {
+      "loot_table_id": "boss_loot",
+      "drop_chance": 1.0,
+    },
+    "visuals": {
+      "scale": 1.15,
+      "color": "#ffaa00",        // Orange/gold
+      "visual_scene": "res://game/entities/enemies/dummy/dummy_skeletal.tscn",
+      "corpse_scene": "res://game/entities/enemies/dummy/dummy_ragdoll.tscn"
+    },
+  },
+
+  // Bot 8: Grunt - Training Bot
+  "bot_grunt": {
+    "name": "Grunt Bot",
+    "tier": 1,
+    "role": "basic",
+    "stats": {
+      "health": 60,              // Low health
+      "damage": 8,               // Low damage
+      "speed": 3.5,              // Slow
+      "attack_range": 10.0,
+      "attack_cooldown": 2.0,
+      "aggression": 0.4,         // Low aggression
+    },
+    "combat": {
+      "attack_type": "ranged",
+      "projectile_speed": 15.0,
+      "projectile_scene": "res://game/entities/enemies/enemy_projectile.tscn"
+    },
+    "movement": {
+      "can_dash": false,
+      "can_jump": false,
+    },
+    "ai_config": {
+      "accuracy": 0.4,           // Poor accuracy
+      "reaction_time": 0.8,      // Slow reactions
+      "combat_style": "defensive",
+      "weapon_preference": "ranged",
+      "uses_cover": false,
+      "flee_threshold": 0.5,     // Flees easily
+    },
+    "loot": {
+      "loot_table_id": "tier1_loot",
+      "drop_chance": 0.3,
+    },
+    "visuals": {
+      "color": "#888888",        // Gray
+      "visual_scene": "res://game/entities/enemies/dummy/dummy_skeletal.tscn",
+      "corpse_scene": "res://game/entities/enemies/dummy/dummy_ragdoll.tscn"
+    },
+  },
+
+  // =====================
+  // ELITE MODIFIERS
+  // =====================
+  // Applied to any enemy that becomes "elite"
+  "tier_elite_modifier": {
+    "health_mult": 2.0,          // 2x health
+    "damage_mult": 1.5,          // 1.5x damage
+    "scale": 1.2,                // 20% larger visually
+  },
+
+  // =====================
+  // BOSS MODIFIERS
+  // =====================
+  // Applied to tier 4 bosses
+  "tier_boss_modifier": {
+    "health_mult": 1.0,          // Already have high base health
+    "damage_mult": 1.0,          // Already have high base damage
+    "scale": 1.0,                // Scale defined per-boss
+    "damage_resist": 0.2,        // 20% damage resistance
+    "knockback_resist": 0.8,     // Mostly immune to knockback
+  },
+}

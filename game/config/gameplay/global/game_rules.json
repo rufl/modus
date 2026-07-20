@@ -1,0 +1,21 @@
+{
+    "player": {
+        "base_health": 100.0,
+        "max_armor": 100.0,
+        "base_speed": 7.0,
+        "sprint_speed": 11.0,
+        "crouch_speed": 3.5,
+        "air_control": 0.3,
+        "jump_height": 2.5,
+        "gravity": 20.0
+    },
+    "match": {
+        "frag_limit": 25,
+        "time_limit_seconds": 600,
+        "respawn_time": 5.0
+    },
+    "physics": {
+        "friction": 6.0,
+        "stopspeed": 7.0
+    }
+}

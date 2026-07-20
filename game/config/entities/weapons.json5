@@ -1,0 +1,348 @@
+// =============================================================================
+// MODUS WEAPONS DATA - Edit weapon stats here
+// =============================================================================
+// TIPS:
+//   - "damage" = damage per hit (per pellet for shotguns)
+//   - "fire_rate" = seconds between shots (lower = faster)
+//   - "magazine_size" = shots before reload
+//   - "reload_time" = seconds to reload
+//   - "is_automatic" = hold to fire (true) or tap each shot (false)
+//   - "view_model_offset": [x, y, z] - Position of weapon on screen (default: [0.25, -0.25, -0.5])
+//   - "view_model_rotation": [x, y, z] - Rotation in degrees
+//   - "view_model_scale": [x, y, z] - Scale of weapon model
+// =============================================================================
+
+{
+  // =====================
+  // KNIFE - Melee Weapon (Slot 0)
+  // =====================
+  "knife": {
+    "name": "Combat Knife",
+    "icon": "res://game/ui/icons/weapons/knife.jpg",
+    "slot": 10,
+    "type": "melee",
+    "script": "res://game/weapons/scripts/melee_weapon.gd",
+    "view_model_path": "res://game/weapons/knife.tscn",
+    "stats": {
+      "damage": 35,              // Damage per slash
+      "fire_rate": 0.6,          // Seconds between attacks
+      "magazine_size": 999,      // Infinite "ammo"
+      "max_reserve_ammo": 0,     // No reserve needed
+      "reload_time": 0.0,        // No reload
+      "is_automatic": false,     // Tap to attack
+      "range": 2.0,              // Melee range in meters
+      "damage_type": "melee",
+    },
+    "visuals": {
+      "recoil_amount": 0.15,
+      "swing_speed": 3.0,
+    },
+  },
+
+  // =====================
+  // PISTOL - Starter Weapon
+  // =====================
+  "pistol": {
+    "name": "Pistol",
+    "icon": "res://game/ui/icons/weapons/pistol.jpg",
+    "slot": 1,
+    "type": "hitscan",
+    "script": "res://game/weapons/scripts/hitscan_weapon.gd",
+    "view_model_path": "res://game/weapons/pistol.tscn",
+    "stats": {
+      "damage": 10,              // Damage per shot
+      "fire_rate": 0.4,          // Seconds between shots
+      "magazine_size": 12,       // Shots before reload
+      "max_reserve_ammo": 48,    // Total backup ammo
+      "reload_time": 1.5,        // Seconds to reload
+      "is_automatic": false,     // Tap to fire
+      "pellet_count": 1,         // Single bullet
+      "spread_angle": 0.0,       // Perfect accuracy
+    },
+    "projectile": {
+      "speed": 0.0,              // Hitscan (instant)
+      "blast_radius": 0.0,       // No explosion
+    },
+    "visuals": {
+      "model": "res://game/weapons/models/pistol.glb",
+      "recoil_amount": 0.1,      // Visual kick
+      "recoil_recovery": 10.0,   // How fast recoil recovers
+      "bob_amount": 0.04,        // Weapon sway when moving
+      "bob_freq": 2.0,           // Sway speed
+      "view_model_offset": [0.25, -0.25, -0.5],
+      "view_model_rotation": [0, 0, 0],
+      "cartridge_eject": {
+          "offset": [0.25, 0.05, 0.5],
+          "scale": 0.8
+      },
+    },
+    "audio": {
+      "pitch": 1.0,              // Sound pitch (1.0 = normal)
+      "pitch_variation": 0.05,   // Random pitch variation
+      "volume_db": 0.0,          // Volume adjustment
+      "shake_trauma": 0.2,       // Screen shake amount
+    },
+  },
+
+  // =====================
+  // SHOTGUN - Close Range Powerhouse
+  // =====================
+  "shotgun": {
+    "name": "Shotgun",
+    "icon": "res://game/ui/icons/weapons/shotgun.jpg",
+    "slot": 2,
+    "type": "hitscan",
+    "script": "res://game/weapons/scripts/hitscan_weapon.gd",
+    "view_model_path": "res://game/weapons/shotgun.tscn",
+    "stats": {
+      "damage": 5,               // Damage PER PELLET (x8 pellets = 40 max)
+      "fire_rate": 1.0,          // Slower than pistol
+      "magazine_size": 6,        // 6 shells
+      "max_reserve_ammo": 24,    // Total backup ammo
+      "reload_time": 2.5,        // Long reload
+      "is_automatic": false,     // Pump action
+      "pellet_count": 8,         // 8 pellets per shot
+      "spread_angle": 15.0,      // Wide spread (degrees)
+      "damage_type": "shotgun",
+    },
+    "visuals": {
+        "cartridge_eject": {
+            "offset": [0.2, 0.0, 0.5],
+            "scale": 1.5,
+            "scene_path": "res://game/scenes/effects/shotgun_shell.tscn"
+        }
+    },
+  },
+
+  // =====================
+  // MACHINEGUN - Automatic Hitscan
+  // =====================
+  "machinegun": {
+    "name": "Machinegun",
+    "icon": "res://game/ui/icons/weapons/machinegun.jpg",
+    "slot": 3,
+    "type": "hitscan",
+    "script": "res://game/weapons/scripts/hitscan_weapon.gd",
+    "view_model_path": "res://game/weapons/machinegun.tscn",
+    "stats": {
+      "damage": 8,
+      "fire_rate": 0.1,
+      "magazine_size": 50,
+      "max_reserve_ammo": 200,
+      "reload_time": 2.0,
+      "is_automatic": true,
+      "pellet_count": 1,
+      "spread_angle": 2.0,
+    },
+    "visuals": {
+      "model": "res://game/weapons/models/machinegun.glb",
+      "recoil_amount": 0.05, 
+      "recoil_recovery": 15.0,
+      "bob_amount": 0.03,
+      "bob_freq": 2.5,
+      "tracer": {
+          "color": [1.0, 0.9, 0.6],
+          "width": 0.05,
+      },
+      "cartridge_eject": {
+          "offset": [0.2, 0.0, 0.6],
+          "scale": 0.9
+      },
+    },
+     "audio": {
+      "pitch": 0.95,
+      "pitch_variation": 0.1,
+      "shake_trauma": 0.05,
+    },
+  },
+
+  // =====================
+  // CHAINGUN - Spin-up Automatic
+  // =====================
+  "chaingun": {
+    "name": "Chaingun",
+    "icon": "res://game/ui/icons/weapons/chaingun.jpg",
+    "slot": 4,
+    "type": "hitscan",
+    "script": "res://game/weapons/scripts/hitscan_weapon.gd",
+    "view_model_path": "res://game/weapons/chaingun.tscn",
+    "stats": {
+      "damage": 6,
+      "fire_rate": 0.08,        // Base fire rate (gets faster)
+      "magazine_size": 100,
+      "max_reserve_ammo": 400,
+      "reload_time": 3.0,
+      "is_automatic": true,
+      "pellet_count": 1,
+      "spread_angle": 3.0,
+    },
+    "spin": {
+      "has_spin_up": true,
+      "spin_up_time": 1.0,
+      "spin_down_time": 2.0,
+      "min_fire_rate": 8.0,     // Shots per second start
+      "max_fire_rate": 20.0,    // Shots per second max
+      "spin_spread_max": 2.0,   // Extra spread when spinning full speed
+    },
+    "visuals": {
+      "recoil_amount": 0.04,
+      "bob_amount": 0.05,
+    },
+  },
+
+  // =====================
+  // GRENADE LAUNCHER - Arcing Projectiles
+  // =====================
+  "grenade_launcher": {
+    "name": "Grenade Launcher",
+    "icon": "res://game/ui/icons/weapons/grenade_launcher.jpg",
+    "slot": 5,
+    "type": "projectile",
+    "script": "res://game/weapons/scripts/projectile_weapon.gd",
+    "view_model_path": "res://game/weapons/grenade_launcher.tscn",
+    "stats": {
+      "damage": 60,
+      "fire_rate": 1.1,       // Slower fire rate (was 0.8)
+      "magazine_size": 6,
+      "max_reserve_ammo": 30,
+      "reload_time": 2.5,
+      "is_automatic": true,
+      "damage_type": "explosive",
+    },
+    "projectile": {
+      "scene": "res://game/entities/projectiles/grenade.tscn",
+      "speed": 24.0,          // Faster velocity (was 18.0)
+      "blast_radius": 4.0,
+      "gravity": 12.0,        // Less gravity for flatter arc (was 15.0)
+      "fuse_time": 2.5,
+      "bounce": 0.4,
+    },
+  },
+
+  // =====================
+  // ROCKET LAUNCHER - Explosive Damage
+  // =====================
+  "rocket_launcher": {
+    "name": "Rocket Launcher",
+    "icon": "res://game/ui/icons/weapons/rocket_launcher.jpg",
+    "slot": 6,
+    "type": "projectile",
+    "script": "res://game/weapons/scripts/projectile_weapon.gd",
+    "view_model_path": "res://game/weapons/rocket_launcher.tscn",
+    "stats": {
+      "damage": 80,              // Direct hit damage
+      "fire_rate": 0.8,          // Slow fire rate
+      "magazine_size": 4,        // 4 rockets
+      "max_reserve_ammo": 20,    // Total backup ammo (increased)
+      "reload_time": 3.0,        // Very long reload
+      "is_automatic": true,      // Can hold to fire
+      "damage_type": "explosive",
+    },
+    "projectile": {
+      "scene": "res://game/entities/projectiles/rocket.tscn",
+      "speed": 28.0,             // Slightly faster
+      "blast_radius": 5.0,       // Explosion radius (meters)
+    },
+     "visuals": {
+      "recoil_amount": 0.5,      // Big kick
+      "recoil_recovery": 5.0,
+      "view_model_offset": [0.3, -0.3, -0.6],  // Hold rocket launcher lower and further out
+      "view_model_rotation": [0, 0, 0],
+    },
+     "audio": {
+      "shake_trauma": 0.5,
+    },
+  },
+
+  // =====================
+  // HYPERBLASTER - Fast Plasma
+  // =====================
+  "hyperblaster": {
+    "name": "Hyperblaster",
+    "icon": "res://game/ui/icons/weapons/hyperblaster.jpg",
+    "slot": 7,
+    "type": "projectile",
+    "script": "res://game/weapons/scripts/projectile_weapon.gd",
+    "view_model_path": "res://game/weapons/hyperblaster.tscn",
+    "stats": {
+      "damage": 15,
+      "fire_rate": 0.1,
+      "magazine_size": 40,
+      "max_reserve_ammo": 200,
+      "reload_time": 2.0,
+      "is_automatic": true,
+      "damage_type": "plasma",
+    },
+    "projectile": {
+      "scene": "res://game/entities/projectiles/plasma.tscn",
+      "speed": 60.0,          // Very fast projectile
+      "blast_radius": 1.0,    // Small splash
+    },
+    "visuals": {
+       "recoil_amount": 0.02,
+    },
+  },
+
+  // =====================
+  // RAILGUN - Instahit Sniper
+  // =====================
+  "railgun": {
+    "name": "Railgun",
+    "icon": "res://game/ui/icons/weapons/railgun.jpg",
+    "slot": 8,
+    "type": "hitscan",
+    "script": "res://game/weapons/scripts/hitscan_weapon.gd",
+    "view_model_path": "res://game/weapons/railgun.tscn",
+    "stats": {
+      "damage": 80,
+      "fire_rate": 1.5,       // Slow
+      "magazine_size": 5,     // Small mag, no reload usually but here yes
+      "max_reserve_ammo": 20,
+      "reload_time": 2.5,
+      "is_automatic": false,
+      "spread_angle": 0.0,    // Pinpoint
+    },
+    "visuals": {
+      "recoil_amount": 0.4,
+      "fov_zoom": 50.0,       // Slight zoom?
+      "tracer": {
+          "color": [0.2, 0.8, 1.0],
+          "width": 0.2,
+      },
+    },
+     "audio": {
+      "shake_trauma": 0.4,
+    },
+  },
+
+  // =====================
+  // BFG - Big Friggin Gun
+  // =====================
+  "bfg": {
+    "name": "BFG10K",
+    "icon": "res://game/ui/icons/weapons/bfg.jpg",
+    "slot": 9,
+    "type": "projectile",
+    "script": "res://game/weapons/scripts/projectile_weapon.gd",
+    "view_model_path": "res://game/weapons/bfg.tscn",
+    "stats": {
+      "damage": 200,
+      "fire_rate": 2.0,
+      "magazine_size": 40,    // Uses lots of ammo
+      "max_reserve_ammo": 80,
+      "reload_time": 4.0,
+      "is_automatic": false,
+      "ammo_per_shot": 20,    // Consumes 20 cells
+      "damage_type": "explosive",
+    },
+    "projectile": {
+      "scene": "res://game/entities/projectiles/bfg_ball.tscn",
+      "speed": 15.0,          // Slow death
+      "blast_radius": 15.0,   // Huge
+    },
+    "visuals": {
+      "recoil_amount": 1.0,
+      "shake_trauma": 1.0,
+    },
+  },
+}

@@ -1,0 +1,77 @@
+{
+  // Audio Overrides Configuration
+  // Map an internal sound name to a file path inside /game/art/audio/sfx/
+  // If a path is provided and the file exists, it will be used instead of the procedurally generated sound.
+
+  // =====================
+  // WEAPON RELOADS
+  // Optimal durations suggest matching the mechanic speed defined in weapons.json5
+  // =====================
+  "reload_pistol": "",          // Suggested Length: 1.5s (Matches Pistol reload)
+  "reload_shotgun": "",         // Suggested Length: 2.5s (Heavy shells/pumping logic)
+  "reload_machinegun": "",      // Suggested Length: 2.0s (Mag slap and slide snap)
+  "reload_chaingun": "",        // Suggested Length: 3.0s (Mechanical spooling/belt noise)
+  "reload_grenade_launcher": "", // Suggested Length: 2.5s (Metallic breech clunk)
+  "reload_rocket_launcher": "",  // Suggested Length: 3.0s (Heavy motorized loading)
+  "reload_hyperblaster": "",     // Suggested Length: 2.0s (High-frequency thermal purge)
+  "reload_railgun": "",          // Suggested Length: 2.5s (Capacitor charge/whine)
+  "reload_bfg10k": "",           // Suggested Length: 4.0s (Massive ritualistic power-up)
+
+  // Weapon & Combat
+  "shoot": "",
+  "hit": "",
+  "crit": "",
+  "kill_confirm": "",
+  "weapon_switch": "",
+  "pickup": "",
+  "rocket_launch": "",
+  "grenade_launch": "",
+  "grenade_bounce": "",
+  "grenade_ping": "",
+  "shell_casing": "",
+  "energy_loop": "",
+  "saw_loop": "",
+
+  // Movement
+  "footstep_concrete": "",
+  "footstep_metal": "",
+  "footstep_wood": "",
+  "footstep_grass": "",
+  "footstep_dirt": "",
+  "jump": "",
+  "land": "",
+  "dash": "",
+  "whoosh": "",
+  "enemy_whoosh": "",
+
+  // World & Interactive
+  "door_open": "",
+  "door_close": "",
+  "switch": "",
+  "secret": "",
+  "splash": "",
+  "teleport": "",
+  "teleport_hum": "",
+  "slipgate_hum": "",
+  "timer_beep": "",
+  "timer_final": "",
+
+  // Entity & Health
+  "pain": "",
+  "pain_heavy": "",
+  "breath_low": "",
+  "heartbeat": "",
+  "hurt_player": "",
+  "hurt_enemy": "",
+  "explosion": "",
+  "explosion_rocket": "",
+  "player_death": "",
+  "player_downed": "",
+  "enemy_death": "",
+  "ammo_low": "",
+  "gib": "",
+  "flesh_impact": "",
+  "powerup_loop": "",
+  "loop_projectile": "",
+  "loop_enemy": ""
+}

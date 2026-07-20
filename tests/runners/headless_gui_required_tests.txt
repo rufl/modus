@@ -1,0 +1,7 @@
+# Tests listed here are omitted from the default headless CI runner.
+# Use res:// paths so entries can be passed directly to GUT when needed.
+#
+# Re-entry rule: remove an entry only after it passes under
+# ./tests/runners/run_all_tests_headless.sh without GUI/editor services.
+res://tests/integration/test_player_experience_integration.gd
+res://tests/integration/test_hud_visual_feedback.gd

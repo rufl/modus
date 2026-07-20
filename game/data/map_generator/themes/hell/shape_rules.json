@@ -1,0 +1,6 @@
+{
+	"lsystem_rules": {
+		"F": "F+F-F+F-F-F+F"
+	},
+	"description": "Hell theme uses more chaotic and irregular growth patterns"
+}

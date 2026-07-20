@@ -1,0 +1,42 @@
+[gd_scene load_steps=5 format=3 uid="uid://d3yq8n4x5z2w1"]
+
+[ext_resource type="Script" path="res://game/scenes/items/backpack.gd" id="1_script"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_pack"]
+size = Vector3(0.5, 0.4, 0.3)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pack"]
+albedo_color = Color(0.35, 0.25, 0.15, 1)
+roughness = 0.8
+
+[sub_resource type="BoxMesh" id="BoxMesh_pack"]
+material = SubResource("StandardMaterial3D_pack")
+size = Vector3(0.5, 0.4, 0.3)
+
+[node name="Backpack" type="RigidBody3D"]
+collision_layer = 32
+collision_mask = 3
+mass = 5.0
+script = ExtResource("1_script")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_pack")
+
+[node name="Visuals" type="Node3D" parent="."]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Visuals"]
+mesh = SubResource("BoxMesh_pack")
+
+[node name="Label3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+billboard = 1
+text = "Backpack"
+font_size = 32
+outline_size = 8
+
+[node name="InteractionArea" type="Area3D" parent="."]
+collision_layer = 128
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="InteractionArea"]
+shape = SubResource("BoxShape3D_pack")

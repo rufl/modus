@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Run GUT Tests Locally",
+  "description": "Runs GUT tests using Godot 4.7 in headless mode for quick testing",
+  "version": "1",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "GODOT_BIN=\"${GODOT_BIN:-godot}\" ./tests/runners/run_all_tests_headless.sh"
+  }
+}

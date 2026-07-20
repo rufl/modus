@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3 uid="uid://cblood_drip"]
+
+[ext_resource type="Texture2D" path="res://game/art/textures/blood_drip.png" id="1_tex"]
+
+[node name="BloodDrip" type="Decal"]
+size = Vector3(0.3, 1.5, 0.1)
+texture_albedo = ExtResource("1_tex")
+modulate = Color(0.6, 0, 0, 0.9)
+cull_mask = 1048573
+upper_fade = 0.1
+lower_fade = 0.3

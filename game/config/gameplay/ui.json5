@@ -1,0 +1,54 @@
+{
+	// Global UI Theme Settings
+	"theme": {
+		"primary_color": "#FFC107", // Amber
+		"secondary_color": "#212121", // Dark Grey
+		"accent_color": "#E91E63", // Pink
+		"danger_color": "#F44336", // Red
+		"text_color": "#FFFFFF",
+		"font_family": "Roboto"
+	},
+	
+	// HUD layout and behavior
+	"hud": {
+		"global_scale": 1.0,
+		"opacity": 1.0,
+		"show_crosshair": true,
+		"show_minimap": true,
+		"show_health": true,
+		"show_ammo": true,
+		"show_quest_marker": true,
+		
+		// Individual element overrides
+		"elements": {
+			"health_bar": {
+				"position_offset": [0, 0], // x, y
+				"scale": 1.0,
+				"visible": true
+			},
+			"ammo_counter": {
+				"position_offset": [0, 0],
+				"scale": 1.0,
+				"visible": true
+			},
+			"minimap": {
+				"position_offset": [0, 0],
+				"scale": 1.0,
+				"visible": true
+			},
+			"crosshair": {
+				"color": "#FFFFFF",
+				"size": 1.0,
+				"gap": 4.0
+			}
+		}
+	},
+	
+	// Floating combat text settings
+	"combat_text": {
+		"enabled": true,
+		"scale": 1.0,
+		"crit_scale": 1.5,
+		"duration": 1.0
+	}
+}

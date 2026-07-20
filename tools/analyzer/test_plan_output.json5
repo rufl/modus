@@ -1,0 +1,78 @@
+// Refactoring Plan Generated: 2026-02-14T23:30:02
+// Total Scripts Analyzed: 1
+
+{
+	"analysis_date": "2026-02-14T23:30:02",
+	"configuration_externalization": [
+		{
+			"source_file": "game/core/services/combat_service.gd",
+			"target_config": "game/config/gameplay/combat.json5",
+			"values": [
+				{
+					"context": "var damage := 100",
+					"line": 50,
+					"suggested_key": "combat_service_damage",
+					"type": "numeric",
+					"value": "100"
+				},
+				{
+					"context": "var speed := 2.5",
+					"line": 60,
+					"suggested_key": "combat_service_speed",
+					"type": "numeric",
+					"value": "2.5"
+				},
+				{
+					"context": "var action := \"attack\"",
+					"line": 70,
+					"suggested_key": "combat_service_value",
+					"type": "string",
+					"value": "attack"
+				}
+			]
+		}
+	],
+	"issues": [],
+	"migration_order": [
+		{
+			"dependencies": [],
+			"description": "Migrate core systems with no dependencies",
+			"estimated_effort": "high",
+			"files": [],
+			"name": "Core Infrastructure",
+			"phase": 1
+		},
+		{
+			"dependencies": [],
+			"description": "Migrate utility scripts and helpers",
+			"estimated_effort": "low",
+			"files": [],
+			"name": "Utilities and Helpers",
+			"phase": 2
+		},
+		{
+			"dependencies": [],
+			"description": "Decompose god scripts into components",
+			"estimated_effort": "high",
+			"files": [],
+			"name": "God Script Decomposition",
+			"phase": 3
+		},
+		{
+			"dependencies": [],
+			"description": "Migrate all remaining scripts",
+			"estimated_effort": "medium",
+			"files": [],
+			"name": "Remaining Scripts",
+			"phase": 4
+		}
+	],
+	"suggested_splits": [],
+	"summary": {
+		"god_scripts": 0,
+		"magic_numbers": 0,
+		"tight_coupling": 0,
+		"total_issues": 0
+	},
+	"total_scripts_analyzed": 1
+}

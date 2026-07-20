@@ -1,0 +1,66 @@
+[gd_scene load_steps=6 format=3 uid="uid://b12345militarychest"]
+
+[ext_resource type="Script" path="res://game/scenes/items/containers/military_chest.gd" id="1_chest"]
+[ext_resource type="Script" path="res://game/scripts/components/interactable.gd" id="2_interactable"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_1"]
+size = Vector3(1.2, 0.8, 0.8)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_interact"]
+radius = 2.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_1"]
+size = Vector3(1.2, 0.8, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1"]
+albedo_color = Color(0.2, 0.3, 0.15, 1)
+metallic = 0.5
+roughness = 0.7
+rim_enabled = true
+rim = 0.3
+rim_tint = 0.2
+
+[sub_resource type="BoxMesh" id="BoxMesh_2"]
+size = Vector3(1.2, 0.15, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2"]
+albedo_color = Color(0.15, 0.25, 0.1, 1)
+metallic = 0.6
+roughness = 0.6
+
+[node name="MilitaryChest" type="StaticBody3D"]
+collision_layer = 16
+script = ExtResource("1_chest")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
+shape = SubResource("BoxShape3D_1")
+
+[node name="Body" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
+mesh = SubResource("BoxMesh_1")
+surface_material_override/0 = SubResource("StandardMaterial3D_1")
+
+[node name="Lid" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, -0.4)
+
+[node name="LidMesh" type="MeshInstance3D" parent="Lid"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.075, 0.4)
+mesh = SubResource("BoxMesh_2")
+surface_material_override/0 = SubResource("StandardMaterial3D_2")
+
+[node name="Star" type="CSGPolygon3D" parent="."]
+transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, 0, 0.9, 0.01)
+polygon = PackedVector2Array(-0.3, 0, -0.1, -0.1, 0, -0.3, 0.1, -0.1, 0.3, 0, 0.1, 0.1, 0, 0.3, -0.1, 0.1)
+depth = 0.02
+
+[node name="Interactable" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
+collision_layer = 16
+collision_mask = 0
+script = ExtResource("2_interactable")
+prompt_text = "Open Chest"
+one_shot = true
+
+[node name="InteractCollision" type="CollisionShape3D" parent="Interactable"]
+shape = SubResource("SphereShape3D_interact")

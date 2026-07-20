@@ -1,0 +1,88 @@
+# MODUS Product and Evidence Roadmap
+
+> **Documentation status: maintained reference.** This document expands the root roadmap by product area. It does not promote implementation presence into runtime or release proof.
+
+**Updated:** July 19, 2026  
+**Current version:** `0.9.5-beta`  
+**Current readiness:** NOT READY
+
+## Current Evidence Boundary
+
+- Retained complete full suite: PASS at 1431/1431 with 20,362 assertions and no risky/pending tests or GUT orphans (July 19).
+- Latest strict aggregate attempt: complete in 1770.186 seconds under a 2400-second evidence ceiling; the full green summary is retained.
+- Latest batched lane report, `AUTOMATED_TEST_LANES_REPORT.md`: July 19 passes all selected lanes — Unit 1056/1056, Integration 200/200, and Property 175/175; Benchmark is skipped.
+- Focused source-shape/resource/editor-registry proof passes 37/37 with 172 assertions and zero GUT orphans; four named loot-prop scene types remain explicit missing content.
+- Manual gameplay: 0 imported evidence files / 0.00 recorded hours.
+- Performance: one bounded 66.4-second, 130-sample showcase capture; production targets remain unproven.
+- Release: blocked at `0.9.5-beta`.
+- Production report: NOT READY with 2 validator-tracked evidence blockers: manual evidence and release version; licensing/provenance clearance remains a separate open release gap.
+
+See [Documentation Truth](DOCUMENTATION_TRUTH.md) and [Current Status](CURRENT_STATUS.md) for details.
+
+## Core Framework
+
+| Area | Source status | Required proof/hardening |
+| --- | --- | --- |
+| GameManager services | Implemented with broad focused coverage | Clean aggregate lifecycle/order behavior |
+| Data/config ownership | Implemented and reference-tested | Keep schemas and mod override examples synchronized |
+| Save system | Focused tests pass | Manual save/load/corruption observation |
+| Events/components/features | Implemented with focused tests | Aggregate suite stability and user-flow evidence |
+
+## Gameplay and Showcase
+
+| Area | Source status | Required proof/hardening |
+| --- | --- | --- |
+| Movement/combat/weapons/enemies | Broad code and scenes exist | Normal-window golden-demo observation and tuning |
+| Showcase | Structure tests pass | Manual route, screenshots/video, and issue log |
+| AI/navigation | Focused tests pass in several lanes | Real map behavior, stress, and long-session stability |
+| Splitscreen | Manager/gameplay/stress contracts pass | Real controllers, viewport/UI, audio, and performance evidence |
+
+## Networking
+
+| Area | Source status | Required proof/hardening |
+| --- | --- | --- |
+| ENet/profile startup | Source exists; profile smoke passes | Real two-peer host/join outside restricted sandbox |
+| Authority/security | Validation, whitelist, and rate-limit code exist | Adversarial live-client and latency tests |
+| Dedicated server | Headless/config paths exist | Real client/server session evidence |
+| Lag compensation | Core system source exists; combat integration TODO remains | Connect/verify or explicitly scope out |
+| Steam/GodotSteam | Conditional structures exist | Authenticated client/app/API proof |
+
+## Editor, Mods, and Workshop
+
+| Area | Source status | Required proof/hardening |
+| --- | --- | --- |
+| Level serialization/export | Focused round-trip passes | Live editor UI authoring workflow |
+| Standalone undo/redo | Generic support exists; standalone command TODOs remain | Implement and exercise user-visible history |
+| Mod loader/SDK | Focused integration/sample proof passes | Distribution packaging and multiplayer behavior |
+| Workshop | Local simulation passes | Real Steam upload/download/browse/subscription |
+
+## Map Generator
+
+| Area | Source status | Required proof/hardening |
+| --- | --- | --- |
+| Core unit directory | 79/79 focused tests pass | Aggregate suite and broader generated-map behavior |
+| Export | 10/10 focused tests pass with zero GUT orphans | Preserve focused lifecycle proof while repairing wider-suite failures |
+| Seed/RNG | 8/8 focused tests pass | Preserve determinism across full pipeline changes |
+| Threaded pipeline | 8/8 focused tests pass with 30 assertions and zero GUT orphans | Preserve serialization/lifecycle coverage in aggregate repairs |
+
+Historical “all tasks complete” map-generator notes are implementation snapshots, not current production proof.
+
+## Performance and Release
+
+1. Capture display-synchronized solo gameplay.
+2. Capture splitscreen and multiplayer sessions with player count/map/build context.
+3. Test at least one lower-end target and one long session.
+4. Review spikes, memory, gameplay anomalies, and teardown leaks—not only average FPS.
+5. Build/package supported targets and produce a known-limits matrix.
+6. Complete the asset/code provenance ledger and retain all required third-party license material.
+7. Promote release wording only after all readiness validators and distribution-clearance checks agree.
+
+## Exit Criteria for a 1.0 Candidate
+
+- Complete filtered Godot/GUT suite at an accepted documented boundary.
+- Complete batched lane summaries with no hidden/incomplete runner result.
+- Reviewed manual evidence for the maintained golden-demo route.
+- Contextualized performance evidence for declared supported modes/hardware.
+- Proven multiplayer and packaging scope.
+- Current docs contain no project-wide claims stronger than the evidence.
+- `tools/validate_production_readiness.sh --run-godot-tests --strict` passes.

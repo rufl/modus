@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://dfp7h2wm8qxcr"]
+
+[node name="BloodDrip" type="Decal"]
+extents = Vector3(0.15, 0.5, 0.05)
+texture_albedo = null
+albedo_mix = 1.0
+modulate = Color(0.6, 0, 0, 0.85)
+cull_mask = 1048575
+normal_fade = 0.5

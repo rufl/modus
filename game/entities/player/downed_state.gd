@@ -1,0 +1,284 @@
+class_name DownedStateHandler
+extends GameComponent
+
+signal revived
+signal bleedout_expired
+signal time_remaining(seconds: float)
+signal revive_progress_changed(progress: float)
+
+@export var bleedout_time: float = 30.0
+@export var revive_time: float = 3.0
+@export var revive_distance: float = 3.0
+@export var revive_health_percent: float = 0.3
+
+var is_downed: bool = false
+var bleedout_timer: float = 0.0
+var revive_progress: float = 0.0
+var is_being_revived: bool = false
+var reviver_path: NodePath = NodePath()
+var _revive_in_progress: bool = false  # Atomic flag to prevent race condition
+
+
+func _exit_tree() -> void:
+	# Call parent cleanup for automatic signal disconnection
+	super._exit_tree()
+
+
+func _ready() -> void:
+	set_process(false)
+	_load_config()
+
+	# Listen for config reloads using safe_connect
+	var gm: Node = get_node_or_null("/root/GameManager")
+	var cfg2: Node = gm.get_core_system("config") if gm else null
+	if cfg2:
+		safe_connect(cfg2.config_reloaded, _load_config)
+
+
+func _load_config(_file_path: String = "") -> void:
+	var gm: Node = get_node_or_null("/root/GameManager")
+	var cfg: Node = gm.get_core_system("config") if gm else null
+	if not cfg:
+		return
+
+	var data: Dictionary = cfg.get_value("player_modes.downed", {})
+	if data.is_empty():
+		return
+
+	bleedout_time = data.get("bleedout_time", bleedout_time)
+	revive_time = data.get("revive_time", revive_time)
+	revive_distance = data.get("revive_distance", revive_distance)
+	revive_health_percent = data.get("revive_health_percent", revive_health_percent)
+
+
+func _process(delta: float) -> void:
+	if not is_downed:
+		return
+
+	# Handle revive progress
+	if is_being_revived:
+		revive_progress += delta / revive_time
+		revive_progress_changed.emit(revive_progress)
+
+		if revive_progress >= 1.0:
+			_complete_revive()
+			return
+	else:
+		# Decay revive progress when not being revived
+		revive_progress = maxf(0.0, revive_progress - delta * 2.0)
+
+	# Server validation for revive distance
+	# FIXED: Validate IMMEDIATELY in the RPC method to prevent race condition
+	# This validation was happening in _process which creates a race condition
+	# The validation should occur in the RPC method itself to prevent exploits
+	if multiplayer.is_server() and is_being_revived:
+		var reviver: Node = get_node_or_null(reviver_path)
+		var victim: Node3D = get_parent() as Node3D
+		if reviver and victim:
+			var cancel: bool = false
+			# Check distance (allow 4.0 for network slack vs 3.0 raycast)
+			if reviver.global_position.distance_to(victim.global_position) > 4.0:
+				cancel = true
+			# Check if reviver is valid
+			if "is_downed" in reviver and reviver.is_downed:
+				cancel = true
+			if "is_dead" in reviver and reviver.is_dead:
+				cancel = true
+
+			if cancel:
+				request_revive_stop()  # Calls RPC to stop for everyone
+
+	# Bleedout timer
+	bleedout_timer -= delta
+
+	# Emit time remaining for UI (ceil to show friendly seconds)
+	time_remaining.emit(ceil(bleedout_timer))
+
+	if bleedout_timer <= 0:
+		_bleedout()
+
+
+## Enter downed state
+
+
+func enter_downed() -> void:
+	is_downed = true
+	bleedout_timer = bleedout_time
+	revive_progress = 0.0
+	is_being_revived = false
+	set_process(true)
+
+
+## Exit downed state (without revive - e.g. respawn)
+
+
+func exit_downed() -> void:
+	is_downed = false
+	is_being_revived = false
+	revive_progress = 0.0
+	set_process(false)
+
+
+## Called when bleedout timer expires
+
+
+func _bleedout() -> void:
+	is_downed = false
+	set_process(false)
+	bleedout_expired.emit()
+
+
+## Called when revive completes
+
+
+func _complete_revive() -> void:
+	is_downed = false
+	is_being_revived = false
+	revive_progress = 0.0
+	_revive_in_progress = false  # Reset atomic flag
+	set_process(false)
+	revived.emit()
+
+
+## Request to start reviving (called via RPC from reviver)
+
+@rpc("any_peer", "call_local", "reliable")
+func request_revive_start(reviver: NodePath) -> void:
+	# Only process on server
+	if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
+		return
+
+	if not is_downed:
+		return
+
+	# Atomic check - prevent race condition from multiple RPC calls
+	if _revive_in_progress:
+		push_warning("[DownedState] Revive already in progress - rejecting duplicate request")
+		return
+
+	_revive_in_progress = true
+
+	# FIXED: Perform immediate distance validation in RPC method to prevent race condition
+	var reviver_node: Node = get_node_or_null(reviver)
+	var victim: Node3D = get_parent() as Node3D
+	if reviver_node and victim:
+		# Check distance immediately to prevent exploits
+		# Use consistent 3.0 distance (no tolerance for exploits)
+		const MAX_REVIVE_DISTANCE: float = 3.0
+		var distance: float = reviver_node.global_position.distance_to(victim.global_position)
+		if distance > MAX_REVIVE_DISTANCE:
+			# Log exploit attempt
+			var sender_id: int = multiplayer.get_remote_sender_id()
+			var log_msg: String = (
+				"[DownedState] Revive attempt rejected - distance %.2fm > %.2fm from peer %d"
+				% [distance, MAX_REVIVE_DISTANCE, sender_id]
+			)
+			push_warning(log_msg)
+			var gm: Node = get_node_or_null("/root/GameManager")
+			if gm:
+				var logger: Node = gm.get_core_system("logger")
+				if logger:
+					logger.warning(log_msg, "DownedState")
+			# Reset atomic flag and reject
+			_revive_in_progress = false
+			return
+
+		# Check if reviver is valid
+		if "is_downed" in reviver_node and reviver_node.is_downed:
+			push_warning("[DownedState] Revive attempt rejected - reviver is downed")
+			_revive_in_progress = false
+			return
+		if "is_dead" in reviver_node and reviver_node.is_dead:
+			push_warning("[DownedState] Revive attempt rejected - reviver is dead")
+			_revive_in_progress = false
+			return
+
+	is_being_revived = true
+	reviver_path = reviver
+
+	# Sync to all clients
+	_sync_revive_state.rpc(true, reviver)
+
+
+## Request to stop reviving (called via RPC from reviver)
+
+@rpc("any_peer", "call_local", "reliable")
+func request_revive_stop() -> void:
+	# Only process on server
+	if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
+		return
+
+	is_being_revived = false
+	reviver_path = NodePath()
+	_revive_in_progress = false  # Reset atomic flag
+
+	# Sync to all clients
+	_sync_revive_state.rpc(false, NodePath())
+
+
+## Sync revive state to all clients
+
+@rpc("authority", "call_local", "reliable")
+func _sync_revive_state(being_revived: bool, reviver: NodePath) -> void:
+	is_being_revived = being_revived
+	reviver_path = reviver
+
+
+## Get current bleedout progress (0.0 = just downed, 1.0 = about to expire)
+
+
+func get_bleedout_progress() -> float:
+	if bleedout_time <= 0:
+		return 1.0
+	return 1.0 - (bleedout_timer / bleedout_time)
+
+
+## Request immediate bleedout (Give Up) - Called by local player
+
+
+func request_bleedout() -> void:
+	if is_downed:
+		request_bleedout_immediate.rpc_id(1)
+
+
+## Server RPC to execute forced bleedout
+
+@rpc("any_peer", "call_local", "reliable")
+func request_bleedout_immediate() -> void:
+	# Validation: only if actually downed
+	if not is_downed:
+		return
+
+	# Only server can authorize this
+	if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
+		return
+
+	# Force bleedout
+	_bleedout()
+
+
+func try_revive_target(camera: Camera3D, owner_rid: RID) -> bool:
+	# Raycast to find downed ally
+	if not camera:
+		return false
+
+	var space: PhysicsDirectSpaceState3D = camera.get_world_3d().direct_space_state
+	var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(
+		camera.global_position,
+		camera.global_position - camera.global_transform.basis.z * revive_distance,
+		CollisionLayers.LAYER_PLAYERS,
+		[owner_rid]
+	)
+
+	var result: Dictionary = space.intersect_ray(query)
+	if result:
+		var collider: Object = result["collider"]
+		# Check if it's a downed player
+		if collider is CharacterBody3D and collider != get_parent():  # get_parent() is likely Player
+			if "is_downed" in collider and collider.is_downed:
+				if "downed_handler" in collider and collider.downed_handler:
+					var handler: DownedStateHandler = collider.downed_handler
+					handler.request_revive_start.rpc_id(1, get_parent().get_path())
+					return true
+
+	return false
