@@ -664,14 +664,14 @@ func get_mod_info(mod_name: String) -> Dictionary:
 
 
 func get_installed_mods() -> Array:
-	return _all_discovered_mods.duplicate()
+	return _all_discovered_mods.duplicate(true)
 
 
 ## Set mod enabled state
 
 
 func set_mod_enabled(mod_id: String, enabled: bool) -> void:
-	for mod: Dictionary in _loaded_mods:
+	for mod: Dictionary in _all_discovered_mods:
 		if mod.get("id", "") == mod_id or mod.get("name", "") == mod_id:
 			mod["enabled"] = enabled
 			_save_mod_settings()
@@ -682,11 +682,10 @@ func set_mod_enabled(mod_id: String, enabled: bool) -> void:
 
 
 func change_mod_priority(mod_id: String, delta: int) -> void:
-	for mod: Dictionary in _loaded_mods:
+	for mod: Dictionary in _all_discovered_mods:
 		if mod.get("id", "") == mod_id or mod.get("name", "") == mod_id:
-			var new_priority: int = mod.get("priority", 0) + delta
-			mod["priority"] = new_priority
-			_loaded_mods.sort_custom(_sort_by_priority)
+			mod["priority"] = mod.get("priority", 0) + delta
+			_all_discovered_mods.sort_custom(_sort_by_priority)
 			_save_mod_settings()
 			return
 
@@ -714,7 +713,7 @@ func reload_mods() -> void:
 func _save_mod_settings() -> void:
 	var config: ConfigFile = ConfigFile.new()
 
-	for mod: Dictionary in _loaded_mods:
+	for mod: Dictionary in _all_discovered_mods:
 		var mod_id: String = mod.get("id", mod.get("name", ""))
 		if mod_id.is_empty():
 			continue

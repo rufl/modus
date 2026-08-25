@@ -15,6 +15,10 @@ var _bloody_pool: Array[BloodDrop]
 
 
 func _ready() -> void:
+	if not _mat:
+		push_error("[BloodPoolShader] A ShaderMaterial is required on surface 0")
+		return
+
 	# Initialize shader arrays
 	var positions: PackedVector2Array = []
 	positions.resize(pool_size)

@@ -64,5 +64,5 @@ void fragment() {
 }
 
 void vertex() {
-	VERTEX.y = texture(floor_heightmap, UV).x * HEIGHTMAP_STRENGHT;
+	VERTEX.y = texture(floor_heightmap, UV).x * HEIGHTMAP_STRENGTH;
 }

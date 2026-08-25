@@ -2,21 +2,24 @@
 
 > **Documentation status: maintained reference.** This index separates current references, generated/focused evidence, and unvalidated historical snapshots.
 
-**Updated:** July 13, 2026
+**Updated:** August 4, 2026
 
 ## Canonical Current Truth
 
-- [Documentation Truth Contract](DOCUMENTATION_TRUTH.md) — publication policy and current headline boundary
-- [Current Status](CURRENT_STATUS.md) — consolidated current snapshot
-- [Production Readiness Report](PRODUCTION_READINESS_REPORT.md) — generated blocker report
-- [Active Backlog](../BACKLOG.md) — open work and current progress
-- [Backlog Archive](../BACKLOG_ARCHIVE.md) — completed/retired work and historical baselines
-- [Root Roadmap](../ROADMAP.md) and [Product Roadmap](ROADMAP.md) — proof sequence and product-area gaps
+- [Documentation Truth Contract](DOCUMENTATION_TRUTH.md): publication policy and current headline boundary
+- [Current Status](CURRENT_STATUS.md): consolidated current snapshot
+- [Production Readiness Report](PRODUCTION_READINESS_REPORT.md): generated blocker report
+- [Ship-Readiness Estimate](SHIP_READINESS_ESTIMATE.md): explicit evidence gateboard and calendar estimate
+- [Active Backlog](../BACKLOG.md): open work and current progress
+- [Backlog Archive](../BACKLOG_ARCHIVE.md): completed/retired work and historical baselines
+- [Root Roadmap](../ROADMAP.md) and [Product Roadmap](ROADMAP.md): proof sequence and product-area gaps
 
 ## Generated and Focused Evidence
 
 - [Automated Test Lanes Report](AUTOMATED_TEST_LANES_REPORT.md)
 - [Main Player Path Smoke](MAIN_PLAYER_PATH_SMOKE.md)
+- [Showcase Scene Launch Smoke](SHOWCASE_LAUNCH_SMOKE.md)
+- [Golden Demo Smoke](GOLDEN_DEMO_SMOKE.md)
 - [Manual Evidence Report](MANUAL_EVIDENCE_REPORT.md)
 - [Performance Evidence Report](PERFORMANCE_EVIDENCE_REPORT.md)
 - [Performance Baseline Context](PERFORMANCE_BASELINE_PROOF.md)
@@ -28,6 +31,8 @@
 - [Sample Mod Proof](MODDING_SAMPLE_MOD.md)
 - [Mod Package Validation](MOD_PACKAGE_VALIDATION.md)
 - [Showcase Route](SHOWCASE_ROUTE.md)
+- [Release Evidence Bundle](RELEASE_EVIDENCE_BUNDLE.md)
+- [Known-Limits Matrix](KNOWN_LIMITS_MATRIX.md)
 
 A PASS applies only to the scope stated in that report. Focused or simulated evidence does not promote the whole project to ready.
 
@@ -70,8 +75,10 @@ A PASS applies only to the scope stated in that report. Focused or simulated evi
 ## Licensing and Change History
 
 - [Licensing and Provenance Inventory](ATTRIBUTION.md)
-- [Root Changelog](../CHANGELOG.md) — maintained chronological record; old entries retain their original bounded results
-- `docs/CHANGELOG.md` and `docs/RELEASE_NOTES.md` — historical snapshots, not current release evidence
+- [Machine-Readable Provenance Ledger](PROVENANCE_LEDGER.csv)
+- [Retained Third-Party License Records](licenses/README.md)
+- [Root Changelog](../CHANGELOG.md): maintained chronological record; old entries retain their original bounded results
+- `docs/CHANGELOG.md` and `docs/RELEASE_NOTES.md`: historical snapshots, not current release evidence
 
 ## Historical Documents
 
@@ -98,4 +105,5 @@ The historical banner is a warning, not validation of the body. Historical text 
 bash tools/check_documentation_truth.sh
 bash tools/check_project_truth.sh
 bash tools/check_headless_runner_manifest.sh
+tools/generate_provenance_ledger.py --check
 ```

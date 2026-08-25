@@ -21,7 +21,8 @@ func _on_pressed() -> void:
 
 	# Close Menu
 	# Try UIManager first
-	var ui_svc: Node = get_node_or_null("/root/GameCore/UIService")
+	var manager: Node = get_node_or_null("/root/GameManager")
+	var ui_svc: Node = manager.get_core_system("ui") if manager else null
 	if ui_svc and "ui_manager" in ui_svc and ui_svc.ui_manager:
 		# If it's a modal
 		if ui_svc.ui_manager.has_open_modal():

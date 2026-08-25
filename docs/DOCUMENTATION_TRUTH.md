@@ -2,7 +2,7 @@
 
 > **Documentation status: maintained reference.** This file defines how present-tense claims are published. Generated reports remain authoritative for their individual gates.
 
-**Audited:** July 19, 2026  
+**Audited:** August 4, 2026
 **Version:** `0.9.5-beta`  
 **Engine:** Godot 4.7+  
 **Overall readiness:** **NOT READY**
@@ -25,19 +25,22 @@ Historical audits, completion notes, old fix logs, release drafts, and subsystem
 | --- | --- |
 | Engine/version | Godot 4.7+, project version `0.9.5-beta` |
 | Autoloads | 2: `GameManager` and `MapGenerator` |
-| Test inventory | 70 unit files, 18 integration files, 29 property files, 2 GUI-required manifest entries |
-| Retained complete full suite | PASS: 1431/1431 passing, 20,362 assertions, no risky/pending tests, zero GUT-reported orphans (July 19, 2026) |
-| Latest strict aggregate attempt | PASS/complete: the July 19 run finished in 1770.186 seconds under a 2400-second evidence ceiling and retained a full aggregate summary |
-| Latest batched lanes | PASS: July 19 Unit 1056/1056, Integration 200/200, and Property 175/175; Benchmark is skipped |
-| Launch smoke | PASS for startup/launch-path scope only |
-| Manual gameplay | BLOCKED: 0 imported CSV files and 0.00 recorded hours |
+| Test inventory | 71 unit files, 18 integration files, 29 property files, 2 GUI-required manifest entries |
+| Current complete full suite | PASS: 1440/1440 passing, 20,475 assertions, no risky/pending tests, zero GUT-reported orphans (August 4, 2026) |
+| Latest strict aggregate attempt | PASS/complete: the August 4 run finished in 702.76 seconds under a bounded 3600-second run and retained a full aggregate summary; six engine-exit ObjectDB leak diagnostics remain |
+| Latest batched lanes | PASS: August 1 Unit 1056/1056 and Property 175/175; July 19 Integration 200/200 retained; Benchmark is skipped |
+| Craft / Slopometer | PASS: Craft penalty 0 and MODUS 0.0/10; proof recorded in `.overzeer/proof-results.md` |
+| Launch smoke | Fresh August 2 main-menu and world-scene smokes PASS for startup scope only; they do not prove spawned-player gameplay actions |
+| Manual gameplay | BLOCKED: the 20-item F8 recorder and strict metadata/active-time validator are ready, but 0 reviewed CSV files and 0.00 validated hours exist |
 | Performance evidence | PASS for one bounded 66.4-second, 130-sample showcase capture; not a production FPS claim |
 | Release-version gate | BLOCKED while current truth remains `0.9.5-beta` |
-| Production readiness | NOT READY with 2 validator-tracked blockers: manual gameplay evidence and release-version readiness. This count is not legal/distribution clearance; third-party provenance remains incomplete. |
+| Production readiness | NOT READY with 2 validator-tracked blockers: manual gameplay evidence and release-version readiness. This count is not legal/distribution clearance; 212 of 220 ledgered assets still require rights review. |
 | Multiplayer runtime | Profile launch passes; two-peer ENet host/join is blocked by sandbox socket creation; real Steam/GodotSteam is unproven |
 | Workshop | Local filesystem simulation passes; real Steam Workshop upload/download is blocked |
-| Editor | Focused save/export/reload and 37/37 source-shape/registry contracts pass; live editor UI and complete authoring workflow remain unproven |
-| Map generator | Focused unit/threading/export/seed/map-playability lanes pass; July 17 threading and export runs report zero GUT orphans, while aggregate readiness remains open |
+| UI/editor | Main-menu/showcase/mod-manager/skill-tree structure and accessibility pass 26/26 with 109 assertions; the test-only manual recorder adds focused 2/2 proof, a compact 800×600 layout, direct CSV export, and F8 gameplay/review handoff; live complete editor UI and authoring workflow remain unproven |
+| Map generator | Focused unit/threading/export/seed/map-playability lanes pass; July 17 threading and export runs report zero GUT orphans; the aggregate suite is green, while manual/release readiness remains open |
+| Release evidence | `docs/RELEASE_EVIDENCE_BUNDLE.md` links the source-bounded known-limits matrix and 220-row provenance ledger; gameplay screenshots/video, manual CSV evidence, and clearance of 212 ledger rows remain open |
+| Ship estimate | `docs/SHIP_READINESS_ESTIMATE.md` records a bounded 69% evidence-completeness estimate and a 6–9 working-day minimum path; it is not a release approval |
 
 ## Documentation Classes
 
@@ -70,6 +73,7 @@ A historical snapshot preserves an audit, implementation checkpoint, fix session
 bash tools/check_documentation_truth.sh
 bash tools/check_project_truth.sh
 bash tools/check_headless_runner_manifest.sh
+tools/generate_provenance_ledger.py --check
 GODOT_BIN=/path/to/godot-4.7 \
   bash tools/validate_production_readiness.sh
 ```

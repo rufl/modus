@@ -6,8 +6,9 @@ extends RefCounted
 ##
 ## LOD Distance Thresholds:
 ## - LOD0: 0-20m (full detail)
-## - LOD1: 20-50m (50% complexity reduction)
-## - LOD2: 50m+ (75% complexity reduction)
+## - LOD1: 20-50m (nearest imported reduced index set to 50%)
+## - LOD2: 50-100m (nearest imported reduced index set to 25%)
+## Meshes without importer-authored LOD index buffers remain unchanged.
 
 # LOD distance thresholds in meters
 const LOD0_DISTANCE := 20.0  # Full detail
@@ -84,8 +85,8 @@ func _process_csg_combiner(combiner: CSGCombiner3D) -> int:
 		if child is CSGShape3D:
 			# Convert CSG shape to mesh and apply LOD
 			if _should_apply_lod_to_csg(child as CSGShape3D):
-				_convert_csg_to_lod(child as CSGShape3D, combiner)
-				lod_count += 1
+				if _convert_csg_to_lod(child as CSGShape3D, combiner):
+					lod_count += 1
 
 	return lod_count
 
@@ -106,20 +107,25 @@ func _should_apply_lod_to_csg(csg_shape: CSGShape3D) -> bool:
 
 
 ## Convert a CSG shape to mesh with LOD using visibility ranges
-func _convert_csg_to_lod(csg_shape: CSGShape3D, parent: Node) -> void:
+func _convert_csg_to_lod(csg_shape: CSGShape3D, parent: Node) -> bool:
 	# Get the mesh from CSG shape
 	var meshes := csg_shape.get_meshes()
 	if meshes.is_empty():
-		return
+		return false
 
 	var original_mesh: Mesh = meshes[1]  # Index 1 contains the actual mesh
 	if original_mesh == null:
-		return
+		return false
 
 	# Check if mesh is complex enough for LOD
 	var vertex_count := _get_mesh_vertex_count(original_mesh)
 	if vertex_count < MIN_VERTEX_COUNT_FOR_LOD:
-		return  # Skip simple meshes
+		return false
+
+	var lod1_mesh := _simplify_mesh(original_mesh, LOD1_COMPLEXITY)
+	if lod1_mesh == null:
+		return false
+	var lod2_mesh := _simplify_mesh(original_mesh, LOD2_COMPLEXITY)
 
 	# Create container node for LOD levels
 	var lod_container := Node3D.new()
@@ -140,22 +146,19 @@ func _convert_csg_to_lod(csg_shape: CSGShape3D, parent: Node) -> void:
 	lod_container.add_child(lod0_instance)
 
 	# LOD1: 50% complexity (20-50m)
-	var lod1_mesh := _simplify_mesh(original_mesh, LOD1_COMPLEXITY)
-	if lod1_mesh:
-		var lod1_instance := MeshInstance3D.new()
-		lod1_instance.name = "LOD1"
-		lod1_instance.mesh = lod1_mesh
-		lod1_instance.material_override = csg_shape.material
-		lod1_instance.visibility_range_begin = LOD0_DISTANCE
-		lod1_instance.visibility_range_begin_margin = 2.0
-		lod1_instance.visibility_range_end = LOD1_DISTANCE
-		lod1_instance.visibility_range_end_margin = 5.0
-		lod1_instance.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
-		lod1_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		lod_container.add_child(lod1_instance)
+	var lod1_instance := MeshInstance3D.new()
+	lod1_instance.name = "LOD1"
+	lod1_instance.mesh = lod1_mesh
+	lod1_instance.material_override = csg_shape.material
+	lod1_instance.visibility_range_begin = LOD0_DISTANCE
+	lod1_instance.visibility_range_begin_margin = 2.0
+	lod1_instance.visibility_range_end = LOD1_DISTANCE if lod2_mesh else LOD2_DISTANCE
+	lod1_instance.visibility_range_end_margin = 5.0
+	lod1_instance.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+	lod1_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	lod_container.add_child(lod1_instance)
 
 	# LOD2: 25% complexity (50m+)
-	var lod2_mesh := _simplify_mesh(original_mesh, LOD2_COMPLEXITY)
 	if lod2_mesh:
 		var lod2_instance := MeshInstance3D.new()
 		lod2_instance.name = "LOD2"
@@ -173,6 +176,7 @@ func _convert_csg_to_lod(csg_shape: CSGShape3D, parent: Node) -> void:
 	parent.add_child(lod_container)
 	parent.move_child(lod_container, index)
 	csg_shape.queue_free()
+	return true
 
 
 ## Apply LOD to prefab instances (props, decorative elements)
@@ -195,8 +199,8 @@ func _apply_lod_to_prefabs(prefab_instances: Array[Node3D], _root_node: Node3D) 
 		# Apply LOD to each mesh instance
 		for mesh_instance in mesh_instances:
 			if _should_apply_lod_to_mesh(mesh_instance):
-				_convert_mesh_to_lod(mesh_instance, instance)
-				lod_count += 1
+				if _convert_mesh_to_lod(mesh_instance, instance):
+					lod_count += 1
 
 	return lod_count
 
@@ -251,10 +255,15 @@ func _should_apply_lod_to_mesh(mesh_instance: MeshInstance3D) -> bool:
 
 
 ## Convert a mesh instance to use visibility ranges for LOD
-func _convert_mesh_to_lod(mesh_instance: MeshInstance3D, _prefab_root: Node3D) -> void:
+func _convert_mesh_to_lod(mesh_instance: MeshInstance3D, _prefab_root: Node3D) -> bool:
 	var original_mesh := mesh_instance.mesh
 	if original_mesh == null:
-		return
+		return false
+
+	var lod1_mesh := _simplify_mesh(original_mesh, LOD1_COMPLEXITY)
+	if lod1_mesh == null:
+		return false
+	var lod2_mesh := _simplify_mesh(original_mesh, LOD2_COMPLEXITY)
 
 	# Create container node for LOD levels
 	var lod_container := Node3D.new()
@@ -276,22 +285,19 @@ func _convert_mesh_to_lod(mesh_instance: MeshInstance3D, _prefab_root: Node3D) -
 	lod_container.add_child(lod0_instance)
 
 	# LOD1: 50% complexity (20-50m)
-	var lod1_mesh := _simplify_mesh(original_mesh, LOD1_COMPLEXITY)
-	if lod1_mesh:
-		var lod1_instance := MeshInstance3D.new()
-		lod1_instance.name = "LOD1"
-		lod1_instance.mesh = lod1_mesh
-		lod1_instance.material_override = mesh_instance.material_override
-		lod1_instance.visibility_range_begin = LOD0_DISTANCE
-		lod1_instance.visibility_range_begin_margin = 2.0
-		lod1_instance.visibility_range_end = LOD1_DISTANCE
-		lod1_instance.visibility_range_end_margin = 5.0
-		lod1_instance.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
-		lod1_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		lod_container.add_child(lod1_instance)
+	var lod1_instance := MeshInstance3D.new()
+	lod1_instance.name = "LOD1"
+	lod1_instance.mesh = lod1_mesh
+	lod1_instance.material_override = mesh_instance.material_override
+	lod1_instance.visibility_range_begin = LOD0_DISTANCE
+	lod1_instance.visibility_range_begin_margin = 2.0
+	lod1_instance.visibility_range_end = LOD1_DISTANCE if lod2_mesh else LOD2_DISTANCE
+	lod1_instance.visibility_range_end_margin = 5.0
+	lod1_instance.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+	lod1_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	lod_container.add_child(lod1_instance)
 
 	# LOD2: 25% complexity (50m+)
-	var lod2_mesh := _simplify_mesh(original_mesh, LOD2_COMPLEXITY)
 	if lod2_mesh:
 		var lod2_instance := MeshInstance3D.new()
 		lod2_instance.name = "LOD2"
@@ -311,39 +317,57 @@ func _convert_mesh_to_lod(mesh_instance: MeshInstance3D, _prefab_root: Node3D) -
 		parent.add_child(lod_container)
 		parent.move_child(lod_container, index)
 		mesh_instance.queue_free()
+		return true
+
+	lod_container.free()
+	return false
 
 
-## Simplify a mesh to reduce geometry complexity
-## target_ratio: 0.0-1.0, where 1.0 is full complexity
+## Build a reduced mesh from importer-authored LOD index buffers.
+## Returns null rather than pretending cache optimization is geometric reduction.
 func _simplify_mesh(mesh: Mesh, target_ratio: float) -> Mesh:
-	if mesh == null or target_ratio >= 1.0:
-		return mesh
+	if mesh == null or target_ratio <= 0.0 or target_ratio >= 1.0:
+		return null
 
-	# Use SurfaceTool to process the mesh
-	var surface_tool := SurfaceTool.new()
-
-	# Process each surface
 	var simplified_mesh := ArrayMesh.new()
-
 	for surface_idx in range(mesh.get_surface_count()):
-		surface_tool.clear()
-		surface_tool.create_from(mesh, surface_idx)
-
-		# Optimize for cache (improves performance)
-		surface_tool.optimize_indices_for_cache()
-
-		# Generate normals if needed
-		surface_tool.generate_normals()
-
-		# Commit the surface
-		surface_tool.commit(simplified_mesh)
-
-	# Note: Godot doesn't have built-in mesh decimation
-	# For production, you would integrate a mesh simplification library
-	# or pre-generate LOD meshes in your asset pipeline
-	# For now, we return the optimized mesh
+		var arrays := mesh.surface_get_arrays(surface_idx)
+		if arrays.size() <= Mesh.ARRAY_INDEX:
+			return null
+		var original_indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
+		if original_indices.is_empty():
+			return null
+		var lod_indices := _select_imported_lod(mesh, surface_idx, target_ratio)
+		if lod_indices.is_empty():
+			return null
+		arrays[Mesh.ARRAY_INDEX] = lod_indices
+		simplified_mesh.add_surface_from_arrays(
+			mesh.surface_get_primitive_type(surface_idx), arrays
+		)
+		var material := mesh.surface_get_material(surface_idx)
+		if material:
+			simplified_mesh.surface_set_material(surface_idx, material)
 
 	return simplified_mesh
+
+
+func _select_imported_lod(
+	mesh: Mesh, surface_idx: int, target_ratio: float
+) -> PackedInt32Array:
+	var original_indices: PackedInt32Array = mesh.surface_get_arrays(surface_idx)[Mesh.ARRAY_INDEX]
+	var target_count := maxi(3, int(original_indices.size() * target_ratio))
+	var selected := PackedInt32Array()
+	var selected_error := 1 << 30
+	var lods: Dictionary = mesh.surface_get_lods(surface_idx)
+	for distance in lods:
+		var candidate: PackedInt32Array = lods[distance]
+		if candidate.size() >= original_indices.size() or candidate.size() < 3:
+			continue
+		var candidate_error := absi(candidate.size() - target_count)
+		if candidate_error < selected_error:
+			selected = candidate
+			selected_error = candidate_error
+	return selected
 
 
 ## Get the total vertex count of a mesh
@@ -370,9 +394,8 @@ func generate_lod_meshes() -> void:
 
 	print("MapLODManager: Generating LOD meshes for export...")
 
-	# LOD generation is handled by apply_lod_to_scene
-	# This function is a placeholder for future enhancements
-	# such as pre-baking LOD meshes or saving them as separate resources
+	# Import-time generation is authoritative. Runtime application consumes those
+	# reduced index buffers and leaves unsupported meshes intact.
 
 
 ## Get LOD statistics for the current scene
@@ -382,8 +405,9 @@ func get_lod_statistics() -> Dictionary:
 		"lod0_distance": LOD0_DISTANCE,
 		"lod1_distance": LOD1_DISTANCE,
 		"lod2_distance": LOD2_DISTANCE,
-		"lod1_complexity": LOD1_COMPLEXITY,
-		"lod2_complexity": LOD2_COMPLEXITY,
+		"lod1_target_complexity": LOD1_COMPLEXITY,
+		"lod2_target_complexity": LOD2_COMPLEXITY,
+		"requires_imported_lod_indices": true,
 		"min_vertex_threshold": MIN_VERTEX_COUNT_FOR_LOD
 	}
 

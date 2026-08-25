@@ -164,22 +164,138 @@ func test_hud_visibility_toggle() -> void:
 
 
 func test_main_menu_screen_exists() -> void:
-	var paths: Array[String] = [
-		"res://game/ui/screens/main_menu_screen.tscn",
-		"res://game/ui/screens/main_menu.tscn",
-		"res://shared/ui_core/screens/main_menu_screen.tscn",
-	]
-	
-	var found_menu: bool = false
-	for path: String in paths:
-		if ResourceLoader.exists(path):
-			found_menu = true
-			break
-	
-	assert_true(
-		found_menu,
-		"Main menu screen should exist in one of the expected locations"
+	var scene := load("res://shared/ui_core/screens/main_menu_screen.tscn") as PackedScene
+	assert_not_null(scene, "Main menu scene should load")
+	if not scene:
+		return
+
+	test_screen = scene.instantiate() as Control
+	add_child_autofree(test_screen)
+	await get_tree().process_frame
+
+	var hero := test_screen.find_child("HeroArt", true, false) as TextureRect
+	var veil := test_screen.find_child("BackdropVeil", true, false) as ColorRect
+	var art_space := test_screen.find_child("ArtSpace", true, false) as Control
+	var panel := test_screen.find_child("MenuPanel", true, false) as PanelContainer
+	var actions := test_screen.find_child("MenuActions", true, false) as VBoxContainer
+	var play := test_screen.find_child("PlayButton", true, false) as Button
+	var showcase := test_screen.find_child("ShowcaseButton", true, false) as Button
+	var editor := test_screen.find_child("EditorButton", true, false) as Button
+	var quit := test_screen.find_child("QuitButton", true, false) as Button
+	var hint := test_screen.find_child("MenuHint", true, false) as Label
+	var version := test_screen.find_child("VersionLabel", true, false) as Label
+
+	assert_not_null(hero, "Menu should expose the supplied hero artwork")
+	assert_not_null(veil, "Menu should protect text contrast with a backdrop veil")
+	assert_not_null(art_space, "Wide layouts should reserve room for the hero artwork")
+	assert_not_null(panel, "Menu actions should sit on a readable panel")
+	assert_not_null(actions, "Menu actions should use a responsive container")
+	assert_not_null(play, "Primary play action should exist")
+	assert_not_null(showcase, "The maintained showcase should be player-visible")
+	assert_not_null(editor, "Editor action should exist")
+	assert_not_null(quit, "Quit action should exist")
+	assert_not_null(hint, "Focused actions should explain their outcome")
+	assert_not_null(version, "Build version should be visible")
+	assert_not_null(hero.texture, "Hero artwork should load as a texture")
+	assert_gt(veil.size.x, 0.0, "Backdrop should fill the rendered menu instead of collapsing")
+	assert_gt(panel.size.x, 0.0, "Menu panel should participate in container layout")
+	assert_lt(
+		panel.global_position.x + panel.size.x * 0.5,
+		test_screen.global_position.x + test_screen.size.x * 0.5,
+		"Wide menu panel should leave room for hero artwork"
 	)
+	assert_gte(play.custom_minimum_size.y, 48.0, "Menu targets should be comfortably selectable")
+	assert_gte(
+		editor.custom_minimum_size.y, 48.0, "Secondary targets should be comfortably selectable"
+	)
+	assert_eq(play.focus_mode, Control.FOCUS_ALL, "Primary action should accept keyboard focus")
+	assert_ne(play.focus_neighbor_bottom, NodePath(), "Focus order should be explicit")
+	assert_ne(quit.focus_neighbor_top, NodePath(), "Reverse focus order should be explicit")
+	showcase.grab_focus()
+	await get_tree().process_frame
+	assert_true(hint.text.contains("showcase"), "Showcase focus should explain the capture route")
+	assert_ne(editor.text, "menu_editor", "Editor action should use a readable localized label")
+	assert_true(version.text.contains("0.9.5-beta"), "Menu should expose the running build version")
+
+
+func test_showcase_welcome_screen_is_accessible_and_truthful() -> void:
+	var scene := load("res://game/ui/menus/welcome_screen.tscn") as PackedScene
+	assert_not_null(scene, "Showcase welcome screen should load")
+	if not scene:
+		return
+
+	var screen := scene.instantiate() as Control
+	var panel := screen.find_child("WelcomePanel", true, false) as PanelContainer
+	var body := screen.find_child("BodyLabel", true, false) as Label
+	var route := screen.find_child("RouteLabel", true, false) as Label
+	var evidence := screen.find_child("EvidenceLabel", true, false) as Label
+	var begin := screen.find_child("BeginButton", true, false) as Button
+
+	assert_not_null(panel, "Welcome content should use a bounded panel")
+	assert_not_null(body, "Welcome screen should explain the route")
+	assert_not_null(route, "Welcome screen should expose the golden-demo checklist")
+	assert_not_null(evidence, "Welcome screen should explain the evidence boundary")
+	assert_not_null(begin, "Welcome screen should expose a clear primary action")
+	assert_lte(panel.custom_minimum_size.x, 560.0, "Welcome panel should fit the target viewport")
+	assert_eq(body.autowrap_mode, TextServer.AUTOWRAP_WORD_SMART, "Body copy should wrap")
+	assert_true(route.text.contains("SAVE"), "Route should include the save/load exercise")
+	assert_true(evidence.text.contains("evidence"), "Copy should not overclaim an unrecorded run")
+	assert_gte(begin.custom_minimum_size.y, 48.0, "Primary action should meet target size")
+	assert_eq(begin.focus_mode, Control.FOCUS_ALL, "Primary action should accept gamepad focus")
+	screen.free()
+
+
+func test_mod_manager_is_responsive_and_actionable() -> void:
+	var scene := load("res://game/ui/menus/mod_manager_ui.tscn") as PackedScene
+	assert_not_null(scene, "Mod manager scene should load")
+	if not scene:
+		return
+
+	var screen := scene.instantiate() as Control
+	add_child_autofree(screen)
+	await get_tree().process_frame
+	screen.size = Vector2(640, 480)
+	screen.call("_update_responsive_layout")
+	await get_tree().process_frame
+
+	var panel := screen.find_child("MainPanel", true, false) as PanelContainer
+	var layout := screen.find_child("MainContainer", true, false) as BoxContainer
+	var mod_list := screen.find_child("ModList", true, false) as VBoxContainer
+	var enable := screen.find_child("EnableButton", true, false) as Button
+	var reload := screen.find_child("ReloadButton", true, false) as Button
+	var status := screen.find_child("StatusLabel", true, false) as Label
+
+	assert_not_null(panel, "Mod manager should use a bounded panel")
+	assert_not_null(layout, "Mod manager should expose a responsive content layout")
+	assert_not_null(mod_list, "Mod manager should expose installed packages")
+	assert_not_null(enable, "Mod manager should expose an enable action")
+	assert_not_null(reload, "Mod manager should expose an explicit apply action")
+	assert_not_null(status, "Mod manager should explain pending reload state")
+	assert_true(layout.vertical, "Narrow mod manager layout should stack its panels")
+	assert_lte(panel.custom_minimum_size.x, 640.0, "Mod manager should fit a narrow viewport")
+	assert_true(enable.disabled, "Enable should remain disabled until a mod is selected")
+	assert_gte(reload.custom_minimum_size.y, 48.0, "Reload should meet the target size")
+	assert_true(status.text.contains("Reload"), "Status copy should explain how changes apply")
+
+
+func test_skill_tree_compatibility_scene_uses_the_complete_ui() -> void:
+	var scene := load("res://game/ui/skill_tree_ui.tscn") as PackedScene
+	assert_not_null(scene, "Compatibility skill-tree scene should load")
+	if not scene:
+		return
+
+	var screen := scene.instantiate() as Control
+	assert_not_null(screen.find_child("CategoryTabs", true, false), "Skill categories should exist")
+	var close := screen.find_child("CloseButton", true, false) as Button
+	var reset := screen.find_child("ResetButton", true, false) as Button
+	var unlock := screen.find_child("UnlockButton", true, false) as Button
+	assert_not_null(close, "Skill tree should expose a close action")
+	assert_not_null(reset, "Skill tree should expose a reset action")
+	assert_not_null(unlock, "Skill tree should expose an unlock action")
+	assert_gte(close.custom_minimum_size.y, 48.0, "Close should meet the target size")
+	assert_gte(reset.custom_minimum_size.y, 48.0, "Reset should meet the target size")
+	assert_gte(unlock.custom_minimum_size.y, 48.0, "Unlock should meet the target size")
+	screen.free()
 
 
 func test_settings_screen_exists() -> void:

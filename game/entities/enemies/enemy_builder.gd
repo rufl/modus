@@ -2,14 +2,47 @@ class_name EnemyBuilder
 extends RefCounted
 
 const EnemyBloodTrailScript = preload("res://game/entities/enemies/components/enemy_blood_trail.gd")
+const DEFAULT_ENEMY_SCENE := "res://game/entities/enemies/enemy.tscn"
 
 
 ## Create an enemy from data
-static func create_enemy(_data: Dictionary) -> Node:
-	# Stub implementation - returns null for now
-	# Full implementation would instantiate enemy scene and configure it
-	push_warning("[EnemyBuilder] create_enemy is a stub - full implementation pending")
-	return null
+static func create_enemy(data: Dictionary) -> Node:
+	if data.is_empty():
+		push_error("[EnemyBuilder] Enemy data must not be empty")
+		return null
+
+	var scene_path := str(data.get("scene_path", DEFAULT_ENEMY_SCENE))
+	if not ResourceLoader.exists(scene_path, "PackedScene"):
+		push_error("[EnemyBuilder] Enemy scene does not exist: %s" % scene_path)
+		return null
+	var packed_scene := load(scene_path) as PackedScene
+	if packed_scene == null:
+		push_error("[EnemyBuilder] Resource is not a PackedScene: %s" % scene_path)
+		return null
+	var enemy := packed_scene.instantiate()
+	if enemy == null or not ("enemy_id" in enemy and "tier" in enemy):
+		if enemy:
+			enemy.free()
+		push_error("[EnemyBuilder] Scene does not implement the Enemy contract: %s" % scene_path)
+		return null
+
+	var enemy_id := str(data.get("id", data.get("enemy_id", "grunt_basic"))).strip_edges()
+	if enemy_id.is_empty():
+		enemy_id = "grunt_basic"
+	enemy.enemy_id = enemy_id
+	enemy.tier = clampi(int(data.get("tier", 1)), 1, 4)
+	enemy.name = _safe_node_name(str(data.get("node_name", enemy_id)))
+	enemy.set_meta("enemy_builder_data", data.duplicate(true))
+	if data.get("aggressive", false):
+		enemy.set_meta("spawn_aggressive", true)
+	return enemy
+
+
+static func _safe_node_name(value: String) -> String:
+	var result := value.strip_edges()
+	for forbidden in [".", ":", "@", "/", "\"", "%"]:
+		result = result.replace(forbidden, "_")
+	return result if not result.is_empty() else "Enemy"
 
 
 static func build_components(enemy: Node, data: Dictionary) -> void:
@@ -178,9 +211,11 @@ static func _setup_gore_systems(enemy: Node, data: Dictionary) -> void:
 
 static func _setup_status_effects(enemy: Node) -> void:
 	# Status Effect Manager (for receiving DoT from player weapons)
-	var status_mgr := StatusEffectManager.new()
-	status_mgr.name = "StatusEffectManager"
-	enemy.add_child(status_mgr)
+	var status_mgr := enemy.get_node_or_null("StatusEffectManager") as StatusEffectManager
+	if status_mgr == null:
+		status_mgr = StatusEffectManager.new()
+		status_mgr.name = "StatusEffectManager"
+		enemy.add_child(status_mgr)
 
 	enemy.status_effect_manager = status_mgr
 

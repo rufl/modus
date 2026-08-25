@@ -47,10 +47,18 @@ func test_shader_paths_exist() -> void:
 		"res://game/art/shaders/invisibility.gdshader",
 		"res://game/art/shaders/screen_effects.gdshader",
 		"res://game/art/shaders/blood_pool.gdshader",
+		"res://shared/shaders/blood_pool.gdshader",
 	]
 
 	for path in shader_paths:
 		assert_file_exists(path, "Shader file should exist: %s" % path)
+
+
+func test_shared_blood_pool_sources_load() -> void:
+	var shader := load("res://shared/shaders/blood_pool.gdshader") as Shader
+	var controller := load("res://shared/shaders/blood_pool.gd") as Script
+	assert_not_null(shader, "Shared blood-pool shader should parse and load")
+	assert_not_null(controller, "Shared blood-pool controller should parse and load")
 
 
 func test_projectile_paths_exist() -> void:

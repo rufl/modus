@@ -39,15 +39,16 @@ func _build_ui() -> void:
 	title.add_theme_font_size_override("font_size", 24)
 	vbox.add_child(title)
 
-	var hbox := HBoxContainer.new()
-	hbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	hbox.add_theme_constant_override("separation", 20)
-	vbox.add_child(hbox)
+	var content_vbox := VBoxContainer.new()
+	content_vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	content_vbox.add_theme_constant_override("separation", 20)
+	vbox.add_child(content_vbox)
 
 	# Left Column: List
 	var left_vbox := VBoxContainer.new()
 	left_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	hbox.add_child(left_vbox)
+	left_vbox.custom_minimum_size.y = 160
+	content_vbox.add_child(left_vbox)
 
 	var slot_label := Label.new()
 	slot_label.text = "Select Slot"
@@ -60,7 +61,7 @@ func _build_ui() -> void:
 	var right_vbox := VBoxContainer.new()
 	right_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	right_vbox.add_theme_constant_override("separation", 15)
-	hbox.add_child(right_vbox)
+	content_vbox.add_child(right_vbox)
 
 	var name_label := Label.new()
 	name_label.text = "Save Name"
@@ -101,7 +102,8 @@ func _create_btn(text: String, callback: Callable) -> Button:
 	else:
 		btn = Button.new()
 	btn.text = text
-	btn.custom_minimum_size.y = 40
+	btn.custom_minimum_size.y = 48
+	btn.focus_mode = Control.FOCUS_ALL
 	btn.pressed.connect(callback)
 	return btn
 

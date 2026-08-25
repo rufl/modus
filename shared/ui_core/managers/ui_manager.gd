@@ -737,7 +737,8 @@ func _create_procedural_modal(params: Dictionary) -> Control:
 
 	var cancel_btn: Button = Button.new()
 	cancel_btn.text = params.get("cancel_text", "Cancel")
-	cancel_btn.custom_minimum_size = Vector2(120, 40)
+	cancel_btn.custom_minimum_size = Vector2(120, 48)
+	cancel_btn.focus_mode = Control.FOCUS_ALL
 	cancel_btn.pressed.connect(
 		func() -> void:
 			if params.has("on_cancel") and params.on_cancel is Callable:
@@ -748,7 +749,8 @@ func _create_procedural_modal(params: Dictionary) -> Control:
 
 	var confirm_btn: Button = Button.new()
 	confirm_btn.text = params.get("confirm_text", "Confirm")
-	confirm_btn.custom_minimum_size = Vector2(120, 40)
+	confirm_btn.custom_minimum_size = Vector2(120, 48)
+	confirm_btn.focus_mode = Control.FOCUS_ALL
 	confirm_btn.pressed.connect(
 		func() -> void:
 			if params.has("on_confirm") and params.on_confirm is Callable:

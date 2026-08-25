@@ -372,7 +372,19 @@ func test_translation_files_contain_required_keys() -> void:
 	assert_not_null(localization, "Localization service should exist")
 
 	# Define required keys that should exist in all languages
-	var required_keys: Array[String] = ["menu_play", "menu_options", "menu_quit"]
+	var required_keys: Array[String] = [
+		"menu_play",
+		"menu_showcase",
+		"menu_editor",
+		"menu_options",
+		"menu_quit",
+		"showcase_welcome_title",
+		"showcase_welcome_begin",
+		"showcase_welcome_evidence",
+		"mods_title",
+		"mods_reload",
+		"mods_pending_reload",
+	]
 
 	# Get available languages
 	var available_langs: Array = localization.get_available_languages()

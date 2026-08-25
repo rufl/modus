@@ -11,13 +11,16 @@
 1. [Documentation Truth Contract](DOCUMENTATION_TRUTH.md)
 2. [Current Status](CURRENT_STATUS.md)
 3. [Production Readiness Report](PRODUCTION_READINESS_REPORT.md)
-4. [Active Backlog](../BACKLOG.md)
-5. [Documentation Index](INDEX.md)
+4. [Ship-Readiness Estimate](SHIP_READINESS_ESTIMATE.md)
+5. [Active Backlog](../BACKLOG.md)
+6. [Documentation Index](INDEX.md)
 
 ## Current Evidence
 
 - [Automated Test Lanes](AUTOMATED_TEST_LANES_REPORT.md)
 - [Main Player Path Smoke](MAIN_PLAYER_PATH_SMOKE.md)
+- [Showcase Scene Launch Smoke](SHOWCASE_LAUNCH_SMOKE.md)
+- [Golden Demo Smoke](GOLDEN_DEMO_SMOKE.md)
 - [Manual Evidence](MANUAL_EVIDENCE_REPORT.md)
 - [Performance Evidence](PERFORMANCE_EVIDENCE_REPORT.md)
 - [Release Readiness](RELEASE_READINESS_REPORT.md)
@@ -25,6 +28,9 @@
 - [Editor Round Trip](EDITOR_ROUNDTRIP_PROOF.md)
 - [Workshop Local Simulation](WORKSHOP_LOCAL_SIMULATION_PROOF.md)
 - [Sample Mod and Package Validation](MODDING_SAMPLE_MOD.md)
+- [Release Evidence Bundle](RELEASE_EVIDENCE_BUNDLE.md)
+- [Known-Limits Matrix](KNOWN_LIMITS_MATRIX.md)
+- [Provenance Inventory and Ledger](ATTRIBUTION.md)
 
 ## Maintained References
 
@@ -62,4 +68,5 @@ When changing code or evidence:
 bash tools/check_documentation_truth.sh
 bash tools/check_project_truth.sh
 bash tools/check_headless_runner_manifest.sh
+tools/generate_provenance_ledger.py --check
 ```

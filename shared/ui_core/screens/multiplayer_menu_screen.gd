@@ -18,11 +18,14 @@ var _address_input: LineEdit = null
 var _join_btn: Button = null
 var _host_btn: Button = null
 var _back_btn: Button = null
+var _content_width: float = 400.0
 
 
 func _on_ready() -> void:
 	_build_ui()
 	_setup_focus()
+	resized.connect(_update_responsive_layout)
+	_update_responsive_layout()
 
 
 func _on_screen_enter(_params: Dictionary) -> void:
@@ -58,7 +61,7 @@ func _build_ui() -> void:
 
 	# Main panel
 	_panel = PanelContainer.new()
-	_panel.custom_minimum_size = Vector2(400, 300)
+	_panel.custom_minimum_size = Vector2(_content_width, 300)
 	center.add_child(_panel)
 
 	var vbox: VBoxContainer = VBoxContainer.new()
@@ -80,7 +83,7 @@ func _build_ui() -> void:
 	join_label.add_theme_font_size_override("font_size", 18)
 	vbox.add_child(join_label)
 
-	var join_row: HBoxContainer = HBoxContainer.new()
+	var join_row: VBoxContainer = VBoxContainer.new()
 	join_row.add_theme_constant_override("separation", 8)
 	vbox.add_child(join_row)
 
@@ -88,15 +91,19 @@ func _build_ui() -> void:
 	ip_label.text = _tr("mp_ip_address", "IP Address:")
 	join_row.add_child(ip_label)
 
+	var address_row: HBoxContainer = HBoxContainer.new()
+	address_row.add_theme_constant_override("separation", 8)
+	join_row.add_child(address_row)
+
 	_address_input = LineEdit.new()
 	_address_input.placeholder_text = "127.0.0.1"
-	_address_input.custom_minimum_size.x = 200
+	_address_input.custom_minimum_size.x = 120
 	_address_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	join_row.add_child(_address_input)
+	address_row.add_child(_address_input)
 
 	_join_btn = _create_button("mp_join", "Join")
 	_join_btn.pressed.connect(_on_join_pressed)
-	join_row.add_child(_join_btn)
+	address_row.add_child(_join_btn)
 
 	vbox.add_child(HSeparator.new())
 
@@ -131,7 +138,8 @@ func _create_button(loc_key: String, fallback: String) -> Button:
 		btn = Button.new()
 
 	btn.text = _tr(loc_key, fallback)
-	btn.custom_minimum_size = Vector2(100, 36)
+	btn.custom_minimum_size = Vector2(120, 48)
+	btn.focus_mode = Control.FOCUS_ALL
 	return btn
 
 
@@ -155,6 +163,13 @@ func _setup_focus() -> void:
 		controls.append(_back_btn)
 
 	register_focus_controls(controls, "multiplayer_menu")
+
+
+func _update_responsive_layout() -> void:
+	if not _panel:
+		return
+	_content_width = clampf(size.x - 48.0, 280.0, 520.0)
+	_panel.custom_minimum_size.x = _content_width
 
 
 # ============================================================================
@@ -189,7 +204,10 @@ func _on_host_pressed() -> void:
 func _on_host_requested(connection_settings: Dictionary, match_settings: Dictionary) -> void:
 	var logger: Node = GameManager.get_core_system("logger")
 	if logger and logger.has_method("info"):
-		logger.info(str("[MultiplayerMenuScreen] Hosting with: %s, %s" % [connection_settings, match_settings]), "Log")
+		logger.info(
+			str("[MultiplayerMenuScreen] Hosting with: %s, %s" % [connection_settings, match_settings]),
+			"Log"
+		)
 
 	var ns := NetworkSvc.get_service()
 	if ns and ns.network_manager:

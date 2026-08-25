@@ -93,7 +93,7 @@ func _build_general_tab() -> void:
 
 	var name_input: LineEdit = LineEdit.new()
 	name_input.name = "PlayerNameInput"
-	name_input.custom_minimum_size.x = 200
+	name_input.custom_minimum_size.x = 160
 	name_input.placeholder_text = "Enter Name"
 
 	# Load current name
@@ -116,7 +116,7 @@ func _build_general_tab() -> void:
 
 	var lang_option: OptionButton = OptionButton.new()
 	lang_option.name = "LangOption"
-	lang_option.custom_minimum_size.x = 200
+	lang_option.custom_minimum_size.x = 160
 	lang_row.add_child(lang_option)
 
 	# Populate languages
@@ -145,7 +145,7 @@ func _build_general_tab() -> void:
 
 	var theme_option: OptionButton = OptionButton.new()
 	theme_option.name = "ThemeOption"
-	theme_option.custom_minimum_size.x = 200
+	theme_option.custom_minimum_size.x = 160
 
 	var theme_mgr: Node = get_node_or_null("/root/ThemeManager")
 	if theme_mgr:
@@ -260,7 +260,7 @@ func _create_volume_slider(
 	slider.min_value = 0.0
 	slider.max_value = 1.0
 	slider.step = 0.01
-	slider.custom_minimum_size.x = 200
+	slider.custom_minimum_size.x = 160
 	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 	# Load from AudioService (Source of Truth) or Config
@@ -312,7 +312,7 @@ func _build_controls_tab() -> void:
 	if config and config.has_method("get_value"):
 		sens_value = config.get_value("controls.mouse_sensitivity", default_sens)
 	sens_slider.value = sens_value
-	sens_slider.custom_minimum_size.x = 200
+	sens_slider.custom_minimum_size.x = 160
 	sens_slider.value_changed.connect(
 		func(v: float) -> void:
 			var cfg: Node = GameManager.get_core_system("config")
@@ -352,7 +352,8 @@ func _create_row(label_text: String) -> HBoxContainer:
 
 	var label: Label = Label.new()
 	label.text = label_text
-	label.custom_minimum_size.x = 200
+	label.custom_minimum_size.x = 0
+	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(label)
 
 	return row
@@ -366,7 +367,8 @@ func _create_button(loc_key: String, fallback: String) -> Button:
 		btn = Button.new()
 
 	btn.text = _tr(loc_key, fallback)
-	btn.custom_minimum_size = Vector2(120, 40)
+	btn.custom_minimum_size = Vector2(120, 48)
+	btn.focus_mode = Control.FOCUS_ALL
 	return btn
 
 

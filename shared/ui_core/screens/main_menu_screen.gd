@@ -14,11 +14,19 @@ const WORLD_SCENE: String = "res://game/world/maps/map.tscn"
 const OPTIONS_SCREEN: String = "res://shared/ui_core/screens/options_screen.tscn"
 const MULTIPLAYER_SCREEN: String = "res://shared/ui_core/screens/multiplayer_menu_screen.tscn"
 const MOD_MANAGER_SCREEN: String = "res://shared/ui_core/screens/mod_manager_screen.tscn"
-const SHOWCASE_SCENE: String = "res://game/world/maps/comprehensive_showcase.tscn"
+const SHOWCASE_SCENE: String = "res://game/world/maps/showcase.tscn"
+const MENU_ART: String = "res://game/art/ui/main_menu_warrior_lineup.png"
 
 var _background_viewport: SubViewportContainer = null
+var _safe_margins: MarginContainer = null
+var _menu_side: CenterContainer = null
+var _art_space: Control = null
+var _menu_panel: PanelContainer = null
 var _menu_container: VBoxContainer = null
+var _title: Label = null
+var _menu_hint: Label = null
 var _play_btn: Button = null
+var _showcase_btn: Button = null
 var _multiplayer_btn: Button = null
 var _options_btn: Button = null
 var _mods_btn: Button = null
@@ -30,6 +38,8 @@ func _on_ready() -> void:
 	_setup_3d_background()
 	_build_menu_ui()
 	_setup_focus()
+	resized.connect(_update_responsive_layout)
+	_update_responsive_layout()
 
 	# Start menu music
 	_start_menu_music()
@@ -78,11 +88,24 @@ func _on_screen_enter(_params: Dictionary) -> void:
 
 
 func _setup_3d_background() -> void:
+	if ResourceLoader.exists(MENU_ART):
+		var art := TextureRect.new()
+		art.name = "HeroArt"
+		art.texture = load(MENU_ART) as Texture2D
+		art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		art.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		add_child(art)
+		art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		move_child(art, 0)
+		return
+
 	# Create SubViewportContainer for 3D background
 	_background_viewport = SubViewportContainer.new()
 	_background_viewport.stretch = true
-	_background_viewport.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_background_viewport.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_background_viewport)
+	_background_viewport.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	move_child(_background_viewport, 0)  # Send to back
 
 	var viewport: SubViewport = SubViewport.new()
@@ -111,15 +134,21 @@ func _setup_3d_background() -> void:
 	light.shadow_enabled = true
 	root_3d.add_child(light)
 
-	# Floating geometry
-	for i: int in range(20):
+	# A deterministic skyline keeps the menu visually stable across launches.
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 0x4D4F4455
+	for i: int in range(14):
 		var mesh_instance: MeshInstance3D = MeshInstance3D.new()
 		var box: BoxMesh = BoxMesh.new()
-		box.size = Vector3(randf_range(1, 4), randf_range(5, 15), randf_range(1, 4))
+		box.size = Vector3(rng.randf_range(1, 4), rng.randf_range(5, 15), rng.randf_range(1, 4))
 		mesh_instance.mesh = box
-		mesh_instance.position = Vector3(randf_range(-50, 50), box.size.y / 2, randf_range(-50, 50))
+		mesh_instance.position = Vector3(
+			rng.randf_range(-50, 50), box.size.y / 2, rng.randf_range(-50, 50)
+		)
 		var mat: StandardMaterial3D = StandardMaterial3D.new()
-		mat.albedo_color = Color(randf() * 0.5, randf() * 0.5, randf() * 0.8)
+		mat.albedo_color = Color(
+			rng.randf_range(0.04, 0.16), rng.randf_range(0.08, 0.22), rng.randf_range(0.18, 0.42)
+		)
 		mat.emission_enabled = true
 		mat.emission = mat.albedo_color
 		mat.emission_energy_multiplier = 0.5
@@ -145,9 +174,9 @@ func _setup_3d_background() -> void:
 	camera.rotation_degrees.x = -15
 	cam_pivot.add_child(camera)
 
-	# Rotating camera animation
-	var tween: Tween = create_tween().set_loops()
-	tween.tween_property(cam_pivot, "rotation:y", deg_to_rad(360), 60.0).from(0.0)
+	if not _is_reduced_motion():
+		var tween: Tween = create_tween().set_loops()
+		tween.tween_property(cam_pivot, "rotation:y", deg_to_rad(360), 90.0).from(0.0)
 
 
 # ============================================================================
@@ -156,57 +185,101 @@ func _setup_3d_background() -> void:
 
 
 func _build_menu_ui() -> void:
-	# Create layout structure
-	# MarginContainer -> CenterContainer -> VBoxContainer
+	var veil := ColorRect.new()
+	veil.name = "BackdropVeil"
+	veil.color = Color(0.015, 0.02, 0.04, 0.58)
+	veil.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(veil)
+	veil.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
-	var margins: MarginContainer = MarginContainer.new()
-	margins.set_anchors_preset(Control.PRESET_FULL_RECT)
-	# Add some padding from screen edges
-	margins.add_theme_constant_override("margin_left", 30)
-	margins.add_theme_constant_override("margin_right", 30)
-	margins.add_theme_constant_override("margin_top", 30)
-	margins.add_theme_constant_override("margin_bottom", 30)
-	add_child(margins)
+	_safe_margins = MarginContainer.new()
+	_safe_margins.name = "SafeMargins"
+	add_child(_safe_margins)
+	_safe_margins.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
-	var center: CenterContainer = CenterContainer.new()
-	# Make sure center container fills the margins
-	center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	center.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	margins.add_child(center)
+	var split := HBoxContainer.new()
+	split.name = "MenuSplit"
+	split.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	split.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_safe_margins.add_child(split)
 
-	# Main container
+	_menu_side = CenterContainer.new()
+	_menu_side.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	_menu_side.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_menu_side.custom_minimum_size.x = 480
+	split.add_child(_menu_side)
+
+	_art_space = Control.new()
+	_art_space.name = "ArtSpace"
+	_art_space.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_art_space.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_art_space.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_art_space.size_flags_stretch_ratio = 1.1
+	split.add_child(_art_space)
+
+	_menu_panel = PanelContainer.new()
+	_menu_panel.name = "MenuPanel"
+	_menu_panel.custom_minimum_size = Vector2(420, 0)
+	_menu_panel.add_theme_stylebox_override("panel", _create_menu_panel_style())
+	_menu_side.add_child(_menu_panel)
+
+	var panel_margins := MarginContainer.new()
+	panel_margins.add_theme_constant_override("margin_left", 32)
+	panel_margins.add_theme_constant_override("margin_right", 32)
+	panel_margins.add_theme_constant_override("margin_top", 18)
+	panel_margins.add_theme_constant_override("margin_bottom", 18)
+	_menu_panel.add_child(panel_margins)
+
 	_menu_container = VBoxContainer.new()
-	_menu_container.custom_minimum_size = Vector2(300, 100)
-	_menu_container.add_theme_constant_override("separation", 12)
-	center.add_child(_menu_container)
+	_menu_container.name = "MenuActions"
+	_menu_container.add_theme_constant_override("separation", 6)
+	panel_margins.add_child(_menu_container)
 
-	# Title
-	var title: Label = Label.new()
-	title.text = "MODUS"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 64)
-	title.modulate = Color(0.9, 0.9, 1.0)  # Subtle blue-white
-	_menu_container.add_child(title)
+	_title = Label.new()
+	_title.name = "Title"
+	_title.text = "MODUS"
+	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_title.add_theme_font_size_override("font_size", 64)
+	_title.add_theme_color_override("font_color", Color(0.94, 0.97, 1.0))
+	_menu_container.add_child(_title)
+
+	var subtitle := Label.new()
+	subtitle.name = "Subtitle"
+	subtitle.text = "BUILD. FIGHT. REWRITE THE RULES."
+	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	subtitle.add_theme_font_size_override("font_size", 13)
+	subtitle.add_theme_color_override("font_color", Color(0.58, 0.7, 0.86))
+	_menu_container.add_child(subtitle)
 
 	_menu_container.add_child(HSeparator.new())
 
 	# Play Button
 	_play_btn = _create_menu_button("menu_play", "Start Game")
+	_play_btn.name = "PlayButton"
+	_style_primary_button(_play_btn)
 	_play_btn.pressed.connect(_on_play_pressed)
 	_menu_container.add_child(_play_btn)
 
+	_showcase_btn = _create_menu_button("menu_showcase", "Showcase")
+	_showcase_btn.name = "ShowcaseButton"
+	_showcase_btn.pressed.connect(_on_showcase_pressed)
+	_menu_container.add_child(_showcase_btn)
+
 	# Multiplayer Button
 	_multiplayer_btn = _create_menu_button("menu_multiplayer", "Multiplayer")
+	_multiplayer_btn.name = "MultiplayerButton"
 	_multiplayer_btn.pressed.connect(_on_multiplayer_pressed)
 	_menu_container.add_child(_multiplayer_btn)
 
 	# Options Button
 	_options_btn = _create_menu_button("menu_options", "Options")
+	_options_btn.name = "OptionsButton"
 	_options_btn.pressed.connect(_on_options_pressed)
 	_menu_container.add_child(_options_btn)
 
 	# Mods Button
 	_mods_btn = _create_menu_button("menu_mods", "Mods")
+	_mods_btn.name = "ModsButton"
 	_mods_btn.pressed.connect(_on_mods_pressed)
 	_menu_container.add_child(_mods_btn)
 
@@ -214,13 +287,41 @@ func _build_menu_ui() -> void:
 
 	# Editor Button
 	_editor_btn = _create_menu_button("menu_editor", "Editor")
+	_editor_btn.name = "EditorButton"
 	_editor_btn.pressed.connect(_on_editor_pressed)
 	_menu_container.add_child(_editor_btn)
 
 	# Quit Button (last)
 	_quit_btn = _create_menu_button("menu_quit", "Quit")
+	_quit_btn.name = "QuitButton"
 	_quit_btn.pressed.connect(_on_quit_pressed)
 	_menu_container.add_child(_quit_btn)
+
+	_menu_hint = Label.new()
+	_menu_hint.name = "MenuHint"
+	_menu_hint.text = "Launch the current single-player build."
+	_menu_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_menu_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_menu_hint.custom_minimum_size.y = 34
+	_menu_hint.add_theme_font_size_override("font_size", 12)
+	_menu_hint.add_theme_color_override("font_color", Color(0.62, 0.7, 0.8))
+	_menu_container.add_child(_menu_hint)
+
+	_connect_menu_hint(_play_btn, "Launch the current single-player build.")
+	_connect_menu_hint(_showcase_btn, "Tour the maintained gameplay showcase and capture route.")
+	_connect_menu_hint(_multiplayer_btn, "Host or join through the maintained multiplayer menu.")
+	_connect_menu_hint(_options_btn, "Adjust controls, audio, graphics, and accessibility.")
+	_connect_menu_hint(_mods_btn, "Review installed mods and local package state.")
+	_connect_menu_hint(_editor_btn, "Open the showcase with editor participation enabled.")
+	_connect_menu_hint(_quit_btn, "Exit MODUS after confirmation.")
+
+	var version := Label.new()
+	version.name = "VersionLabel"
+	version.text = "VERSION %s" % GameManager.GAME_VERSION
+	version.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	version.add_theme_font_size_override("font_size", 11)
+	version.add_theme_color_override("font_color", Color(0.48, 0.55, 0.66))
+	_menu_container.add_child(version)
 
 
 func _create_menu_button(loc_key: String, fallback: String) -> Button:
@@ -232,7 +333,8 @@ func _create_menu_button(loc_key: String, fallback: String) -> Button:
 	else:
 		btn = Button.new()
 
-	btn.custom_minimum_size = Vector2(200, 40)
+	btn.custom_minimum_size = Vector2(280, 48)
+	btn.focus_mode = Control.FOCUS_ALL
 
 	# Try to localize
 	var localization: Node = GameManager.get_core_system("localization")
@@ -245,10 +347,90 @@ func _create_menu_button(loc_key: String, fallback: String) -> Button:
 	return btn
 
 
+func _connect_menu_hint(button: Button, hint: String) -> void:
+	button.focus_entered.connect(_set_menu_hint.bind(hint))
+	button.mouse_entered.connect(_set_menu_hint.bind(hint))
+
+
+func _set_menu_hint(hint: String) -> void:
+	if _menu_hint:
+		_menu_hint.text = hint
+
+
+func _create_menu_panel_style() -> StyleBoxFlat:
+	var panel := StyleBoxFlat.new()
+	panel.bg_color = Color(0.035, 0.045, 0.07, 0.96)
+	panel.border_color = Color(0.2, 0.38, 0.62, 0.85)
+	panel.set_border_width_all(1)
+	panel.set_corner_radius_all(12)
+	panel.shadow_color = Color(0.0, 0.0, 0.0, 0.55)
+	panel.shadow_size = 24
+	panel.shadow_offset = Vector2(0, 10)
+	return panel
+
+
+func _style_primary_button(button: Button) -> void:
+	var normal := StyleBoxFlat.new()
+	normal.bg_color = Color(0.12, 0.38, 0.68)
+	normal.border_color = Color(0.42, 0.72, 1.0)
+	normal.set_border_width_all(1)
+	normal.set_corner_radius_all(6)
+	normal.content_margin_top = 12
+	normal.content_margin_bottom = 12
+	var hover: StyleBoxFlat = normal.duplicate()
+	hover.bg_color = Color(0.16, 0.48, 0.82)
+	var pressed: StyleBoxFlat = normal.duplicate()
+	pressed.bg_color = Color(0.09, 0.3, 0.56)
+	var focus: StyleBoxFlat = normal.duplicate()
+	focus.border_color = Color(0.78, 0.91, 1.0)
+	focus.set_border_width_all(2)
+	var disabled: StyleBoxFlat = normal.duplicate()
+	disabled.bg_color = Color(0.08, 0.12, 0.18)
+	disabled.border_color = Color(0.28, 0.36, 0.46, 0.65)
+	button.add_theme_stylebox_override("normal", normal)
+	button.add_theme_stylebox_override("hover", hover)
+	button.add_theme_stylebox_override("pressed", pressed)
+	button.add_theme_stylebox_override("focus", focus)
+	button.add_theme_stylebox_override("disabled", disabled)
+	button.add_theme_color_override("font_color", Color.WHITE)
+	button.add_theme_color_override("font_hover_color", Color.WHITE)
+	button.add_theme_color_override("font_disabled_color", Color(0.55, 0.62, 0.72))
+
+
+func _update_responsive_layout() -> void:
+	if not _safe_margins or not _menu_panel or not _title:
+		return
+	var narrow := size.x < 720.0 or size.y < 720.0
+	var edge := 18 if narrow else 40
+	for side: String in ["margin_left", "margin_right", "margin_top", "margin_bottom"]:
+		_safe_margins.add_theme_constant_override(side, edge)
+	_menu_panel.custom_minimum_size.x = minf(420.0, maxf(280.0, size.x - edge * 2.0))
+	_title.add_theme_font_size_override("font_size", 46 if narrow else 64)
+	if _menu_side:
+		_menu_side.custom_minimum_size.x = 0.0 if narrow else 480.0
+		_menu_side.size_flags_horizontal = (
+			Control.SIZE_EXPAND_FILL if narrow else Control.SIZE_SHRINK_BEGIN
+		)
+	if _art_space:
+		_art_space.visible = not narrow
+
+
+func _is_reduced_motion() -> bool:
+	var ui_service := UISystem.get_service()
+	return (
+		ui_service
+		and ui_service.theme_manager
+		and ui_service.theme_manager.has_method("is_reduced_motion")
+		and ui_service.theme_manager.is_reduced_motion()
+	)
+
+
 func _setup_focus() -> void:
 	var buttons: Array[Control] = []
 	if _play_btn:
 		buttons.append(_play_btn)
+	if _showcase_btn:
+		buttons.append(_showcase_btn)
 	if _multiplayer_btn:
 		buttons.append(_multiplayer_btn)
 	if _options_btn:
@@ -261,6 +443,9 @@ func _setup_focus() -> void:
 		buttons.append(_quit_btn)
 
 	register_focus_controls(buttons, "main_menu")
+	for i: int in range(buttons.size()):
+		buttons[i].focus_neighbor_top = buttons[(i - 1 + buttons.size()) % buttons.size()].get_path()
+		buttons[i].focus_neighbor_bottom = buttons[(i + 1) % buttons.size()].get_path()
 
 
 # ============================================================================
@@ -269,18 +454,22 @@ func _setup_focus() -> void:
 
 
 func _on_play_pressed() -> void:
-	# Launch singleplayer game
-	if ResourceLoader.exists(WORLD_SCENE):
-		# Set state to INITIALIZING so world.gd doesn't self-destruct
-		GameManager.change_state(GameManager.State.INITIALIZING)
+	_launch_scene(WORLD_SCENE)
 
-		# Clear UI screens first, then change scene
-		var us := UISystem.get_service()
-		if us and us.ui_manager:
-			us.ui_manager.clear_all()
-		get_tree().change_scene_to_file(WORLD_SCENE)
-	else:
-		push_error("[MainMenuScreen] World scene not found: %s" % WORLD_SCENE)
+
+func _on_showcase_pressed() -> void:
+	_launch_scene(SHOWCASE_SCENE)
+
+
+func _launch_scene(scene_path: String) -> void:
+	if not ResourceLoader.exists(scene_path):
+		push_error("[MainMenuScreen] Scene not found: %s" % scene_path)
+		return
+	GameManager.change_state(GameManager.State.INITIALIZING)
+	var ui_service := UISystem.get_service()
+	if ui_service and ui_service.ui_manager:
+		ui_service.ui_manager.clear_all()
+	get_tree().change_scene_to_file(scene_path)
 
 
 func _on_multiplayer_pressed() -> void:
@@ -297,22 +486,14 @@ func _on_multiplayer_pressed() -> void:
 
 
 func _on_options_pressed() -> void:
-	print("[MainMenu] Options button pressed")
-	print("[MainMenu] OPTIONS_SCREEN exists: ", ResourceLoader.exists(OPTIONS_SCREEN))
-	
 	if ResourceLoader.exists(OPTIONS_SCREEN):
-		print("[MainMenu] Calling navigate_to...")
 		navigate_to(OPTIONS_SCREEN)
 	else:
 		push_error("[MainMenuScreen] Options screen not found: %s" % OPTIONS_SCREEN)
 
 
 func _on_mods_pressed() -> void:
-	print("[MainMenu] Mods button pressed")
-	print("[MainMenu] MOD_MANAGER_SCREEN exists: ", ResourceLoader.exists(MOD_MANAGER_SCREEN))
-	
 	if ResourceLoader.exists(MOD_MANAGER_SCREEN):
-		print("[MainMenu] Calling show_modal...")
 		# Open as modal so we don't lose the 3D background
 		show_modal(MOD_MANAGER_SCREEN, {"block_input": true})
 	else:
@@ -346,17 +527,7 @@ func _on_editor_pressed() -> void:
 	var globals: Node = GameManager.get_core_system("globals")
 	if globals and "join_as_editor" in globals:
 		globals.join_as_editor = true
-	GameManager.change_state(GameManager.State.INITIALIZING)
-
-	if ResourceLoader.exists(SHOWCASE_SCENE):
-		# Clear UI screens first
-		var us := UISystem.get_service()
-		if us and us.ui_manager:
-			us.ui_manager.clear_all()
-
-		get_tree().change_scene_to_file(SHOWCASE_SCENE)
-	else:
-		push_error("[MainMenuScreen] Showcase scene not found: %s" % SHOWCASE_SCENE)
+	_launch_scene(SHOWCASE_SCENE)
 
 
 # ============================================================================
@@ -370,14 +541,21 @@ func _on_language_changed(_lang: String) -> void:
 		return
 	
 	if _play_btn:
-		_play_btn.text = localization.translate("menu_play")
+		_play_btn.text = _translate_or_fallback(localization, "menu_play", "Play")
+	if _showcase_btn:
+		_showcase_btn.text = _translate_or_fallback(localization, "menu_showcase", "Showcase")
 	if _multiplayer_btn:
-		_multiplayer_btn.text = localization.translate("menu_multiplayer")
+		_multiplayer_btn.text = _translate_or_fallback(localization, "menu_multiplayer", "Multiplayer")
 	if _options_btn:
-		_options_btn.text = localization.translate("menu_options")
+		_options_btn.text = _translate_or_fallback(localization, "menu_options", "Options")
 	if _mods_btn:
-		_mods_btn.text = localization.translate("menu_mods")
+		_mods_btn.text = _translate_or_fallback(localization, "menu_mods", "Mods")
 	if _editor_btn:
-		_editor_btn.text = localization.translate("menu_editor")
+		_editor_btn.text = _translate_or_fallback(localization, "menu_editor", "Editor")
 	if _quit_btn:
-		_quit_btn.text = localization.translate("menu_quit")
+		_quit_btn.text = _translate_or_fallback(localization, "menu_quit", "Quit")
+
+
+func _translate_or_fallback(localization: Node, key: String, fallback: String) -> String:
+	var translated: String = localization.translate(key)
+	return translated if translated != key else fallback

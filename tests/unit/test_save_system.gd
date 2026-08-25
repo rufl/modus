@@ -69,6 +69,36 @@ func test_save_file_creation() -> void:
 # Save File Loading Tests (Requirement 9.2)
 # ============================================================================
 
+func test_slot_save_exists_and_delete_use_current_format() -> void:
+	assert_not_null(save_system, "Save system should exist")
+	var slot := "gut_slot_contract"
+	save_system.delete_save(slot)
+
+	assert_true(save_system.save_data(slot, {"version": "1.0", "value": 42}))
+	assert_true(save_system.save_exists(slot), "Current .sav slot should be discoverable")
+	var saves: Array = save_system.get_all_saves()
+	assert_true(
+		saves.any(func(entry: Dictionary) -> bool: return entry.get("slot_name", "") == slot),
+		"Current slot should appear in save listings"
+	)
+
+	save_system.delete_save(slot)
+	assert_false(save_system.save_exists(slot), "Delete should remove the current slot format")
+
+
+func test_game_state_score_keys_restore_as_peer_ids() -> void:
+	var state_script := load("res://game/scripts/features/gameplay/game_state_manager.gd") as Script
+	var state_manager: Node = state_script.new()
+	var normalized: Dictionary = state_manager.call(
+		"_normalize_player_scores", {"1": {"score": 10}, 2: {"score": 20}, "invalid": {}}
+	)
+	assert_true(normalized.has(1), "JSON string keys should restore as integer peer IDs")
+	assert_true(normalized.has(2), "Existing integer peer IDs should be preserved")
+	assert_false(normalized.has("1"), "String peer IDs should not leak into MatchService")
+	assert_false(normalized.has("invalid"), "Invalid peer IDs should be ignored")
+	state_manager.free()
+
+
 func test_save_file_loading() -> void:
 	assert_not_null(save_system, "Save system should exist")
 	

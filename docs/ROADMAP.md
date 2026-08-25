@@ -2,20 +2,20 @@
 
 > **Documentation status: maintained reference.** This document expands the root roadmap by product area. It does not promote implementation presence into runtime or release proof.
 
-**Updated:** July 19, 2026  
+**Updated:** August 4, 2026
 **Current version:** `0.9.5-beta`  
 **Current readiness:** NOT READY
 
 ## Current Evidence Boundary
 
-- Retained complete full suite: PASS at 1431/1431 with 20,362 assertions and no risky/pending tests or GUT orphans (July 19).
-- Latest strict aggregate attempt: complete in 1770.186 seconds under a 2400-second evidence ceiling; the full green summary is retained.
-- Latest batched lane report, `AUTOMATED_TEST_LANES_REPORT.md`: July 19 passes all selected lanes — Unit 1056/1056, Integration 200/200, and Property 175/175; Benchmark is skipped.
+- Current complete full suite: PASS at 1440/1440 with 20,475 assertions and no risky/pending tests or GUT orphans (August 4).
+- Latest strict aggregate attempt: complete in 702.76 seconds under a bounded 3600-second run; the full green summary is retained, with six engine-exit ObjectDB leak diagnostics still visible.
+- Latest lane report, `AUTOMATED_TEST_LANES_REPORT.md`: August 1 Unit passes 1056/1056 and Property passes 175/175; July 19 Integration 200/200 is retained; Benchmark is skipped.
 - Focused source-shape/resource/editor-registry proof passes 37/37 with 172 assertions and zero GUT orphans; four named loot-prop scene types remain explicit missing content.
 - Manual gameplay: 0 imported evidence files / 0.00 recorded hours.
 - Performance: one bounded 66.4-second, 130-sample showcase capture; production targets remain unproven.
 - Release: blocked at `0.9.5-beta`.
-- Production report: NOT READY with 2 validator-tracked evidence blockers: manual evidence and release version; licensing/provenance clearance remains a separate open release gap.
+- Production report: NOT READY with 2 validator-tracked evidence blockers: manual evidence and release version; 212 of 220 provenance-ledger rows remain a separate open release gap.
 
 See [Documentation Truth](DOCUMENTATION_TRUTH.md) and [Current Status](CURRENT_STATUS.md) for details.
 
@@ -32,8 +32,8 @@ See [Documentation Truth](DOCUMENTATION_TRUTH.md) and [Current Status](CURRENT_S
 
 | Area | Source status | Required proof/hardening |
 | --- | --- | --- |
-| Movement/combat/weapons/enemies | Broad code and scenes exist | Normal-window golden-demo observation and tuning |
-| Showcase | Structure tests pass | Manual route, screenshots/video, and issue log |
+| Movement/combat/weapons/enemies | Eight-step automated golden-demo runtime smoke passes; 20-item F8 human recorder workflow is ready | Reviewed human feel, failure recovery, and tuning observations |
+| Showcase | Structure tests pass; localized gamepad-ready welcome/evidence panel is focused-proven and captured at wide/narrow resolutions | Manual gameplay route, video, and issue log |
 | AI/navigation | Focused tests pass in several lanes | Real map behavior, stress, and long-session stability |
 | Splitscreen | Manager/gameplay/stress contracts pass | Real controllers, viewport/UI, audio, and performance evidence |
 
@@ -51,6 +51,7 @@ See [Documentation Truth](DOCUMENTATION_TRUTH.md) and [Current Status](CURRENT_S
 
 | Area | Source status | Required proof/hardening |
 | --- | --- | --- |
+| Main menu and mod workflow | Artwork/showcase/help/responsive/focus/version/welcome/mod/skill-tree contracts pass 26/26 with 109 assertions; recorder/timer passes 2/2 with 21 assertions and a compact 800×600 capture | Run and review the manual menu/input observations |
 | Level serialization/export | Focused round-trip passes | Live editor UI authoring workflow |
 | Standalone undo/redo | Generic support exists; standalone command TODOs remain | Implement and exercise user-visible history |
 | Mod loader/SDK | Focused integration/sample proof passes | Distribution packaging and multiplayer behavior |
@@ -74,7 +75,7 @@ Historical “all tasks complete” map-generator notes are implementation snaps
 3. Test at least one lower-end target and one long session.
 4. Review spikes, memory, gameplay anomalies, and teardown leaks—not only average FPS.
 5. Build/package supported targets and produce a known-limits matrix.
-6. Complete the asset/code provenance ledger and retain all required third-party license material.
+6. Clear, exclude, or replace all 212 non-cleared provenance rows and inspect packaged notices.
 7. Promote release wording only after all readiness validators and distribution-clearance checks agree.
 
 ## Exit Criteria for a 1.0 Candidate
@@ -86,3 +87,4 @@ Historical “all tasks complete” map-generator notes are implementation snaps
 - Proven multiplayer and packaging scope.
 - Current docs contain no project-wide claims stronger than the evidence.
 - `tools/validate_production_readiness.sh --run-godot-tests --strict` passes.
+- `tools/generate_provenance_ledger.py --strict` passes and packaged notices are inspected.

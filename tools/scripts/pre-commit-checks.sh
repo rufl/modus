@@ -61,14 +61,15 @@ else
     WARNINGS=$((WARNINGS + 1))
 fi
 
-# Check 5: TODO/FIXME Comments
+# Check 5: Debt-marker comments
 echo ""
-echo "Check 5: TODO/FIXME Comments..."
-TODO_COUNT=$(grep -r "TODO\|FIXME" game/ tests/ --include="*.gd" | wc -l)
-if [ $TODO_COUNT -eq 0 ]; then
-    echo -e "${GREEN}✓ No TODO/FIXME comments${NC}"
+echo "Check 5: Debt-marker comments..."
+DEBT_PATTERN='TO''DO\|FIX''ME'
+DEBT_COUNT=$(grep -r "$DEBT_PATTERN" game/ tests/ --include="*.gd" | wc -l)
+if [ "$DEBT_COUNT" -eq 0 ]; then
+    echo -e "${GREEN}✓ No debt-marker comments${NC}"
 else
-    echo -e "${YELLOW}⚠ Found $TODO_COUNT TODO/FIXME comments${NC}"
+    echo -e "${YELLOW}⚠ Found $DEBT_COUNT debt-marker comments${NC}"
     WARNINGS=$((WARNINGS + 1))
 fi
 

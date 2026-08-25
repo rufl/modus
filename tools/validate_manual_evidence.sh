@@ -70,11 +70,19 @@ generated_date="$(date +%Y-%m-%d)"
 manual_checklist="tests/docs/MANUAL_PLAYER_EXPERIENCE_TESTS.md"
 manual_timing_doc="tests/docs/MANUAL_TEST_TIMING.md"
 manual_timer="tests/manual/manual_test_timer.gd"
+manual_overlay="tests/manual/manual_evidence_overlay.tscn"
+manual_overlay_script="tests/manual/manual_evidence_overlay.gd"
+manual_session_script="tests/manual/manual_showcase_session.gd"
+manual_runner="tools/run_manual_showcase_session.sh"
 
 required_files=(
   "$manual_checklist"
   "$manual_timing_doc"
   "$manual_timer"
+  "$manual_overlay"
+  "$manual_overlay_script"
+  "$manual_session_script"
+  "$manual_runner"
 )
 
 missing_files=()
@@ -91,13 +99,15 @@ if [[ -d "$logs_dir" ]]; then
   done < <(find "$logs_dir" -type f -name '*.csv' | sort)
 fi
 
-total_duration="0"
+total_session_duration="0"
+validated_duration="0"
 total_tests=0
 passed=0
 failed=0
 skipped=0
 incomplete=0
 malformed=0
+missing_metadata=0
 
 add_float() {
   awk -v left="$1" -v right="$2" 'BEGIN { printf "%.2f", left + right }'
@@ -118,10 +128,15 @@ for file in "${csv_files[@]}"; do
     continue
   fi
 
-  file_summary_duration="$(awk -F, '$1 == "total_duration" && $2 ~ /^[0-9]+([.][0-9]+)?$/ { value = $2 } END { if (value != "") print value }' "$file")"
   file_test_duration="$(awk -F, '
+    BEGIN { session_duration = -1; summary_test_time = -1 }
     /^# Session Summary/ { in_summary = 1; next }
-    in_summary { next }
+    in_summary {
+      if ($1 == "total_duration" && $2 ~ /^[0-9]+([.][0-9]+)?$/) session_duration = $2
+      else if ($1 == "total_test_time" && $2 ~ /^[0-9]+([.][0-9]+)?$/) summary_test_time = $2
+      else if ($1 ~ /^metadata_(tester|os|renderer|resolution|input_devices|scene|build_identity)$/ && length($2) > 0) metadata[$1] = 1
+      next
+    }
     NR == 1 || NF == 0 { next }
     NF < 4 { bad += 1; next }
     $3 !~ /^[0-9]+([.][0-9]+)?$/ { bad += 1; next }
@@ -132,18 +147,28 @@ for file in "${csv_files[@]}"; do
       else if ($4 == "fail") failed += 1
       else if ($4 == "skip") skipped += 1
       else incomplete += 1
+      if (($4 == "fail" || $4 == "skip") && length($5) == 0) bad += 1
     }
     END {
-      printf "%.2f %d %d %d %d %d %d\n", sum, tests, passed, failed, skipped, incomplete, bad
+      printf "%.2f %d %d %d %d %d %d %.2f %.2f %d\n", sum, tests, passed, failed, skipped, incomplete, bad, session_duration, summary_test_time, length(metadata)
     }
   ' "$file")"
 
-  read -r duration tests file_passed file_failed file_skipped file_incomplete file_bad <<< "$file_test_duration"
+  read -r duration tests file_passed file_failed file_skipped file_incomplete file_bad session_duration summary_test_time metadata_count <<< "$file_test_duration"
 
-  if [[ -n "$file_summary_duration" ]]; then
-    total_duration="$(add_float "$total_duration" "$file_summary_duration")"
+  if awk -v value="$session_duration" 'BEGIN { exit !(value >= 0) }'; then
+    total_session_duration="$(add_float "$total_session_duration" "$session_duration")"
   else
-    total_duration="$(add_float "$total_duration" "$duration")"
+    total_session_duration="$(add_float "$total_session_duration" "$duration")"
+    file_bad=$((file_bad + 1))
+  fi
+  validated_duration="$(add_float "$validated_duration" "$duration")"
+
+  if ! awk -v rows="$duration" -v summary="$summary_test_time" 'BEGIN { delta = rows - summary; if (delta < 0) delta = -delta; exit !(summary >= 0 && delta <= 0.25) }'; then
+    file_bad=$((file_bad + 1))
+  fi
+  if [[ "$metadata_count" -lt 7 ]]; then
+    missing_metadata=$((missing_metadata + 7 - metadata_count))
   fi
 
   total_tests=$((total_tests + tests))
@@ -154,7 +179,8 @@ for file in "${csv_files[@]}"; do
   malformed=$((malformed + file_bad))
 done
 
-total_hours="$(to_hours "$total_duration")"
+total_hours="$(to_hours "$validated_duration")"
+session_hours="$(to_hours "$total_session_duration")"
 status="BLOCKED"
 status_note=""
 
@@ -170,13 +196,19 @@ elif [[ "${#csv_files[@]}" -eq 0 ]]; then
 elif [[ "$malformed" -gt 0 ]]; then
   status="FAIL"
   status_note="One or more manual evidence logs are malformed."
+elif [[ "$missing_metadata" -gt 0 ]]; then
+  status="FAIL"
+  status_note="One or more manual evidence logs are missing required session metadata."
 elif [[ "$total_tests" -eq 0 ]]; then
   status="BLOCKED"
   status_note="Manual evidence logs contain no completed test rows."
 elif [[ "$failed" -gt 0 ]]; then
   status="FAIL"
   status_note="Manual evidence logs contain failed test rows."
-elif is_below_min_hours "$total_duration" "$min_hours"; then
+elif [[ "$incomplete" -gt 0 ]]; then
+  status="FAIL"
+  status_note="Manual evidence logs contain incomplete or unknown test results."
+elif is_below_min_hours "$validated_duration" "$min_hours"; then
   status="BLOCKED"
   status_note="Logged manual testing hours are below the required threshold."
 else
@@ -199,14 +231,16 @@ mkdir -p "$(dirname "$report_path")"
   printf '%s\n' "- Status: ${status}"
   printf '%s\n' "- Note: ${status_note}"
   printf '%s\n' "- CSV files scanned: ${#csv_files[@]}"
-  printf '%s\n' "- Logged hours: ${total_hours}"
-  printf '%s\n' "- Logged seconds: ${total_duration}"
+  printf '%s\n' "- Validated test hours: ${total_hours}"
+  printf '%s\n' "- Validated test seconds: ${validated_duration}"
+  printf '%s\n' "- Total session hours including recorder overhead: ${session_hours}"
   printf '%s\n' "- Total tests: ${total_tests}"
   printf '%s\n' "- Passed: ${passed}"
   printf '%s\n' "- Failed: ${failed}"
   printf '%s\n' "- Skipped: ${skipped}"
   printf '%s\n' "- Incomplete/other: ${incomplete}"
-  printf '%s\n\n' "- Malformed rows/files: ${malformed}"
+  printf '%s\n' "- Malformed rows/files: ${malformed}"
+  printf '%s\n\n' "- Missing required metadata fields: ${missing_metadata}"
 
   printf '## Source-Audit Prerequisites\n\n'
   printf '| File | Status |\n'
@@ -229,8 +263,8 @@ mkdir -p "$(dirname "$report_path")"
   fi
 
   printf '\n## Follow-Up\n\n'
-  printf '%s\n' '- Run manual sessions with `tests/manual/manual_test_timer.gd` enabled.'
-  printf '%s\n' '- Keep the exported CSV logs under the configured evidence directory before rerunning this validator.'
+  printf '%s\n' '- Run `tools/run_manual_showcase_session.sh --tester NAME --input DEVICES` in a normal graphical session.'
+  printf '%s\n' '- Review every row honestly; FAIL and SKIP require notes, and recorder overhead does not count toward the threshold.'
   printf '%s\n' '- Update `docs/CURRENT_STATUS.md` only after this report shows PASS and gameplay observations have been reviewed.'
 } > "$report_path"
 

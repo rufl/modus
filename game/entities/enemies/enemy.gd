@@ -160,7 +160,12 @@ func _ready() -> void:
 	# 1. Load Data
 	var gm: Node = get_node_or_null("/root/GameManager")
 	var data_service: Node = gm.get_core_system("data") if gm else null
-	var data: Dictionary = data_service.get_enemy_data(enemy_id) if data_service else {}
+	var data: Dictionary = {}
+	if has_meta("enemy_builder_data"):
+		data = (get_meta("enemy_builder_data") as Dictionary).duplicate(true)
+		remove_meta("enemy_builder_data")
+	elif data_service:
+		data = data_service.get_enemy_data(enemy_id)
 
 	# Register in enemies group (once only)
 	if not is_in_group("enemies"):

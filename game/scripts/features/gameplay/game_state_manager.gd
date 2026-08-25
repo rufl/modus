@@ -201,7 +201,21 @@ func _deserialize_match(data: Dictionary) -> void:
 		gs.match_service.time_left = data.get("time_left", 0.0)
 		gs.match_service.current_match_state = data.get("state", 0)
 		if data.has("scores"):
-			gs.match_service.player_scores = data["scores"]
+			gs.match_service.player_scores = _normalize_player_scores(data["scores"])
+
+
+func _normalize_player_scores(scores: Dictionary) -> Dictionary:
+	var normalized: Dictionary = {}
+	for raw_peer_id: Variant in scores:
+		var peer_id: int
+		if raw_peer_id is int:
+			peer_id = raw_peer_id
+		elif str(raw_peer_id).is_valid_int():
+			peer_id = int(raw_peer_id)
+		else:
+			continue
+		normalized[peer_id] = scores[raw_peer_id]
+	return normalized
 
 
 func _serialize_players() -> Array:
@@ -213,7 +227,7 @@ func _serialize_players() -> Array:
 			var health_val: float = 100.0
 			var armor_val: float = 0.0
 			var weapon_idx: int = 0
-			var ammo_data: Array = []
+			var ammo_data: Dictionary = {}
 
 			if "health_component" in node and node.health_component:
 				health_val = node.health_component.current_health
@@ -221,7 +235,7 @@ func _serialize_players() -> Array:
 
 			if "weapon_manager" in node and node.weapon_manager:
 				weapon_idx = node.weapon_manager.current_weapon_index
-				ammo_data = node.weapon_manager.weapon_ammo.duplicate(true)
+				ammo_data = node.weapon_manager.get_ammo_data()
 
 			var player_data: Dictionary = {
 				"peer_id": node.get_multiplayer_authority(),
@@ -259,13 +273,15 @@ func _deserialize_players(data: Array) -> void:
 					node.weapon_manager.switch_to_weapon(saved_idx)
 
 					if player_data.has("weapon_ammo"):
-						var saved_ammo: Array = player_data["weapon_ammo"]
-						var limit: int = mini(
-							saved_ammo.size(), node.weapon_manager.weapon_ammo.size()
-						)
-						for i in range(limit):
-							node.weapon_manager.weapon_ammo[i] = saved_ammo[i]
-						node.weapon_manager.emit_ammo_update()
+						var saved_ammo: Variant = player_data["weapon_ammo"]
+						if saved_ammo is Dictionary:
+							node.weapon_manager.apply_ammo_data(saved_ammo)
+						elif saved_ammo is Array and node.weapon_manager.ammo_system:
+							var current_ammo: Array = node.weapon_manager.ammo_system.weapon_ammo
+							var limit: int = mini(saved_ammo.size(), current_ammo.size())
+							for i in range(limit):
+								current_ammo[i] = saved_ammo[i]
+							node.weapon_manager.ammo_system.emit_ammo_update()
 				break
 
 
@@ -425,34 +441,19 @@ func _array_to_vec3(arr: Array) -> Vector3:
 
 
 func get_save_list() -> Array[Dictionary]:
-	var saves: Array[Dictionary] = []
-
-	for slot in save_slots:
-		var save_path: String = SAVE_DIR + slot + ".json"
-		if FileAccess.file_exists(save_path):
-			var file: FileAccess = FileAccess.open(save_path, FileAccess.READ)
-			if file:
-				var json: JSON = JSON.new()
-				if json.parse(file.get_as_text()) == OK:
-					saves.append(
-						{
-							"slot": slot,
-							"timestamp": json.data.get("timestamp", "Unknown"),
-							"version": json.data.get("version", "0.0")
-						}
-					)
-				file.close()
-
-	return saves
+	var save_svc: Node = GameManager.get_core_system("save")
+	if save_svc and save_svc.has_method("get_all_saves"):
+		return save_svc.get_all_saves()
+	return []
 
 
 ## Delete a save
 
 
 func delete_save(slot: String) -> void:
-	var save_path: String = SAVE_DIR + slot + ".json"
-	if FileAccess.file_exists(save_path):
-		DirAccess.remove_absolute(save_path)
+	var save_svc: Node = GameManager.get_core_system("save")
+	if save_svc and save_svc.has_method("delete_save"):
+		save_svc.delete_save(slot)
 	GameManager.get_core_system("logger").info(
 		"[GameStateManager] Deleted save: " + " " + str(slot), "Core"
 	)
@@ -462,4 +463,5 @@ func delete_save(slot: String) -> void:
 
 
 func save_exists(slot: String) -> bool:
-	return FileAccess.file_exists(SAVE_DIR + slot + ".json")
+	var save_svc: Node = GameManager.get_core_system("save")
+	return save_svc and save_svc.has_method("save_exists") and save_svc.save_exists(slot)

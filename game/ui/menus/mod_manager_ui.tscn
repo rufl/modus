@@ -1,6 +1,21 @@
-[gd_scene format=3 uid="uid://df4m8k2vnrp5q"]
+[gd_scene load_steps=2 format=3 uid="uid://df4m8k2vnrp5q"]
 
 [ext_resource type="Script" path="res://game/ui/menus/mod_manager_ui.gd" id="1_script"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_panel"]
+bg_color = Color(0.035, 0.045, 0.07, 0.98)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2, 0.38, 0.62, 0.9)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0, 0, 0, 0.55)
+shadow_size = 24
+shadow_offset = Vector2(0, 10)
 
 [node name="ModManagerUI" type="Control"]
 layout_mode = 3
@@ -11,119 +26,183 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_script")
 
-[node name="Background" type="Panel" parent="."]
+[node name="Background" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-modulate = Color(0, 0, 0, 0.8)
+mouse_filter = 2
+color = Color(0.01, 0.015, 0.03, 0.82)
 
-[node name="MainContainer" type="HBoxContainer" parent="."]
+[node name="SafeMargins" type="MarginContainer" parent="."]
+unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -400.0
-offset_top = -250.0
-offset_right = 400.0
-offset_bottom = 250.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 20
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
 
-[node name="LeftPanel" type="VBoxContainer" parent="MainContainer"]
+[node name="CenterContainer" type="CenterContainer" parent="SafeMargins"]
+layout_mode = 2
+
+[node name="MainPanel" type="PanelContainer" parent="SafeMargins/CenterContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(880, 520)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_panel")
+
+[node name="PanelMargins" type="MarginContainer" parent="SafeMargins/CenterContainer/MainPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 22
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 22
+
+[node name="MainContainer" type="BoxContainer" parent="SafeMargins/CenterContainer/MainPanel/PanelMargins"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="LeftPanel" type="VBoxContainer" parent="SafeMargins/CenterContainer/MainPanel/PanelMargins/MainContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 3
 theme_override_constants/separation = 10
 
-[node name="Title" type="Label" parent="MainContainer/LeftPanel"]
+[node name="Title" type="Label" parent="SafeMargins/CenterContainer/MainPanel/PanelMargins/MainContainer/LeftPanel"]
+unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color(0.94, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 30
 text = "Mod Manager"
 horizontal_alignment = 1
 
-[node name="ScrollContainer" type="ScrollContainer" parent="MainContainer/LeftPanel"]
+[node name="ScrollContainer" type="ScrollContainer" parent="SafeMargins/CenterContainer/MainPanel/PanelMargins/MainContainer/LeftPanel"]
+custom_minimum_size = Vector2(0, 220)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="ModList" type="VBoxContainer" parent="MainContainer/LeftPanel/ScrollContainer"]
+[node name="ModList" type="VBoxContainer" parent="SafeMargins/CenterContainer/MainPanel/PanelMargins/MainContainer/LeftPanel/ScrollContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 5
+theme_override_constants/separation = 6
 
-[node name="ButtonRow" type="HBoxContainer" parent="MainContainer/LeftPanel"]
+[node name="OrderActions" type="HBoxContainer" parent="SafeMargins/CenterContainer/MainPanel/PanelMargins/MainContainer/LeftPanel"]
 layout_mode = 2
+theme_override_constants/separation = 8
 
-[node name="MoveUpButton" type="Button" parent="MainContainer/LeftPanel/ButtonRow"]
+[node name="MoveUpButton" type="Button" parent="SafeMargins/CenterContainer/MainPanel/PanelMargins/MainContainer/LeftPanel/OrderActions"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 2
+disabled = true
+text = "Move Up"
+
+[node name="MoveDownButton" type="Button" parent="SafeMargins/CenterContainer/MainPanel/PanelMargins/MainContainer/LeftPanel/OrderActions"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 2
+disabled = true
+text = "Move Down"
+
+[node name="RightPanel" type="VBoxContainer" parent="SafeMargins/CenterContainer/MainPanel/PanelMargins/MainContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "▲ Move Up"
-
-[node name="MoveDownButton" type="Button" parent="MainContainer/LeftPanel/ButtonRow"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-text = "▼ Move Down"
-
-[node name="RightPanel" type="VBoxContainer" parent="MainContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
+size_flags_vertical = 3
 theme_override_constants/separation = 10
 
-[node name="InfoTitle" type="Label" parent="MainContainer/RightPanel"]
+[node name="InfoTitle" type="Label" parent="SafeMargins/CenterContainer/MainPanel/PanelMargins/MainContainer/RightPanel"]
+unique_name_in_owner = true
 layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.9, 1, 1)
 theme_override_font_sizes/font_size = 20
 text = "Mod Information"
 horizontal_alignment = 1
 
-[node name="InfoPanel" type="PanelContainer" parent="MainContainer/RightPanel"]
+[node name="InfoPanel" type="PanelContainer" parent="SafeMargins/CenterContainer/MainPanel/PanelMargins/MainContainer/RightPanel"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="InfoVBox" type="VBoxContainer" parent="MainContainer/RightPanel/InfoPanel"]
+[node name="InfoMargins" type="MarginContainer" parent="SafeMargins/CenterContainer/MainPanel/PanelMargins/MainContainer/RightPanel/InfoPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="InfoVBox" type="VBoxContainer" parent="SafeMargins/CenterContainer/MainPanel/PanelMargins/MainContainer/RightPanel/InfoPanel/InfoMargins"]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="DescriptionLabel" type="Label" parent="MainContainer/RightPanel/InfoPanel/InfoVBox"]
+[node name="DescriptionLabel" type="Label" parent="SafeMargins/CenterContainer/MainPanel/PanelMargins/MainContainer/RightPanel/InfoPanel/InfoMargins/InfoVBox"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Select a mod to view details"
-autowrap_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.84, 0.88, 0.94, 1)
+text = "Select a mod to view details."
+autowrap_mode = 3
 
-[node name="AuthorLabel" type="Label" parent="MainContainer/RightPanel/InfoPanel/InfoVBox"]
+[node name="AuthorLabel" type="Label" parent="SafeMargins/CenterContainer/MainPanel/PanelMargins/MainContainer/RightPanel/InfoPanel/InfoMargins/InfoVBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_colors/font_color = Color(0.62, 0.7, 0.8, 1)
 text = "Author: -"
+autowrap_mode = 3
 
-[node name="VersionLabel" type="Label" parent="MainContainer/RightPanel/InfoPanel/InfoVBox"]
+[node name="VersionLabel" type="Label" parent="SafeMargins/CenterContainer/MainPanel/PanelMargins/MainContainer/RightPanel/InfoPanel/InfoMargins/InfoVBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_colors/font_color = Color(0.62, 0.7, 0.8, 1)
 text = "Version: -"
 
-[node name="ActionButtons" type="HBoxContainer" parent="MainContainer/RightPanel"]
-layout_mode = 2
-
-[node name="EnableButton" type="Button" parent="MainContainer/RightPanel/ActionButtons"]
+[node name="StatusLabel" type="Label" parent="SafeMargins/CenterContainer/MainPanel/PanelMargins/MainContainer/RightPanel"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.58, 0.72, 0.9, 1)
+theme_override_font_sizes/font_size = 13
+text = "Changes apply after Reload Mods."
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="ActionButtons" type="HBoxContainer" parent="SafeMargins/CenterContainer/MainPanel/PanelMargins/MainContainer/RightPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="EnableButton" type="Button" parent="SafeMargins/CenterContainer/MainPanel/PanelMargins/MainContainer/RightPanel/ActionButtons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Enable/Disable"
+focus_mode = 2
+disabled = true
+text = "Enable"
 
-[node name="ReloadButton" type="Button" parent="MainContainer/RightPanel/ActionButtons"]
+[node name="ReloadButton" type="Button" parent="SafeMargins/CenterContainer/MainPanel/PanelMargins/MainContainer/RightPanel/ActionButtons"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 size_flags_horizontal = 3
+focus_mode = 2
 text = "Reload Mods"
 
-[node name="CloseButton" type="Button" parent="MainContainer/RightPanel"]
+[node name="CloseButton" type="Button" parent="SafeMargins/CenterContainer/MainPanel/PanelMargins/MainContainer/RightPanel"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
+focus_mode = 2
 text = "Close"

@@ -2,7 +2,7 @@
 
 > **Documentation status: maintained reference.** This is the consolidated current snapshot. Generated reports remain authoritative for their individual gates.
 
-**Updated:** July 19, 2026  
+**Updated:** August 4, 2026 <!-- craft-ignore: status sheet uses deliberate labels -->
 **Version:** `0.9.5-beta`  
 **Engine:** Godot 4.7+  
 **Project status:** Alpha-quality codebase with a pre-alpha evidence boundary  
@@ -10,7 +10,7 @@
 
 ## Summary
 
-MODUS contains broad FPS framework code plus green July 19 category and strict aggregate lanes, but manual gameplay evidence is absent and the release-version gate is blocked. The latest complete aggregate plus Unit, Integration, and Property summaries define the current automated boundary. A bounded performance capture exists, but it is not sufficient for production targets.
+MODUS contains broad FPS framework code plus green focused, golden-demo runtime, and strict aggregate proof, but reviewed manual gameplay evidence is absent and the release-version gate is blocked. The test-only manual recorder now provides a responsive 20-item F8/Gamepad Back workflow and direct metadata-rich CSV export without fabricating observations. The latest strict aggregate defines the current-tree automated boundary; category-lane summaries remain retained from August 1 and July 19. A bounded performance capture exists, but it is not sufficient for production targets.
 
 The canonical publication rules are in [Documentation Truth](DOCUMENTATION_TRUTH.md).
 
@@ -19,16 +19,20 @@ The canonical publication rules are in [Documentation Truth](DOCUMENTATION_TRUTH
 | Evidence | Current result | Boundary |
 | --- | --- | --- |
 | Documentation truth | **PASS** | Source/docs consistency only |
-| Main player-path smoke | **PASS** | Startup and launch path only |
-| Retained complete Godot/GUT suite | **PASS** | July 19: 1431/1431 passing, 20,362 assertions, no risky/pending tests or GUT-reported orphans |
-| Latest strict aggregate attempt | **PASS/complete** | July 19: full summary completed in 1770.186 seconds under a 2400-second evidence ceiling |
-| Latest batched Unit lane | **PASS** | July 19: 1056/1056 passing, 0 failing, pending, or GUT-reported orphans |
+| Craft / Slopometer | **PASS** | Craft penalty 0; MODUS 0.0/10 with recorded aggregate proof and no reclaimable caches |
+| Main player-path smoke | **PASS** | Fresh August 2 main-menu startup only |
+| Showcase scene launch smoke | **PASS** | Fresh August 2 world-scene load/initialization only |
+| Golden demo runtime smoke | **PASS** | August 4: all 8 controlled framework-loop steps; automated scope, not manual feel |
+| Current complete Godot/GUT suite | **PASS** | August 4: 1440/1440 passing, 20,475 assertions, no risky/pending tests or GUT-reported orphans |
+| Latest strict aggregate attempt | **PASS/complete** | August 4: full summary completed in 702.76 seconds under a bounded 3600-second run; Godot emitted six engine-exit ObjectDB leak diagnostics |
+| Latest batched Unit lane | **PASS** | August 1: 1056/1056 passing, 16,419 assertions, 0 failing, pending, or GUT-reported orphans |
 | Latest batched Integration lane | **PASS** | July 19: 200/200 passing; 2 GUI-required files skipped |
-| Latest batched Property lane | **PASS** | July 19: 175/175 passing, 2,804 assertions, no GUT-reported orphans |
-| Manual evidence | **BLOCKED** | 0 CSV files, 0.00 hours |
+| Latest batched Property lane | **PASS** | August 1: 175/175 passing, 2,804 assertions, no GUT-reported orphans |
+| Manual evidence | **BLOCKED / RECORDER READY** | Responsive 20-item F8 workflow and strict CSV validation pass; 0 reviewed CSV files and 0.00 validated hours |
 | Performance evidence | **PASS** | One bounded 66.4-second/130-sample showcase capture; not a production FPS claim |
 | Release-version evidence | **BLOCKED** | Project remains `0.9.5-beta` |
 | Production readiness | **NOT READY** | 2 validator-tracked blockers: manual evidence and release version; provenance clearance is outside that count |
+| Release evidence bundle | **INDEX COMPLETE / RELEASE BLOCKED** | Hashed menu/welcome/mod/golden-demo captures, short automated video, bounded benchmark table, known-limits matrix, and provenance ledger are retained; manual marketing review, packaging, and rights clearance remain open |
 
 ## Current Focused Automated Proof
 
@@ -36,7 +40,7 @@ These results are narrower than the aggregate suite and must not be summed into 
 
 | Contract | Result |
 | --- | --- |
-| Save service | 6/6 |
+| Save service | 8/8; current encrypted slot existence/list/delete contract and score-key restoration |
 | Network manager | 9/9 |
 | RPC whitelist | 9/9 |
 | Mod-loading integration | 12/12 |
@@ -71,6 +75,8 @@ These results are narrower than the aggregate suite and must not be summed into 
 | Combat feature | 20/20, 30 assertions; injected configuration preserves critical and knockback modifiers |
 | Audio/performance logging | 23/23, 67 assertions; maintained music navigation API and mutable signal observations |
 | Grid pathfinding/HUD boundaries | 30/30, 70 assertions; walkable-only A* and deterministic ten-update state |
+| UI/UX | 26/26, 109 assertions on August 3; supplied hero artwork, player-visible Showcase route, contextual action help, responsive containment, 48-pixel logical controls, visible version, explicit focus loop, responsive shared forms, localized welcome panel, responsive mod workflow, and complete skill-tree compatibility scene; fresh menu, welcome, mod, and golden-demo captures are retained |
+| Manual evidence recorder | 2/2, 21 assertions on August 4; safe CSV output, required metadata, explicit Skip accounting, compact 800×600 layout, 48-pixel targets, and focus order |
 | ENet fallback Unit contract | 11/11, 28 assertions; expected engine errors consumed and config fixture owned |
 | Configuration validation | 14/14, 104 assertions; canonical nested paths and GUT-owned managers |
 | GameManager lifecycle | 28/28, 102 assertions |
@@ -84,7 +90,7 @@ These results are narrower than the aggregate suite and must not be summed into 
 | Map-generator seed/RNG | 8/8, 29 assertions |
 | Map playability | 15/15, 40 assertions |
 | Showcase structure | 17/17, 46 assertions |
-| Reference integrity | 21/21, 116 assertions |
+| Reference integrity | 22/22, 119 assertions; shared blood-pool shader/controller parse and load |
 | MatchService | 8/8 |
 | Breakable props | 17/17; RPC validation uses the whitelisted method name and test peers close before port reuse |
 | Migration compatibility | 13/13, 21 assertions |
@@ -121,33 +127,35 @@ This source inventory is not equivalent to complete runtime or user-experience p
 
 - Save/export/reload serialization contract: **PASS**.
 - Local Workshop filesystem simulation: **PASS**.
-- Live editor UI workflow: **UNPROVEN**.
+- Main-menu/showcase/mod-manager/skill-tree presentation: **FOCUSED PASS** through 26/26 structural/accessibility tests plus fresh wide/narrow captures in `docs/media/release/`.
+- Live complete editor UI workflow: **UNPROVEN**.
 - Standalone custom undo/redo commands: **OPEN TODO**.
 - Real Steam Workshop transfer: **BLOCKED** without GodotSteam/client/app/account evidence.
 
 ### Showcase and Performance
 
 - Showcase structure: **PASS** with 4 player spawns, 2 enemy spawns, 1 navigation region, lighting, environment, collision, and 539 nodes.
-- Manual golden-demo route: **UNPROVEN**.
+- Automated golden-demo route: **PASS** for all 8 controlled framework-loop steps.
+- Human-operated golden-demo feel and failure recovery: **UNPROVEN**; the F8 recorder workflow is ready but contains no human observations yet.
 - Bounded performance CSV: **PASS** for evidence shape/duration.
 - Display-synchronized gameplay, splitscreen, multiplayer, low-end hardware, and long-session performance: **UNPROVEN**.
 - The capture's 108.55 ms maximum frame time and extreme enemy-position warnings remain active concerns.
 
 ## Current Validator-Tracked Blockers
 
-1. No ManualTestTimer CSV evidence has been imported; recorded manual gameplay remains 0.00 hours.
+1. No reviewed ManualTestTimer CSV evidence has been imported; the recorder and validator are ready, but recorded manual gameplay remains 0.00 validated hours.
 2. The project is still explicitly `0.9.5-beta`, so the 1.0 release-version gate is blocked.
 
-The two-count is the scope of `tools/validate_production_readiness.sh`, not an exhaustive release or legal clearance. `docs/ATTRIBUTION.md` records unresolved third-party asset/code provenance, including missing local evidence for Kenney asset licensing and the blood-pool shader's upstream license. Distribution clearance remains open even if the three automated gates later pass.
+The two-count is the scope of `tools/validate_production_readiness.sh`, not an exhaustive release or legal clearance. `docs/ATTRIBUTION.md` and `docs/PROVENANCE_LEDGER.csv` now clear the five verified Kenney files, the generated menu artwork, and both dip000-derived blood-pool files. Twelve music tracks are identified but still require commercial-rights evidence, and 200 additional distributed assets remain unverified. Distribution clearance remains open even if the automated gates later pass.
 
-Additional open proof: real two-peer networking, real Steam/GodotSteam, live editor UI, real Workshop publication, display-synchronized performance, aggregate test diagnostic/runtime reduction, and a complete distribution provenance ledger. Vase, corpse-pile, hidden-stash, and weapon-rack loot scenes are also explicit missing content if those enum types remain in product scope.
+Additional open proof: real two-peer networking, real Steam/GodotSteam, live complete editor UI, real Workshop publication, display-synchronized performance, aggregate test diagnostic/runtime reduction, and resolution of all 212 non-cleared provenance rows. Vase, corpse-pile, hidden-stash, and weapon-rack loot scenes are also explicit missing content if those enum types remain in product scope.
 
 ## Project Inventory
 
 | Metric | Current source-audited value |
 | --- | ---: |
 | Project autoloads | 2 |
-| Unit test files | 70 |
+| Unit test files | 71 |
 | Integration test files | 18 |
 | Property test files | 29 |
 | GUI-required manifest entries | 2 |
@@ -162,8 +170,12 @@ Additional open proof: real two-peer networking, real Steam/GodotSteam, live edi
 bash tools/check_documentation_truth.sh
 bash tools/check_project_truth.sh
 bash tools/check_headless_runner_manifest.sh
+tools/generate_provenance_ledger.py --check
 ./tests/runners/run_all_tests_headless.sh
 ./tests/runners/run_tests_by_category.sh --report docs/AUTOMATED_TEST_LANES_REPORT.md
+tools/run_showcase_golden_demo_smoke.sh --strict
+tools/run_manual_showcase_session.sh --tester NAME --input DEVICES
+tests/runners/test_manual_evidence_validator.sh
 tools/run_main_player_path_smoke.sh --strict
 tools/validate_manual_evidence.sh --strict
 tools/validate_performance_evidence.sh --strict

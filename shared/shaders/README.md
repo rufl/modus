@@ -18,22 +18,19 @@ Additional scripts include `blood_pool_manager.gd`, `blood_effects_global.gd`, t
 - No maintained automated test or generated report currently proves the blood-pool demos render or integrate with combat.
 - No current benchmark supports GPU-cost, frame-rate, pool-size, or low-end-hardware claims.
 
-## Known Source Blocker
+## Current Runtime Boundary
 
-`blood_pool.gdshader` declares `HEIGHTMAP_STRENGTH` but its vertex function references `HEIGHTMAP_STRENGHT`. That misspelling is an unresolved shader compile risk. Until the shader is repaired and a Godot 4.7 run records a clean parse/render result, do not describe this system as working or ready to integrate.
-
-The controller also requires an active `ShaderMaterial`; `_ready()` calls `set_shader_parameter()` without a null guard. A scene using the script must supply the expected material and uniforms.
+The August 2 source pass corrected the `HEIGHTMAP_STRENGTH` vertex identifier and made the controller fail clearly when surface 0 has no active `ShaderMaterial`. A fresh Godot 4.7 parse/render run is still required before describing the shared demo as working or integrated.
 
 ## Provenance Boundary
 
-Source comments attribute the approach to dip000's “Bloody Pool” shader on GodotShaders.com. This checkout does not contain a local copy of the upstream license or another reviewed provenance record. `docs/ATTRIBUTION.md` therefore keeps distribution clearance open. Historical shader guides retain old links and claims for traceability only.
+The implementation was reviewed against dip000's `BloodyPool` source at commit `7a3e9bc685255d37f489e25b509fb56e185aa9fb`. The upstream MIT notice is retained at `docs/licenses/DIP000_BLOODY_POOL_MIT.txt`, and both derived files are cleared in `docs/PROVENANCE_LEDGER.csv`. Historical shader guides retain old links and claims for traceability only.
 
 ## Before Using or Shipping
 
-1. Resolve the shader identifier mismatch.
-2. Confirm every demo scene imports and renders in Godot 4.7.
-3. Add a focused test or recorded visual check for drop creation, recycling, and teardown.
-4. Measure performance in the actual target scene and hardware profile.
-5. Confirm the upstream license and retain the required attribution/license material in the repository.
+1. Confirm every demo scene imports and renders in Godot 4.7.
+2. Add a focused test or recorded visual check for drop creation, recycling, and teardown.
+3. Measure performance in the actual target scene and hardware profile.
+4. Include the retained MIT notice in packaged release artifacts.
 
 Current project readiness remains defined by `docs/DOCUMENTATION_TRUTH.md` and the generated readiness reports.

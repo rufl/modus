@@ -4,11 +4,11 @@
 
 ## Current boundary
 
-The repository has substantial green GUT coverage. The July 19 complete filtered Godot 4.7 aggregate passes 1431/1431 tests with 20,362 assertions and no risky/pending tests or GUT orphans in 1770.186 seconds under a 2400-second evidence ceiling. The latest category packet also passes Unit 1056/1056 with zero orphans, Integration 200/200, and Property 175/175. Automated green status does not replace manual, release-version, or distribution-clearance evidence.
+The repository has substantial green GUT coverage. The August 4 complete filtered Godot 4.7 aggregate passes 1440/1440 tests with 20,475 assertions and no risky/pending tests or GUT orphans in 702.76 seconds under a bounded 3600-second run. The August 1 Unit lane passes 1056/1056 with 16,419 assertions and Property passes 175/175 with 2,804 assertions; July 19 Integration 200/200 is retained. Current focused proof includes UI 26/26 with 109 assertions, manual recorder/timer 2/2 with 21 assertions, localization 27/27, mod/save UI packet 72/72 with 298 assertions, and reference/shader integrity 22/22. Automated recorder tests do not replace human observations, release-version proof, or distribution clearance.
 
 The current source inventory records:
 
-- 70 unit test scripts;
+- 71 unit test scripts;
 - 18 integration test scripts;
 - 29 property test scripts;
 - 2 GUI-required integration entries excluded from the default headless selection;
@@ -27,11 +27,20 @@ Run `bash tools/check_headless_runner_manifest.sh` to validate runner discovery 
 
 # Include the two GUI-required files; a suitable display/editor environment may be needed
 ./tests/runners/run_all_tests_headless.sh --include-gui-required
+
+# Controlled player-visible framework-loop smoke
+tools/run_showcase_golden_demo_smoke.sh --strict
+
+# Normal-window human review with direct CSV evidence export
+tools/run_manual_showcase_session.sh --tester NAME --input DEVICES
+
+# Deterministic validator semantics (metadata, overhead, strict exits)
+tests/runners/test_manual_evidence_validator.sh
 ```
 
 Set `GODOT_BIN=/path/to/godot` when needed. The runners isolate Godot HOME, cache, and configuration directories under `/tmp` unless their `MODUS_GODOT_*` environment variables are overridden.
 
-The production-readiness wrapper bounds the aggregate run to 900 seconds by default. The July 18 complete run required an evidence-derived 2400-second ceiling because the category packet had already established that the property lane alone exceeds 900 seconds. Set `MODUS_GODOT_SUITE_TIMEOUT_SECONDS` to another positive integer only when the evidence environment justifies a different ceiling.
+The production-readiness wrapper defaults to a 2400-second aggregate ceiling. The August 4 refresh used an explicit 3600-second bound and completed in 702.76 seconds. Set `MODUS_GODOT_SUITE_TIMEOUT_SECONDS` to another positive integer only when the evidence environment justifies a different ceiling.
 
 ## Layout
 

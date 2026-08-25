@@ -194,6 +194,10 @@ func get_all_saves() -> Array[Dictionary]:
 	return saves
 
 
+func save_exists(slot_name: String) -> bool:
+	return FileAccess.file_exists(SAVE_DIR + slot_name + DATA_EXT)
+
+
 func delete_save(slot_name: String) -> void:
 	var data_path: String = SAVE_DIR + slot_name + DATA_EXT
 	var meta_path: String = SAVE_DIR + slot_name + METADATA_EXT

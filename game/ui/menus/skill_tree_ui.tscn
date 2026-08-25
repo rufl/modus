@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://game/ui/menus/skill_tree_ui.gd" id="1_skill_tree"]
 
-[node name="SkillTreeUI" type="Control"]
+[node name="SkillTreeUI" type="Control" groups=["skill_tree_ui"]]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -45,7 +45,9 @@ layout_mode = 2
 text = "Level: 1"
 
 [node name="CloseButton" type="Button" parent="Panel/VBoxContainer/Header"]
+custom_minimum_size = Vector2(96, 48)
 layout_mode = 2
+focus_mode = 2
 text = "Close"
 
 [node name="CategoryTabs" type="TabContainer" parent="Panel/VBoxContainer"]
@@ -56,7 +58,9 @@ size_flags_vertical = 3
 layout_mode = 2
 
 [node name="ResetButton" type="Button" parent="Panel/VBoxContainer/Footer"]
+custom_minimum_size = Vector2(144, 48)
 layout_mode = 2
+focus_mode = 2
 text = "Reset Skills"
 
 [node name="SkillDetailPanel" type="Panel" parent="."]
@@ -99,5 +103,7 @@ layout_mode = 2
 text = "Requirements: None"
 
 [node name="UnlockButton" type="Button" parent="SkillDetailPanel/VBox"]
+custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
+focus_mode = 2
 text = "Unlock"

@@ -6,10 +6,11 @@
 
 - Use Godot 4.7 in a normal graphical session.
 - Record OS, renderer, resolution, input devices, scene/profile, build identity, and tester.
-- Use `tests/manual/manual_test_timer.gd` or produce the same CSV shape.
-- Mark failures and unavailable paths explicitly; do not omit them from the session.
-- Copy completed CSVs from `user://manual_test_logs/` to `logs/manual_test_logs/`.
-- Run `tools/validate_manual_evidence.sh --strict` after import.
+- Prefer `tools/run_manual_showcase_session.sh --tester NAME --input DEVICES`; it launches the main-menu route with an F8 review overlay and writes directly to `logs/manual_test_logs/`.
+- Mark failures and unavailable paths explicitly; Fail and Skip require notes and must not be omitted from the session.
+- Direct `ManualTestTimer` users may still copy completed CSVs from `user://manual_test_logs/` to `logs/manual_test_logs/`.
+- Required metadata: tester, OS, renderer, resolution, input devices, scene route, and build identity.
+- Run `tools/validate_manual_evidence.sh --strict` after each imported session; only test-row time counts toward the threshold.
 
 ## Startup and route
 
@@ -75,7 +76,7 @@
 
 ## Session closure
 
-- [ ] Every started item has pass/fail/skip/incomplete plus notes.
+- [ ] Every started item has pass/fail/skip; incomplete rows are retained as failures until rerun.
 - [ ] Screenshots/video metadata and logs are retained where relevant.
 - [ ] CSV is copied to `logs/manual_test_logs/`.
 - [ ] Strict manual validator result is regenerated.

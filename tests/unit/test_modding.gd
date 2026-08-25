@@ -52,6 +52,43 @@ func test_mod_loader_returns_mods_array() -> void:
 			var mods: Variant = mod_loader.get_loaded_mods()
 			assert_true(mods is Array, "get_loaded_mods() should return Array")
 
+func test_installed_mod_settings_update_before_reload() -> void:
+	var gm: Node = get_node_or_null("/root/GameManager")
+	assert_not_null(gm, "GameManager should exist")
+	if not gm:
+		return
+
+	var mod_loader: Node = gm.get_core_system("mod_loader")
+	assert_not_null(mod_loader, "ModLoader service should exist")
+	if not mod_loader:
+		return
+
+	var installed: Array = mod_loader.get_installed_mods()
+	assert_gt(installed.size(), 0, "At least one bundled mod should be discoverable")
+	if installed.is_empty():
+		return
+
+	var mod_id: String = installed[0].get("id", "")
+	var original_enabled: bool = installed[0].get("enabled", false)
+	installed[0]["enabled"] = not original_enabled
+	var unchanged: Array = mod_loader.get_installed_mods()
+	assert_eq(
+		unchanged[0].get("enabled", false),
+		original_enabled,
+		"Installed-mod snapshots should not mutate loader state"
+	)
+
+	mod_loader.set_mod_enabled(mod_id, not original_enabled)
+	var updated: Array = mod_loader.get_installed_mods()
+	var saved_enabled: bool = original_enabled
+	for mod_info: Dictionary in updated:
+		if mod_info.get("id", "") == mod_id:
+			saved_enabled = mod_info.get("enabled", original_enabled)
+			break
+	assert_eq(saved_enabled, not original_enabled, "Disabled mods should be enableable before reload")
+	mod_loader.set_mod_enabled(mod_id, original_enabled)
+
+
 # =============================================================================
 # MOD SCRIPT BASE CLASS
 # =============================================================================

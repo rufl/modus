@@ -12,7 +12,7 @@ MODUS is an experimental Godot 4.7 multiplayer FPS framework and template. The r
 
 **Manual evidence:** 0 imported sessions / 0.00 recorded hours
 
-Read [Documentation Truth](docs/DOCUMENTATION_TRUTH.md), [Current Status](docs/CURRENT_STATUS.md), and [Production Readiness](docs/PRODUCTION_READINESS_REPORT.md) before using project-wide claims.
+Read [Documentation Truth](docs/DOCUMENTATION_TRUTH.md), [Current Status](docs/CURRENT_STATUS.md), and [Production Readiness](docs/PRODUCTION_READINESS_REPORT.md) before using project-wide claims. See the [Ship-Readiness Estimate](docs/SHIP_READINESS_ESTIMATE.md) for the explicit gateboard and calendar estimate.
 
 ## Start Here
 
@@ -23,6 +23,20 @@ Read [Documentation Truth](docs/DOCUMENTATION_TRUTH.md), [Current Status](docs/C
 5. Follow [Getting Started](docs/getting_started.md) and [Showcase Route](docs/SHOWCASE_ROUTE.md).
 
 The repository does not guarantee a clean first run on every machine. Optional Steam/GodotSteam and Voxel Tools integrations can be unavailable; the code includes fallback paths, but those fallbacks do not prove feature parity.
+
+## Proven Showcase Route <!-- craft-ignore: maintained project reference -->
+
+The main menu exposes **Showcase**, which opens the maintained `game/world/maps/showcase.tscn` route. The automated golden-demo smoke now proves one controlled local framework loop: scene load, player spawn, movement input, weapon fire, enemy defeat, pickup collection, encrypted save/load restoration, and bundled SDK sample-mod loading. <!-- craft-ignore: scoped evidence emphasis -->
+
+![MODUS automated golden-demo result](docs/media/release/golden_demo_smoke_1280x720.png)
+
+- [Golden Demo Smoke](docs/GOLDEN_DEMO_SMOKE.md)
+- [Short automated runtime video](docs/media/release/golden_demo_smoke_1280x720.mp4)
+- [Release Evidence Bundle](docs/RELEASE_EVIDENCE_BUNDLE.md)
+
+This route does not prove gameplay feel, real multiplayer peers, Steam, long sessions, packaging, manual hours, or release approval.
+
+For a real reviewed session, run `tools/run_manual_showcase_session.sh --tester NAME --input DEVICES`. Its test-only F8/Gamepad Back recorder covers 20 bounded observations and writes metadata-rich CSVs directly to `logs/manual_test_logs/`; it does not fabricate evidence.
 
 ## What Exists in Source
 
@@ -44,16 +58,20 @@ The repository does not guarantee a clean first run on every machine. Optional S
 
 | Evidence | Result |
 | --- | --- |
-| Retained complete Godot/GUT suite | **PASS** — July 19: 1431/1431 passing, 20,362 assertions, zero GUT-reported orphans |
-| Latest strict aggregate attempt | **PASS/complete** — July 19: finished in 1770.186 seconds under an evidence-derived 2400-second ceiling; full summary retained |
-| Latest batched lanes | **PASS** — July 19 Unit 1056/1056, Integration 200/200, and Property 175/175; Benchmark skipped |
-| Main launch-path smoke | **PASS** for startup scope only |
-| Manual gameplay | **BLOCKED** — no imported CSV evidence |
+| Current complete Godot/GUT suite | **PASS:** August 4, 1440/1440 passing, 20,475 assertions, zero GUT-reported orphans |
+| Latest strict aggregate attempt | **PASS/complete:** August 4, finished in 702.76 seconds under the 3600-second bounded run; full summary retained, with six engine-exit ObjectDB leak diagnostics |
+| Latest batched lanes | **PASS:** August 1 Unit 1056/1056 and Property 175/175; July 19 Integration 200/200 retained; Benchmark skipped |
+| Craft / Slopometer | **PASS:** Craft penalty 0; MODUS 0.0/10 across all five dimensions |
+| Golden demo runtime smoke | **PASS:** all 8 controlled framework-loop steps on August 4; automated scope only |
+| Main menu / showcase scene launch smokes | **PASS** on August 2 for startup scope only |
+| Manual gameplay | **BLOCKED:** the recorder workflow is ready, but no reviewed CSV evidence has been imported |
 | Performance evidence | **PASS** for one bounded 66.4-second/130-sample showcase capture only |
 | Release-version gate | **BLOCKED** — current version remains `0.9.5-beta` |
 | Production readiness | **NOT READY** with 2 validator-tracked evidence blockers: manual evidence and release version; distribution provenance is a separate open clearance gap |
 
-Focused green tests are listed in [Current Status](docs/CURRENT_STATUS.md). They prove only their named contracts and do not override the non-green aggregate suite.
+Focused green tests are listed in [Current Status](docs/CURRENT_STATUS.md). They prove only their named contracts and do not replace manual, release, or distribution evidence.
+
+The UI/UX pass now uses the supplied warrior artwork, exposes the maintained Showcase route directly, explains focused or hovered actions, preserves responsive containment and 48-pixel logical controls across shared menus/modals, localizes Showcase and Editor labels, makes options, multiplayer, host, pause, and save/load layouts shrink safely, and adds a gamepad-ready showcase welcome panel that states the evidence boundary. The mod manager now stacks on constrained screens, localizes its workflow, keeps actions disabled until selection, and explains that changes apply after reload; the skill-tree compatibility route now resolves the complete focusable UI. The test-only manual recorder adds a compact 800×600 review surface, clear Pass/Fail/Skip states, required failure notes, direct evidence export, and an F8/Gamepad Back gameplay/review handoff. Recorder/timer proof passes 2/2 with 21 assertions; captures are retained in [Release Evidence Bundle](docs/RELEASE_EVIDENCE_BUNDLE.md).
 
 The latest focused source-shape/editor-registry contract passes 37/37 with 172 assertions and zero GUT orphans. It verifies canonical world/map/resource paths and instantiable built-in editor actors; it does not supply the still-missing vase, corpse-pile, hidden-stash, or weapon-rack loot scenes.
 
@@ -116,6 +134,7 @@ Documentation and source-truth gates:
 bash tools/check_documentation_truth.sh
 bash tools/check_project_truth.sh
 bash tools/check_headless_runner_manifest.sh
+tools/generate_provenance_ledger.py --check
 ```
 
 Automated tests:
@@ -128,6 +147,7 @@ Automated tests:
 Evidence/readiness reports:
 
 ```bash
+tools/run_showcase_golden_demo_smoke.sh --strict
 tools/run_main_player_path_smoke.sh --strict
 tools/validate_manual_evidence.sh --strict
 tools/validate_performance_evidence.sh --strict
@@ -168,4 +188,4 @@ docs/              maintained references, generated evidence, and labeled histor
 
 ## License and Provenance
 
-The project license text is currently stored at `docs/LICENSE`, and vendored GUT carries its own MIT license under `addons/gut/LICENSE.md`. Third-party asset and code provenance is not yet complete enough for release clearance; previous template/asset attributions that lack local evidence remain unverified. See [Licensing and Provenance Inventory](docs/ATTRIBUTION.md) before redistributing the project.
+The project MIT text is retained at `LICENSE` and `docs/LICENSE`; vendored GUT carries its MIT notice under `addons/gut/LICENSE.md`. Kenney and dip000 blood-pool material now have pinned local license evidence, while the generated 220-row ledger still contains 212 rows requiring rights review. See [Licensing and Provenance Inventory](docs/ATTRIBUTION.md) before redistributing the project.

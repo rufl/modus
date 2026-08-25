@@ -12,12 +12,15 @@ var _friendly_fire_input: CheckBox = null
 var _map_input: OptionButton = null
 var _start_btn: Button = null
 var _back_btn: Button = null
+var _content_width: float = 400.0
 
 
 func _on_ready() -> void:
 	_build_ui()
 	_populate_maps()
 	_setup_focus()
+	resized.connect(_update_responsive_layout)
+	_update_responsive_layout()
 
 
 func _on_screen_enter(_params: Dictionary) -> void:
@@ -53,7 +56,7 @@ func _build_ui() -> void:
 
 	# Main panel
 	_panel = PanelContainer.new()
-	_panel.custom_minimum_size = Vector2(400, 300)
+	_panel.custom_minimum_size = Vector2(_content_width, 300)
 	center.add_child(_panel)
 
 	var scroll: ScrollContainer = ScrollContainer.new()
@@ -125,7 +128,7 @@ func _build_ui() -> void:
 	vbox.add_child(map_row)
 
 	_map_input = OptionButton.new()
-	_map_input.custom_minimum_size.x = 200
+	_map_input.custom_minimum_size.x = 160
 	map_row.add_child(_map_input)
 
 	# Difficulty
@@ -171,7 +174,7 @@ func _create_row(label_text: String) -> HBoxContainer:
 
 	var label: Label = Label.new()
 	label.text = label_text
-	label.custom_minimum_size.x = 180
+	label.custom_minimum_size.x = 120
 	row.add_child(label)
 
 	return row
@@ -185,7 +188,8 @@ func _create_button(loc_key: String, fallback: String) -> Button:
 		btn = Button.new()
 
 	btn.text = _tr(loc_key, fallback)
-	btn.custom_minimum_size = Vector2(120, 40)
+	btn.custom_minimum_size = Vector2(120, 48)
+	btn.focus_mode = Control.FOCUS_ALL
 	return btn
 
 
@@ -248,6 +252,13 @@ func _setup_focus() -> void:
 		controls.append(_start_btn)
 
 	register_focus_controls(controls, "host_game")
+
+
+func _update_responsive_layout() -> void:
+	if not _panel:
+		return
+	_content_width = clampf(size.x - 48.0, 300.0, 560.0)
+	_panel.custom_minimum_size.x = _content_width
 
 
 # ============================================================================

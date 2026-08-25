@@ -3,6 +3,7 @@ set -euo pipefail
 
 report_path="docs/PRODUCTION_READINESS_REPORT.md"
 main_smoke_report="docs/MAIN_PLAYER_PATH_SMOKE.md"
+golden_demo_report="docs/GOLDEN_DEMO_SMOKE.md"
 automated_lanes_report="docs/AUTOMATED_TEST_LANES_REPORT.md"
 manual_evidence_report="docs/MANUAL_EVIDENCE_REPORT.md"
 performance_evidence_report="docs/PERFORMANCE_EVIDENCE_REPORT.md"
@@ -313,6 +314,29 @@ case "$main_smoke_status" in
     ;;
 esac
 
+golden_demo_status="MISSING"
+if [[ -f "$golden_demo_report" ]]; then
+  golden_demo_status="$(extract_report_status "$golden_demo_report")"
+fi
+
+case "$golden_demo_status" in
+  PASS)
+    add_check "PASS" "Golden demo runtime smoke" "$golden_demo_report" "All eight controlled framework-loop steps pass; manual gameplay remains separate."
+    ;;
+  FAIL)
+    add_check "FAIL" "Golden demo runtime smoke" "tools/run_showcase_golden_demo_smoke.sh --strict" "Latest report status is FAIL."
+    readiness_blockers=$((readiness_blockers + 1))
+    ;;
+  BLOCKED|MISSING)
+    add_check "BLOCKED" "Golden demo runtime smoke" "tools/run_showcase_golden_demo_smoke.sh --strict" "No passing golden-demo report exists."
+    readiness_blockers=$((readiness_blockers + 1))
+    ;;
+  *)
+    add_check "BLOCKED" "Golden demo runtime smoke" "tools/run_showcase_golden_demo_smoke.sh --strict" "Latest report status could not be read: ${golden_demo_status}."
+    readiness_blockers=$((readiness_blockers + 1))
+    ;;
+esac
+
 automated_lanes_status="MISSING"
 if [[ -f "$automated_lanes_report" ]]; then
   automated_lanes_status="$(extract_report_status "$automated_lanes_report")"
@@ -412,6 +436,16 @@ case "$release_readiness_status" in
     ;;
 esac
 
+if provenance_output="$(tools/generate_provenance_ledger.py --check 2>&1)"; then
+  add_check "PASS" "Provenance ledger freshness" \
+    "tools/generate_provenance_ledger.py --check" \
+    "$(printf '%s' "$provenance_output" | compact); 212 rows still require rights review."
+else
+  add_check "FAIL" "Provenance ledger freshness" \
+    "tools/generate_provenance_ledger.py --check" \
+    "$(printf '%s' "$provenance_output" | compact)"
+fi
+
 unit_count="$(count_tests tests/unit)"
 integration_count="$(count_tests tests/integration)"
 property_count="$(count_tests tests/property)"
@@ -469,7 +503,7 @@ mkdir -p "$(dirname "$report_path")"
   else
     if [[ "$godot_suite_status" == "FAIL" ]]; then
       printf '%s\n' '- Triage the failing Godot/GUT suite, then rerun `tools/validate_production_readiness.sh --run-godot-tests --strict`.'
-    elif [[ "$run_godot_tests" -eq 0 ]]; then
+    elif [[ "$run_godot_tests" -eq 0 && "$godot_suite_status" != "PASS" ]]; then
       if find_godot_bin >/dev/null 2>&1; then
         printf '%s\n' '- Run `tools/validate_production_readiness.sh --run-godot-tests --strict` to refresh full Godot/GUT proof.'
       else
@@ -478,6 +512,9 @@ mkdir -p "$(dirname "$report_path")"
     fi
     if [[ "$main_smoke_status" != "PASS" ]]; then
       printf '%s\n' '- Run `tools/run_main_player_path_smoke.sh --strict` and record a PASS result.'
+    fi
+    if [[ "$golden_demo_status" != "PASS" ]]; then
+      printf '%s\n' '- Run `tools/run_showcase_golden_demo_smoke.sh --strict` and record all eight PASS steps.'
     fi
     if [[ "$manual_evidence_status" != "PASS" ]]; then
       printf '%s\n' '- Run `tools/validate_manual_evidence.sh --strict` after recording ManualTestTimer CSV evidence.'
@@ -489,7 +526,7 @@ mkdir -p "$(dirname "$report_path")"
       printf '%s\n' '- Run `tools/validate_release_readiness.sh --strict` only after release-version source truth is ready.'
     fi
   fi
-  printf '%s\n' '- Complete the third-party provenance/license ledger in `docs/ATTRIBUTION.md`; this release-clearance gap is outside the validator blocker count.'
+  printf '%s\n' '- Clear, exclude, or replace the 212 non-cleared rows in `docs/PROVENANCE_LEDGER.csv`; this release-clearance gap is outside the validator blocker count.'
 } > "$report_path"
 
 printf 'Production readiness report written to %s\n' "$report_path"

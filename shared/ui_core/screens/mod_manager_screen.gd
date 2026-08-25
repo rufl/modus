@@ -15,6 +15,9 @@ func _on_ready() -> void:
 func _on_screen_enter(_params: Dictionary) -> void:
 	if _mod_manager_instance and _mod_manager_instance.has_method("show_manager"):
 		_mod_manager_instance.show_manager()
+		if _mod_manager_instance.has_method("focus_default"):
+			_mod_manager_instance.call_deferred("focus_default")
+		return
 
 	if _back_btn:
 		_back_btn.grab_focus()
@@ -90,6 +93,10 @@ func _load_legacy_manager() -> void:
 	var scene: PackedScene = load(LEGACY_MOD_MANAGER)
 	if scene:
 		_mod_manager_instance = scene.instantiate()
+		if _mod_manager_instance.has_method("set_embedded"):
+			_mod_manager_instance.set_embedded(true)
+		if _mod_manager_instance.has_signal("close_requested"):
+			_mod_manager_instance.close_requested.connect(go_back)
 
 		# Add to content area
 		var content_area: Control = find_child("ContentArea", true, false)
@@ -108,7 +115,8 @@ func _create_button(loc_key: String, fallback: String) -> Button:
 		btn = Button.new()
 
 	btn.text = _tr(loc_key, fallback)
-	btn.custom_minimum_size = Vector2(120, 40)
+	btn.custom_minimum_size = Vector2(120, 48)
+	btn.focus_mode = Control.FOCUS_ALL
 	return btn
 
 

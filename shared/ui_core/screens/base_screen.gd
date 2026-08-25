@@ -33,9 +33,7 @@ func _ready() -> void:
 	if screen_id.is_empty():
 		screen_id = get_scene_file_path().get_file().get_basename()
 
-	# Register with ThemeManager
-	# Register with ThemeManager
-	# Use UIService to get ThemeManager
+	# Register with ThemeManager through UIService.
 	var ui_svc := UISystem.get_service()
 	if ui_svc and ui_svc.theme_manager:
 		if ui_svc.theme_manager.has_method("register_themeable"):
@@ -127,8 +125,7 @@ func _apply_screen_settings() -> void:
 	if show_cursor:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
-	# Setup focus group
-	# Setup focus group
+	# Setup focus group.
 	var ui_svc := UISystem.get_service()
 	if not focus_group.is_empty() and ui_svc and ui_svc.focus_manager:
 		if ui_svc.focus_manager.has_method("set_active_group"):
@@ -176,24 +173,13 @@ func _request_back() -> void:
 
 
 func navigate_to(screen_path: String, params: Dictionary = {}) -> void:
-	print("[BaseScreen] navigate_to called with path: ", screen_path)
 	var ui_svc := UISystem.get_service()
-	print("[BaseScreen] UISystem.get_service() returned: ", ui_svc)
-	
 	if not ui_svc:
 		push_error("[BaseScreen] UISystem service is null!")
 		return
-	
-	print(
-		"[BaseScreen] ui_svc.ui_manager: ",
-		ui_svc.ui_manager if "ui_manager" in ui_svc else "property not found"
-	)
-	
 	if not ui_svc.ui_manager:
 		push_error("[BaseScreen] ui_manager is null!")
 		return
-	
-	print("[BaseScreen] Calling ui_manager.push_screen...")
 	ui_svc.ui_manager.push_screen(screen_path, params)
 
 
@@ -210,24 +196,13 @@ func switch_to(screen_path: String, params: Dictionary = {}) -> void:
 
 
 func show_modal(modal_path: String, params: Dictionary = {}) -> Control:
-	print("[BaseScreen] show_modal called with path: ", modal_path)
 	var ui_svc := UISystem.get_service()
-	print("[BaseScreen] UISystem.get_service() returned: ", ui_svc)
-	
 	if not ui_svc:
 		push_error("[BaseScreen] UISystem service is null!")
 		return null
-	
-	print(
-		"[BaseScreen] ui_svc.ui_manager: ",
-		ui_svc.ui_manager if "ui_manager" in ui_svc else "property not found"
-	)
-	
 	if not ui_svc.ui_manager:
 		push_error("[BaseScreen] ui_manager is null!")
 		return null
-	
-	print("[BaseScreen] Calling ui_manager.push_modal...")
 	return await ui_svc.ui_manager.push_modal(modal_path, params)
 
 

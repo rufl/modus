@@ -5,10 +5,14 @@ const OPTIONS_SCREEN: String = "res://shared/ui_core/screens/options_screen.tscn
 const SAVE_LOAD_SCREEN: String = "res://shared/ui_core/screens/save_load_screen.tscn"
 const MAIN_MENU_SCREEN: String = "res://shared/ui_core/screens/main_menu_screen.tscn"
 
+var _panel: PanelContainer = null
+
 
 func _on_ready() -> void:
 	pause_on_show = true
 	_build_pause_ui()
+	resized.connect(_update_responsive_layout)
+	_update_responsive_layout()
 
 
 func is_transitioning() -> bool:
@@ -45,22 +49,22 @@ func _find_resume_button() -> Button:
 func _build_pause_ui() -> void:
 	var margins: MarginContainer = MarginContainer.new()
 	margins.set_anchors_preset(Control.PRESET_FULL_RECT)
-	margins.add_theme_constant_override("margin_left", 100)
-	margins.add_theme_constant_override("margin_right", 100)
-	margins.add_theme_constant_override("margin_top", 100)
-	margins.add_theme_constant_override("margin_bottom", 100)
+	margins.add_theme_constant_override("margin_left", 24)
+	margins.add_theme_constant_override("margin_right", 24)
+	margins.add_theme_constant_override("margin_top", 24)
+	margins.add_theme_constant_override("margin_bottom", 24)
 	add_child(margins)
 
 	var center: CenterContainer = CenterContainer.new()
 	margins.add_child(center)
 
-	var panel: PanelContainer = PanelContainer.new()
-	panel.custom_minimum_size = Vector2(300, 200)
-	center.add_child(panel)
+	_panel = PanelContainer.new()
+	_panel.custom_minimum_size = Vector2(320, 200)
+	center.add_child(_panel)
 
 	var vbox: VBoxContainer = VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 15)
-	panel.add_child(vbox)
+	_panel.add_child(vbox)
 
 	var title: Label = Label.new()
 	title.text = "PAUSED"
@@ -109,6 +113,12 @@ func _build_pause_ui() -> void:
 	register_focus_controls(focus_list, "pause_menu")
 
 
+func _update_responsive_layout() -> void:
+	if not _panel:
+		return
+	_panel.custom_minimum_size.x = clampf(size.x - 48.0, 280.0, 380.0)
+
+
 func _create_menu_button(label: String, callback: Callable) -> Button:
 	var btn: Button
 	# Force CustomButton usage if possible, otherwise plain Button
@@ -118,7 +128,8 @@ func _create_menu_button(label: String, callback: Callable) -> Button:
 		btn = Button.new()
 
 	btn.text = label
-	btn.custom_minimum_size = Vector2(250, 45)
+	btn.custom_minimum_size = Vector2(250, 48)
+	btn.focus_mode = Control.FOCUS_ALL
 	
 	# Wrap callback to prevent spam during transitions
 	var wrapped_callback := func() -> void:

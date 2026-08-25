@@ -19,6 +19,7 @@ signal skill_tree_closed
 @onready var skill_detail_level: Label = $SkillDetailPanel/VBox/LevelInfo
 @onready var skill_detail_requirements: Label = $SkillDetailPanel/VBox/Requirements
 @onready var skill_detail_unlock_btn: Button = $SkillDetailPanel/VBox/UnlockButton
+@onready var main_panel: Panel = $Panel
 
 var skill_tree_manager: SkillTreeManager = null
 var player_progression: PlayerProgression = null
@@ -48,6 +49,8 @@ func _ready() -> void:
 
 	# Handle input
 	set_process_input(true)
+	resized.connect(_update_responsive_layout)
+	_update_responsive_layout()
 
 
 func _input(_event: InputEvent) -> void:
@@ -166,6 +169,8 @@ func _create_skill_button(skill: SkillNode) -> Control:
 	# Button
 	var button := Button.new()
 	button.name = "SelectButton"
+	button.custom_minimum_size.y = 48
+	button.focus_mode = Control.FOCUS_ALL
 	button.text = "View"
 	button.pressed.connect(_on_skill_button_pressed.bind(skill.skill_id))
 	vbox.add_child(button)
@@ -249,7 +254,7 @@ func _show_skill_detail(skill_id: String) -> void:
 				var req_skill: SkillNode = skill_tree_manager.get_skill(req_id)
 				var req_name: String = req_skill.skill_name if req_skill else req_id
 				var is_met: bool = skill_tree_manager.is_skill_unlocked(req_id)
-				req_text += "  - %s %s\n" % [req_name, "[✓]" if is_met else "[✗]"]
+				req_text += "  - %s (%s)\n" % [req_name, "met" if is_met else "missing"]
 		skill_detail_requirements.text = req_text if req_text != "" else "No requirements"
 
 	# Update unlock button
@@ -348,6 +353,13 @@ func open_skill_tree() -> void:
 	visible = true
 	_update_header()
 	_refresh_skill_buttons()
+	if not skill_buttons.is_empty():
+		var first_container := skill_buttons.values()[0] as Control
+		var first_button := first_container.find_child("SelectButton", true, false) as Control
+		if first_button:
+			first_button.grab_focus()
+	elif close_button:
+		close_button.grab_focus()
 
 	# Pause game
 	get_tree().paused = true
@@ -371,6 +383,22 @@ func close_skill_tree() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 	skill_tree_closed.emit()
+
+
+func _update_responsive_layout() -> void:
+	if not main_panel or not skill_detail_panel:
+		return
+	var edge := 16.0
+	var panel_width := clampf(size.x - edge * 2.0, 320.0, 800.0)
+	var panel_height := clampf(size.y - edge * 2.0, 360.0, 600.0)
+	main_panel.offset_left = -panel_width / 2.0
+	main_panel.offset_right = panel_width / 2.0
+	main_panel.offset_top = -panel_height / 2.0
+	main_panel.offset_bottom = panel_height / 2.0
+	var detail_width := minf(300.0, size.x - edge * 2.0)
+	skill_detail_panel.offset_left = -detail_width
+	skill_detail_panel.offset_top = -minf(200.0, panel_height / 2.0)
+	skill_detail_panel.offset_bottom = minf(200.0, panel_height / 2.0)
 
 
 func _play_unlock_sound() -> void:

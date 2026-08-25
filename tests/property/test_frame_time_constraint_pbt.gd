@@ -255,27 +255,26 @@ func test_property_frame_time_during_feature_loading() -> void:
 	)
 
 
-func _test_frame_time_during_loading(test_data: Dictionary) -> bool:
-	var rng := get_seeded_rng(test_data.get("iteration", 0))
-
+func _test_frame_time_during_loading(_test_data: Dictionary) -> bool:
 	var gm := GameManager.new()
 	add_child(gm)
-	gm.initialize()
 
+	var gameplay: Node = gm.get_core_system("gameplay")
+	if gameplay and not gameplay.get("_is_initialized"):
+		await gameplay.services_ready
+
+	if gm.is_feature_loaded("inventory"):
+		gm.unload_feature("inventory")
+
+	# Measure the synchronous feature-load call itself. Awaiting a rendered frame
+	# here would measure host scheduling and unrelated deferred service work.
+	var start := Time.get_ticks_usec()
+	var loaded: bool = gm.load_feature("inventory")
+	var load_frame_time := (Time.get_ticks_usec() - start) / 1000.0
 	await get_tree().process_frame
 
-	# Measure frame time during feature loading
-	var start = Time.get_ticks_usec()
-
-	gm.load_feature("physics")
-
-	await get_tree().process_frame
-
-	var end = Time.get_ticks_usec()
-	var load_frame_time = (end - start) / 1000.0
-
-	# Feature loading should not cause excessive frame time
-	var no_spike = load_frame_time < 100.0  # Less than 100ms
+	# Feature loading should not cause excessive frame time.
+	var no_spike := loaded and load_frame_time < 100.0
 
 	if not no_spike:
 		print("Feature loading caused frame time spike: %.2f ms" % load_frame_time)

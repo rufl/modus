@@ -2,7 +2,7 @@
 
 > **Documentation status: maintained reference.** This roadmap prioritizes proof and hardening. Current status is defined by `docs/DOCUMENTATION_TRUTH.md` and `docs/CURRENT_STATUS.md`.
 
-**Updated:** July 19, 2026  
+**Updated:** August 4, 2026
 **Current version:** `0.9.5-beta`  
 **Engine:** Godot 4.7+  
 **Readiness:** NOT READY
@@ -13,20 +13,22 @@ Make MODUS a dependable Godot 4.7 FPS framework whose public claims are backed b
 
 ## Now: Preserve the Automated Baseline
 
-1. Preserve the green July 19 category packet: Unit 1056/1056, Integration 200/200, and Property 175/175.
-2. Preserve the green strict aggregate at 1431/1431 with 20,362 assertions and no risky/pending tests.
+1. Preserve the green automated packet: August 1 Unit 1056/1056 and Property 175/175, plus retained July 19 Integration 200/200.
+2. Preserve the green August 4 strict aggregate at 1440/1440 with 20,475 assertions and no risky/pending tests.
 3. Preserve zero GUT orphans while reducing service-initialization and engine-exit diagnostic volume without weakening assertions.
 4. Preserve the July 17 zero-orphan focused map-generator threading/export boundary.
 5. Keep documentation truth, generated reports, backlog, and archive classification synchronized.
 
-The automated baseline is complete; runtime/manual evidence is now the release-critical path.
+The August 3 batch adds the eight-step golden-demo runtime smoke, repairs save-slot/ammo restoration and score-key normalization, fixes disabled-mod activation and skill-tree compatibility, and rebuilds the mod manager as a responsive localized workflow. The August 4 follow-up adds a responsive test-only F8 recorder for 20 bounded human observations, direct metadata-rich CSV export, and validator enforcement that excludes idle recorder overhead. Automated recorder/timer proof is 2/2 with 21 assertions; no human pass is implied.
+
+The automated baseline and manual capture workflow are complete; reviewed runtime evidence is now the release-critical path.
 
 ## Next: Runtime and Manual Proof
 
-1. Execute the maintained showcase/golden-demo route in a normal Godot window.
-2. Record menu, world load, movement, combat, interaction, HUD, save/load, and failure observations.
-3. Import ManualTestTimer CSV evidence and rerun `tools/validate_manual_evidence.sh --strict`.
-4. Exercise the embedded and standalone editor UI, including save/export/reload and known undo/redo boundaries.
+1. Run `tools/run_manual_showcase_session.sh --tester NAME --input DEVICES` in a normal Godot window.
+2. Use F8 to record the 20-item menu, Showcase, movement, combat, interaction, HUD, save/load, accessibility, and log-review route; automated interaction with the recorder does not count as manual gameplay.
+3. Review the directly exported CSV evidence and rerun `tools/validate_manual_evidence.sh --strict`.
+4. Exercise the embedded and standalone editor UI, including save/export/reload and known undo/redo boundaries; the main-menu responsive/focus pass is complete but does not prove the full editor workflow.
 5. Record display-synchronized solo and splitscreen performance with hardware/build context.
 
 Completion requires reviewed evidence, not merely available harnesses.
@@ -45,9 +47,9 @@ ENet fallback, local filesystem simulation, and Steam-unavailable handling are s
 
 - Harden the editor's standalone undo/redo workflow.
 - Turn focused mod packaging and local Workshop behavior into a documented distribution workflow.
-- Complete third-party code/asset provenance and retain required licenses/notices before redistribution.
+- Clear, exclude, or replace the 212 non-cleared rows in the generated provenance ledger; verified Kenney CC0 and dip000 MIT notices are already retained.
 - Add contextualized benchmark tables for supported hardware/build profiles.
-- Build a release evidence bundle with screenshots/video tied to the maintained showcase route.
+- Review the completed evidence index and replace automated-only media with approved manual marketing captures where required.
 - Promote version/release wording only after automated, manual, performance, packaging, and distribution-clearance gates agree.
 
 ## Deferred Exploration
@@ -63,6 +65,7 @@ ENet fallback, local filesystem simulation, and Steam-unavailable handling are s
 bash tools/check_documentation_truth.sh
 bash tools/check_project_truth.sh
 bash tools/check_headless_runner_manifest.sh
+tools/generate_provenance_ledger.py --check
 ./tests/runners/run_all_tests_headless.sh
 ./tests/runners/run_tests_by_category.sh --report docs/AUTOMATED_TEST_LANES_REPORT.md
 tools/validate_manual_evidence.sh --strict
