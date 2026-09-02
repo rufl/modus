@@ -64,23 +64,20 @@ func _physics_process(delta: float) -> void:
 		if not parent_body.is_ai_active:
 			return
 
-	# Performance throttling - check if parent allows update this frame
-	if parent_body and parent_body.has_method("should_update_ai"):
-		if not parent_body.should_update_ai(delta):
+	# The parent owns AI LOD cadence and returns the full elapsed interval so
+	# throttling does not slow state timers, steering, or combat decisions.
+	var update_delta: float = delta
+	if parent_body and parent_body.has_method("consume_ai_update_delta"):
+		update_delta = parent_body.consume_ai_update_delta(delta)
+		if update_delta <= 0.0:
 			return
 
 	if current_state:
-		current_state.physics_update(delta)
+		current_state.physics_update(update_delta)
+		current_state.update(update_delta)
 
 	# Check for incoming projectiles/grenades
 	_check_danger()
-
-
-func _process(delta: float) -> void:
-	# AI processes are tied to physics_process for throttling
-	# Only call state update if not throttled
-	if current_state:
-		current_state.update(delta)
 
 
 func change_state(new_state: EnemyState) -> void:

@@ -3080,6 +3080,23 @@ func test_ai_update_throttling() -> void:
 		"_ai_update_rate" in enemy,
 		"Enemy should have AI update rate for performance"
 	)
+	enemy.set_ai_update_rate(0.5)
+	enemy.set_update_offset(0.0)
+	assert_eq(enemy.consume_ai_update_delta(1.0 / 60.0), 0.0, "Half-rate AI should defer one tick")
+	assert_almost_eq(
+		enemy.consume_ai_update_delta(1.0 / 60.0),
+		1.0 / 30.0,
+		0.00001,
+		"A throttled update should receive the full elapsed interval"
+	)
+
+	enemy.set_ai_update_rate(1.0)
+	assert_almost_eq(
+		enemy.consume_ai_update_delta(1.0 / 60.0),
+		1.0 / 60.0,
+		0.00001,
+		"Full-rate AI should receive the current physics delta"
+	)
 
 
 func test_ai_can_be_disabled() -> void:

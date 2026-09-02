@@ -89,6 +89,7 @@ var sync_visible: bool = true:
 var _ai_update_rate: float = 1.0  # 1.0 = full rate, 0.5 = half rate, etc.
 var _ai_update_offset: float = 0.0  # Stagger updates across frames
 var _ai_update_timer: float = 0.0
+var _ai_elapsed_since_update: float = 0.0
 var _death_y_threshold: float = -50.0  # Loaded from config
 var _alert_icon: Label3D  # Client side visual
 var _target_position: Vector3 = Vector3.ZERO
@@ -1017,23 +1018,33 @@ func set_ai_update_rate(rate: float) -> void:
 func set_update_offset(offset: float) -> void:
 	_ai_update_offset = offset
 	_ai_update_timer = offset
+	_ai_elapsed_since_update = 0.0
 
 
-## Check if AI should update this frame based on throttle rate
+## Return the real elapsed time owned by the next AI update, or zero while
+## throttled. Accumulating elapsed time keeps state timers and steering speed
+## correct when distant enemies update below the physics tick rate.
 
 
-func should_update_ai(delta: float) -> bool:
+func consume_ai_update_delta(delta: float) -> float:
+	var safe_delta: float = maxf(delta, 0.0)
 	if _ai_update_rate >= 1.0:
-		return true  # Full rate, always update
+		_ai_update_timer = 0.0
+		_ai_elapsed_since_update = 0.0
+		return safe_delta
 
-	_ai_update_timer += delta
-	var update_interval: float = 1.0 / (60.0 * _ai_update_rate)  # Target 60 FPS base
+	_ai_update_timer += safe_delta
+	_ai_elapsed_since_update += safe_delta
+	var update_interval: float = 1.0 / (60.0 * _ai_update_rate)
+	if _ai_update_timer < update_interval:
+		return 0.0
 
-	if _ai_update_timer >= update_interval:
-		_ai_update_timer -= update_interval
-		return true
+	_ai_update_timer = fmod(_ai_update_timer, update_interval)
+	var elapsed: float = _ai_elapsed_since_update
+	_ai_elapsed_since_update = 0.0
+	return elapsed
 
-	return false
+
 
 
 # ============================================================================
