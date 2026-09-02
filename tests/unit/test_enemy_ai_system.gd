@@ -3125,6 +3125,14 @@ func test_ai_update_throttling() -> void:
 		"Clamped minimum rate should update at six hertz"
 	)
 
+	enemy.set_ai_update_rate(2.0)
+	assert_almost_eq(
+		enemy.consume_ai_update_delta(1.0 / 60.0),
+		1.0 / 60.0,
+		0.00001,
+		"AI update rate should clamp to full-rate updates above one"
+	)
+
 
 func test_ai_can_be_disabled() -> void:
 	if not enemy:
