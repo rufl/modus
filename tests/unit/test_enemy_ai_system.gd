@@ -3111,6 +3111,20 @@ func test_ai_update_throttling() -> void:
 		"Negative elapsed time should not reduce the update interval"
 	)
 
+	enemy.set_ai_update_rate(0.0)
+	enemy.set_update_offset(0.0)
+	assert_eq(
+		enemy.consume_ai_update_delta(1.0 / 60.0),
+		0.0,
+		"AI update rate should clamp to a throttled minimum"
+	)
+	assert_almost_eq(
+		enemy.consume_ai_update_delta(1.0 / 60.0),
+		1.0 / 6.0,
+		0.00001,
+		"Clamped minimum rate should update at six hertz"
+	)
+
 
 func test_ai_can_be_disabled() -> void:
 	if not enemy:
