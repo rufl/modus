@@ -1,5 +1,7 @@
 # Repository Agent Rules
 
+> **Documentation status: maintained reference.**
+
 <!-- lichforge-display-test-policy:start -->
 ## Golden rule: focused and contained tests
 
