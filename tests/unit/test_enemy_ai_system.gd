@@ -3098,6 +3098,19 @@ func test_ai_update_throttling() -> void:
 		"Full-rate AI should receive the current physics delta"
 	)
 
+	enemy.set_ai_update_rate(0.5)
+	enemy.set_update_offset(0.0)
+	assert_eq(
+		enemy.consume_ai_update_delta(-1.0),
+		0.0,
+		"Negative elapsed time should not advance throttled AI"
+	)
+	assert_eq(
+		enemy.consume_ai_update_delta(1.0 / 60.0),
+		0.0,
+		"Negative elapsed time should not reduce the update interval"
+	)
+
 
 func test_ai_can_be_disabled() -> void:
 	if not enemy:
