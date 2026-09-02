@@ -3133,6 +3133,15 @@ func test_ai_update_throttling() -> void:
 		"AI update rate should clamp to full-rate updates above one"
 	)
 
+	enemy.set_ai_update_rate(0.5)
+	enemy.set_update_offset(1.0)
+	assert_almost_eq(
+		enemy.consume_ai_update_delta(1.0 / 60.0),
+		1.0 / 60.0,
+		0.00001,
+		"An update offset should stagger cadence without inflating elapsed time"
+	)
+
 
 func test_ai_can_be_disabled() -> void:
 	if not enemy:
