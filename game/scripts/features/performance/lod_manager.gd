@@ -38,14 +38,16 @@ func _process(delta: float) -> void:
 	if enable_lod:
 		_lod_timer += delta
 		if _lod_timer >= lod_update_interval:
-			_lod_timer = 0.0
+			_lod_timer = fmod(_lod_timer, lod_update_interval) if lod_update_interval > 0.0 else 0.0
 			_update_lod_levels()
 
 	# Update culling
 	if enable_culling:
 		_cull_timer += delta
 		if _cull_timer >= cull_update_interval:
-			_cull_timer = 0.0
+			_cull_timer = (
+				fmod(_cull_timer, cull_update_interval) if cull_update_interval > 0.0 else 0.0
+			)
 			_update_entity_culling()
 
 

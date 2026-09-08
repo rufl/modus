@@ -7,6 +7,7 @@ class ManagedEntity:
 	extends Node3D
 	var level: int = -1
 	var updates: int = 0
+	var is_dead: bool = false
 
 	func set_lod_level(value: int) -> void:
 		level = value
@@ -94,3 +95,37 @@ func test_camera_teardown_and_replacement_resume_updates() -> void:
 	replacement.make_current()
 	manager._process(0.25)
 	assert_eq(entity.level, 2, "Updates should resume from the replacement camera")
+
+
+func test_lod_preserves_remainder_without_catch_up_bursts() -> void:
+	manager.lod_update_interval = 0.25
+	manager._process(1.125)
+	assert_eq(entity.updates, 1, "A hitch should refresh detail once, not replay obsolete updates")
+	manager._process(0.125)
+	assert_eq(entity.updates, 2, "Elapsed remainder should count toward the next update")
+
+
+func test_culling_preserves_remainder_without_catch_up_bursts() -> void:
+	manager.enable_lod = false
+	manager.enable_culling = true
+	manager.cull_update_interval = 0.25
+	entity.add_to_group("enemies")
+	entity.position.x = 200.0
+	watch_signals(manager)
+	manager._process(1.125)
+	assert_signal_emit_count(manager, "entity_culled", 1)
+	manager._process(0.125)
+	assert_signal_emit_count(manager, "entity_culled", 2)
+
+
+func test_zero_intervals_update_each_frame() -> void:
+	manager.enable_culling = true
+	manager.lod_update_interval = 0.0
+	manager.cull_update_interval = 0.0
+	entity.add_to_group("enemies")
+	entity.position.x = 200.0
+	watch_signals(manager)
+	manager._process(0.125)
+	manager._process(0.125)
+	assert_eq(entity.updates, 2)
+	assert_signal_emit_count(manager, "entity_culled", 2)
