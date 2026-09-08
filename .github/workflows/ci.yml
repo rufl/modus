@@ -48,6 +48,15 @@ jobs:
         with:
           lfs: true
 
+      - name: Install pinned GUT dependency
+        run: |
+          curl --fail --location --output "$RUNNER_TEMP/gut.tar.gz" \
+            "https://github.com/bitwes/Gut/archive/refs/tags/v9.7.1.tar.gz"
+          mkdir -p "$RUNNER_TEMP/gut" addons
+          tar -xzf "$RUNNER_TEMP/gut.tar.gz" -C "$RUNNER_TEMP/gut" --strip-components=1
+          cp -a "$RUNNER_TEMP/gut/addons/gut" addons/gut
+          test -s addons/gut/gut_cmdln.gd
+
       - name: Install Godot
         run: |
           archive="Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
