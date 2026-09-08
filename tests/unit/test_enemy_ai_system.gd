@@ -2788,12 +2788,6 @@ func test_ai_combat_style() -> void:
 
 
 func test_ai_update_throttling() -> void:
-	if not enemy:
-		pass_test("Enemy not available - skipping throttling test")
-		return
-
-	# Enemy should have AI update rate control
-	assert_true("_ai_update_rate" in enemy, "Enemy should have AI update rate for performance")
 	enemy.set_ai_update_rate(0.5)
 	enemy.set_update_offset(0.0)
 	assert_eq(enemy.consume_ai_update_delta(1.0 / 60.0), 0.0, "Half-rate AI should defer one tick")
@@ -2812,6 +2806,8 @@ func test_ai_update_throttling() -> void:
 		"Full-rate AI should receive the current physics delta"
 	)
 
+
+func test_ai_update_rejects_negative_elapsed_time() -> void:
 	enemy.set_ai_update_rate(0.5)
 	enemy.set_update_offset(0.0)
 	assert_eq(
@@ -2825,6 +2821,8 @@ func test_ai_update_throttling() -> void:
 		"Negative elapsed time should not reduce the update interval"
 	)
 
+
+func test_ai_update_minimum_rate_preserves_elapsed_time() -> void:
 	enemy.set_ai_update_rate(0.0)
 	enemy.set_update_offset(0.0)
 	var delivered_elapsed: float = 0.0
@@ -2842,6 +2840,8 @@ func test_ai_update_throttling() -> void:
 		"Minimum-rate updates should preserve elapsed simulation time"
 	)
 
+
+func test_ai_update_full_rate_transition_preserves_elapsed_time() -> void:
 	enemy.set_ai_update_rate(0.5)
 	enemy.set_update_offset(0.0)
 	assert_eq(enemy.consume_ai_update_delta(0.01), 0.0)
@@ -2853,6 +2853,8 @@ func test_ai_update_throttling() -> void:
 		"Returning to full rate should deliver deferred elapsed time"
 	)
 
+
+func test_ai_update_rate_above_one_updates_each_tick() -> void:
 	enemy.set_ai_update_rate(2.0)
 	assert_almost_eq(
 		enemy.consume_ai_update_delta(1.0 / 60.0),
@@ -2861,6 +2863,8 @@ func test_ai_update_throttling() -> void:
 		"AI update rate should clamp to full-rate updates above one"
 	)
 
+
+func test_ai_update_stagger_does_not_inflate_elapsed_time() -> void:
 	enemy.set_ai_update_rate(0.5)
 	enemy.set_update_offset(1.0)
 	assert_almost_eq(
@@ -2868,6 +2872,19 @@ func test_ai_update_throttling() -> void:
 		1.0 / 60.0,
 		0.00001,
 		"An update offset should stagger cadence without inflating elapsed time"
+	)
+
+
+func test_ai_update_lod_transition_preserves_deferred_time() -> void:
+	enemy.set_ai_update_rate(0.5)
+	enemy.set_update_offset(0.0)
+	assert_eq(enemy.consume_ai_update_delta(0.01), 0.0)
+	enemy._on_lod_changed(0)
+	assert_almost_eq(
+		enemy.consume_ai_update_delta(0.01),
+		0.02,
+		0.00001,
+		"Changing LOD and staggering should preserve deferred elapsed time"
 	)
 
 

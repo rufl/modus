@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- Enemy LOD changes now preserve deferred AI time when assigning new stagger offsets. Split timing scenarios into isolated regressions and reproduced the real LOD callback's elapsed-time loss before fixing it; enemy AI proof passes 132/132 with 328 assertions.
 - Preserved elapsed interval remainders for LOD and culling updates so uneven frames do not slow their configured cadence. Long stalls still trigger only one refresh per frame, and zero intervals retain per-frame behavior. Focused runtime regressions pass 9/9 with 24 assertions.
 - LOD updates now follow the viewport's active camera after camera switches. Replaced synthetic LOD arithmetic and optional-pass tests with six runtime regressions covering camera handoff/replacement, update cadence, distance boundaries, bias, and entity registration; all 18 assertions pass under Godot 4.7.2.
 - Fixed the two hosted mesh-LOD failures by reading native LOD buffers through RenderingServer instead of a nonexistent ArrayMesh method. Focused LOD regressions pass 2/2 with six assertions; CI now installs its pinned GUT dependency on clean checkouts.

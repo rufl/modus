@@ -1018,7 +1018,6 @@ func set_ai_update_rate(rate: float) -> void:
 func set_update_offset(offset: float) -> void:
 	_ai_update_offset = offset
 	_ai_update_timer = offset
-	_ai_elapsed_since_update = 0.0
 
 
 ## Return the real elapsed time owned by the next AI update, or zero while
