@@ -82,10 +82,15 @@ func _update_player_status(delta: float) -> void:
 					if (
 						_match_service.multiplayer
 						and _match_service.multiplayer.has_multiplayer_peer()
+						and not _match_service.multiplayer.is_server()
 					):
-						_match_service.update_player_status.rpc(hp, status)
+						_match_service.update_player_status.rpc_id(
+							1, _player.get_multiplayer_authority(), hp, status
+						)
 					else:
-						_match_service.update_player_status(hp, status)
+						_match_service.update_player_status(
+							_player.get_multiplayer_authority(), hp, status
+						)
 
 
 func _is_editing_mode() -> bool:

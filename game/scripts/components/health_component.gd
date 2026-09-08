@@ -61,11 +61,20 @@ func set_health(hp: float, armor: float = -1.0) -> void:
 		return
 
 	var new_armor: float = armor if armor >= 0 else current_armor
-	_sync_health_state.rpc(hp, new_armor)
+	_apply_health_state(hp, new_armor)
+	if multiplayer.has_multiplayer_peer():
+		_sync_health_state.rpc(hp, new_armor)
 
 
-@rpc("authority", "call_remote", "reliable")
+@rpc("any_peer", "call_remote", "reliable")
 func _sync_health_state(new_health: float, new_armor: float, source_id: int = -1) -> void:
+	# Player ownership is not health authority: only the server publishes health.
+	if multiplayer.get_remote_sender_id() != 1:
+		return
+	_apply_health_state(new_health, new_armor, source_id)
+
+
+func _apply_health_state(new_health: float, new_armor: float, source_id: int = -1) -> void:
 	var old_health: float = current_health
 
 	current_health = new_health
@@ -88,7 +97,7 @@ func _sync_health_state(new_health: float, new_armor: float, source_id: int = -1
 					"target": parent,
 					"amount": dmg_amount,
 					"source_id": source_id,
-					"source": instance_from_id(source_id)
+					"source": instance_from_id(source_id) if source_id > 0 else null
 				}
 			)
 

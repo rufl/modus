@@ -495,7 +495,7 @@ func _synchronize_game_state() -> void:
 			obj.update_visual_state()
 
 	# Sync spawn positions - ensure players don't spawn on top of each other
-	var spawn_points: Array[Node] = get_tree().get_nodes_in_group("player_spawn")
+	var spawn_points: Array[Node] = get_tree().get_nodes_in_group("spawn_player")
 	if not spawn_points.is_empty():
 		# Mark used spawn points
 		var used_spawns: Array[Vector3] = []

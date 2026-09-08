@@ -116,9 +116,8 @@ func set_player_state(peer_id: int, new_state: int) -> void:
 			# Propagate to MatchService for Scoreboard
 			var ms: MatchSvc = MatchSvc.get_instance()
 			if ms:
-				# Pass the Enums.PlayerState value directly
-				ms.update_player_status.rpc(
-					100 if new_state == Enums.PlayerState.ALIVE else 0, new_state
+				ms.update_player_status(
+					peer_id, 100 if new_state == Enums.PlayerState.ALIVE else 0, new_state
 				)
 
 		state_changed.emit(peer_id, old_state, new_state)

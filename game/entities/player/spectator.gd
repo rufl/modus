@@ -51,7 +51,11 @@ func _ready() -> void:
 		var state_spec: int = 3  # PlayerState.SPECTATING
 		if is_instance_valid(Enums):
 			state_spec = Enums.PlayerState.SPECTATING
-		match_service.update_player_status.rpc(0, state_spec)
+		var peer_id: int = multiplayer.get_unique_id()
+		if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
+			match_service.update_player_status.rpc_id(1, peer_id, 0, state_spec)
+		else:
+			match_service.update_player_status(peer_id, 0, state_spec)
 
 	# Create spectator UI overlay
 	if _show_overlay:

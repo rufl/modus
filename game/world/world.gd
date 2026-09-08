@@ -155,6 +155,7 @@ func _ready() -> void:
 	spawner.add_spawnable_scene("res://game/scenes/items/pickups/health_pickup.tscn")
 	spawner.add_spawnable_scene("res://game/scenes/items/pickups/ammo_pickup.tscn")
 	spawner.add_spawnable_scene("res://game/scenes/items/pickups/armor_pickup.tscn")
+	spawner.add_spawnable_scene("res://game/scenes/items/pickups/consumable_pickup.tscn")
 	spawner.add_spawnable_scene("res://game/scenes/items/pickups/double_jump_powerup.tscn")
 	spawner.add_spawnable_scene("res://game/scenes/items/pickups/dodge_powerup.tscn")
 
@@ -227,7 +228,7 @@ func spawn_player_node(peer_id: int, mode: String) -> void:
 	print("========== SPAWNING PLAYER ==========")
 	print("[World] spawn_player_node called - peer_id: ", peer_id, " mode: ", mode)
 
-	var player: Node
+	var player: Node3D
 	if mode == "editor":
 		print("[World] Instantiating EditorAvatarScene")
 		player = EditorAvatarScene.instantiate()
@@ -238,22 +239,29 @@ func spawn_player_node(peer_id: int, mode: String) -> void:
 	player.name = str(peer_id)
 	print("[World] Player name set to: ", player.name)
 
-	# Add player to scene tree first
-	print("[World] Adding player to scene tree...")
-	add_child(player)
-	print("[World] Player added to scene tree")
-
-	# Then set position and rotation (now that it's in the tree)
-	var spawn_points := get_tree().get_nodes_in_group("player_spawn")
+	# Configure spawn state before _ready and MultiplayerSpawner observe the player.
+	var spawn_transform := Transform3D(Basis.IDENTITY, Vector3(0, 2, 0))
+	var spawn_points: Array[Node3D] = []
+	for marker: Node in get_tree().get_nodes_in_group("spawn_player"):
+		if marker is Node3D and is_ancestor_of(marker):
+			spawn_points.append(marker)
 	if not spawn_points.is_empty():
 		var spawn: Node3D = spawn_points.pick_random()
-		player.global_position = spawn.global_position
-		player.global_rotation = spawn.global_rotation
+		spawn_transform = Transform3D(
+			Basis.from_euler(spawn.global_rotation), spawn.global_position
+		)
 		print("[World] Player spawned at spawn point: ", spawn.global_position)
 	else:
 		# Fallback to map origin with slight Y offset for physics safety
-		player.global_position = Vector3(0, 2, 0)
 		print("[World] Player spawned at fallback position: Vector3(0, 2, 0)")
+
+	var world_node: Node = self
+	player.transform = (
+		(world_node as Node3D).global_transform.affine_inverse() * spawn_transform
+		if world_node is Node3D
+		else spawn_transform
+	)
+	add_child(player)
 
 	# Register player with PlayerService for reconnect support
 	var gs := GameManager.get_core_system("gameplay") as GameplaySvc

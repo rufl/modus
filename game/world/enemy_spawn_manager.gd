@@ -4,6 +4,8 @@ extends Node
 signal enemy_spawned(enemy: Node, position: Vector3)
 
 const EnemyScene: PackedScene = preload("res://game/entities/enemies/enemy.tscn")
+const SpawnPointScript: GDScript = preload("res://shared/editor_core/nodes/spawn_point.gd")
+const ItemSpawnerScript: GDScript = preload("res://game/scripts/features/loot/item_spawner.gd")
 
 var enemy_spawns: PackedVector3Array = PackedVector3Array(
 	[
@@ -39,12 +41,11 @@ func spawn_enemies() -> void:
 	if not _world.multiplayer.is_server():
 		return
 
-	# Try to find LevelRoot for modern spawn system
-	var level_roots: Array[Node] = _world.get_tree().get_nodes_in_group("LevelRoot")
-
-	if not level_roots.is_empty():
-		_spawn_from_level_data(level_roots[0])
-		return
+	# Authored levels take precedence over legacy arena spawns.
+	for level_root: Node in _world.get_tree().get_nodes_in_group("level_root"):
+		if level_root == _world or _world.is_ancestor_of(level_root):
+			_spawn_from_level_data(level_root)
+			return
 
 	# Legacy spawning logic (fallback)
 	_spawn_legacy_enemies()
@@ -55,11 +56,9 @@ func _spawn_from_level_data(level_root: Node) -> void:
 	if logger and logger.has_method("info"):
 		logger.info("[EnemySpawn] Spawning from Level Data: " + " " + str(level_root.name), "World")
 
-	# Find all spawn points in the level
-	var children: Array[Node] = level_root.find_children("", "LevelSpawnPoint", true, false)
-
-	for node: Node in children:
-		if not node.has_method("spawn"):
+	# find_children's type filter only recognizes native classes, not script classes.
+	for node: Node in level_root.find_children("*", "Node3D", true, false):
+		if not node is SpawnPointScript:
 			continue
 
 		var data: Dictionary = node.spawn()
@@ -81,13 +80,9 @@ func _spawn_enemy_from_data(data: Dictionary) -> void:
 	var rot: Vector3 = data.get("rotation", Vector3.ZERO)
 	var patrol_radius: float = data.get("patrol_radius", 0.0)
 
-	var enemy: Node = spawn_enemy_at(pos, enemy_id)
+	var enemy: Node = spawn_enemy_at(pos, enemy_id, false, rot)
 
 	if enemy:
-		# Apply rotation from spawn data
-		if rot != Vector3.ZERO:
-			enemy.rotation = rot
-
 		# Apply patrol radius to AI controller if present
 		if patrol_radius > 0.0:
 			var ai_controller: Node = enemy.get_node_or_null("AIController")
@@ -95,10 +90,18 @@ func _spawn_enemy_from_data(data: Dictionary) -> void:
 				ai_controller.patrol_radius = patrol_radius
 
 
-func _spawn_item_from_data(_data: Dictionary) -> void:
-	# Item spawning logic here if needed
-	# For now, multiplayer items are usually pre-placed or drops
-	pass
+func _spawn_item_from_data(data: Dictionary) -> void:
+	var spawner: LootItemSpawner = ItemSpawnerScript.new()
+	spawner.spawn_on_ready = false
+	spawner.spawn_radius = 0.0
+	spawner.spawn_height = 0.0
+	spawner.spawn_parent = _world
+	spawner.respawn_delay = data.get("respawn_time", 0.0)
+	spawner.respawn_enabled = spawner.respawn_delay > 0.0
+	add_child(spawner)
+	spawner.spawn_item_at(
+		data.get("position", Vector3.ZERO), data.get("id", ""), data.get("rotation", Vector3.ZERO)
+	)
 
 
 func _spawn_legacy_enemies() -> void:
@@ -182,7 +185,10 @@ func _spawn_special_enemy(ename: String, pos: Vector3, enemy_id: String) -> void
 
 
 func spawn_enemy_at(
-	pos: Vector3, enemy_id: String = "grunt_basic", is_aggressive: bool = false
+	pos: Vector3,
+	enemy_id: String = "grunt_basic",
+	is_aggressive: bool = false,
+	rot: Vector3 = Vector3.ZERO
 ) -> Node:
 	if not _world.multiplayer.is_server():
 		return null
@@ -201,10 +207,15 @@ func spawn_enemy_at(
 		return null
 
 	var spawn_pos: Vector3 = _find_valid_spawn_position(pos)
-	var enemy: Node = EnemyScene.instantiate()
+	var enemy: Node3D = EnemyScene.instantiate()
 
 	enemy.name = "Enemy_" + str(Time.get_ticks_msec())
-	enemy.position = spawn_pos
+	var spawn_transform := Transform3D(Basis.from_euler(rot), spawn_pos)
+	enemy.transform = (
+		(_world as Node3D).global_transform.affine_inverse() * spawn_transform
+		if _world is Node3D
+		else spawn_transform
+	)
 	if "enemy_id" in enemy:
 		enemy.enemy_id = enemy_id
 
@@ -212,7 +223,7 @@ func spawn_enemy_at(
 	if is_aggressive:
 		enemy.set_meta("spawn_aggressive", true)
 
-	_world.add_child(enemy)
+	_world.add_child(enemy, true)
 
 	# Track spawn in match stats
 	_match_stats["enemies_spawned"] += 1

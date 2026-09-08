@@ -51,15 +51,15 @@ func _init():
 	# Test 2: Match service rate limiting
 	print("\nTest 2: Match service update_player_status (10 calls/sec)")
 	peer_id = 3
-	var result4 = network_manager.validate_rpc(peer_id, "update_player_status", [100, 1])
+	var result4 = network_manager.validate_rpc(peer_id, "update_player_status", [peer_id, 100, 1])
 	print("  First call: %s (expected: true)" % result4)
 
-	var result5 = network_manager.validate_rpc(peer_id, "update_player_status", [100, 1])
+	var result5 = network_manager.validate_rpc(peer_id, "update_player_status", [peer_id, 100, 1])
 	print("  Second call (immediate): %s (expected: false)" % result5)
 
 	await create_timer(0.15).timeout
 
-	var result6 = network_manager.validate_rpc(peer_id, "update_player_status", [100, 1])
+	var result6 = network_manager.validate_rpc(peer_id, "update_player_status", [peer_id, 100, 1])
 	print("  Third call (after 0.15s): %s (expected: true)" % result6)
 
 	# Test 3: Editor rate limiting

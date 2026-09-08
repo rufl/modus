@@ -4,6 +4,17 @@ extends ModusGutTestBase
 # Converted from legacy Dictionary format to GUT assertions
 
 var _network_manager: Node = null
+var _reconnect_root: Node = null
+
+
+class ReconnectProbe:
+	extends NetworkManager
+
+	var attempted_hosts: Array[String] = []
+
+	func join_game(host: String, _port: int = -1) -> Error:
+		attempted_hosts.append(host)
+		return OK
 
 
 func before_each():
@@ -15,6 +26,14 @@ func before_each():
 
 
 func after_each():
+	if is_instance_valid(_reconnect_root):
+		var root_path: NodePath = _reconnect_root.get_path()
+		var api: MultiplayerAPI = _reconnect_root.multiplayer
+		if api.multiplayer_peer:
+			api.multiplayer_peer.close()
+		_reconnect_root.free()
+		get_tree().set_multiplayer(null, root_path)
+		_reconnect_root = null
 	modus_teardown()
 
 
@@ -143,11 +162,11 @@ func test_rpc_rate_limiting_match_service():
 		var method: String = "update_player_status"
 
 		# Should allow up to 10 calls per second (0.1s interval)
-		var result1: bool = _network_manager.validate_rpc(peer_id, method, [100, 1])
+		var result1: bool = _network_manager.validate_rpc(peer_id, method, [peer_id, 100, 1])
 		assert_true(result1, "First update_player_status call should succeed")
 
 		# Immediate second call should fail
-		var result2: bool = _network_manager.validate_rpc(peer_id, method, [100, 1])
+		var result2: bool = _network_manager.validate_rpc(peer_id, method, [peer_id, 100, 1])
 		assert_false(result2, "Immediate second update_player_status call should be rate limited")
 
 
@@ -178,3 +197,60 @@ func test_rpc_rate_limiting_editor():
 		# Third call should succeed
 		var result3: bool = _network_manager.validate_rpc(peer_id, method, [{}])
 		assert_true(result3, "place_block call after cooldown should succeed")
+
+
+func _create_reconnect_probe() -> ReconnectProbe:
+	_reconnect_root = Node.new()
+	_reconnect_root.name = "ReconnectTest"
+	add_child(_reconnect_root)
+	var api := SceneMultiplayer.new()
+	get_tree().set_multiplayer(api, _reconnect_root.get_path())
+	var peer := ENetMultiplayerPeer.new()
+	assert_eq(peer.create_client("127.0.0.1", 9), OK)
+	api.multiplayer_peer = peer
+	var probe := ReconnectProbe.new()
+	_reconnect_root.add_child(probe)
+	probe.set_process(false)
+	probe._reconnect_delay_ms = 20
+	probe._last_host_info = {"host": "127.0.0.1", "port": 9, "is_steam": false}
+	return probe
+
+
+func test_disconnect_cancels_pending_retry_and_stale_timeout() -> void:
+	var probe := _create_reconnect_probe()
+	probe._on_peer_disconnected(1)
+
+	# The transport may already be gone by the time the user leaves.
+	probe.multiplayer.multiplayer_peer.close()
+	probe.multiplayer.multiplayer_peer = null
+	probe.disconnect_game()
+	probe._on_reconnect_timer_timeout()
+	await get_tree().create_timer(0.08).timeout
+
+	assert_true(
+		probe.attempted_hosts.is_empty(), "Leaving must cancel both queued and stale retries"
+	)
+	assert_true(probe._reconnect_timer.is_stopped(), "Leaving must stop the pending retry timer")
+	assert_false(probe._last_host_info.has("host"), "Leaving must forget the reconnect destination")
+
+
+func test_unexpected_disconnect_retries_remembered_server() -> void:
+	var probe := _create_reconnect_probe()
+	probe._on_peer_disconnected(1)
+	await get_tree().create_timer(0.08).timeout
+
+	assert_eq(probe.attempted_hosts, ["127.0.0.1"], "Unexpected loss must still retry the server")
+
+
+func test_disconnect_from_retry_notification_cancels_retry() -> void:
+	var probe := _create_reconnect_probe()
+	probe.reconnection_attempt.connect(
+		func(_attempt: int, _maximum: int) -> void: probe.disconnect_game()
+	)
+	probe._on_peer_disconnected(1)
+	await get_tree().create_timer(0.08).timeout
+
+	assert_true(
+		probe.attempted_hosts.is_empty(), "A listener leaving the game must cancel its retry"
+	)
+	assert_true(probe._reconnect_timer.is_stopped())

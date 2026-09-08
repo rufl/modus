@@ -30,11 +30,11 @@ func test_showcase_has_player_spawns() -> void:
 	if not map:
 		return
 
-	var spawn_points := _get_nodes_in_group(map, "player_spawn")
+	var spawn_points := _get_nodes_in_group(map, "spawn_player")
 	assert_gt(
 		spawn_points.size(),
 		0,
-		"Showcase map should have at least one player spawn point in 'player_spawn' group"
+		"Showcase map should have at least one player spawn point in 'spawn_player' group"
 	)
 
 	# Verify spawn points are valid Node3D
@@ -223,7 +223,7 @@ func test_showcase_spawn_points_valid() -> void:
 	if not map:
 		return
 
-	var player_spawns := _get_nodes_in_group(map, "player_spawn")
+	var player_spawns := _get_nodes_in_group(map, "spawn_player")
 
 	if player_spawns.size() == 0:
 		map.free()
@@ -258,7 +258,7 @@ func test_showcase_spawns_at_reasonable_height() -> void:
 	if not map:
 		return
 
-	var player_spawns := _get_nodes_in_group(map, "player_spawn")
+	var player_spawns := _get_nodes_in_group(map, "spawn_player")
 
 	if player_spawns.size() == 0:
 		map.free()
@@ -428,7 +428,7 @@ func test_showcase_map_summary() -> void:
 	var summary := "\n=== SHOWCASE MAP SUMMARY ===\n"
 
 	# Spawns
-	var player_spawns := _get_nodes_in_group(map, "player_spawn")
+	var player_spawns := _get_nodes_in_group(map, "spawn_player")
 	var enemy_spawns := _get_nodes_in_group(map, "enemy_spawn")
 	summary += "Player Spawns: %d\n" % player_spawns.size()
 	summary += "Enemy Spawns: %d\n" % enemy_spawns.size()

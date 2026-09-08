@@ -174,9 +174,7 @@ func dash(direction: Vector3) -> void:
 func set_target_position(pos: Vector3) -> void:
 	_target_pos = pos
 	if _parent_body and _parent_body.global_position.distance_squared_to(pos) <= 0.01:
-		_is_moving = false
-		if nav_agent:
-			nav_agent.target_position = _parent_body.global_position
+		stop()
 		destination_reached.emit()
 		return
 
@@ -186,7 +184,14 @@ func set_target_position(pos: Vector3) -> void:
 
 func stop() -> void:
 	_is_moving = false
-	nav_agent.target_position = _parent_body.global_position
+	_is_dashing = false
+	_dash_time_left = 0.0
+	_dash_velocity = Vector3.ZERO
+	if _parent_body:
+		_parent_body.velocity.x = 0.0
+		_parent_body.velocity.z = 0.0
+		if nav_agent:
+			nav_agent.target_position = _parent_body.global_position
 
 
 func _physics_process(delta: float) -> void:
@@ -214,7 +219,7 @@ func _physics_process(delta: float) -> void:
 
 	# If we are close enough or navigation finished
 	if nav_agent.is_navigation_finished():
-		_is_moving = false
+		stop()
 		destination_reached.emit()
 		return
 

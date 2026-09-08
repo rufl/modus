@@ -15,11 +15,11 @@ func test_world_map_has_player_spawns() -> void:
 	if not map:
 		return
 
-	var spawn_points := _get_nodes_in_group(map, "player_spawn")
+	var spawn_points := _get_nodes_in_group(map, "spawn_player")
 	assert_gt(
 		spawn_points.size(),
 		0,
-		"Map should have at least one player spawn point in 'player_spawn' group"
+		"Map should have at least one player spawn point in 'spawn_player' group"
 	)
 
 	# Verify spawn points are valid Node3D
@@ -197,7 +197,7 @@ func test_world_map_has_camera_spawn() -> void:
 
 	# Player spawns should be sufficient for camera positioning
 	# But we can also check for explicit camera markers
-	var player_spawns := _get_nodes_in_group(map, "player_spawn")
+	var player_spawns := _get_nodes_in_group(map, "spawn_player")
 	var camera_markers := _get_nodes_in_group(map, "camera_spawn")
 
 	var has_camera_position := player_spawns.size() > 0 or camera_markers.size() > 0
@@ -216,7 +216,7 @@ func test_world_map_spawn_points_not_overlapping() -> void:
 	if not map:
 		return
 
-	var player_spawns := _get_nodes_in_group(map, "player_spawn")
+	var player_spawns := _get_nodes_in_group(map, "spawn_player")
 
 	# Check that spawn points are not too close to each other
 	var min_distance := 2.0  # Minimum 2 units apart
@@ -246,7 +246,7 @@ func test_world_map_spawns_above_ground() -> void:
 	if not map:
 		return
 
-	var player_spawns := _get_nodes_in_group(map, "player_spawn")
+	var player_spawns := _get_nodes_in_group(map, "spawn_player")
 
 	# Check that spawn points are not at y=0 (likely underground or invalid)
 	for spawn in player_spawns:

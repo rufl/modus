@@ -116,6 +116,9 @@ func exit_downed() -> void:
 	is_downed = false
 	is_being_revived = false
 	revive_progress = 0.0
+	bleedout_timer = 0.0
+	_revive_in_progress = false
+	reviver_path = NodePath()
 	set_process(false)
 
 

@@ -48,11 +48,16 @@ func _ready() -> void:
 		# Hide own mesh
 		mesh.visible = false
 
-		# Broadcast EDIT status to scoreboard
-		# Broadcast EDIT status to scoreboard
+		# Report EDIT status through the authoritative scoreboard.
 		var gs := GameManager.get_core_system("gameplay") as GameplaySvc
 		if gs and gs.match_service:
-			gs.match_service.update_player_status.rpc(0, "EDIT")
+			var peer_id: int = multiplayer.get_unique_id()
+			if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
+				gs.match_service.update_player_status.rpc_id(
+					1, peer_id, 0, Enums.PlayerState.EDITING
+				)
+			else:
+				gs.match_service.update_player_status(peer_id, 0, Enums.PlayerState.EDITING)
 
 		# Enable Editor Mode automatically
 		call_deferred("_enable_editor_interface")

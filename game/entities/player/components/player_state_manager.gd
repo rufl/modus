@@ -16,6 +16,7 @@ var _match_service: Node
 var _godmode_mat: ShaderMaterial
 var _invisible_mat: ShaderMaterial
 var _spectator_instance: Node3D = null
+var _respawn_timer: SceneTreeTimer
 
 
 func _init() -> void:
@@ -34,6 +35,17 @@ func setup(player: CharacterBody3D, health_comp: HealthComponent, match_svc: Nod
 
 func set_respawn_time(time: float) -> void:
 	respawn_time = time
+
+
+func _exit_tree() -> void:
+	_cancel_pending_respawn()
+	super._exit_tree()
+
+
+func _cancel_pending_respawn() -> void:
+	if _respawn_timer and _respawn_timer.timeout.is_connected(_respawn_player):
+		_respawn_timer.timeout.disconnect(_respawn_player)
+	_respawn_timer = null
 
 
 # Public State Transitions
@@ -56,18 +68,61 @@ func enter_downed() -> void:
 
 
 func revive() -> void:
-	current_state = Enums.PlayerState.ALIVE
-	state_changed.emit(current_state)
+	_restore_alive()
+	if multiplayer.has_multiplayer_peer():
+		_sync_downed_visuals.rpc(false)
 
 	if _health_component:
-		_health_component.reset_death_state()
 		# Restore 30% HP
 		_health_component.current_health = _health_component.max_health * 0.3
 
-	if not _player.multiplayer.has_multiplayer_peer():
-		_sync_downed_visuals(false)
-	else:
-		_sync_downed_visuals.rpc(false)
+
+## Restore saved health without respawn inventory refills or spawn-point relocation.
+## Only the server initiates restoration; peers receive the lifecycle before health.
+func restore_health(hp: float, armor: float) -> void:
+	if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
+		return
+	if hp > 0.0:
+		_restore_alive()
+		if multiplayer.has_multiplayer_peer():
+			_sync_restored_alive.rpc()
+	if _health_component:
+		_health_component.set_health(hp, armor)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _sync_restored_alive() -> void:
+	if multiplayer.get_remote_sender_id() != 1:
+		return
+	_restore_alive()
+
+
+func _restore_alive() -> void:
+	_cancel_pending_respawn()
+	if _health_component:
+		_health_component.reset_death_state()
+	if _player.downed_handler:
+		_player.downed_handler.exit_downed()
+	_player.velocity = Vector3.ZERO
+
+	# Restore the owning player's camera before releasing its spectator.
+	if _player.is_multiplayer_authority():
+		if _player.input_component and _player.input_component.has_method("set_mouse_captured"):
+			_player.input_component.set_mouse_captured(true)
+		else:
+			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		if _player.camera:
+			_player.camera.current = true
+	if is_instance_valid(_spectator_instance):
+		_spectator_instance.queue_free()
+		_spectator_instance = null
+
+	var state_changed_to_alive: bool = current_state != Enums.PlayerState.ALIVE
+	current_state = Enums.PlayerState.ALIVE
+	_sync_downed_visuals(false)
+	_sync_death_visuals(false)
+	if state_changed_to_alive:
+		state_changed.emit(current_state)
 
 
 func bleedout() -> void:
@@ -88,19 +143,28 @@ func enter_dead() -> void:
 		_start_spectating()
 
 		# Schedule respawn
-		get_tree().create_timer(respawn_time).timeout.connect(_respawn_player)
+		_cancel_pending_respawn()
+		_respawn_timer = get_tree().create_timer(respawn_time)
+		_respawn_timer.timeout.connect(_respawn_player)
 
 	# Sync visuals (Hide player)
-	_sync_death_visuals.rpc(true)
+	if multiplayer.has_multiplayer_peer():
+		_sync_death_visuals.rpc(true)
+	else:
+		_sync_death_visuals(true)
 
 	if _match_service:
 		# Notify match service
 		if _player.is_multiplayer_authority():
 			if _match_service.has_method("update_player_status"):
-				if _player.multiplayer.has_multiplayer_peer():
-					_match_service.update_player_status.rpc(0, Enums.PlayerState.DEAD)
+				if _player.multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
+					_match_service.update_player_status.rpc_id(
+						1, _player.get_multiplayer_authority(), 0, Enums.PlayerState.DEAD
+					)
 				else:
-					_match_service.update_player_status(0, Enums.PlayerState.DEAD)
+					_match_service.update_player_status(
+						_player.get_multiplayer_authority(), 0, Enums.PlayerState.DEAD
+					)
 
 
 # Visual Effects
@@ -222,27 +286,11 @@ func _start_spectating() -> void:
 
 
 func _respawn_player() -> void:
-	current_state = Enums.PlayerState.ALIVE
-	state_changed.emit(current_state)
-
-	# IMPORTANT: Restore player controls BEFORE freeing spectator
-	# to prevent camera being lost during the transition
-	if _player.input_component and _player.input_component.has_method("set_mouse_captured"):
-		_player.input_component.set_mouse_captured(true)
-	else:
-		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-	if _player.camera:
-		_player.camera.current = true
-
-	# Now safe to free spectator
-	if is_instance_valid(_spectator_instance):
-		_spectator_instance.queue_free()
-		_spectator_instance = null
-
-	_sync_death_visuals.rpc(false)
+	_restore_alive()
+	if multiplayer.has_multiplayer_peer():
+		_sync_death_visuals.rpc(false)
 
 	if _health_component:
-		_health_component.reset_death_state()
 		_health_component.current_health = _health_component.max_health
 
 	if _player.weapon_manager:
@@ -250,7 +298,7 @@ func _respawn_player() -> void:
 		_player.weapon_manager.switch_to_weapon(0)
 
 	# Find spawn point (group prioritized)
-	var spawn_points := get_tree().get_nodes_in_group("player_spawn")
+	var spawn_points := get_tree().get_nodes_in_group("spawn_player")
 	if not spawn_points.is_empty():
 		var spawn: Node3D = spawn_points.pick_random()
 		_player.global_position = spawn.global_position
@@ -269,10 +317,14 @@ func _respawn_player() -> void:
 		var hp: float = _health_component.current_health if _health_component else 100.0
 		if _player.is_multiplayer_authority():
 			if _match_service.has_method("update_player_status"):
-				if _player.multiplayer.has_multiplayer_peer():
-					_match_service.update_player_status.rpc(hp, Enums.PlayerState.ALIVE)
+				if _player.multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
+					_match_service.update_player_status.rpc_id(
+						1, _player.get_multiplayer_authority(), hp, Enums.PlayerState.ALIVE
+					)
 				else:
-					_match_service.update_player_status(hp, Enums.PlayerState.ALIVE)
+					_match_service.update_player_status(
+						_player.get_multiplayer_authority(), hp, Enums.PlayerState.ALIVE
+					)
 
 
 # RPCs

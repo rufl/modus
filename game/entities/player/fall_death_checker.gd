@@ -201,7 +201,7 @@ func _find_respawn_position() -> Vector3:
 	## Find best respawn position
 	# Check for spawn points in scene
 	var spawn_points: Array[Node] = []
-	spawn_points.assign(get_tree().get_nodes_in_group("player_spawn"))
+	spawn_points.assign(get_tree().get_nodes_in_group("spawn_player"))
 
 	if spawn_points.size() > 0:
 		var spawn_point: Node3D = spawn_points[0] as Node3D

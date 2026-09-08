@@ -59,16 +59,16 @@ size = Vector3(150, 1, 150)
 
 [node name="SpawnPoints" type="Node3D" parent="."]
 
-[node name="PlayerSpawn_01" type="Marker3D" parent="SpawnPoints" groups=["player_spawn"]]
+[node name="PlayerSpawn_01" type="Marker3D" parent="SpawnPoints" groups=["spawn_player"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
 
-[node name="PlayerSpawn_02" type="Marker3D" parent="SpawnPoints" groups=["player_spawn"]]
+[node name="PlayerSpawn_02" type="Marker3D" parent="SpawnPoints" groups=["spawn_player"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 2, 0)
 
-[node name="PlayerSpawn_03" type="Marker3D" parent="SpawnPoints" groups=["player_spawn"]]
+[node name="PlayerSpawn_03" type="Marker3D" parent="SpawnPoints" groups=["spawn_player"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 2, 0)
 
-[node name="PlayerSpawn_04" type="Marker3D" parent="SpawnPoints" groups=["player_spawn"]]
+[node name="PlayerSpawn_04" type="Marker3D" parent="SpawnPoints" groups=["spawn_player"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 5)
 
 [node name="EnemySpawn_01" type="Marker3D" parent="SpawnPoints" groups=["enemy_spawn"]]

@@ -27,15 +27,16 @@ func _setup_synchronizer() -> void:
 	if not synchronizer:
 		synchronizer = MultiplayerSynchronizer.new()
 		synchronizer.name = "MultiplayerSynchronizer"
-		add_child(synchronizer)
 
 	var config: SceneReplicationConfig = SceneReplicationConfig.new()
 	config.add_property(".:global_position")
 	config.add_property(".:global_rotation")
 	config.add_property(".:collected")
 
-	synchronizer.replication_config = config
 	_extend_synchronizer_config(config)
+	synchronizer.replication_config = config
+	if not synchronizer.get_parent():
+		add_child(synchronizer)
 
 
 ## Virtual method for subclasses to add more properties

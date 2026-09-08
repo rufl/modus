@@ -74,7 +74,7 @@ func _generate() -> void:
 	var spawn: Marker3D = Marker3D.new()
 	spawn.name = "PlayerSpawn_01"
 	spawn.position = Vector3(0, 1, 0)
-	spawn.add_to_group("player_spawn")
+	spawn.add_to_group("spawn_player")
 	level_root.add_child(spawn)
 	spawn.owner = level_root
 

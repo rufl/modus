@@ -47,6 +47,30 @@ func before_each() -> void:
 	await get_tree().process_frame
 
 
+func test_navigation_stop_prevents_horizontal_slide_and_preserves_fall_velocity() -> void:
+	var movement := MovementComponent.new()
+	player.add_child(movement)
+	# Allow deferred navigation initialization to finish before fixture teardown.
+	await get_tree().process_frame
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	movement.set_target_position(Vector3(100, 0, 100))
+	movement.can_dash = true
+	movement.dash(Vector3.RIGHT)
+	player.velocity = Vector3(8, -4, 6)
+	var start_position := player.global_position
+
+	movement.stop()
+	assert_eq(
+		player.velocity, Vector3(0, -4, 0), "Stopping cancels horizontal momentum, not gravity"
+	)
+	await get_tree().physics_frame
+	player.move_and_slide()
+	assert_eq(player.global_position.x, start_position.x)
+	assert_eq(player.global_position.z, start_position.z)
+	assert_lt(player.global_position.y, start_position.y, "A stopped airborne body still falls")
+
+
 # ============================================================================
 # Bunny Hopping Tests
 # ============================================================================

@@ -110,3 +110,36 @@ func test_player_service_exists() -> void:
 func test_player_service_has_required_methods() -> void:
 	var script: Script = load("res://game/scripts/features/player/player_service.gd")
 	assert_not_null(script, "Should be able to load player_service.gd")
+
+
+func test_set_health_applies_locally_once_and_preserves_unspecified_armor() -> void:
+	var body := Node3D.new()
+	add_child_autofree(body)
+	var health := HealthComponent.new()
+	body.add_child(health)
+	watch_signals(health)
+
+	health.set_health(25.0, 10.0)
+	assert_eq(health.current_health, 25.0)
+	assert_eq(health.current_armor, 10.0)
+	assert_signal_emit_count(health, "health_changed", 1)
+	assert_signal_emit_count(health, "armor_changed", 1)
+	assert_signal_emit_count(health, "damage_received", 1)
+
+	health.set_health(40.0)
+	assert_eq(health.current_health, 40.0)
+	assert_eq(health.current_armor, 10.0, "Omitted armor preserves the restored amount")
+	assert_signal_emit_count(health, "damage_received", 1, "Restoring more HP is not damage")
+
+
+func test_set_health_emits_death_only_once() -> void:
+	var body := Node3D.new()
+	add_child_autofree(body)
+	var health := HealthComponent.new()
+	body.add_child(health)
+	watch_signals(health)
+
+	health.set_health(0.0, 0.0)
+	health.set_health(0.0, 0.0)
+	assert_true(health.is_dead)
+	assert_signal_emit_count(health, "died", 1)

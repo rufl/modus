@@ -15,6 +15,11 @@ const TIER_CONFIG: Dictionary = {
 @export var tier: HealthTier = HealthTier.MEDIUM
 
 
+func _extend_synchronizer_config(config: SceneReplicationConfig) -> void:
+	super._extend_synchronizer_config(config)
+	config.add_property(".:tier")
+
+
 func _ready() -> void:
 	var config: Array = TIER_CONFIG[tier]
 	var heal_amount: int = config[0]

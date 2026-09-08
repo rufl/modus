@@ -4,6 +4,12 @@ extends "res://game/scenes/items/pickups/pickup_base.gd"
 @export var stack_count: int = 1
 
 
+func _extend_synchronizer_config(config: SceneReplicationConfig) -> void:
+	super._extend_synchronizer_config(config)
+	config.add_property(".:item_id")
+	config.add_property(".:stack_count")
+
+
 func _ready() -> void:
 	# Load item data from database
 	var data_service = GameManager.get_core_system("data")

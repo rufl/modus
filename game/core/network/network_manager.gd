@@ -1104,6 +1104,7 @@ func _on_peer_connected(id: int) -> void:
 		connection_established.emit(false)
 		_reconnect_attempts = 0  # Reset reconnect counter
 		_is_reconnecting = false
+		_reconnect_timer.stop()
 
 		# Client side: Send auth ticket if using Steam
 		if is_steam_networking_available():
@@ -1353,11 +1354,12 @@ func join_game(host: String, port: int = -1) -> Error:
 			if logger2 and logger2.has_method("info"):
 				logger2.info(msg, "Network")
 
+	_expected_server_disconnect = false
 	multiplayer.multiplayer_peer = peer
-	connection_established.emit(false)
 
-	# Save for reconnection
+	# Save before notifying listeners, which may explicitly disconnect.
 	_last_host_info = {"host": host, "port": port, "is_steam": is_steam_id}
+	connection_established.emit(false)
 
 	return OK
 
@@ -1366,8 +1368,14 @@ func join_game(host: String, port: int = -1) -> Error:
 
 
 func disconnect_game() -> void:
+	_expected_server_disconnect = true
+	_is_reconnecting = false
+	_reconnect_attempts = 0
+	_last_host_info.clear()
+	if _reconnect_timer:
+		_reconnect_timer.stop()
 	if multiplayer.multiplayer_peer:
-		_expected_server_disconnect = true  # Prevent auto-reconnect
+		# Cancellation precedes close, which may emit disconnection signals.
 		multiplayer.multiplayer_peer.close()
 		multiplayer.multiplayer_peer = null
 	var gm: Node = get_node_or_null("/root/GameManager")
@@ -1375,10 +1383,6 @@ func disconnect_game() -> void:
 		var logger: Variant = gm.get_core_system("logger")
 		if logger and logger.has_method("info"):
 			logger.info("[Network] Disconnected from game", "Network")
-
-	# Reset state
-	_is_reconnecting = false
-	_reconnect_attempts = 0
 
 
 ## Check if Steam networking is available and enabled
@@ -1404,7 +1408,11 @@ func get_network_mode() -> String:
 
 
 func _attempt_auto_reconnect() -> void:
+	if _expected_server_disconnect or not _last_host_info.get("host"):
+		return
 	if _reconnect_attempts >= _max_reconnect_attempts:
+		_is_reconnecting = false
+		_reconnect_timer.stop()
 		var gm: Node = get_node_or_null("/root/GameManager")
 		if gm:
 			var logger: Variant = gm.get_core_system("logger")
@@ -1429,11 +1437,13 @@ func _attempt_auto_reconnect() -> void:
 				"Network"
 			)
 
-	reconnection_attempt.emit(_reconnect_attempts, _max_reconnect_attempts)
 	_reconnect_timer.start(delay)
+	reconnection_attempt.emit(_reconnect_attempts, _max_reconnect_attempts)
 
 
 func _on_reconnect_timer_timeout() -> void:
+	if not _is_reconnecting or _expected_server_disconnect:
+		return
 	if not _last_host_info.get("host"):
 		var gm: Node = get_node_or_null("/root/GameManager")
 		if gm:

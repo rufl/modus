@@ -57,16 +57,17 @@ func get_persistence_data() -> Dictionary:
 
 
 func apply_persistence_data(data: Dictionary) -> void:
+	if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
+		return
+
 	# Restore Health
 	if _health_component:
 		var hp: float = data.get("health", _health_component.max_health)
 		var arm: float = data.get("armor", 0.0)
-		# Use public setter to sync if available, or set directly
-		if _health_component.has_method("set_health"):
-			_health_component.set_health(hp, arm)
+		if _player.state_manager:
+			_player.state_manager.restore_health(hp, arm)
 		else:
-			_health_component.current_health = hp
-			_health_component.current_armor = arm
+			_health_component.set_health(hp, arm)
 
 	# Restore Inventory/Ammo
 	if data.has("inventory") and _weapon_manager:

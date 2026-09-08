@@ -262,10 +262,14 @@ func _deserialize_players(data: Array) -> void:
 				node.global_position = _array_to_vec3(player_data.get("position", [0, 0, 0]))
 				node.global_rotation = _array_to_vec3(player_data.get("rotation", [0, 0, 0]))
 
-				# Restore health/armor via health_component
-				if "health_component" in node and node.health_component:
-					node.health_component.current_health = player_data.get("health", 100)
-					node.health_component.current_armor = player_data.get("armor", 0)
+				# The server restores lifecycle and health once, then replicates both.
+				if not multiplayer.has_multiplayer_peer() or multiplayer.is_server():
+					var hp: float = player_data.get("health", 100)
+					var armor: float = player_data.get("armor", 0)
+					if "state_manager" in node and node.state_manager:
+						node.state_manager.restore_health(hp, armor)
+					elif "health_component" in node and node.health_component:
+						node.health_component.set_health(hp, armor)
 
 				# Restore weapon state via weapon_manager
 				if "weapon_manager" in node and node.weapon_manager:

@@ -610,27 +610,25 @@ func _broadcast_kill(
 ## Update player status (health, state)
 
 @rpc("any_peer", "call_local", "reliable")
-func update_player_status(health: int, state: int) -> void:
-	var sender_id: int = multiplayer.get_remote_sender_id()
+func update_player_status(peer_id: int, health: int, state: int) -> void:
+	# Requests are handled only by the server; clients receive the authority-only broadcast.
+	if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
+		return
 
-	# Default to sender
-	var peer_id: int = sender_id
-	if peer_id == 0:  # Local call
-		peer_id = multiplayer.get_unique_id()
+	var sender_id: int = multiplayer.get_remote_sender_id()
+	if peer_id <= 0 or (sender_id != 0 and sender_id != peer_id):
+		push_warning("Peer %d tried to update status for %d - denied" % [sender_id, peer_id])
+		return
 
 	# RPC Rate Limiting Validation
 	var gm: Node = get_node_or_null("/root/GameManager")
 	var network_mgr: Node = gm.get_core_system("network") if gm else null
-	if network_mgr and network_mgr.has_method("validate_rpc"):
-		if not network_mgr.validate_rpc(sender_id, "update_player_status", [health, state]):
+	if sender_id != 0 and network_mgr and network_mgr.has_method("validate_rpc"):
+		if not network_mgr.validate_rpc(
+			sender_id, "update_player_status", [peer_id, health, state]
+		):
 			push_warning("[Match] Rate limit exceeded for peer %d" % sender_id)
 			return
-
-	# Validation: Users can only update themselves (unless server)
-	if sender_id != 1 and sender_id != 0 and peer_id != sender_id:
-		# Note: Allowing server (1) to update anyone
-		push_warning("Peer %d tried to update status for %d - denied" % [sender_id, peer_id])
-		return
 
 	_update_local_player_status(peer_id, health, state)
 

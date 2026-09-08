@@ -7,6 +7,7 @@ const CONSUMABLE_SCENE: String = "res://game/scenes/items/pickups/consumable_pic
 
 @export var item_ids: Array[String] = ["health_potion", "shield_booster"]
 @export var spawn_radius: float = 0.5
+@export var spawn_height: float = 0.5
 @export var spawn_on_ready: bool = true
 @export var respawn_enabled: bool = false
 @export var respawn_delay: float = 30.0
@@ -14,6 +15,7 @@ const CONSUMABLE_SCENE: String = "res://game/scenes/items/pickups/consumable_pic
 
 var _spawn_points: Array[Vector3] = []
 var _spawned_items: Array[Node3D] = []
+var spawn_parent: Node = null
 
 
 func _ready() -> void:
@@ -41,7 +43,7 @@ func spawn_all_items() -> void:
 ## Spawn a single item at position
 
 
-func spawn_item_at(pos: Vector3, specific_id: String = "") -> Node3D:
+func spawn_item_at(pos: Vector3, specific_id: String = "", rot: Vector3 = Vector3.ZERO) -> Node3D:
 	if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
 		return null
 
@@ -52,36 +54,53 @@ func spawn_item_at(pos: Vector3, specific_id: String = "") -> Node3D:
 		else:
 			item_id = item_ids[0] if not item_ids.is_empty() else "health_potion"
 
-	# Verify item exists in database
-	var data_service = GameManager.get_core_system("data")
+	var data_service: Node = GameManager.get_core_system("data")
 	var item_data: Dictionary = data_service.get_item_data(item_id) if data_service else {}
-	if item_data.is_empty():
-		push_warning("[ItemSpawner] Item '%s' not found in database" % item_id)
+	var scene_path: String = CONSUMABLE_SCENE if not item_data.is_empty() else ""
+	if scene_path.is_empty():
+		scene_path = LootSvc.ITEM_SCENE_MAP.get(item_id, "")
+	if scene_path.is_empty() and data_service:
+		if not data_service.get_weapon_data(item_id).is_empty():
+			scene_path = LootSvc.ITEM_SCENE_MAP.get("weapon_" + item_id, "")
+	if scene_path.is_empty():
+		# The scene palette stores the pickup scene's basename as its asset ID.
+		for key: String in LootSvc.ITEM_SCENE_MAP:
+			var path: String = LootSvc.ITEM_SCENE_MAP[key]
+			if path.get_file().get_basename() == item_id:
+				scene_path = path
+				break
+	if scene_path.is_empty() or not ResourceLoader.exists(scene_path):
+		push_warning("[ItemSpawner] No pickup for item '%s'" % item_id)
 		return null
 
-	# Load and instantiate scene
-	if not ResourceLoader.exists(CONSUMABLE_SCENE):
-		push_error("[ItemSpawner] Consumable pickup scene not found: %s" % CONSUMABLE_SCENE)
-		return null
-
-	var scene: PackedScene = load(CONSUMABLE_SCENE)
+	var scene: PackedScene = load(scene_path)
 	var instance: Node3D = scene.instantiate()
+	if not item_data.is_empty():
+		instance.item_id = item_id
+		instance.stack_count = 1
+	elif LootSvc.HEALTH_TIER_MAP.has(item_id):
+		instance.tier = LootSvc.HEALTH_TIER_MAP[item_id]
 
-	# Configure the pickup
-	instance.item_id = item_id
-	instance.stack_count = 1
+	var offset := Vector3(0, spawn_height, 0)
+	if spawn_radius > 0.0:
+		offset.x = randf_range(-spawn_radius, spawn_radius)
+		offset.z = randf_range(-spawn_radius, spawn_radius)
 
-	# Add random offset within radius
-	# Spawn slightly above ground
-	var offset := Vector3(
-		randf_range(-spawn_radius, spawn_radius), 0.5, randf_range(-spawn_radius, spawn_radius)
+	var parent: Node = spawn_parent if is_instance_valid(spawn_parent) else get_tree().current_scene
+	if not parent:
+		instance.free()
+		return null
+	# Configure the transform before entering the tree so spawn replication sees it.
+	var spawn_transform := Transform3D(Basis.from_euler(rot), pos + offset)
+	instance.transform = (
+		(parent as Node3D).global_transform.affine_inverse() * spawn_transform
+		if parent is Node3D
+		else spawn_transform
 	)
-
-	# Add to scene
-	get_tree().current_scene.add_child(instance)
-	instance.global_position = pos + offset
+	parent.add_child(instance, true)
 
 	_spawned_items.append(instance)
+	instance.tree_exited.connect(_spawned_items.erase.bind(instance), CONNECT_ONE_SHOT)
 	item_spawned.emit(instance)
 
 	GameManager.get_core_system("logger").debug(
@@ -90,19 +109,20 @@ func spawn_item_at(pos: Vector3, specific_id: String = "") -> Node3D:
 
 	# Setup respawn if enabled
 	if respawn_enabled:
-		_setup_respawn(instance, pos, item_id)
+		_setup_respawn(instance, pos, item_id, rot)
 
 	return instance
 
 
-func _setup_respawn(item: Node3D, spawn_pos: Vector3, item_id: String) -> void:
+func _setup_respawn(item: Node3D, spawn_pos: Vector3, item_id: String, rot: Vector3) -> void:
 	# Watch for item deletion
 	item.tree_exited.connect(
 		func() -> void:
-			_spawned_items.erase(item)
-			if respawn_enabled:
+			if respawn_enabled and is_inside_tree():
 				get_tree().create_timer(respawn_delay).timeout.connect(
-					func() -> void: spawn_item_at(spawn_pos, item_id)
+					func() -> void:
+						if is_inside_tree():
+							spawn_item_at(spawn_pos, item_id, rot)
 				)
 	)
 
