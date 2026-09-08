@@ -219,6 +219,31 @@ func test_path_resolution_without_prefix():
 	assert_true(config is Dictionary, "Should return Dictionary even if file not found")
 
 
+func test_mod_priority_removal_preserves_unrelated_runtime_values() -> void:
+	config_manager.load_config_file(TEST_CONFIG_DIR + "test_nested.json5")
+	config_manager.apply_mod_overrides({"gameplay": {"movement": {"speed": 30.0}}}, 20, "high")
+	config_manager.apply_mod_overrides(
+		{"gameplay": {"movement": {"speed": 20.0, "added": true}}}, 10, "low"
+	)
+	assert_eq(config_manager.get_value("gameplay.movement.speed"), 30.0)
+	config_manager.set_value("gameplay.movement.jump_height", 99.0)
+	config_manager.remove_mod_overrides("high")
+	assert_eq(config_manager.get_value("gameplay.movement.speed"), 20.0)
+	config_manager.remove_mod_overrides("low")
+	assert_eq(config_manager.get_value("gameplay.movement"), {"speed": 10.0, "jump_height": 99.0})
+
+
+func test_mod_overrides_survive_loading_and_reloading_their_baseline_file() -> void:
+	var path := TEST_CONFIG_DIR + "test_nested.json5"
+	config_manager.apply_mod_overrides({"gameplay": {"movement": {"speed": 30.0}}}, 20, "mod")
+	config_manager.load_config_file(path)
+	assert_eq(config_manager.get_value("gameplay.movement.speed"), 30.0)
+	config_manager.reload_file(path)
+	assert_eq(config_manager.get_value("gameplay.movement.speed"), 30.0)
+	config_manager.remove_mod_overrides("mod")
+	assert_eq(config_manager.get_value("gameplay.movement.speed"), 10.0)
+
+
 # Helper methods for test setup
 
 

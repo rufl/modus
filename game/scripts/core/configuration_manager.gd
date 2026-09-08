@@ -14,9 +14,12 @@ signal config_reloaded(file_path: String)
 signal config_error(file_path: String, error_message: String)
 
 const JSON5LoaderClass = preload("res://game/core/json5_loader.gd")
+const ModOverrideState = preload("res://game/scripts/features/modding/mod_override_state.gd")
 
 # Configuration cache: file_path -> parsed_data
 var _config_cache: Dictionary = {}
+var _mod_overrides: Array[Dictionary] = []
+var _mod_changes: Array[Dictionary] = []
 
 # File watching for hot-reload
 var _watch_files: bool = false
@@ -57,7 +60,9 @@ func load_config_file(path: String) -> Dictionary:
 		config_error.emit(full_path, error_msg)
 		return {}
 
+	_restore_mod_overrides()
 	_config_cache[full_path] = data
+	_apply_all_mod_overrides()
 
 	if _watch_files:
 		_update_file_timestamp(full_path)
@@ -125,6 +130,7 @@ func set_value(path: String, value: Variant) -> void:
 ## Useful for hot-reloading during development
 func reload_all() -> void:
 	var paths: Array = _config_cache.keys()
+	_restore_mod_overrides()
 	_config_cache.clear()
 
 	for config_path: String in paths:
@@ -132,14 +138,19 @@ func reload_all() -> void:
 			continue
 		load_config_file(config_path)
 		config_reloaded.emit(config_path)
+	if _mod_changes.is_empty():
+		_apply_all_mod_overrides()
 
 
 ## Reload a specific configuration file
 func reload_file(path: String) -> void:
 	var full_path := _resolve_path(path)
 	if _config_cache.has(full_path):
+		_restore_mod_overrides()
 		_config_cache.erase(full_path)
 		load_config_file(path)
+		if _mod_changes.is_empty():
+			_apply_all_mod_overrides()
 		config_reloaded.emit(full_path)
 
 
@@ -201,6 +212,7 @@ func validate_config(config: Dictionary, schema: Dictionary) -> bool:
 
 ## Clear all cached configuration
 func clear_cache() -> void:
+	_restore_mod_overrides()
 	_config_cache.clear()
 	_file_timestamps.clear()
 
@@ -208,6 +220,64 @@ func clear_cache() -> void:
 ## Get all cached configuration data (for debugging)
 func get_all_config() -> Dictionary:
 	return _config_cache.duplicate(true)
+
+
+## Apply owned runtime overrides using the same cache precedence as set_value.
+func apply_mod_overrides(overrides: Dictionary, priority: int, mod_name: String) -> void:
+	_restore_mod_overrides()
+	_mod_overrides.append(
+		{"priority": priority, "overrides": overrides.duplicate(true), "mod_name": mod_name}
+	)
+	_mod_overrides.sort_custom(
+		func(a: Dictionary, b: Dictionary) -> bool: return a.priority < b.priority
+	)
+	_apply_all_mod_overrides()
+
+
+func remove_mod_overrides(mod_name: String) -> void:
+	_restore_mod_overrides()
+	_mod_overrides = _mod_overrides.filter(
+		func(entry: Dictionary) -> bool: return entry.mod_name != mod_name
+	)
+	_apply_all_mod_overrides()
+
+
+func _restore_mod_overrides() -> void:
+	for index: int in range(_mod_changes.size() - 1, -1, -1):
+		ModOverrideState.restore(_config_cache, _mod_changes[index])
+	_mod_changes.clear()
+
+
+func _apply_all_mod_overrides() -> void:
+	for entry: Dictionary in _mod_overrides:
+		var existed: bool = not _config_cache.is_empty()
+		var config_path: String = _config_cache.keys()[0] if existed else "runtime"
+		if not existed:
+			_config_cache[config_path] = {}
+		var target: Dictionary = _config_cache[config_path]
+		var before: Dictionary = {}
+		for key: String in entry.overrides:
+			if target.has(key):
+				var value: Variant = target[key]
+				before[key] = (
+					value.duplicate(true) if value is Dictionary or value is Array else value
+				)
+		_merge_override_values(target, entry.overrides)
+		var after: Dictionary = {}
+		for key: String in entry.overrides:
+			after[key] = target[key]
+		_mod_changes.append(
+			ModOverrideState.capture({config_path: before} if existed else {}, {config_path: after})
+		)
+
+
+func _merge_override_values(target: Dictionary, overrides: Dictionary) -> void:
+	for key: String in overrides:
+		var value: Variant = overrides[key]
+		if value is Dictionary and target.get(key) is Dictionary:
+			_merge_override_values(target[key], value)
+		else:
+			target[key] = value.duplicate(true) if value is Dictionary or value is Array else value
 
 
 # Private helper methods

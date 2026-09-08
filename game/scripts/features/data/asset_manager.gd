@@ -9,6 +9,7 @@ var _loaded_cache: Dictionary = {}  # Cache for hot-reload tracking
 func register_overrides(overrides: Dictionary) -> void:
 	for original: String in overrides:
 		_overrides[original] = overrides[original]
+		_loaded_cache.erase(original)
 	GameManager.get_core_system("logger").info(
 		"[AssetManager] Registered %d overrides" % overrides.size(), "Core"
 	)

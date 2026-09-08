@@ -7,6 +7,7 @@ signal all_mods_loaded
 const MODS_DIR: String = "user://mods"
 const RES_MODS_DIR: String = "res://mods"
 const JSON5LoaderClass: GDScript = preload("res://game/core/json5_loader.gd")
+const ModOverrideState = preload("res://game/scripts/features/modding/mod_override_state.gd")
 
 var _loaded_mods: Array[Dictionary] = []
 var _mod_configs: Dictionary = {}  ## mod_name -> config
@@ -19,6 +20,10 @@ var _registered_components: Dictionary = {}
 var _registered_entities: Dictionary = {}
 var _resource_overrides: Dictionary = {}
 var _detected_conflicts: Array[Dictionary] = []
+var _script_instances: Array[Node] = []
+var _config_owners: Array[Dictionary] = []
+var _data_changes: Array[Dictionary] = []
+var _resource_changes: Array[Dictionary] = []
 
 
 func _ready() -> void:
@@ -121,13 +126,7 @@ func _read_mod_manifest(mod_path: String) -> Dictionary:
 
 func load_all_mods() -> void:
 	GameManager.get_core_system("logger").info("[ModLoader] Loading enabled mods...", "Core")
-	_loaded_mods.clear()
-	_mod_configs.clear()
-	_registered_features.clear()
-	_registered_components.clear()
-	_registered_entities.clear()
-	_resource_overrides.clear()
-	clear_conflicts()
+	unload_mods()
 
 	# Collect enabled mods
 	var enabled_mods: Array[Dictionary] = []
@@ -400,7 +399,10 @@ func _apply_system_overrides(overrides: Dictionary, priority: int, mod_name: Str
 		GameManager.get_core_system("config")
 		and GameManager.get_core_system("config").has_method("apply_mod_overrides")
 	):
-		GameManager.get_core_system("config").apply_mod_overrides(overrides, priority, mod_name)
+		var config: Node = GameManager.get_core_system("config")
+		var owner_id := "%d:%s" % [get_instance_id(), mod_name]
+		config.apply_mod_overrides(overrides, priority, owner_id)
+		_config_owners.append({"service": weakref(config), "owner": owner_id})
 	else:
 		push_warning(
 			'[ModLoader] GameManager.get_core_system("config").apply_mod_overrides not available'
@@ -423,7 +425,9 @@ func _apply_weapon_overrides(overrides: Dictionary, mod_name: String) -> void:
 	for weapon_id: String in overrides.keys():
 		var weapon_data: Dictionary = overrides[weapon_id]
 		if data_service.has_method("register_mod_weapon"):
-			data_service.register_mod_weapon(weapon_id, weapon_data)
+			_apply_data_override(
+				data_service, "weapons", weapon_id, weapon_data, "register_mod_weapon"
+			)
 		else:
 			push_warning("[ModLoader] DataService.register_mod_weapon not found")
 
@@ -443,7 +447,9 @@ func _apply_enemy_overrides(overrides: Dictionary, mod_name: String) -> void:
 	for enemy_id: String in overrides.keys():
 		var enemy_data: Dictionary = overrides[enemy_id]
 		if data_service.has_method("register_mod_enemy"):
-			data_service.register_mod_enemy(enemy_id, enemy_data)
+			_apply_data_override(
+				data_service, "enemies", enemy_id, enemy_data, "register_mod_enemy"
+			)
 
 
 ## Apply loot configuration overrides
@@ -478,7 +484,26 @@ func _apply_loot_table_overrides(overrides: Dictionary, mod_name: String) -> voi
 		var table_data: Dictionary = overrides[table_id]
 		# Loot tables are stored in data_service.loot_tables dictionary
 		if data_service and "loot_tables" in data_service:
-			data_service.loot_tables[table_id] = table_data
+			_apply_data_override(data_service, "loot_tables", table_id, table_data)
+
+
+func _apply_data_override(
+	service: Node, category: String, id: String, data: Dictionary, method: String = ""
+) -> void:
+	var records: Dictionary = service.get(category)
+	var before: Dictionary = {id: records[id].duplicate(true)} if records.has(id) else {}
+	if method.is_empty():
+		records[id] = data.duplicate(true)
+	else:
+		service.call(method, id, data.duplicate(true))
+	var after: Dictionary = {id: records[id]}
+	_data_changes.append(
+		{
+			"service": weakref(service),
+			"category": category,
+			"changes": ModOverrideState.capture(before, after)
+		}
+	)
 
 
 ## Load asset overrides (textures, audio, scenes)
@@ -507,7 +532,9 @@ func _override_resource(original_path: String, replacement_path: String) -> void
 		return
 
 	# Load the replacement resource
-	var replacement_res: Resource = load(replacement_path)
+	var replacement_res: Resource = ResourceLoader.load(
+		replacement_path, "", ResourceLoader.CACHE_MODE_IGNORE
+	)
 	if not replacement_res:
 		push_warning("[ModLoader] Failed to load override: %s" % replacement_path)
 		return
@@ -527,7 +554,26 @@ func _override_resource(original_path: String, replacement_path: String) -> void
 	# Register with AssetManager if available for tracking
 	var asset_manager: Node = GameManager.get_core_system("assets")
 	if asset_manager and asset_manager.has_method("register_overrides"):
+		_resource_changes.append(
+			{
+				"path": original_path,
+				"before": load(original_path) if ResourceLoader.exists(original_path) else null,
+				"after": replacement_res,
+				"manager": weakref(asset_manager),
+				"previous_path": asset_manager.get_asset_path(original_path),
+				"replacement_path": replacement_path
+			}
+		)
 		asset_manager.register_overrides({original_path: replacement_path})
+	else:
+		_resource_changes.append(
+			{
+				"path": original_path,
+				"before": load(original_path) if ResourceLoader.exists(original_path) else null,
+				"after": replacement_res,
+				"manager": null
+			}
+		)
 
 	# ALWAYS use take_over_path for engine-level overrides
 	# This ensures load() calls throughout the codebase pick up the modded asset
@@ -553,6 +599,7 @@ func _run_mod_scripts(scripts: Array, mod_path: String) -> void:
 		if script:
 			var instance: Node = script.new()
 			if instance:
+				_script_instances.append(instance)
 				add_child(instance)
 				GameManager.get_core_system("logger").info(
 					"[ModLoader] Loaded mod script: %s" % script_path, "Core"
@@ -704,17 +751,73 @@ func change_mod_priority(mod_id: String, delta: int) -> void:
 
 
 func reload_mods() -> void:
+	var settings: Dictionary = {}
+	for mod: Dictionary in _all_discovered_mods:
+		settings[mod.get("id", mod.name)] = {
+			"enabled": mod.get("enabled", false), "priority": mod.get("priority", 100)
+		}
+	unload_mods()
+	_discover_all_mods()
+	_load_mod_settings()
+	for mod: Dictionary in _all_discovered_mods:
+		var id: String = mod.get("id", mod.name)
+		if settings.has(id):
+			mod.merge(settings[id], true)
+	load_all_mods()
+
+
+## Frees owned scripts immediately so old callbacks cannot overlap their replacements.
+## ModScript runs its cleanup hook through _exit_tree; arbitrary external side effects
+## remain the script's responsibility.
+func unload_mods() -> void:
+	for index: int in range(_script_instances.size() - 1, -1, -1):
+		var instance: Node = _script_instances[index]
+		if is_instance_valid(instance):
+			if not instance is ModScript and instance.has_method("on_mod_unloaded"):
+				instance.on_mod_unloaded()
+			if is_instance_valid(instance):
+				instance.free()
+	_script_instances.clear()
+	for index: int in range(_data_changes.size() - 1, -1, -1):
+		var entry: Dictionary = _data_changes[index]
+		var service: Node = entry.service.get_ref()
+		if is_instance_valid(service):
+			ModOverrideState.restore(service.get(entry.category), entry.changes)
+	_data_changes.clear()
+	for entry: Dictionary in _config_owners:
+		var service: Node = entry.service.get_ref()
+		if is_instance_valid(service):
+			service.remove_mod_overrides(entry.owner)
+	_config_owners.clear()
+	for index: int in range(_resource_changes.size() - 1, -1, -1):
+		var entry: Dictionary = _resource_changes[index]
+		if ResourceLoader.has_cached(entry.path) and load(entry.path) == entry.after:
+			entry.after.resource_path = ""
+			if entry.before:
+				entry.before.take_over_path(entry.path)
+		var manager: Node = entry.manager.get_ref() if entry.manager else null
+		if (
+			is_instance_valid(manager)
+			and manager.get_asset_path(entry.path) == entry.replacement_path
+		):
+			manager.clear_override(entry.path)
+			if entry.previous_path != entry.path:
+				manager.register_overrides({entry.path: entry.previous_path})
+	_resource_changes.clear()
 	_loaded_mods.clear()
 	_mod_configs.clear()
 	_registered_features.clear()
 	_registered_components.clear()
 	_registered_entities.clear()
 	_resource_overrides.clear()
-	clear_conflicts()
 	_texture_overrides.clear()
 	_audio_overrides.clear()
 	_scene_overrides.clear()
-	load_all_mods()
+	clear_conflicts()
+
+
+func _exit_tree() -> void:
+	unload_mods()
 
 
 ## Save mod settings to user preferences
