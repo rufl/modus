@@ -356,15 +356,28 @@ func _select_imported_lod(mesh: Mesh, surface_idx: int, target_ratio: float) -> 
 	var target_count := maxi(3, int(original_indices.size() * target_ratio))
 	var selected := PackedInt32Array()
 	var selected_error := 1 << 30
-	var lods: Dictionary = mesh.surface_get_lods(surface_idx)
-	for distance in lods:
-		var candidate: PackedInt32Array = lods[distance]
-		if candidate.size() >= original_indices.size() or candidate.size() < 3:
+	var surface: Dictionary = RenderingServer.mesh_get_surface(mesh.get_rid(), surface_idx)
+	var index_data: PackedByteArray = surface.get("index_data", PackedByteArray())
+	if index_data.is_empty():
+		return selected
+	var index_size: int = index_data.size() / original_indices.size()
+	var selected_data := PackedByteArray()
+	for lod: Dictionary in surface.get("lods", []):
+		var data: PackedByteArray = lod["index_data"]
+		var candidate_count: int = data.size() / index_size
+		if candidate_count >= original_indices.size() or candidate_count < 3:
 			continue
-		var candidate_error := absi(candidate.size() - target_count)
+		var candidate_error := absi(candidate_count - target_count)
 		if candidate_error < selected_error:
-			selected = candidate
+			selected_data = data
 			selected_error = candidate_error
+	selected.resize(selected_data.size() / index_size)
+	for index in range(selected.size()):
+		selected[index] = (
+			selected_data.decode_u16(index * index_size)
+			if index_size == 2
+			else selected_data.decode_u32(index * index_size)
+		)
 	return selected
 
 
