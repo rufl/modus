@@ -3,6 +3,9 @@ extends Node
 
 signal music_changed(song_name: String)
 
+## Completes pending initialization; false means teardown or pool-setup failure.
+signal pools_ready(success: bool)
+
 const CFG_PATH: String = "res://game/config/gameplay/audio.json5"
 const SOUND_GEN_PATH: String = "res://game/core/tools/sound_generator.gd"
 const POOL_SIZE_3D: int = 32
@@ -28,17 +31,21 @@ var _event_config: Dictionary = {}
 var _stream_cache: Dictionary = {}
 var _generator_map: Dictionary = {}
 var _current_song_name: String = ""
+var _pool_init_tree: SceneTree
+var _active: bool = false
+var _initialized: bool = false
 
 
 func _ready() -> void:
+	_active = true
 	name = "AudioService"
 	_sound_gen = load(SOUND_GEN_PATH)
 	_load_config()
 	_init_generator_map()
-	# Defer audio pool init to ensure buses are loaded
-	_init_audio_pools.call_deferred()
+	# Frame callbacks can be disconnected during teardown, unlike suspended coroutines.
+	_pool_init_tree = get_tree()
+	_pool_init_tree.process_frame.connect(_init_audio_pools, CONNECT_ONE_SHOT)
 	_load_user_volume_settings()
-	_apply_volume_settings()
 	_scan_music_folder()
 
 	# Verify audio system is working
@@ -77,6 +84,14 @@ func _ready() -> void:
 
 
 func _exit_tree() -> void:
+	_active = false
+	_initialized = false
+	if _pool_init_tree:
+		if _pool_init_tree.process_frame.is_connected(_init_audio_pools):
+			_pool_init_tree.process_frame.disconnect(_init_audio_pools)
+		if _pool_init_tree.process_frame.is_connected(_create_audio_pools):
+			_pool_init_tree.process_frame.disconnect(_create_audio_pools)
+		_pool_init_tree = null
 	## === SIGNAL HYGIENE: Cleanup audio resources ===
 
 	# Stop all audio
@@ -103,6 +118,8 @@ func _exit_tree() -> void:
 	_generator_map.clear()
 	_event_config.clear()
 	_playlist.clear()
+	_current_song_name = ""
+	pools_ready.emit(false)
 
 	# Safe access during cleanup - GameManager may not be available
 	var gm: Node = get_node_or_null("/root/GameManager")
@@ -114,9 +131,18 @@ func _exit_tree() -> void:
 
 
 func initialize() -> void:
-	# Wait for audio pools to be initialized
-	while _audio_pool_2d.is_empty() or not _music_player:
-		await get_tree().process_frame
+	if not _active or _initialized:
+		return
+	if not _music_player:
+		if not _pool_init_tree:
+			return
+		var success: bool = await pools_ready
+		if not success or not _active or not _music_player:
+			return
+	# Multiple readiness waiters must not restart the user's current playback.
+	if _initialized:
+		return
+	_initialized = true
 
 	# Play a test sound to verify audio is working
 	var test_stream: AudioStream = SoundGeneratorScript.generate_ui_sound("click")
@@ -441,6 +467,8 @@ func _can_generate(event_name: String) -> bool:
 
 
 func _init_audio_pools() -> void:
+	if not _active or not _pool_init_tree:
+		return
 	# Get GameManager once for the entire function
 	var gm: Node = get_node_or_null("/root/GameManager")
 
@@ -456,8 +484,17 @@ func _init_audio_pools() -> void:
 				if logger_service:
 					logger_service.debug("[AudioSystem] Manually loaded audio bus layout", "Audio")
 
-	# Wait a frame for the bus layout to be applied
-	await get_tree().process_frame
+	# Loading the layout resets bus gains; restore user settings before playback starts.
+	_apply_volume_settings()
+
+	# Keep the existing frame boundary, but make the pending work cancellable.
+	_pool_init_tree.process_frame.connect(_create_audio_pools, CONNECT_ONE_SHOT)
+
+
+func _create_audio_pools() -> void:
+	_pool_init_tree = null
+	if not _active:
+		return
 
 	# Verify SFX bus exists
 	var sfx_idx: int = AudioServer.get_bus_index(sfx_bus)
@@ -469,6 +506,7 @@ func _init_audio_pools() -> void:
 			)
 		)
 		push_error("[AudioSystem] Available buses: %s" % _get_available_buses())
+		pools_ready.emit(false)
 		return
 
 	for i in POOL_SIZE_3D:
@@ -484,20 +522,19 @@ func _init_audio_pools() -> void:
 		add_child(p)
 		_audio_pool_2d.append(p)
 
-	# Safe access during initialization
-	if not gm:
-		return
-	var logger: Node = gm.get_core_system("logger")
+	_music_player = AudioStreamPlayer.new()
+	_music_player.bus = music_bus
+	_music_player.name = "MusicPlayer"
+	add_child(_music_player)
+
+	var gm: Node = get_node_or_null("/root/GameManager")
+	var logger: Node = gm.get_core_system("logger") if gm else null
 	if logger:
 		logger.debug(
 			"[AudioSystem] Audio pools initialized: %d 3D, %d 2D" % [POOL_SIZE_3D, POOL_SIZE_2D],
 			"Audio"
 		)
-
-	_music_player = AudioStreamPlayer.new()
-	_music_player.bus = music_bus
-	_music_player.name = "MusicPlayer"
-	add_child(_music_player)
+	pools_ready.emit(true)
 
 
 func _get_available_buses() -> String:
@@ -511,14 +548,14 @@ func _get_3d_player() -> AudioStreamPlayer3D:
 	for p in _audio_pool_3d:
 		if not p.playing:
 			return p
-	return _audio_pool_3d[0]
+	return _audio_pool_3d[0] if not _audio_pool_3d.is_empty() else null
 
 
 func _get_2d_player() -> AudioStreamPlayer:
 	for p in _audio_pool_2d:
 		if not p.playing:
 			return p
-	return _audio_pool_2d[0]
+	return _audio_pool_2d[0] if not _audio_pool_2d.is_empty() else null
 
 
 # --- Volumes ---
