@@ -2,13 +2,13 @@
 
 > **Documentation status: maintained reference.** This matrix is a release-communication aid. It does not promote any source-backed or automated result into runtime, manual, multiplayer, or distribution proof.
 
-**Updated:** 2026-08-04
+**Updated:** 2026-09-08
 **Canonical sources:** [Documentation Truth](DOCUMENTATION_TRUTH.md), [Current Status](CURRENT_STATUS.md), and [Production Readiness](PRODUCTION_READINESS_REPORT.md)
 
 | Area | Verified boundary | Not verified / release limitation | Evidence |
 | --- | --- | --- | --- |
-| Automated tests | Current August 4 filtered Godot/GUT aggregate is 1440/1440 with 20,475 assertions and zero GUT-reported orphans | Seven warnings, 31 deprecations, and six ObjectDB shutdown leaks remain diagnostic debt | `logs/full_godot_gut_latest.log.gz` |
-| UI route | Showcase entry, hero artwork, focus loop, responsive containment, visible version, forms, welcome panel, mod manager, and skill tree pass 26/26; the manual recorder passes 2/2 with wide/narrow captures | Normal-window input feel remains manual-proof work | `tests/unit/test_ui_system.gd`, `tests/unit/test_manual_evidence.gd`, `RELEASE_EVIDENCE_BUNDLE.md` |
+| Automated tests | The retained August 4 snapshot records 1440/1440 tests with 20,475 assertions and zero GUT-reported orphans; it is historical evidence, not the current suite total | That snapshot records seven warnings, 31 deprecations, and six ObjectDB shutdown leaks; focused regressions do not refresh a full-suite boundary | `logs/full_godot_gut_latest.log.gz`, `../CHANGELOG.md` |
+| UI route | Main-menu warrior artwork has been removed; the procedural 3D background remains. Focused headless menu regression passed after removal | Rendered appearance and normal-window input feel remain manual-proof work; older wide/narrow captures predate artwork removal | `tests/unit/test_ui_system.gd`, `tests/unit/test_manual_evidence.gd`, `../CHANGELOG.md`, `RELEASE_EVIDENCE_BUNDLE.md` |
 | Runtime gameplay | The golden-demo smoke passes scene load, player spawn, movement input, weapon fire, enemy defeat, pickup collection, encrypted save/load, and bundled sample-mod loading | Gameplay feel, failure recovery, long sessions, and human-operated completion are not manual-proven | `GOLDEN_DEMO_SMOKE.md`, `SHOWCASE_ROUTE.md` |
 | Manual evidence | Responsive 20-item recorder, direct CSV export, required metadata, Fail/Skip notes, and active-time validation are ready | Reviewed CSV count is 0 and validated manual hours are 0.00; the configured threshold is 40 hours | `MANUAL_EVIDENCE_REPORT.md`, `../tests/docs/MANUAL_TEST_TIMING.md` |
 | Performance | One bounded showcase capture passes evidence-shape validation at 66.4 seconds and 130 samples | It is not a display-synchronized FPS target; splitscreen, multiplayer, low-end hardware, and long-session behavior remain open | `PERFORMANCE_EVIDENCE_REPORT.md`, `PERFORMANCE_BASELINE_PROOF.md` |

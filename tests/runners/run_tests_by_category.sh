@@ -128,6 +128,10 @@ append_lane() {
 parse_metric() {
     local log_file="$1"
     local label="$2"
+    if [[ ! -f "$log_file" ]]; then
+        printf '%s\n' '-'
+        return
+    fi
     awk -v label="$label" '
         $0 ~ "^[[:space:]]*" label "[[:space:]]+" { value = $NF }
         END {
@@ -202,16 +206,9 @@ run_test_category() {
 
     local result
     if [[ "$reuse_logs" -eq 1 ]]; then
+        result=0
         if [[ ! -f "$log_file" ]]; then
             result=125
-        elif grep -Fq -- '---- All tests passed! ----' "$log_file"; then
-            result=0
-        elif grep -Eq '^[[:space:]]*Tests[[:space:]]+[0-9]+' "$log_file" \
-            && grep -Eq '^[[:space:]]*Passing Tests[[:space:]]+[0-9]+' "$log_file" \
-            && ! grep -Fq '[Failed]' "$log_file"; then
-            result=0
-        else
-            result=1
         fi
     else
         set +e
@@ -220,24 +217,42 @@ run_test_category() {
         set -e
     fi
 
-    if [[ "$result" -eq 0 ]]; then
-        status="PASS"
-    else
-        status="FAIL"
-    fi
-
     tests_count="$(parse_metric "$log_file" "Tests")"
     passing_count="$(parse_metric "$log_file" "Passing Tests")"
     failing_count="$(parse_metric "$log_file" "Failing Tests")"
     risky_count="$(parse_metric "$log_file" "Risky/Pending")"
-    if [[ "$result" -eq 0 && "$failing_count" == "-" ]]; then
-        failing_count="0"
-    fi
-    note="$(classify_log "$log_file" "$status")"
 
-    if [[ "$tests_count" == "-" || "$passing_count" == "-" || "$failing_count" == "-" ]]; then
+    # GUT omits zero failures. Preserve the existing pending-test policy,
+    # but infer zero only when passing plus pending accounts for every test.
+    if [[ "$tests_count" =~ ^[0-9]+$ && "$passing_count" =~ ^[0-9]+$ \
+        && ( "$risky_count" == "-" || "$risky_count" =~ ^[0-9]+$ ) \
+        && "$failing_count" == "-" ]]; then
+        local pending_count="${risky_count/-/0}"
+        if (( 10#$tests_count == 10#$passing_count + 10#$pending_count )); then
+            failing_count="0"
+        fi
+    fi
+
+    if [[ ! "$tests_count" =~ ^[0-9]+$ || ! "$passing_count" =~ ^[0-9]+$ \
+        || ! "$failing_count" =~ ^[0-9]+$ \
+        || ( "$risky_count" != "-" && ! "$risky_count" =~ ^[0-9]+$ ) ]]; then
         status="BLOCKED"
-        note="lane log ended without a GUT summary; do not treat wrapper exit as green"
+        result=125
+        note="lane log ended without a complete numeric GUT summary; do not treat wrapper exit as green"
+    else
+        status="FAIL"
+        if [[ "$result" -eq 0 ]]; then
+            local pending_count="${risky_count/-/0}"
+            if (( 10#$tests_count > 0 \
+                && 10#$passing_count + 10#$pending_count == 10#$tests_count \
+                && 10#$failing_count == 0 )) \
+                && ! grep -Fq '[Failed]' "$log_file"; then
+                status="PASS"
+            else
+                result=1
+            fi
+        fi
+        note="$(classify_log "$log_file" "$status")"
     fi
     append_lane "$category" "$status" "$selected_count" "$skipped_count" "$tests_count" "$passing_count" "$failing_count" "$risky_count" "$log_file" "$note"
 
