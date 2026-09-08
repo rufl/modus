@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- Gameplay now reuses GameManager's player and match services instead of constructing duplicate instances. Runtime ownership smoke confirms one instance of each; MatchService regressions pass 8/8 with 30 assertions under Godot 4.7.2.
 - Verified the AI timing tranche under Godot 4.7.2: enemy AI regression group passes 126/126 with 321 assertions, and the warrior-free main-menu runtime test passes 1/1 with 21 assertions. Headless proof does not establish rendered appearance; duplicate-service warnings and shutdown resource diagnostics remain.
 - Preserved deferred AI elapsed time when switching from throttled to full-rate updates. Corrected the minimum-rate regression's invalid two-tick expectation; focused Godot 4.7.2 timing proof passes 1/1 with 13 assertions.
 - Removed the warrior image from the main menu, restoring its existing procedural 3D background. Removed obsolete artwork assertions from the menu regression test.
