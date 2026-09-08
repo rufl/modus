@@ -12,7 +12,8 @@ const MAIN_MENU_SCREEN = "res://shared/ui_core/screens/main_menu_screen.tscn"
 const WELCOME_SCREEN = "res://game/ui/menus/welcome_screen.tscn"
 const DEFAULT_ENEMY_OUT_OF_BOUNDS_Y: float = -50.0
 
-var enet_peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
+var enet_peer: ENetMultiplayerPeer = null
+var _session_multiplayer: MultiplayerAPI = null
 var in_game: bool = false
 var match_stats: Dictionary = {
 	"enemies_killed": 0,
@@ -81,8 +82,22 @@ func _notification(_what: int) -> void:
 
 
 func _process(_delta: float) -> void:
-	# Legacy mouse mode logic removed
-	pass
+	if not enet_peer:
+		return
+	var current_peer: MultiplayerPeer = multiplayer.multiplayer_peer
+	if (
+		current_peer != enet_peer
+		or enet_peer.get_connection_status() == MultiplayerPeer.CONNECTION_DISCONNECTED
+	):
+		# NetworkManager may disconnect or replace the transport independently.
+		# An externally supplied active session retains its own gameplay state.
+		if (
+			not current_peer
+			or current_peer is OfflineMultiplayerPeer
+			or current_peer.get_connection_status() == MultiplayerPeer.CONNECTION_DISCONNECTED
+		):
+			in_game = false
+		_release_host_session()
 
 
 func _ready() -> void:
@@ -126,16 +141,17 @@ func _ready() -> void:
 			_log("[World] Initializing state detected, auto-starting singleplayer...")
 			_on_single_player_start_requested("default")
 
-			# Transition to RUNNING state
-			GameManager.change_state(GameManager.State.RUNNING)
+			if in_game:
+				GameManager.change_state(GameManager.State.RUNNING)
 
 			# Ensure loading screen is hidden
 			var us := UISystem.get_service()
 			if us and us.loading_screen:
 				us.loading_screen.hide_loading()
 
-			# Show welcome screen on showcase map
-			call_deferred("_show_welcome_screen")
+			if in_game:
+				# Show welcome screen on showcase map
+				call_deferred("_show_welcome_screen")
 
 	# Spawn showcase zone signs
 	call_deferred("_spawn_showcase_signs")
@@ -182,6 +198,8 @@ func _ready() -> void:
 
 
 func _exit_tree() -> void:
+	_release_host_session()
+	in_game = false
 	# Unsubscribe from all GameManager events to prevent null callable errors
 	GameManager.unsubscribe("match_started", _on_match_started)
 	GameManager.unsubscribe("play_requested", _on_play_requested)
@@ -621,28 +639,63 @@ func _perform_nav_bake(nav_region: NavigationRegion3D) -> void:
 	_log("[World] Navigation mesh baking completed")
 
 
+func _release_host_session() -> void:
+	if _session_multiplayer:
+		if _session_multiplayer.peer_disconnected.is_connected(remove_player):
+			_session_multiplayer.peer_disconnected.disconnect(remove_player)
+		if enet_peer and _session_multiplayer.multiplayer_peer == enet_peer:
+			_session_multiplayer.multiplayer_peer = null
+	if enet_peer:
+		enet_peer.close()
+		enet_peer = null
+	_session_multiplayer = null
+
+
+func _create_host_session(port: int, max_players: int) -> Error:
+	var current_peer: MultiplayerPeer = multiplayer.multiplayer_peer
+	# NetworkManager and other callers may already own this MultiplayerAPI.
+	# Never replace an active session, including a repeated request for our own.
+	if (
+		current_peer
+		and not current_peer is OfflineMultiplayerPeer
+		and current_peer.get_connection_status() != MultiplayerPeer.CONNECTION_DISCONNECTED
+	):
+		return ERR_ALREADY_IN_USE
+
+	# NetworkManager.disconnect_game() may have closed and detached our peer.
+	_release_host_session()
+	in_game = false
+	var peer := ENetMultiplayerPeer.new()
+	var err: Error = peer.create_server(port, max_players)
+	if err != OK:
+		peer.close()
+		return err
+
+	enet_peer = peer
+	_session_multiplayer = multiplayer
+	_session_multiplayer.multiplayer_peer = enet_peer
+	if not _session_multiplayer.peer_disconnected.is_connected(remove_player):
+		_session_multiplayer.peer_disconnected.connect(remove_player)
+	in_game = true
+	return OK
+
+
 func _on_single_player_start_requested(slot_name: String) -> void:
 	# Start a local game (listen server with configurable local players)
-	var globals: Node = GameManager.get_core_system("globals")
-	if globals:
-		globals.current_save_slot = slot_name
-
-	in_game = true
 	# Create server with configurable max local players (default 4)
 	var max_local: int = 4
 	var cm: Node = GameManager.get_core_system("config")
 	if cm:
 		max_local = cm.get_value("network.singleplayer_max_local_players", 4)
 
-	# FIXED C-04: Check error code to prevent crash
-	var err: Error = enet_peer.create_server(PORT, max_local)
+	var err: Error = _create_host_session(PORT, max_local)
 	if err != OK:
 		push_error("[World] Failed to create solo server: %s" % error_string(err))
-		in_game = false
 		return
 
-	multiplayer.multiplayer_peer = enet_peer
-	multiplayer.peer_disconnected.connect(remove_player)
+	var globals: Node = GameManager.get_core_system("globals")
+	if globals:
+		globals.current_save_slot = slot_name
 
 	# Server spawns itself
 	var mode: String = "editor" if globals and globals.join_as_editor else "player"
@@ -666,19 +719,13 @@ func _on_host_requested(connection_settings: Dictionary, match_settings: Diction
 	var max_players: int = connection_settings.get("max_players", 8)
 	var use_upnp: bool = connection_settings.get("use_upnp", false)
 
-	# FIXED C-04: Check error code to prevent crash
-	var err: Error = enet_peer.create_server(port, max_players)
+	var err: Error = _create_host_session(port, max_players)
 	if err != OK:
 		push_error("[World] Failed to create multiplayer server: %s" % error_string(err))
 		return
 
-	multiplayer.multiplayer_peer = enet_peer
-	multiplayer.peer_disconnected.connect(remove_player)
-
 	if use_upnp:
 		upnp_setup()
-
-	in_game = true
 
 	# Server spawns itself
 	var globals: Node = GameManager.get_core_system("globals")
@@ -692,10 +739,6 @@ func _on_host_requested(connection_settings: Dictionary, match_settings: Diction
 	var gs := GameManager.get_core_system("gameplay") as GameplaySvc
 	if gs and gs.match_service:
 		gs.match_service.start_match()
-
-	# Reset multiplayer state
-	multiplayer.multiplayer_peer = null
-	in_game = false
 
 
 # --- Menu Navigation & Animations ---
