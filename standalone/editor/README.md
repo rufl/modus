@@ -27,12 +27,12 @@ The focused round-trip proof in `docs/EDITOR_ROUNDTRIP_PROOF.md` exercises save,
 
 ## Export caution
 
-The preset's custom feature exists, while `project.godot` still names the main menu as the project main scene. `game/main_entry.gd` contains standalone-editor routing, but that scene is not the configured project main scene. The entry/export route therefore needs a real exported-build check before documentation can call the preset functional.
+The preset's `standalone_editor` custom feature selects `standalone/editor/main.tscn` through the project main-scene override; the normal client retains its main-menu route. Headless inspection of the exported Windows client and editor PCKs with Godot 4.7-dev1 confirms both routes load and their raw JSON/JSON5 configuration and remapped UI resources resolve. This resource-pack check does not prove native Windows startup or the standalone editor tools end to end.
 
 ## Required product proof
 
 - Export the exact preset with Godot 4.7 templates.
-- Confirm the binary starts `standalone/editor/main.tscn` or repair the entry route.
+- Confirm the native Windows binary starts `standalone/editor/main.tscn`.
 - Exercise every visible menu item and remove/disable inert affordances.
 - Create, edit, save, close, reopen, and playtest a level.
 - Verify invalid/corrupt files, permissions, paths, and overwrite behavior.

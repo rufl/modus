@@ -247,7 +247,7 @@ func get_current_screen() -> Node:
 
 
 func _load_and_add(path: String, node_name: String) -> Node:
-	if not FileAccess.file_exists(path):
+	if not ResourceLoader.exists(path):
 		push_error("UIService: Script not found: %s" % path)
 		return null
 
@@ -270,7 +270,7 @@ func _load_and_add_scene(path: String, node_name: String) -> Node:
 	else:
 		print("[UIService] Attempting to load scene: %s" % path)
 
-	if not FileAccess.file_exists(path):
+	if not ResourceLoader.exists(path):
 		push_error("UIService: Scene not found: %s" % path)
 		return null
 
