@@ -30,7 +30,6 @@ enum LODLevel { HIGH, MEDIUM, LOW, CULL }
 var current_lod: LODLevel = LODLevel.HIGH
 
 var _timer: float = 0.0
-var _camera: Camera3D
 var _screen_notifier: VisibleOnScreenNotifier3D
 var _is_on_screen: bool = true
 
@@ -100,15 +99,14 @@ func _update_lod(force: bool = false) -> void:
 			lod_changed.emit(LODLevel.CULL)
 		return
 
-	if not _camera:
-		_camera = get_viewport().get_camera_3d()
-		if not _camera:
-			return
+	var camera: Camera3D = get_viewport().get_camera_3d()
+	if not camera:
+		return
 
 	if not is_instance_valid(target_node):
 		return
 
-	var dist_sq: float = target_node.global_position.distance_squared_to(_camera.global_position)
+	var dist_sq: float = target_node.global_position.distance_squared_to(camera.global_position)
 	var new_lod: LODLevel = LODLevel.HIGH
 
 	if distance_cull > 0 and dist_sq > distance_cull * distance_cull:

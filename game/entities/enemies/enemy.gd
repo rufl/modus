@@ -454,7 +454,6 @@ func _setup_lod() -> void:
 
 	var lod: Node = lod_script.new()
 	lod.name = "LODComponent"
-	add_child(lod)
 
 	# Configure distances (could be data-driven later)
 	lod.distance_medium = 15.0
@@ -474,6 +473,7 @@ func _setup_lod() -> void:
 	lod.frustum_margin = Vector3(1.5, 2.0, 1.5)
 
 	lod.lod_changed.connect(_on_lod_changed)
+	add_child(lod)
 
 	# Initial update
 	_on_lod_changed(0)  # LODLevel.HIGH (0)
