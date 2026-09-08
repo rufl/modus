@@ -44,7 +44,9 @@ func test_service_has_required_methods() -> void:
 	]
 
 	for method_name: String in required_methods:
-		assert_true(_match_svc.has_method(method_name), "MatchSvc should have method: %s" % method_name)
+		assert_true(
+			_match_svc.has_method(method_name), "MatchSvc should have method: %s" % method_name
+		)
 
 
 # =============================================================================
@@ -203,4 +205,6 @@ func test_match_state_signals_exist() -> void:
 	]
 
 	for signal_name: String in required_signals:
-		assert_true(_match_svc.has_signal(signal_name), "MatchSvc should have signal: %s" % signal_name)
+		assert_true(
+			_match_svc.has_signal(signal_name), "MatchSvc should have signal: %s" % signal_name
+		)

@@ -2,641 +2,348 @@ name: Code Quality Analysis
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
 
-env:
-  MINIMUM_COVERAGE_THRESHOLD: 80
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
 
 jobs:
   formatting:
     name: Code Formatting Check
     runs-on: ubuntu-latest
-    
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    
-    - name: Setup Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-    
-    - name: Install GDScript Toolkit
-      run: |
-        echo "Installing GDScript formatting and linting tools..."
-        pip install gdtoolkit
-        gdformat --version
-        gdlint --version
-    
-    - name: Check GDScript Formatting
-      id: format-check
-      run: |
-        echo "=== Checking GDScript Code Formatting ==="
-        echo "Checking files in game/ and tests/ directories..."
-        
-        # Check formatting without modifying files
-        gdformat --check --diff game/ tests/ 2>&1 | tee format-check.log
-        
-        FORMAT_EXIT_CODE=${PIPESTATUS[0]}
-        
-        if [ $FORMAT_EXIT_CODE -ne 0 ]; then
-          echo "::warning::Code formatting issues detected"
-          echo "formatting_issues=true" >> $GITHUB_OUTPUT
-        else
-          echo "✓ All files are properly formatted"
-          echo "formatting_issues=false" >> $GITHUB_OUTPUT
-        fi
-        
-        exit $FORMAT_EXIT_CODE
-      continue-on-error: true
-    
-    - name: Auto-format GDScript (if needed)
-      if: steps.format-check.outputs.formatting_issues == 'true' && github.event_name == 'push'
-      run: |
-        echo "=== Auto-formatting GDScript Files ==="
-        gdformat game/ tests/
-        
-        # Check if there are changes
-        if git diff --quiet; then
-          echo "No formatting changes needed"
-        else
-          echo "Formatting changes applied"
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add -A
-          git commit -m "Auto-format GDScript files [skip ci]"
-        fi
-    
-    - name: Push formatting changes
-      if: steps.format-check.outputs.formatting_issues == 'true' && github.event_name == 'push'
-      uses: ad-m/github-push-action@master
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        branch: ${{ github.ref }}
-    
-    - name: Upload Formatting Report
-      if: always()
-      uses: actions/upload-artifact@v3
-      with:
-        name: formatting-report
-        path: format-check.log
-        retention-days: 7
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install GDScript Toolkit
+        run: python -m pip install gdtoolkit==4.5.0
+
+      - name: Check GDScript Formatting
+        run: gdformat --check --diff game/ tests/ 2>&1 | tee format-check.log
+
+      - name: Upload Formatting Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: formatting-report
+          path: format-check.log
+          retention-days: 7
 
   linting:
     name: GDScript Linting
     runs-on: ubuntu-latest
-    
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    
-    - name: Setup Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-    
-    - name: Install GDScript Toolkit
-      run: |
-        pip install gdtoolkit
-    
-    - name: Run GDScript Linting
-      run: |
-        echo "=== Running GDScript Linting ==="
-        echo "Linting game/ and tests/ directories..."
-        
-        # Run linting with configuration
-        gdlint game/ tests/ 2>&1 | tee lint-report.log
-        
-        LINT_EXIT_CODE=${PIPESTATUS[0]}
-        
-        # Parse linting results
-        if [ -f "lint-report.log" ]; then
-          ERROR_COUNT=$(grep -c "Error:" lint-report.log || echo "0")
-          WARNING_COUNT=$(grep -c "Warning:" lint-report.log || echo "0")
-          
-          echo "Linting Results:"
-          echo "  Errors: $ERROR_COUNT"
-          echo "  Warnings: $WARNING_COUNT"
-          
-          if [ $ERROR_COUNT -gt 0 ]; then
-            echo "::error::Found $ERROR_COUNT linting errors"
-          fi
-          
-          if [ $WARNING_COUNT -gt 0 ]; then
-            echo "::warning::Found $WARNING_COUNT linting warnings"
-          fi
-        fi
-        
-        exit $LINT_EXIT_CODE
-      continue-on-error: false
-    
-    - name: Upload Linting Report
-      if: always()
-      uses: actions/upload-artifact@v3
-      with:
-        name: linting-report
-        path: lint-report.log
-        retention-days: 7
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install GDScript Toolkit
+        run: python -m pip install gdtoolkit==4.5.0
+
+      - name: Run GDScript Linting
+        run: gdlint game/ tests/ 2>&1 | tee lint-report.log
+
+      - name: Upload Linting Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: linting-report
+          path: lint-report.log
+          retention-days: 7
+
   static-analysis:
     name: Static Code Analysis
     runs-on: ubuntu-latest
-    
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    
-    - name: Setup Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-    
-    - name: Install Analysis Tools
-      run: |
-        echo "Installing static analysis tools..."
-        pip install gdtoolkit bandit safety
-    
-    - name: Run GDScript Static Analysis
-      run: |
-        echo "=== GDScript Static Analysis ==="
-        
-        # Count lines of code
-        echo "## Code Metrics"
-        echo "Lines of GDScript code:"
-        TOTAL_LINES=$(find game/ tests/ -name "*.gd" -not -path "*/addons/*" | xargs wc -l | tail -1 | awk '{print $1}')
-        echo "Total: $TOTAL_LINES lines"
-        
-        # Check for common issues
-        echo ""
-        echo "## Code Quality Checks"
-        
-        # Look for potential null pointer issues
-        NULL_ACCESS=$(grep -r "\.get_node(" game/ tests/ --include="*.gd" | grep -v "get_node_or_null" | wc -l)
-        echo "Potential null pointer access: $NULL_ACCESS"
-        if [ $NULL_ACCESS -gt 50 ]; then
-          echo "::warning::High number of unsafe get_node() calls: $NULL_ACCESS"
-        fi
-        
-        # Look for hardcoded paths
-        HARDCODED_PATHS=$(grep -r '"res://' game/ tests/ --include="*.gd" | wc -l)
-        echo "Hardcoded node paths: $HARDCODED_PATHS"
-        if [ $HARDCODED_PATHS -gt 100 ]; then
-          echo "::warning::High number of hardcoded paths: $HARDCODED_PATHS"
-        fi
-        
-        # Check for print statements (should use proper logging)
-        PRINT_STATEMENTS=$(grep -r "print(" game/ tests/ --include="*.gd" | wc -l)
-        echo "Print statements: $PRINT_STATEMENTS"
-        if [ $PRINT_STATEMENTS -gt 50 ]; then
-          echo "::warning::Consider using proper logging instead of print(): $PRINT_STATEMENTS instances"
-        fi
-        
-        # Save metrics
-        cat > static-analysis-metrics.txt << EOF
-        Code Metrics:
-        - Total Lines: $TOTAL_LINES
-        - Potential Null Access: $NULL_ACCESS
-        - Hardcoded Paths: $HARDCODED_PATHS
-        - Print Statements: $PRINT_STATEMENTS
-        EOF
-    
-    - name: Code Complexity Analysis
-      run: |
-        echo "=== Code Complexity Analysis ==="
-        
-        # Find large files that might need refactoring
-        echo "## Large Files (>500 lines)"
-        find game/ tests/ -name "*.gd" -not -path "*/addons/*" -exec wc -l {} + | awk '$1 > 500 {print $2 ": " $1 " lines"}' | tee large-files.txt
-        
-        LARGE_FILE_COUNT=$(wc -l < large-files.txt || echo "0")
-        if [ $LARGE_FILE_COUNT -gt 10 ]; then
-          echo "::warning::Found $LARGE_FILE_COUNT files over 500 lines - consider refactoring"
-        fi
-        
-        # Find files with many functions (potential complexity)
-        echo ""
-        echo "## Files with Many Functions (>20)"
-        find game/ tests/ -name "*.gd" -not -path "*/addons/*" -exec sh -c 'count=$(grep -c "^func " "$1" 2>/dev/null || echo 0); if [ $count -gt 20 ]; then echo "$1: $count functions"; fi' _ {} \; | tee complex-files.txt
-        
-        # Check cyclomatic complexity indicators
-        echo ""
-        echo "## High Nesting Depth (>5 levels)"
-        find game/ tests/ -name "*.gd" -not -path "*/addons/*" -exec sh -c 'count=$(grep -c "^\t\t\t\t\t\t" "$1" 2>/dev/null || echo 0); if [ $count -gt 0 ]; then echo "$1: $count deeply nested lines"; fi' _ {} \; | tee nested-files.txt
-    
-    - name: Documentation Coverage
-      run: |
-        echo "=== Documentation Coverage ==="
-        
-        # Count documented vs undocumented functions
-        TOTAL_FUNCS=$(find game/ tests/ -name "*.gd" -not -path "*/addons/*" -exec grep -c "^func " {} + | awk -F: '{sum += $2} END {print sum}')
-        DOCUMENTED_FUNCS=$(find game/ tests/ -name "*.gd" -not -path "*/addons/*" -exec grep -B1 "^func " {} + | grep -c "##\|#.*@" || echo 0)
-        
-        echo "Total functions: $TOTAL_FUNCS"
-        echo "Documented functions: $DOCUMENTED_FUNCS"
-        
-        if [ "$TOTAL_FUNCS" -gt 0 ]; then
-          COVERAGE=$((DOCUMENTED_FUNCS * 100 / TOTAL_FUNCS))
-          echo "Documentation coverage: $COVERAGE%"
-          
-          if [ $COVERAGE -lt 50 ]; then
-            echo "::warning::Documentation coverage is below 50%: $COVERAGE%"
-          fi
-          
-          echo "doc_coverage=$COVERAGE" >> $GITHUB_ENV
-        fi
-    
-    - name: Upload Analysis Results
-      if: always()
-      uses: actions/upload-artifact@v3
-      with:
-        name: static-analysis-results
-        path: |
-          static-analysis-metrics.txt
-          large-files.txt
-          complex-files.txt
-          nested-files.txt
-        retention-days: 30
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Analyze GDScript Metrics
+        run: |
+          python - <<'PY'
+          import re
+          from pathlib import Path
+
+          totals = dict(lines=0, get_node=0, resource_paths=0, prints=0, functions=0, documented=0)
+          large_files, complex_files, nested_files = [], [], []
+          for root in (Path('game'), Path('tests')):
+              if not root.is_dir():
+                  raise SystemExit(f'Missing source directory: {root}')
+              for path in sorted(root.rglob('*.gd')):
+                  if 'addons' in path.parts:
+                      continue
+                  lines = path.read_text(encoding='utf-8').splitlines()
+                  functions = documented = deeply_nested = 0
+                  for index, line in enumerate(lines):
+                      totals['get_node'] += bool(re.search(r'\bget_node\s*\(', line))
+                      totals['resource_paths'] += '"res://' in line
+                      totals['prints'] += bool(re.search(r'\bprint\s*\(', line))
+                      deeply_nested += line.startswith('\t' * 6)
+                      if re.match(r'^\s*(?:static\s+)?func\s+', line):
+                          functions += 1
+                          previous = lines[index - 1].lstrip() if index else ''
+                          documented += previous.startswith('##') or (previous.startswith('#') and '@' in previous)
+                  totals['lines'] += len(lines)
+                  totals['functions'] += functions
+                  totals['documented'] += documented
+                  if len(lines) > 500:
+                      large_files.append(f'{path}: {len(lines)} lines')
+                  if functions > 20:
+                      complex_files.append(f'{path}: {functions} functions')
+                  if deeply_nested:
+                      nested_files.append(f'{path}: {deeply_nested} lines indented at least six tabs')
+
+          report = '\n'.join([
+              'Text-based GDScript metrics (not runtime coverage or vulnerability findings):',
+              f"Total lines: {totals['lines']}",
+              f"Lines containing get_node calls: {totals['get_node']}",
+              f"Lines containing resource paths: {totals['resource_paths']}",
+              f"Lines containing print calls: {totals['prints']}",
+              f"Functions: {totals['functions']}",
+              f"Functions preceded by documentation comments: {totals['documented']}",
+          ])
+          if totals['functions']:
+              ratio = totals['documented'] * 100 / totals['functions']
+              report += f'\nFunction documentation ratio: {ratio:.1f}%'
+              if ratio < 50:
+                  print(f'::warning::Function documentation ratio is below 50%: {ratio:.1f}%')
+          else:
+              report += '\nFunction documentation ratio: not applicable (no functions)'
+          print(report)
+          Path('static-analysis-metrics.txt').write_text(report + '\n', encoding='utf-8')
+          for filename, rows in (
+              ('large-files.txt', large_files),
+              ('complex-files.txt', complex_files),
+              ('nested-files.txt', nested_files),
+          ):
+              Path(filename).write_text('\n'.join(rows) + ('\n' if rows else ''), encoding='utf-8')
+              for row in rows:
+                  print(row)
+          if totals['get_node'] > 50:
+              print('::warning::More than 50 lines contain get_node calls; review null handling')
+          if totals['resource_paths'] > 100:
+              print('::warning::More than 100 lines contain hardcoded resource paths')
+          if totals['prints'] > 50:
+              print('::warning::More than 50 lines contain print calls; consider structured logging')
+          if len(large_files) > 10:
+              print(f'::warning::Found {len(large_files)} files over 500 lines; consider refactoring')
+          PY
+
+      - name: Upload Analysis Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: static-analysis-results
+          path: |
+            static-analysis-metrics.txt
+            large-files.txt
+            complex-files.txt
+            nested-files.txt
+          retention-days: 30
 
   security-scan:
     name: Security Vulnerability Scan
     runs-on: ubuntu-latest
-    
+    permissions:
+      contents: read
+      security-events: write
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    
-    - name: Setup Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-    
-    - name: Install Security Tools
-      run: |
-        echo "Installing security scanning tools..."
-        pip install bandit safety
-    
-    - name: Python Security Analysis
-      if: hashFiles('**/*.py') != ''
-      run: |
-        echo "=== Python Security Analysis ==="
-        
-        # Run Bandit security analysis
-        echo "Running Bandit security scanner..."
-        bandit -r . -f json -o bandit-report.json -ll || true
-        
-        # Parse Bandit results
-        if [ -f "bandit-report.json" ]; then
-          HIGH_SEVERITY=$(jq '[.results[] | select(.issue_severity == "HIGH")] | length' bandit-report.json || echo "0")
-          MEDIUM_SEVERITY=$(jq '[.results[] | select(.issue_severity == "MEDIUM")] | length' bandit-report.json || echo "0")
-          
-          echo "Security Issues Found:"
-          echo "  High Severity: $HIGH_SEVERITY"
-          echo "  Medium Severity: $MEDIUM_SEVERITY"
-          
-          if [ $HIGH_SEVERITY -gt 0 ]; then
-            echo "::error::Found $HIGH_SEVERITY high severity security issues"
-          fi
-          
-          if [ $MEDIUM_SEVERITY -gt 5 ]; then
-            echo "::warning::Found $MEDIUM_SEVERITY medium severity security issues"
-          fi
-        fi
-        
-        # Run Safety check for dependencies
-        echo ""
-        echo "Running Safety dependency scanner..."
-        safety check --json --output safety-report.json || true
-        
-        if [ -f "safety-report.json" ]; then
-          VULNERABLE_DEPS=$(jq 'length' safety-report.json || echo "0")
-          echo "Vulnerable dependencies: $VULNERABLE_DEPS"
-          
-          if [ $VULNERABLE_DEPS -gt 0 ]; then
-            echo "::warning::Found $VULNERABLE_DEPS vulnerable dependencies"
-          fi
-        fi
-    
-    - name: GDScript Security Patterns
-      run: |
-        echo "=== GDScript Security Pattern Analysis ==="
-        
-        # Check for sensitive data patterns
-        echo "Checking for potential sensitive data exposure..."
-        
-        # Look for potential API keys or tokens
-        API_KEY_COUNT=$(grep -r -i "api[_-]key\|token\|secret" game/ tests/ --include="*.gd" --include="*.json" | grep -v "# Example" | grep -v "# TODO" | wc -l)
-        echo "Potential API keys/tokens: $API_KEY_COUNT"
-        
-        if [ $API_KEY_COUNT -gt 0 ]; then
-          echo "::warning::Found $API_KEY_COUNT potential API key/token references"
-          grep -r -i "api[_-]key\|token\|secret" game/ tests/ --include="*.gd" --include="*.json" | grep -v "# Example" | grep -v "# TODO" | head -10
-        fi
-        
-        # Look for hardcoded passwords
-        PASSWORD_COUNT=$(grep -r -i "password\s*=\|passwd\s*=" game/ tests/ --include="*.gd" --include="*.json" | grep -v "# Example" | grep -v "# TODO" | wc -l)
-        echo "Potential hardcoded credentials: $PASSWORD_COUNT"
-        
-        if [ $PASSWORD_COUNT -gt 0 ]; then
-          echo "::warning::Found $PASSWORD_COUNT potential hardcoded credential references"
-        fi
-        
-        # Check for eval() or execute() usage (code injection risks)
-        EVAL_COUNT=$(grep -r "\.execute(\|Expression\.new()" game/ --include="*.gd" | wc -l)
-        echo "Dynamic code execution: $EVAL_COUNT"
-        
-        if [ $EVAL_COUNT -gt 0 ]; then
-          echo "::warning::Found $EVAL_COUNT instances of dynamic code execution - review for security"
-        fi
-    
-    - name: Run Trivy Filesystem Scanner
-      uses: aquasecurity/trivy-action@master
-      with:
-        scan-type: 'fs'
-        scan-ref: '.'
-        format: 'sarif'
-        output: 'trivy-results.sarif'
-        severity: 'CRITICAL,HIGH'
-    
-    - name: Upload Trivy Results to GitHub Security
-      uses: github/codeql-action/upload-sarif@v2
-      if: always()
-      with:
-        sarif_file: 'trivy-results.sarif'
-    
-    - name: Upload Security Reports
-      if: always()
-      uses: actions/upload-artifact@v3
-      with:
-        name: security-reports
-        path: |
-          bandit-report.json
-          safety-report.json
-          trivy-results.sarif
-        retention-days: 30
+      - name: Checkout
+        uses: actions/checkout@v6
 
-  coverage-tracking:
-    name: Test Coverage Tracking
-    runs-on: ubuntu-latest
-    container:
-      image: barichello/godot-ci:4.7
-    
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        lfs: true
-    
-    - name: Setup Godot Environment
-      run: |
-        mkdir -v -p ~/.local/share/godot/export_templates/
-        mv /root/.local/share/godot/export_templates/4.7.stable ~/.local/share/godot/export_templates/4.7.stable || true
-        godot --version
-    
-    - name: Import Project Assets
-      run: |
-        godot --headless --verbose --editor --quit
-    
-    - name: Generate Coverage Report
-      run: |
-        echo "=== Generating Test Coverage Report ==="
-        godot --headless --script tests/utilities/generate_coverage_report.gd 2>&1 | tee coverage-output.log
-        
-        # Extract coverage percentage
-        COVERAGE=$(grep "Coverage:" coverage-output.log | awk '{print $2}' | sed 's/%//' || echo "0")
-        echo "Test Coverage: $COVERAGE%"
-        echo "coverage_percentage=$COVERAGE" >> $GITHUB_ENV
-        
-        # Check against minimum threshold
-        THRESHOLD=${{ env.MINIMUM_COVERAGE_THRESHOLD }}
-        echo "Minimum threshold: $THRESHOLD%"
-        
-        if [ $(echo "$COVERAGE < $THRESHOLD" | bc -l) -eq 1 ]; then
-          echo "::error::Test coverage ($COVERAGE%) is below minimum threshold ($THRESHOLD%)"
-          exit 1
-        else
-          echo "✓ Test coverage meets minimum threshold"
-        fi
-    
-    - name: Upload Coverage Report
-      if: always()
-      uses: actions/upload-artifact@v3
-      with:
-        name: coverage-report
-        path: |
-          coverage-output.log
-          user://coverage_report.json
-        retention-days: 30
-    
-    - name: Comment Coverage on PR
-      if: always() && github.event_name == 'pull_request'
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const coverage = process.env.coverage_percentage || 'N/A';
-          const threshold = process.env.MINIMUM_COVERAGE_THRESHOLD || '80';
-          
-          const body = `## Test Coverage Report
-          
-          **Coverage:** ${coverage}%
-          **Threshold:** ${threshold}%
-          **Status:** ${parseFloat(coverage) >= parseFloat(threshold) ? '✅ Passed' : '❌ Failed'}
-          
-          ${parseFloat(coverage) < parseFloat(threshold) ? 
-            `⚠️ Coverage is below the minimum threshold of ${threshold}%` : 
-            '✅ Coverage meets the minimum threshold'}
-          `;
-          
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: body
-          });
-    name: Dependency Security Check
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    
-    - name: Check Godot Addons
-      run: |
-        echo "=== Addon Security Check ==="
-        
-        # List all addons
-        if [ -d "addons" ]; then
-          echo "Installed addons:"
-          find addons/ -name "plugin.cfg" -exec dirname {} \; | sed 's|addons/||'
-          
-          # Check for suspicious files in addons
-          echo "Checking for suspicious files in addons..."
-          find addons/ -name "*.exe" -o -name "*.dll" -o -name "*.so" | head -10
-          
-          # Check addon configurations
-          echo "Addon configurations:"
-          find addons/ -name "plugin.cfg" -exec echo "=== {} ===" \; -exec cat {} \;
-        else
-          echo "No addons directory found"
-        fi
-    
-    - name: Project Configuration Review
-      run: |
-        echo "=== Project Configuration Review ==="
-        
-        # Check project settings for security-relevant configurations
-        echo "Checking project.godot for security settings..."
-        
-        # Look for debug settings that shouldn't be in production
-        if grep -q "debug.*true" project.godot; then
-          echo "WARNING: Debug settings found in project.godot"
-        fi
-        
-        # Check for development-only settings
-        if grep -q "development.*true" project.godot; then
-          echo "WARNING: Development settings found in project.godot"
-        fi
-        
-        echo "Project configuration check completed"
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install Security Tools
+        if: hashFiles('**/*.py') != ''
+        run: python -m pip install bandit
+
+      - name: Python Security Analysis
+        if: hashFiles('**/*.py') != ''
+        run: bandit -r . -f json -o bandit-report.json -ll
+
+      - name: GDScript Security Patterns
+        if: ${{ !cancelled() }}
+        run: |
+          python - <<'PY'
+          import re
+          from pathlib import Path
+
+          patterns = {
+              'API key/token/secret references': re.compile(r'api[_-]key|token|secret', re.IGNORECASE),
+              'Potential hardcoded credential assignments': re.compile(r'\b(?:password|passwd)\s*=', re.IGNORECASE),
+              'Dynamic execution references': re.compile(r'\.execute\s*\(|Expression\.new\s*\('),
+          }
+          counts = dict.fromkeys(patterns, 0)
+          for root in (Path('game'), Path('tests')):
+              if not root.is_dir():
+                  raise SystemExit(f'Missing source directory: {root}')
+              for path in sorted(root.rglob('*')):
+                  if not path.is_file() or path.suffix not in ('.gd', '.json'):
+                      continue
+                  for line in path.read_text(encoding='utf-8').splitlines():
+                      for label, pattern in patterns.items():
+                          if label == 'Dynamic execution references':
+                              if root.name != 'game' or path.suffix != '.gd':
+                                  continue
+                          elif '# Example' in line or '# TODO' in line:
+                              continue
+                          counts[label] += bool(pattern.search(line))
+          report = ['Text-pattern review only; matches are not confirmed vulnerabilities.']
+          for label, count in counts.items():
+              report.append(f'{label}: {count}')
+              if count:
+                  print(f'::warning::{label}: {count}; review for security')
+          # Do not print source lines that might contain credentials.
+          Path('security-patterns.txt').write_text('\n'.join(report) + '\n', encoding='utf-8')
+          print('\n'.join(report))
+          PY
+
+      - name: Run Trivy Filesystem Scanner
+        if: ${{ !cancelled() }}
+        uses: aquasecurity/trivy-action@0.35.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: sarif
+          output: trivy-results.sarif
+          severity: CRITICAL,HIGH
+          limit-severities-for-sarif: 'true'
+          exit-code: '1'
+
+      - name: Upload Trivy Results to GitHub Security
+        if: ${{ !cancelled() && hashFiles('trivy-results.sarif') != '' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && github.actor != 'dependabot[bot]' }}
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: trivy-results.sarif
+          category: code-quality-filesystem
+
+      - name: Upload Security Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: |
+            bandit-report.json
+            security-patterns.txt
+            trivy-results.sarif
+          retention-days: 30
 
   dependency-check:
-    name: Dependency Security Check
+    name: Dependency Configuration Review
     runs-on: ubuntu-latest
-    
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    
-    - name: Check Godot Addons
-      run: |
-        echo "=== Addon Security Check ==="
-        
-        # List all addons
-        if [ -d "addons" ]; then
-          echo "Installed addons:"
-          find addons/ -name "plugin.cfg" -exec dirname {} \; | sed 's|addons/||' | tee addon-list.txt
-          
-          ADDON_COUNT=$(wc -l < addon-list.txt)
-          echo "Total addons: $ADDON_COUNT"
-          
-          # Check for suspicious files in addons
-          echo ""
-          echo "Checking for suspicious files in addons..."
-          SUSPICIOUS_FILES=$(find addons/ -name "*.exe" -o -name "*.dll" -o -name "*.so" | wc -l)
-          
-          if [ $SUSPICIOUS_FILES -gt 0 ]; then
-            echo "::warning::Found $SUSPICIOUS_FILES suspicious binary files in addons"
-            find addons/ -name "*.exe" -o -name "*.dll" -o -name "*.so"
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Check Godot Addons
+        run: |
+          : > addon-list.txt
+          if [ -d addons ]; then
+            find addons/ -name plugin.cfg -exec dirname {} \; | tee addon-list.txt
+            echo "Addon binaries for manual review:"
+            find addons/ -type f \( -name '*.exe' -o -name '*.dll' -o -name '*.so' \) -print
+            echo "Addon configurations:"
+            find addons/ -name plugin.cfg -exec echo '=== {} ===' \; -exec cat {} \;
           else
-            echo "✓ No suspicious binary files found"
+            echo "No addons directory found"
           fi
-          
-          # Check addon configurations
-          echo ""
-          echo "Addon configurations:"
-          find addons/ -name "plugin.cfg" -exec echo "=== {} ===" \; -exec cat {} \;
-        else
-          echo "No addons directory found"
-        fi
-    
-    - name: Project Configuration Review
-      run: |
-        echo "=== Project Configuration Review ==="
-        
-        # Check project settings for security-relevant configurations
-        echo "Checking project.godot for security settings..."
-        
-        # Look for debug settings that shouldn't be in production
-        if grep -q "debug.*true" project.godot; then
-          echo "::warning::Debug settings found in project.godot"
-        else
-          echo "✓ No debug settings in production config"
-        fi
-        
-        # Check for development-only settings
-        if grep -q "development.*true" project.godot; then
-          echo "::warning::Development settings found in project.godot"
-        else
-          echo "✓ No development-only settings found"
-        fi
-        
-        echo "Project configuration check completed"
-    
-    - name: Upload Dependency Report
-      if: always()
-      uses: actions/upload-artifact@v3
-      with:
-        name: dependency-report
-        path: addon-list.txt
-        retention-days: 7
+
+      - name: Project Configuration Review
+        run: |
+          test -f project.godot
+          if grep -q 'debug.*true' project.godot; then
+            echo "::warning::Debug settings found in project.godot"
+          fi
+          if grep -q 'development.*true' project.godot; then
+            echo "::warning::Development settings found in project.godot"
+          fi
+          echo "Configuration text-pattern review completed; this is not a dependency vulnerability audit."
+
+      - name: Upload Dependency Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-report
+          path: addon-list.txt
+          retention-days: 7
 
   quality-summary:
     name: Quality Summary
     runs-on: ubuntu-latest
-    needs: [formatting, linting, static-analysis, security-scan, coverage-tracking, dependency-check]
+    needs: [formatting, linting, static-analysis, security-scan, dependency-check]
     if: always()
-    
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
-    - name: Download All Artifacts
-      uses: actions/download-artifact@v3
-      with:
-        path: quality-reports/
-    
-    - name: Generate Quality Summary
-      run: |
-        echo "=== MODUS Framework Code Quality Summary ===" | tee quality-summary.md
-        echo "" | tee -a quality-summary.md
-        echo "**Date:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")" | tee -a quality-summary.md
-        echo "**Branch:** ${{ github.ref_name }}" | tee -a quality-summary.md
-        echo "**Commit:** ${{ github.sha }}" | tee -a quality-summary.md
-        echo "" | tee -a quality-summary.md
-        
-        echo "## Job Status" | tee -a quality-summary.md
-        echo "- Formatting: ${{ needs.formatting.result }}" | tee -a quality-summary.md
-        echo "- Linting: ${{ needs.linting.result }}" | tee -a quality-summary.md
-        echo "- Static Analysis: ${{ needs.static-analysis.result }}" | tee -a quality-summary.md
-        echo "- Security Scan: ${{ needs.security-scan.result }}" | tee -a quality-summary.md
-        echo "- Coverage Tracking: ${{ needs.coverage-tracking.result }}" | tee -a quality-summary.md
-        echo "- Dependency Check: ${{ needs.dependency-check.result }}" | tee -a quality-summary.md
-        echo "" | tee -a quality-summary.md
-        
-        # Determine overall status
-        if [ "${{ needs.formatting.result }}" = "success" ] && \
-           [ "${{ needs.linting.result }}" = "success" ] && \
-           [ "${{ needs.static-analysis.result }}" = "success" ] && \
-           [ "${{ needs.security-scan.result }}" = "success" ] && \
-           [ "${{ needs.coverage-tracking.result }}" = "success" ]; then
-          echo "## Overall Status: ✅ PASSED" | tee -a quality-summary.md
-          echo "All quality checks passed successfully!" | tee -a quality-summary.md
-        else
-          echo "## Overall Status: ❌ FAILED" | tee -a quality-summary.md
-          echo "Some quality checks failed. Please review the reports above." | tee -a quality-summary.md
-        fi
-        
-        cat quality-summary.md
-    
-    - name: Upload Quality Summary
-      uses: actions/upload-artifact@v3
-      with:
-        name: quality-summary
-        path: quality-summary.md
-        retention-days: 30
-    
-    - name: Comment Summary on PR
-      if: github.event_name == 'pull_request'
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const fs = require('fs');
-          const summary = fs.readFileSync('quality-summary.md', 'utf8');
-          
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: summary
-          });
+      - name: Generate Quality Summary
+        uses: actions/github-script@v8
+        env:
+          JOB_RESULTS: ${{ toJSON(needs) }}
+        with:
+          script: |
+            const fs = require('fs');
+            const results = JSON.parse(process.env.JOB_RESULTS);
+            const passed = Object.values(results).every(job => job.result === 'success');
+            const summary = [
+              '# MODUS Framework Code Quality Summary',
+              '',
+              `Commit: ${context.sha}`,
+              '',
+              '## Job Status',
+              ...Object.entries(results).map(([name, job]) => `- ${name}: ${job.result}`),
+              '',
+              `## Overall Status: ${passed ? 'PASSED' : 'FAILED'}`,
+              '',
+              'Runtime test coverage is not measured: this repository has no coverage generator.',
+              'Static metrics and security-pattern counts are text heuristics, not runtime coverage or a security certification.',
+              'Trivy scans supported repository dependency manifests; no Python dependency manifest is available for a separate dependency audit.',
+              '',
+            ].join('\n');
+            fs.writeFileSync('quality-summary.md', summary);
+            await core.summary.addRaw(summary).write();
+            if (!passed) core.setFailed('One or more quality jobs did not succeed.');
+
+      - name: Upload Quality Summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-summary
+          path: quality-summary.md
+          retention-days: 30
+
+      - name: Comment Summary on PR
+        if: ${{ !cancelled() && hashFiles('quality-summary.md') != '' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]' }}
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require('fs');
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: fs.readFileSync('quality-summary.md', 'utf8'),
+            });

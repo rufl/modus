@@ -5,6 +5,7 @@ extends ModusGutTestBase
 
 var _network_manager: Node = null
 
+
 func before_each():
 	await modus_setup()
 	# Get NetworkManager via NetworkService
@@ -12,13 +13,16 @@ func before_each():
 	if ns:
 		_network_manager = ns.network_manager
 
+
 func after_each():
 	modus_teardown()
+
 
 func test_service_exists():
 	# Test that NetworkService is accessible
 	var ns := NetworkSvc.get_service()
 	assert_not_null(ns, "NetworkSvc.get_service() should return valid service")
+
 
 func test_autoload_exists():
 	if not _network_manager:
@@ -28,6 +32,7 @@ func test_autoload_exists():
 			_network_manager = ns.network_manager
 
 	assert_not_null(_network_manager, "NetworkManager should be found via NetworkSvc.get_service()")
+
 
 func test_validation_toggle():
 	if not _network_manager:
@@ -45,6 +50,7 @@ func test_validation_toggle():
 		# If we got here without crashing, it works
 		assert_true(true, "Validation toggle should work without errors")
 
+
 func test_validate_rpc_server_trusted():
 	if not _network_manager:
 		var ns := NetworkSvc.get_service()
@@ -57,6 +63,7 @@ func test_validate_rpc_server_trusted():
 		# Server (peer 1) should always be trusted
 		var result: bool = _network_manager.validate_rpc(1, "test_method", [])
 		assert_true(result, "Server peer should be trusted")
+
 
 func test_add_trusted_peer():
 	if not _network_manager:
@@ -74,6 +81,7 @@ func test_add_trusted_peer():
 		# If we got here without crashing, it works
 		assert_true(true, "Trusted peer management should work without errors")
 
+
 func test_get_network_stats():
 	if not _network_manager:
 		var ns := NetworkSvc.get_service()
@@ -90,6 +98,7 @@ func test_get_network_stats():
 
 		# Should have expected keys
 		assert_dict_has_key(stats, "is_server", "Stats should have is_server key")
+
 
 func test_rpc_rate_limiting():
 	if not _network_manager:

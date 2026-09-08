@@ -30,8 +30,6 @@ func test_builder_stages_validated_enemy_data_before_tree_entry() -> void:
 
 func test_builder_rejects_missing_scene() -> void:
 	assert_null(
-		EnemyBuilderScript.create_enemy(
-			{"id": "missing", "scene_path": "res://missing/enemy.tscn"}
-		)
+		EnemyBuilderScript.create_enemy({"id": "missing", "scene_path": "res://missing/enemy.tscn"})
 	)
 	assert_push_error("Enemy scene does not exist")

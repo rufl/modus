@@ -51,20 +51,14 @@ func _test_enabled_feature_requires_enabled_deps(test_data: Dictionary) -> bool:
 	var dep_to_disable: String = dependencies[rng.randi_range(0, dependencies.size() - 1)]
 
 	# Manually set up the feature configuration for testing
-	gm._feature_configs[feature_id] = {
-		"enabled": true,
-		"dependencies": dependencies
-	}
+	gm._feature_configs[feature_id] = {"enabled": true, "dependencies": dependencies}
 	gm._feature_enabled[feature_id] = true
 	gm._feature_dependencies[feature_id] = dependencies
 	for dependency_id: String in dependencies:
 		gm._feature_enabled[dependency_id] = true
 
 	# Set up the dependency as disabled
-	gm._feature_configs[dep_to_disable] = {
-		"enabled": false,
-		"dependencies": []
-	}
+	gm._feature_configs[dep_to_disable] = {"enabled": false, "dependencies": []}
 	gm._feature_enabled[dep_to_disable] = false
 	gm._feature_dependencies[dep_to_disable] = []
 
@@ -79,8 +73,8 @@ func _test_enabled_feature_requires_enabled_deps(test_data: Dictionary) -> bool:
 
 	return result
 
-func test_property_all_dependencies_enabled_allows_loading() -> void:
 
+func test_property_all_dependencies_enabled_allows_loading() -> void:
 	# Property: For any feature with dependencies, if all required
 	# dependencies are enabled, the feature should load successfully
 
@@ -92,8 +86,8 @@ func test_property_all_dependencies_enabled_allows_loading() -> void:
 		"Features with all dependencies enabled should load successfully"
 	)
 
-func _test_all_deps_enabled_allows_loading(test_data: Dictionary) -> bool:
 
+func _test_all_deps_enabled_allows_loading(test_data: Dictionary) -> bool:
 	var gm: GameManagerClass = GameManagerClass.new()
 	add_child_autofree(gm)
 	await consume_property_push_errors()
@@ -160,14 +154,8 @@ func _test_circular_dependency_detection(_test_data: Dictionary) -> bool:
 
 	# Create a circular dependency scenario
 	# Feature A depends on Feature B, Feature B depends on Feature A
-	gm._feature_configs["test_feature_a"] = {
-		"enabled": true,
-		"dependencies": ["test_feature_b"]
-	}
-	gm._feature_configs["test_feature_b"] = {
-		"enabled": true,
-		"dependencies": ["test_feature_a"]
-	}
+	gm._feature_configs["test_feature_a"] = {"enabled": true, "dependencies": ["test_feature_b"]}
+	gm._feature_configs["test_feature_b"] = {"enabled": true, "dependencies": ["test_feature_a"]}
 	gm._feature_enabled["test_feature_a"] = true
 	gm._feature_enabled["test_feature_b"] = true
 	gm._feature_dependencies["test_feature_a"] = ["test_feature_b"]
@@ -202,7 +190,6 @@ func _test_dependency_load_order(test_data: Dictionary) -> bool:
 	add_child_autofree(gm)
 	await consume_property_push_errors()
 	var rng: RandomNumberGenerator = get_seeded_rng(test_data.get("iteration", 0))
-
 
 	# Get the resolved load order
 	var load_order: Array[String] = gm._resolve_dependency_order()
@@ -271,7 +258,9 @@ func _test_transitive_dependency_validation(_test_data: Dictionary) -> bool:
 
 	# Try to validate dependencies
 	var validation_result: bool = gm._validate_dependencies()
-	assert_property_push_error_count(1, "Disabled transitive dependencies should produce diagnostics")
+	assert_property_push_error_count(
+		1, "Disabled transitive dependencies should produce diagnostics"
+	)
 
 	# Property: Validation should fail when a transitive dependency is disabled
 	var result: bool = not validation_result

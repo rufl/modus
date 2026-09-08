@@ -28,10 +28,10 @@ func test_enemies_config_in_gameplay_json5() -> void:
 func test_grunt_enemy_defined() -> void:
 	var gm: Node = get_node_or_null("/root/GameManager")
 	assert_not_null(gm, "GameManager should exist")
-	
+
 	if not gm:
 		return
-	
+
 	var data_service: Variant = gm.get_core_system("data")
 	assert_not_null(data_service, "Data service should exist")
 
@@ -47,10 +47,10 @@ func test_grunt_enemy_defined() -> void:
 func test_enemy_has_required_stats() -> void:
 	var gm: Node = get_node_or_null("/root/GameManager")
 	assert_not_null(gm, "GameManager should exist")
-	
+
 	if not gm:
 		return
-	
+
 	var data_service: Variant = gm.get_core_system("data")
 	assert_not_null(data_service, "Data service should exist")
 
@@ -75,10 +75,10 @@ func test_enemy_has_required_stats() -> void:
 func test_enemy_tiers_exist() -> void:
 	var gm: Node = get_node_or_null("/root/GameManager")
 	assert_not_null(gm, "GameManager should exist")
-	
+
 	if not gm:
 		return
-	
+
 	var data_service: Variant = gm.get_core_system("data")
 	assert_not_null(data_service, "Data service should exist")
 
@@ -99,7 +99,9 @@ func test_enemy_tiers_exist() -> void:
 			if tier not in tiers_found:
 				tiers_found.append(tier)
 
-	assert_ge(tiers_found.size(), 2, "Should have at least 2 enemy tiers, found: %d" % tiers_found.size())
+	assert_ge(
+		tiers_found.size(), 2, "Should have at least 2 enemy tiers, found: %d" % tiers_found.size()
+	)
 
 
 # =============================================================================
@@ -110,10 +112,10 @@ func test_enemy_tiers_exist() -> void:
 func test_enemies_in_game_database() -> void:
 	var gm: Node = get_node_or_null("/root/GameManager")
 	assert_not_null(gm, "GameManager should exist")
-	
+
 	if not gm:
 		return
-	
+
 	var data_service: Variant = gm.get_core_system("data")
 	assert_not_null(data_service, "Data service should exist")
 
@@ -212,7 +214,9 @@ func test_enemy_base_script_exists() -> void:
 
 func test_enemy_ai_controller_exists() -> void:
 	var path: String = "res://game/entities/enemies/ai/enemy_ai_controller.gd"
-	assert_true(FileAccess.file_exists(path), "Enemy AI controller script should exist at: %s" % path)
+	assert_true(
+		FileAccess.file_exists(path), "Enemy AI controller script should exist at: %s" % path
+	)
 
 
 func test_infighting_system_exists() -> void:

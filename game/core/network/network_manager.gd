@@ -222,7 +222,8 @@ func _load_network_config_resource() -> void:
 				config.lag_comp_history_duration = json_hist_sec
 				if logger_sync and logger_sync.has_method("info"):
 					logger_sync.info(
-						"  - lag_comp_history_duration: %.2fs (from JSON)" % json_hist_sec, "Network"
+						"  - lag_comp_history_duration: %.2fs (from JSON)" % json_hist_sec,
+						"Network"
 					)
 
 			# Interpolation (if disabled in JSON, disable logic)
@@ -1051,7 +1052,9 @@ func set_validation_enabled(enabled: bool) -> void:
 	if gm:
 		var logger: Variant = gm.get_core_system("logger")
 		if logger and logger.has_method("info"):
-			logger.info("[Network] Validation %s" % ("enabled" if enabled else "disabled"), "Network")
+			logger.info(
+				"[Network] Validation %s" % ("enabled" if enabled else "disabled"), "Network"
+			)
 
 
 ## Add trusted peer (bypasses some validation)
@@ -1277,7 +1280,9 @@ func host_game(port: int = -1, max_players: int = -1) -> Error:
 			if gm2:
 				var logger2: Variant = gm2.get_core_system("logger")
 				if logger2 and logger2.has_method("info"):
-					logger2.info("[Network] Steam unavailable/failed, falling back to ENet", "Network")
+					logger2.info(
+						"[Network] Steam unavailable/failed, falling back to ENet", "Network"
+					)
 
 		var enet_peer := ENetMultiplayerPeer.new()
 		var err := enet_peer.create_server(port, max_players)

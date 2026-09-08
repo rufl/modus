@@ -44,7 +44,9 @@ var _loot_table_cache: Dictionary = {}
 
 static func get_instance() -> LootSvc:
 	var gm: Node = Engine.get_main_loop().root.get_node_or_null("GameManager")
-	var gs: Node = gm.get_core_system("gameplay") if gm and gm.has_method("get_core_system") else null
+	var gs: Node = (
+		gm.get_core_system("gameplay") if gm and gm.has_method("get_core_system") else null
+	)
 	return gs.loot if gs else null
 
 

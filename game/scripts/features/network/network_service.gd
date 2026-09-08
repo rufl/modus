@@ -70,7 +70,10 @@ func _ready() -> void:
 func _get_game_manager() -> Node:
 	var parent_node := get_parent()
 	while parent_node:
-		if parent_node.has_method("get_core_system") and parent_node.has_method("register_core_system"):
+		if (
+			parent_node.has_method("get_core_system")
+			and parent_node.has_method("register_core_system")
+		):
 			return parent_node
 		parent_node = parent_node.get_parent()
 

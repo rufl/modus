@@ -296,10 +296,7 @@ func validate_player_start(context: RefCounted) -> ValidationResult:
 ## Find player start position in the grid
 func _find_player_start_position(context: RefCounted) -> Vector2i:
 	# Look for player start marker in context
-	if (
-		context.has("player_start_position")
-		and context.player_start_position != Vector2i(-1, -1)
-	):
+	if context.has("player_start_position") and context.player_start_position != Vector2i(-1, -1):
 		return context.player_start_position
 
 	# Fallback: find first room's center

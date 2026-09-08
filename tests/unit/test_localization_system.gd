@@ -529,7 +529,7 @@ func test_localization_integrates_with_game_manager() -> void:
 	if not gm:
 		pass_test("GameManager not available")
 		return
-	
+
 	var loc_service: Node = gm.get_core_system("localization")
 
 	assert_not_null(loc_service, "Localization should be registered with GameManager")
@@ -544,6 +544,6 @@ func test_localization_logger_integration() -> void:
 	if not gm:
 		pass_test("GameManager not available")
 		return
-	
+
 	var logger: Node = gm.get_core_system("logger")
 	assert_not_null(logger, "Logger should be available for localization")

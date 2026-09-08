@@ -132,10 +132,7 @@ func emit_event(event_id: String, data: Dictionary = {}) -> void:
 func subscribe_event(event_id: String, callback: Callable, priority: int = 0) -> void:
 	var gm: Node = get_node_or_null("/root/GameManager")
 	if gm and gm.has_method("subscribe"):
-		if (
-			gm.has_method("is_subscribed")
-			and gm.is_subscribed(event_id, callback)
-		):
+		if gm.has_method("is_subscribed") and gm.is_subscribed(event_id, callback):
 			return
 		gm.subscribe(event_id, callback, priority)
 

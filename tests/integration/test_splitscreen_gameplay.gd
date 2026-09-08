@@ -14,6 +14,8 @@ func _transition_session_to_active() -> void:
 		assert_true(state.transition_to(SessionState.State.ASSIGNING_DEVICES))
 	if state.current_state in [SessionState.State.ASSIGNING_DEVICES, SessionState.State.PAUSED]:
 		assert_true(state.transition_to(SessionState.State.ACTIVE))
+
+
 var mock_gamepads: Array[int] = []
 
 
@@ -30,7 +32,7 @@ func before_each() -> void:
 		splitscreen_manager.performance_profiler.warning_fps_threshold = 0.0
 		splitscreen_manager.performance_profiler.critical_frame_time_ms = INF
 		splitscreen_manager.performance_profiler.warning_frame_time_ms = INF
-	
+
 	# Setup mock gamepads
 	mock_gamepads.clear()
 
@@ -40,7 +42,7 @@ func after_each() -> void:
 	if splitscreen_manager and is_instance_valid(splitscreen_manager):
 		if splitscreen_manager.is_session_active():
 			splitscreen_manager.end_session()
-	
+
 	splitscreen_manager = null
 	mock_gamepads.clear()
 
@@ -59,7 +61,7 @@ func _simulate_connected_gamepads(count: int) -> void:
 func _complete_device_assignment(player_count: int) -> void:
 	for player_id in range(player_count):
 		splitscreen_manager.gamepad_controller.assign_gamepad(player_id, player_id)
-	
+
 	await get_tree().process_frame
 
 
@@ -71,9 +73,9 @@ func _complete_device_assignment(player_count: int) -> void:
 ## Test: Start 2-player splitscreen session
 func test_2_player_splitscreen_session_start() -> void:
 	_simulate_connected_gamepads(4)
-	
+
 	var result: bool = splitscreen_manager.start_session(4)
-	
+
 	assert_true(result, "Should successfully start 4-player session")
 	assert_eq(
 		splitscreen_manager.session_state.current_state,
@@ -87,7 +89,7 @@ func test_2_player_viewport_creation() -> void:
 	_simulate_connected_gamepads(4)
 	splitscreen_manager.start_session(4)
 	await _complete_device_assignment(4)
-	
+
 	assert_eq(
 		splitscreen_manager.viewport_manager.get_viewport_count(),
 		4,
@@ -100,7 +102,7 @@ func test_2_player_viewport_arrangement() -> void:
 	_simulate_connected_gamepads(4)
 	splitscreen_manager.start_session(4)
 	await _complete_device_assignment(4)
-	
+
 	# Verify viewports are arranged
 	for player_id in range(4):
 		var viewport: SubViewport = splitscreen_manager.viewport_manager.get_player_viewport(
@@ -113,10 +115,10 @@ func test_2_player_viewport_arrangement() -> void:
 func test_2_player_gamepad_assignment() -> void:
 	_simulate_connected_gamepads(4)
 	splitscreen_manager.start_session(4)
-	
+
 	for player_id in range(4):
 		splitscreen_manager.gamepad_controller.assign_gamepad(player_id, player_id)
-	
+
 	# Verify assignments
 	for player_id in range(4):
 		var device: int = splitscreen_manager.gamepad_controller.get_assigned_device(player_id)
@@ -128,10 +130,9 @@ func test_2_player_session_becomes_active() -> void:
 	_simulate_connected_gamepads(4)
 	splitscreen_manager.start_session(4)
 	await _complete_device_assignment(4)
-	
+
 	assert_true(
-		splitscreen_manager.is_session_active(),
-		"Session should be active after device assignment"
+		splitscreen_manager.is_session_active(), "Session should be active after device assignment"
 	)
 
 
@@ -143,9 +144,9 @@ func test_2_player_session_becomes_active() -> void:
 ## Test: Start 4-player splitscreen session
 func test_4_player_splitscreen_session_start() -> void:
 	_simulate_connected_gamepads(4)
-	
+
 	var result: bool = splitscreen_manager.start_session(4)
-	
+
 	assert_true(result, "Should successfully start 4-player session")
 	assert_eq(splitscreen_manager.get_player_count(), 4, "Should have 4 players")
 
@@ -155,13 +156,13 @@ func test_4_player_viewport_creation() -> void:
 	_simulate_connected_gamepads(4)
 	splitscreen_manager.start_session(4)
 	await _complete_device_assignment(4)
-	
+
 	assert_eq(
 		splitscreen_manager.viewport_manager.get_viewport_count(),
 		4,
 		"Should have 4 viewports created"
 	)
-	
+
 	# Verify each viewport exists
 	for player_id in range(4):
 		var viewport: SubViewport = splitscreen_manager.viewport_manager.get_player_viewport(
@@ -175,13 +176,13 @@ func test_4_player_viewport_layout() -> void:
 	_simulate_connected_gamepads(4)
 	splitscreen_manager.start_session(4)
 	await _complete_device_assignment(4)
-	
+
 	# Verify 2x2 grid layout
 	var viewport_0: SubViewport = splitscreen_manager.viewport_manager.get_player_viewport(0)
 	var viewport_1: SubViewport = splitscreen_manager.viewport_manager.get_player_viewport(1)
 	var viewport_2: SubViewport = splitscreen_manager.viewport_manager.get_player_viewport(2)
 	var viewport_3: SubViewport = splitscreen_manager.viewport_manager.get_player_viewport(3)
-	
+
 	assert_not_null(viewport_0, "Top-left viewport should exist")
 	assert_not_null(viewport_1, "Top-right viewport should exist")
 	assert_not_null(viewport_2, "Bottom-left viewport should exist")
@@ -192,11 +193,11 @@ func test_4_player_viewport_layout() -> void:
 func test_4_player_gamepad_input_isolation() -> void:
 	_simulate_connected_gamepads(4)
 	splitscreen_manager.start_session(4)
-	
+
 	# Assign different devices to each player
 	for player_id in range(4):
 		splitscreen_manager.gamepad_controller.assign_gamepad(player_id, player_id)
-	
+
 	# Verify each player has unique device
 	var assigned_devices: Array[int] = []
 	for player_id in range(4):
@@ -213,14 +214,14 @@ func test_4_player_performance_monitoring() -> void:
 	_simulate_connected_gamepads(4)
 	splitscreen_manager.start_session(4)
 	await _complete_device_assignment(4)
-	
+
 	# Enable adaptive quality
 	splitscreen_manager.adaptive_quality_enabled = true
-	
+
 	# Simulate some frames by waiting
 	for i in range(10):
 		await get_tree().process_frame
-	
+
 	# Verify session is still active (performance monitoring didn't crash)
 	assert_true(
 		splitscreen_manager.is_session_active(),
@@ -236,9 +237,9 @@ func test_4_player_performance_monitoring() -> void:
 ## Test: Start 6-player splitscreen session
 func test_6_player_splitscreen_session_start() -> void:
 	_simulate_connected_gamepads(6)
-	
+
 	var result: bool = splitscreen_manager.start_session(6)
-	
+
 	assert_true(result, "Should successfully start 6-player session")
 	assert_eq(splitscreen_manager.get_player_count(), 6, "Should have 6 players")
 
@@ -248,7 +249,7 @@ func test_6_player_viewport_creation() -> void:
 	_simulate_connected_gamepads(6)
 	splitscreen_manager.start_session(6)
 	await _complete_device_assignment(6)
-	
+
 	assert_eq(
 		splitscreen_manager.viewport_manager.get_viewport_count(),
 		6,
@@ -261,7 +262,7 @@ func test_6_player_viewport_layout() -> void:
 	_simulate_connected_gamepads(6)
 	splitscreen_manager.start_session(6)
 	await _complete_device_assignment(6)
-	
+
 	# Verify all 6 viewports exist
 	for player_id in range(6):
 		var viewport: SubViewport = splitscreen_manager.viewport_manager.get_player_viewport(
@@ -274,11 +275,11 @@ func test_6_player_viewport_layout() -> void:
 func test_6_player_gamepad_assignment() -> void:
 	_simulate_connected_gamepads(6)
 	splitscreen_manager.start_session(6)
-	
+
 	# Assign devices
 	for player_id in range(6):
 		splitscreen_manager.gamepad_controller.assign_gamepad(player_id, player_id)
-	
+
 	# Verify all assignments
 	for player_id in range(6):
 		var device: int = splitscreen_manager.gamepad_controller.get_assigned_device(player_id)
@@ -290,11 +291,11 @@ func test_6_player_maximum_capacity() -> void:
 	_simulate_connected_gamepads(6)
 	splitscreen_manager.start_session(6)
 	await _complete_device_assignment(6)
-	
+
 	# Try to add 7th player (should fail)
 	var result: int = splitscreen_manager.add_player(6)
 	assert_push_error("maximum player count")
-	
+
 	assert_eq(result, -1, "Should not allow 7th player (exceeds max)")
 	assert_eq(splitscreen_manager.get_player_count(), 6, "Should still have 6 players")
 
@@ -307,18 +308,18 @@ func test_6_player_maximum_capacity() -> void:
 ## Test: Gamepad detection
 func test_gamepad_detection() -> void:
 	_simulate_connected_gamepads(4)
-	
+
 	var detected: Array = splitscreen_manager.gamepad_controller.detect_gamepads()
-	
+
 	assert_eq(detected.size(), 4, "Should detect 4 gamepads")
 
 
 ## Test: Gamepad assignment to player
 func test_gamepad_assignment_to_player() -> void:
 	_simulate_connected_gamepads(4)
-	
+
 	var result: bool = splitscreen_manager.gamepad_controller.assign_gamepad(0, 0)
-	
+
 	assert_true(result, "Should successfully assign gamepad 0 to player 0")
 	assert_eq(
 		splitscreen_manager.gamepad_controller.get_assigned_device(0),
@@ -331,9 +332,9 @@ func test_gamepad_assignment_to_player() -> void:
 func test_gamepad_unassignment() -> void:
 	_simulate_connected_gamepads(4)
 	splitscreen_manager.gamepad_controller.assign_gamepad(0, 0)
-	
+
 	splitscreen_manager.gamepad_controller.unassign_gamepad(0)
-	
+
 	assert_eq(
 		splitscreen_manager.gamepad_controller.get_assigned_device(0),
 		-1,
@@ -346,16 +347,16 @@ func test_gamepad_disconnection_handling() -> void:
 	_simulate_connected_gamepads(4)
 	splitscreen_manager.start_session(4)
 	await _complete_device_assignment(4)
-	
+
 	# Enable auto-pause
 	splitscreen_manager.auto_pause_on_disconnect = true
-	
+
 	# Simulate disconnection by updating player data
 	splitscreen_manager.session_state.update_player_data(0, null, null, -1, false)
-	
+
 	# Manually pause session (simulating what would happen on disconnect)
 	splitscreen_manager.pause_session()
-	
+
 	# Verify session is paused
 	assert_eq(
 		splitscreen_manager.session_state.current_state,
@@ -367,10 +368,10 @@ func test_gamepad_disconnection_handling() -> void:
 ## Test: Gamepad reconnection handling
 func test_gamepad_reconnection_handling() -> void:
 	_simulate_connected_gamepads(4)
-	
+
 	# Simulate reconnection by adding a new device
 	mock_gamepads.append(4)
-	
+
 	# Verify new gamepad is detected
 	var detected: Array = splitscreen_manager.gamepad_controller.detect_gamepads()
 	assert_eq(detected.size(), 5, "Should detect 5 gamepads after reconnection")
@@ -379,7 +380,7 @@ func test_gamepad_reconnection_handling() -> void:
 ## Test: Multiple gamepad assignments
 func test_multiple_gamepad_assignments() -> void:
 	_simulate_connected_gamepads(4)
-	
+
 	# Assign multiple gamepads
 	for player_id in range(4):
 		var result: bool = splitscreen_manager.gamepad_controller.assign_gamepad(
@@ -391,11 +392,11 @@ func test_multiple_gamepad_assignments() -> void:
 ## Test: Gamepad assignment validation
 func test_gamepad_assignment_validation() -> void:
 	_simulate_connected_gamepads(2)
-	
+
 	# Try to assign non-existent gamepad
 	var result: bool = splitscreen_manager.gamepad_controller.assign_gamepad(0, 5)
 	assert_push_error("non-existent device")
-	
+
 	assert_false(result, "Should not assign non-existent gamepad")
 
 
@@ -407,16 +408,16 @@ func test_gamepad_assignment_validation() -> void:
 ## Test: Viewport creation
 func test_viewport_creation() -> void:
 	var viewport: SubViewport = splitscreen_manager.viewport_manager.create_viewport(0, null)
-	
+
 	assert_not_null(viewport, "Should create viewport")
 
 
 ## Test: Viewport destruction
 func test_viewport_destruction() -> void:
 	splitscreen_manager.viewport_manager.create_viewport(0, null)
-	
+
 	splitscreen_manager.viewport_manager.destroy_viewport(0)
-	
+
 	var viewport: SubViewport = splitscreen_manager.viewport_manager.get_player_viewport(0)
 	assert_null(viewport, "Viewport should be destroyed")
 
@@ -426,11 +427,11 @@ func test_viewport_arrangement_different_counts() -> void:
 	# Test 2 players
 	splitscreen_manager.viewport_manager.arrange_viewports(2)
 	assert_true(true, "Should arrange viewports for 2 players")
-	
+
 	# Test 4 players
 	splitscreen_manager.viewport_manager.arrange_viewports(4)
 	assert_true(true, "Should arrange viewports for 4 players")
-	
+
 	# Test 6 players
 	splitscreen_manager.viewport_manager.arrange_viewports(6)
 	assert_true(true, "Should arrange viewports for 6 players")
@@ -441,9 +442,9 @@ func test_viewport_cleanup() -> void:
 	# Create multiple viewports
 	for i in range(4):
 		splitscreen_manager.viewport_manager.create_viewport(i, null)
-	
+
 	splitscreen_manager.viewport_manager.cleanup_all_viewports()
-	
+
 	assert_eq(
 		splitscreen_manager.viewport_manager.get_viewport_count(),
 		0,
@@ -454,9 +455,9 @@ func test_viewport_cleanup() -> void:
 ## Test: Viewport rendering quality adjustment
 func test_viewport_rendering_quality_adjustment() -> void:
 	splitscreen_manager.viewport_manager.create_viewport(0, null)
-	
+
 	splitscreen_manager.viewport_manager.set_rendering_quality(0.5)
-	
+
 	assert_true(true, "Should adjust rendering quality without errors")
 
 
@@ -467,14 +468,14 @@ func test_viewport_count_tracking() -> void:
 		0,
 		"Should start with 0 viewports"
 	)
-	
+
 	splitscreen_manager.viewport_manager.create_viewport(0, null)
 	assert_eq(
 		splitscreen_manager.viewport_manager.get_viewport_count(),
 		1,
 		"Should have 1 viewport after creation"
 	)
-	
+
 	splitscreen_manager.viewport_manager.create_viewport(1, null)
 	assert_eq(
 		splitscreen_manager.viewport_manager.get_viewport_count(),
@@ -488,15 +489,13 @@ func test_viewport_retrieval() -> void:
 	var created_viewport: SubViewport = splitscreen_manager.viewport_manager.create_viewport(
 		0, null
 	)
-	
+
 	var retrieved_viewport: SubViewport = splitscreen_manager.viewport_manager.get_player_viewport(
 		0
 	)
-	
+
 	assert_eq(
-		retrieved_viewport,
-		created_viewport,
-		"Retrieved viewport should match created viewport"
+		retrieved_viewport, created_viewport, "Retrieved viewport should match created viewport"
 	)
 
 
@@ -509,10 +508,10 @@ func test_viewport_retrieval() -> void:
 func test_session_start_signal_emission() -> void:
 	_simulate_connected_gamepads(4)
 	watch_signals(splitscreen_manager)
-	
+
 	splitscreen_manager.start_session(4)
 	await _complete_device_assignment(4)
-	
+
 	assert_signal_emitted(splitscreen_manager, "session_started")
 
 
@@ -521,10 +520,10 @@ func test_session_end_signal_emission() -> void:
 	_simulate_connected_gamepads(4)
 	splitscreen_manager.start_session(4)
 	await _complete_device_assignment(4)
-	
+
 	watch_signals(splitscreen_manager)
 	splitscreen_manager.end_session()
-	
+
 	assert_signal_emitted(splitscreen_manager, "session_ended")
 
 
@@ -533,11 +532,11 @@ func test_player_joined_signal_emission() -> void:
 	_simulate_connected_gamepads(4)
 	splitscreen_manager.start_session(4)
 	await _complete_device_assignment(4)
-	
+
 	watch_signals(splitscreen_manager)
 	_simulate_connected_gamepads(5)
 	splitscreen_manager.add_player(4)
-	
+
 	assert_signal_emitted(splitscreen_manager, "player_joined")
 
 
@@ -546,10 +545,10 @@ func test_player_left_signal_emission() -> void:
 	_simulate_connected_gamepads(4)
 	splitscreen_manager.start_session(4)
 	await _complete_device_assignment(4)
-	
+
 	watch_signals(splitscreen_manager)
 	splitscreen_manager.remove_player(0)
-	
+
 	assert_signal_emitted(splitscreen_manager, "player_left")
 
 
@@ -558,14 +557,14 @@ func test_session_pause_and_resume() -> void:
 	_simulate_connected_gamepads(4)
 	splitscreen_manager.start_session(4)
 	await _complete_device_assignment(4)
-	
+
 	splitscreen_manager.pause_session()
 	assert_eq(
 		splitscreen_manager.session_state.current_state,
 		SessionState.State.PAUSED,
 		"Session should be paused"
 	)
-	
+
 	splitscreen_manager.resume_session()
 	assert_eq(
 		splitscreen_manager.session_state.current_state,

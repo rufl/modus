@@ -26,9 +26,7 @@ func test_old_event_bus_api_works():
 	# Test that old EventBus API works through GameManager
 	var event_received := [false]
 
-	game_manager.subscribe("legacy_event", func(_data):
-		event_received[0] = true
-	)
+	game_manager.subscribe("legacy_event", func(_data): event_received[0] = true)
 
 	game_manager.emit_event("legacy_event", {})
 
@@ -74,9 +72,7 @@ func test_old_signal_connections_work():
 	# Test that old signal patterns still work
 	var signal_received := [false]
 
-	game_manager.state_changed.connect(func(_old, _new):
-		signal_received[0] = true
-	)
+	game_manager.state_changed.connect(func(_old, _new): signal_received[0] = true)
 
 	game_manager.change_state(3)  # PAUSED
 

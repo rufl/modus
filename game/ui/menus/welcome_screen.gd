@@ -79,9 +79,7 @@ func _apply_theme() -> void:
 
 func _refresh_copy() -> void:
 	_title.text = _tr("showcase_welcome_title", "MODUS SHOWCASE")
-	_subtitle.text = _tr(
-		"showcase_welcome_subtitle", "A guided route through the framework"
-	)
+	_subtitle.text = _tr("showcase_welcome_subtitle", "A guided route through the framework")
 	_body.text = _tr(
 		"showcase_welcome_body",
 		"Explore the maintained map and exercise movement, combat, loot, saving, and mods."

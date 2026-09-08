@@ -35,8 +35,13 @@ func _test_conflict_methods_exist(test_data: Dictionary) -> bool:
 	# Check for conflict tracking variables
 	var has_conflict_storage: bool = content.contains("_detected_conflicts")
 
-	return (has_report_conflict and has_get_conflicts and has_has_conflicts and
-			has_clear_conflicts and has_conflict_storage)
+	return (
+		has_report_conflict
+		and has_get_conflicts
+		and has_has_conflicts
+		and has_clear_conflicts
+		and has_conflict_storage
+	)
 
 
 func test_property_duplicate_feature_registration_detected() -> void:
@@ -170,7 +175,9 @@ func _test_conflict_messages_format(test_data: Dictionary) -> bool:
 	var has_mod2_param: bool = content.contains("mod2")
 
 	# Check that conflict messages are formatted with mod names
-	var formats_message: bool = content.contains("Mods '%s' and '%s'") or content.contains("mod '%s'")
+	var formats_message: bool = (
+		content.contains("Mods '%s' and '%s'") or content.contains("mod '%s'")
+	)
 
 	return has_mod1_param and has_mod2_param and formats_message
 

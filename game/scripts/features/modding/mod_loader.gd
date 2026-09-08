@@ -521,8 +521,7 @@ func _override_resource(original_path: String, replacement_path: String) -> void
 			mod_name
 		)
 	_resource_overrides[original_path] = {
-		"replacement_path": replacement_path,
-		"mod_name": mod_name
+		"replacement_path": replacement_path, "mod_name": mod_name
 	}
 
 	# Register with AssetManager if available for tracking
@@ -579,25 +578,40 @@ func _register_manifest_content(mod_info: Dictionary) -> void:
 
 
 ## Register mod-provided content and report duplicate ownership.
-func register_feature(feature_id: String, feature_data: Dictionary, mod_name: String = "Unknown") -> bool:
+func register_feature(
+	feature_id: String, feature_data: Dictionary, mod_name: String = "Unknown"
+) -> bool:
 	if _registered_features.has(feature_id):
-		_report_conflict("feature", feature_id, str(_registered_features[feature_id].mod_name), mod_name)
+		_report_conflict(
+			"feature", feature_id, str(_registered_features[feature_id].mod_name), mod_name
+		)
 		return false
 	_registered_features[feature_id] = {"data": feature_data, "mod_name": mod_name}
 	return true
 
 
-func register_component(component_name: String, component_data: Variant, mod_name: String = "Unknown") -> bool:
+func register_component(
+	component_name: String, component_data: Variant, mod_name: String = "Unknown"
+) -> bool:
 	if _registered_components.has(component_name):
-		_report_conflict("component", component_name, str(_registered_components[component_name].mod_name), mod_name)
+		_report_conflict(
+			"component",
+			component_name,
+			str(_registered_components[component_name].mod_name),
+			mod_name
+		)
 		return false
 	_registered_components[component_name] = {"data": component_data, "mod_name": mod_name}
 	return true
 
 
-func register_entity(entity_name: String, entity_data: Variant, mod_name: String = "Unknown") -> bool:
+func register_entity(
+	entity_name: String, entity_data: Variant, mod_name: String = "Unknown"
+) -> bool:
 	if _registered_entities.has(entity_name):
-		_report_conflict("entity", entity_name, str(_registered_entities[entity_name].mod_name), mod_name)
+		_report_conflict(
+			"entity", entity_name, str(_registered_entities[entity_name].mod_name), mod_name
+		)
 		return false
 	_registered_entities[entity_name] = {"data": entity_data, "mod_name": mod_name}
 	return true
@@ -617,13 +631,9 @@ func get_registered_entities() -> Dictionary:
 
 func _report_conflict(conflict_type: String, target: String, mod1: String, mod2: String) -> void:
 	var message := "Mods '%s' and '%s' conflict on %s '%s'" % [mod1, mod2, conflict_type, target]
-	_detected_conflicts.append({
-		"type": conflict_type,
-		"target": target,
-		"mod1": mod1,
-		"mod2": mod2,
-		"message": message
-	})
+	_detected_conflicts.append(
+		{"type": conflict_type, "target": target, "mod1": mod1, "mod2": mod2, "message": message}
+	)
 	push_warning("[ModLoader] " + message)
 
 

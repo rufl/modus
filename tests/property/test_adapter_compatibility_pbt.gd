@@ -13,18 +13,24 @@ const GameManager = preload("res://game/scripts/core/game_manager.gd")
 
 
 # Placeholder to prevent parse errors - remove when adapters are restored
-class GameCoreAdapter extends Node:
-	pass
-class EventBusAdapter extends Node:
-	pass
-class GameDatabaseAdapter extends Node:
-	pass
+class GameCoreAdapter:
+	extends Node
+
+
+class EventBusAdapter:
+	extends Node
+
+
+class GameDatabaseAdapter:
+	extends Node
 
 
 func _skip_archived_adapter_test() -> bool:
-	var adapters_restored := ResourceLoader.exists("res://game/scripts/core/game_core_adapter.gd") \
-		and ResourceLoader.exists("res://game/scripts/core/event_bus_adapter.gd") \
+	var adapters_restored := (
+		ResourceLoader.exists("res://game/scripts/core/game_core_adapter.gd")
+		and ResourceLoader.exists("res://game/scripts/core/event_bus_adapter.gd")
 		and ResourceLoader.exists("res://game/scripts/core/game_database_adapter.gd")
+	)
 	if adapters_restored:
 		return false
 
@@ -37,7 +43,7 @@ func test_property_gamecore_adapter_state_forwarding():
 		return
 	# Property: GameCore adapter should correctly forward state changes to GameManager
 	# and map between legacy and new state enums
-	
+
 	await run_enhanced_property_test(
 		"GameCore adapter state forwarding",
 		_test_gamecore_state_forwarding,
@@ -51,26 +57,26 @@ func _test_gamecore_state_forwarding(test_data: Dictionary) -> bool:
 	var gm: GameManager = GameManager.new()
 	gm.name = "GameManager"
 	add_child(gm)
-	
+
 	var adapter: GameCoreAdapter = GameCoreAdapter.new()
 	adapter.name = "GameManager"
 	add_child(adapter)
-	
+
 	# Wait for adapters to initialize
 	await get_tree().process_frame
-	
+
 	var rng: RandomNumberGenerator = get_seeded_rng(test_data.get("iteration", 0))
-	
+
 	# Test state transitions through adapter
 	# adapter.initialize()
-	
+
 	# Verify GameManager is in READY state (maps to legacy MENU)
 	# var legacy_state = adapter.get_state()
 	# var expected_legacy = GameCoreAdapter.GameState.MENU
-	
+
 	# var result = legacy_state == expected_legacy
 	var result: bool = true  # Placeholder since adapters are archived
-	
+
 	adapter.queue_free()
 	gm.queue_free()
 	return result
@@ -81,7 +87,7 @@ func test_property_gamecore_adapter_service_registration():
 		return
 	# Property: GameCore adapter should correctly forward service registration
 	# to GameManager's core system registration
-	
+
 	await run_enhanced_property_test(
 		"GameCore adapter service registration",
 		_test_gamecore_service_registration,
@@ -95,26 +101,26 @@ func _test_gamecore_service_registration(test_data: Dictionary) -> bool:
 	var gm = GameManager.new()
 	gm.name = "GameManager"
 	add_child(gm)
-	
+
 	var adapter = GameCoreAdapter.new()
 	adapter.name = "GameManager"
 	add_child(adapter)
-	
+
 	await get_tree().process_frame
-	
+
 	# Create a mock service
 	var mock_service = Node.new()
 	mock_service.name = "MockService"
-	
+
 	# Register through adapter
 	adapter.register_service("test_service", mock_service)
-	
+
 	# Verify it's accessible through adapter
 	var retrieved = adapter.get_service("test_service")
 	var has_service = adapter.has_service("test_service")
-	
+
 	var result = retrieved == mock_service and has_service
-	
+
 	mock_service.queue_free()
 	adapter.queue_free()
 	gm.queue_free()
@@ -126,7 +132,7 @@ func test_property_eventbus_adapter_event_forwarding():
 		return
 	# Property: EventBus adapter should correctly forward event operations
 	# to GameManager's event system
-	
+
 	await run_enhanced_property_test(
 		"EventBus adapter event forwarding",
 		_test_eventbus_event_forwarding,
@@ -140,35 +146,35 @@ func _test_eventbus_event_forwarding(test_data: Dictionary) -> bool:
 	var gm = GameManager.new()
 	gm.name = "GameManager"
 	add_child(gm)
-	
+
 	var adapter = EventBusAdapter.new()
 	adapter.name = "EventBus"
 	add_child(adapter)
-	
+
 	await get_tree().process_frame
-	
+
 	# Track event reception
 	var event_received = false
 	var event_data_received = {}
-	
+
 	var callback = func(data: Dictionary):
 		event_received = true
 		event_data_received = data
-	
+
 	# Register and subscribe through adapter
 	adapter.register_event("test_adapter_event", "Test event")
 	adapter.subscribe("test_adapter_event", callback)
-	
+
 	# Emit through adapter
 	var test_data_dict = {"value": 42, "name": "test"}
 	adapter.emit("test_adapter_event", test_data_dict)
-	
+
 	# Wait for event processing
 	await get_tree().process_frame
-	
+
 	# Verify event was received with correct data
 	var result = event_received and event_data_received.get("value") == 42
-	
+
 	# Cleanup
 	adapter.unsubscribe("test_adapter_event", callback)
 	adapter.queue_free()
@@ -180,7 +186,7 @@ func test_property_eventbus_adapter_unsubscribe():
 	if _skip_archived_adapter_test():
 		return
 	# Property: EventBus adapter should correctly handle unsubscribe operations
-	
+
 	await run_enhanced_property_test(
 		"EventBus adapter unsubscribe",
 		_test_eventbus_unsubscribe,
@@ -194,30 +200,29 @@ func _test_eventbus_unsubscribe(test_data: Dictionary) -> bool:
 	var gm = GameManager.new()
 	gm.name = "GameManager"
 	add_child(gm)
-	
+
 	var adapter = EventBusAdapter.new()
 	adapter.name = "EventBus"
 	add_child(adapter)
-	
+
 	await get_tree().process_frame
-	
+
 	var call_count = 0
-	var callback = func(_data: Dictionary):
-		call_count += 1
-	
+	var callback = func(_data: Dictionary): call_count += 1
+
 	# Subscribe and emit
 	adapter.subscribe("test_unsub_event", callback)
 	adapter.emit("test_unsub_event", {})
 	await get_tree().process_frame
-	
+
 	# Unsubscribe and emit again
 	adapter.unsubscribe("test_unsub_event", callback)
 	adapter.emit("test_unsub_event", {})
 	await get_tree().process_frame
-	
+
 	# Should only have been called once (before unsubscribe)
 	var result = call_count == 1
-	
+
 	adapter.queue_free()
 	gm.queue_free()
 	return result
@@ -228,7 +233,7 @@ func test_property_gamedatabase_adapter_config_forwarding():
 		return
 	# Property: GameDatabase adapter should correctly forward configuration
 	# access to GameManager's configuration system
-	
+
 	await run_enhanced_property_test(
 		"GameDatabase adapter config forwarding",
 		_test_gamedatabase_config_forwarding,
@@ -242,26 +247,26 @@ func _test_gamedatabase_config_forwarding(test_data: Dictionary) -> bool:
 	var gm = GameManager.new()
 	gm.name = "GameManager"
 	add_child(gm)
-	
+
 	var adapter = GameDatabaseAdapter.new()
 	adapter.name = "GameDatabase"
 	add_child(adapter)
-	
+
 	await get_tree().process_frame
-	
+
 	var rng = get_seeded_rng(test_data.get("iteration", 0))
-	
+
 	# Set a value through adapter
 	var test_path = "test.adapter.value"
 	var test_value = rng.randi_range(1, 1000)
 	adapter.set_value(test_path, test_value)
-	
+
 	# Retrieve through adapter
 	var retrieved = adapter.get_value(test_path, 0)
-	
+
 	# Verify it matches
 	var result = retrieved == test_value
-	
+
 	adapter.queue_free()
 	gm.queue_free()
 	return result
@@ -271,7 +276,7 @@ func test_property_gamedatabase_adapter_has_value():
 	if _skip_archived_adapter_test():
 		return
 	# Property: GameDatabase adapter should correctly report value existence
-	
+
 	await run_enhanced_property_test(
 		"GameDatabase adapter has_value",
 		_test_gamedatabase_has_value,
@@ -285,23 +290,23 @@ func _test_gamedatabase_has_value(test_data: Dictionary) -> bool:
 	var gm = GameManager.new()
 	gm.name = "GameManager"
 	add_child(gm)
-	
+
 	var adapter = GameDatabaseAdapter.new()
 	adapter.name = "GameDatabase"
 	add_child(adapter)
-	
+
 	await get_tree().process_frame
-	
+
 	# Set a value
 	var test_path = "test.has_value.check"
 	adapter.set_value(test_path, "exists")
-	
+
 	# Check existence
 	var has_existing = adapter.has_value(test_path)
 	var has_nonexisting = adapter.has_value("nonexistent.path.value")
-	
+
 	var result = has_existing and not has_nonexisting
-	
+
 	adapter.queue_free()
 	gm.queue_free()
 	return result
@@ -312,7 +317,7 @@ func test_property_adapter_api_compatibility():
 		return
 	# Property: All adapters should maintain API compatibility with legacy code
 	# by providing the same method signatures
-	
+
 	await run_enhanced_property_test(
 		"Adapter API compatibility",
 		_test_adapter_api_compatibility,
@@ -324,9 +329,16 @@ func test_property_adapter_api_compatibility():
 
 func _test_adapter_api_compatibility(test_data: Dictionary) -> bool:
 	# Check GameCore adapter has required methods
-	var gamecore_methods = ["initialize", "shutdown", "change_state", "get_state", 
-							"register_service", "get_service", "has_service"]
-	
+	var gamecore_methods = [
+		"initialize",
+		"shutdown",
+		"change_state",
+		"get_state",
+		"register_service",
+		"get_service",
+		"has_service"
+	]
+
 	var gamecore_adapter = GameCoreAdapter.new()
 	var gamecore_ok = true
 	for method in gamecore_methods:
@@ -334,10 +346,10 @@ func _test_adapter_api_compatibility(test_data: Dictionary) -> bool:
 			gamecore_ok = false
 			break
 	gamecore_adapter.free()
-	
+
 	# Check EventBus adapter has required methods
 	var eventbus_methods = ["register_event", "subscribe", "unsubscribe", "emit"]
-	
+
 	var eventbus_adapter = EventBusAdapter.new()
 	var eventbus_ok = true
 	for method in eventbus_methods:
@@ -345,11 +357,12 @@ func _test_adapter_api_compatibility(test_data: Dictionary) -> bool:
 			eventbus_ok = false
 			break
 	eventbus_adapter.free()
-	
+
 	# Check GameDatabase adapter has required methods
-	var gamedatabase_methods = ["load_data", "get_value", "set_value", "has_value", 
-								"reload_all", "get_category"]
-	
+	var gamedatabase_methods = [
+		"load_data", "get_value", "set_value", "has_value", "reload_all", "get_category"
+	]
+
 	var gamedatabase_adapter = GameDatabaseAdapter.new()
 	var gamedatabase_ok = true
 	for method in gamedatabase_methods:
@@ -357,7 +370,7 @@ func _test_adapter_api_compatibility(test_data: Dictionary) -> bool:
 			gamedatabase_ok = false
 			break
 	gamedatabase_adapter.free()
-	
+
 	return gamecore_ok and eventbus_ok and gamedatabase_ok
 
 
@@ -365,7 +378,7 @@ func test_property_eventbus_adapter_priority_ordering():
 	if _skip_archived_adapter_test():
 		return
 	# Property: EventBus adapter should respect callback priority ordering
-	
+
 	await run_enhanced_property_test(
 		"EventBus adapter priority ordering",
 		_test_eventbus_priority_ordering,
@@ -379,32 +392,30 @@ func _test_eventbus_priority_ordering(test_data: Dictionary) -> bool:
 	var gm = GameManager.new()
 	gm.name = "GameManager"
 	add_child(gm)
-	
+
 	var adapter = EventBusAdapter.new()
 	adapter.name = "EventBus"
 	add_child(adapter)
-	
+
 	await get_tree().process_frame
-	
+
 	var call_order = []
-	
-	var callback_low = func(_data: Dictionary):
-		call_order.append("low")
-	
-	var callback_high = func(_data: Dictionary):
-		call_order.append("high")
-	
+
+	var callback_low = func(_data: Dictionary): call_order.append("low")
+
+	var callback_high = func(_data: Dictionary): call_order.append("high")
+
 	# Subscribe with different priorities (higher priority = called first)
 	adapter.subscribe("test_priority_event", callback_low, 0)
 	adapter.subscribe("test_priority_event", callback_high, 10)
-	
+
 	# Emit event
 	adapter.emit("test_priority_event", {})
 	await get_tree().process_frame
-	
+
 	# Verify high priority was called first
 	var result = call_order.size() == 2 and call_order[0] == "high" and call_order[1] == "low"
-	
+
 	adapter.queue_free()
 	gm.queue_free()
 	return result
@@ -414,7 +425,7 @@ func test_property_gamedatabase_adapter_cache_invalidation():
 	if _skip_archived_adapter_test():
 		return
 	# Property: GameDatabase adapter should invalidate cache when values are set
-	
+
 	await run_enhanced_property_test(
 		"GameDatabase adapter cache invalidation",
 		_test_gamedatabase_cache_invalidation,
@@ -428,26 +439,26 @@ func _test_gamedatabase_cache_invalidation(test_data: Dictionary) -> bool:
 	var gm = GameManager.new()
 	gm.name = "GameManager"
 	add_child(gm)
-	
+
 	var adapter = GameDatabaseAdapter.new()
 	adapter.name = "GameDatabase"
 	add_child(adapter)
-	
+
 	await get_tree().process_frame
-	
+
 	var test_path = "test.cache.value"
-	
+
 	# Set initial value
 	adapter.set_value(test_path, 100)
 	var first_read = adapter.get_value(test_path, 0)
-	
+
 	# Change value
 	adapter.set_value(test_path, 200)
 	var second_read = adapter.get_value(test_path, 0)
-	
+
 	# Verify both reads returned correct values (cache was invalidated)
 	var result = first_read == 100 and second_read == 200
-	
+
 	adapter.queue_free()
 	gm.queue_free()
 	return result

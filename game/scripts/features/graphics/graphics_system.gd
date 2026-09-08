@@ -31,9 +31,7 @@ func _apply_graphics_settings() -> void:
 		return
 
 	var graphics_cfg: Dictionary = cfg.get_value("graphics", {})
-	var preset_name: String = graphics_cfg.get(
-		"quality_preset", graphics_cfg.get("preset", "high")
-	)
+	var preset_name: String = graphics_cfg.get("quality_preset", graphics_cfg.get("preset", "high"))
 
 	var presets: Dictionary = cfg.get_value("visuals.quality_presets", {})
 
@@ -59,9 +57,7 @@ func _apply_graphics_settings() -> void:
 	quality_changed.emit(settings)
 	var logger: Node = gm.get_core_system("logger") if gm else null
 	if logger:
-		logger.info(
-			"[GraphicsSystem] Applied quality preset: %s" % preset_name, "GraphicsSystem"
-		)
+		logger.info("[GraphicsSystem] Applied quality preset: %s" % preset_name, "GraphicsSystem")
 
 
 func _apply_to_engine(settings: Dictionary) -> void:

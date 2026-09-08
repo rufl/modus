@@ -105,6 +105,7 @@ var _initialized: bool = false
 func is_initialized() -> bool:
 	return _initialized
 
+
 # Feature modules
 var _features: Dictionary = {}  # feature_id -> FeatureModule
 var _feature_enabled: Dictionary = {}  # feature_id -> bool

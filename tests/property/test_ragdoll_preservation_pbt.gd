@@ -45,12 +45,12 @@ func test_ragdoll_gibbing_preservation() -> void:
 
 	for i: int in range(TEST_ITERATIONS):
 		var rng: RandomNumberGenerator = get_seeded_rng(i)
-		
+
 		## Generate test case with high torso damage
 		var damage: float = rng.randf_range(GIB_THRESHOLD + 10.0, GIB_THRESHOLD + 100.0)
 		var torso_parts: Array[String] = ["Spine", "Spine1", "Hips"]
 		var part_id: String = torso_parts[rng.randi_range(0, torso_parts.size() - 1)]
-		
+
 		## Spawn ragdoll
 		var ragdoll: Node3D = _spawn_ragdoll()
 		if not ragdoll:
@@ -62,30 +62,34 @@ func test_ragdoll_gibbing_preservation() -> void:
 
 		## Track if gibbing occurs
 		var gibbing_occurred: bool = false
-		
+
 		## Apply high damage to torso part
 		if ragdoll.has_method("on_part_hit"):
 			var physical_bones: Dictionary = ragdoll.get("physical_bones")
 			if physical_bones and physical_bones.has(part_id):
 				var part: PhysicalBone3D = physical_bones[part_id]
-				
+
 				## Apply damage
 				ragdoll.on_part_hit(part, damage)
-				
+
 				## Wait for effects
 				await await_physics_frames(1)
-				
+
 				## Check if ragdoll was destroyed (gibbing occurred)
-				gibbing_occurred = not is_instance_valid(ragdoll) or ragdoll.is_queued_for_deletion()
+				gibbing_occurred = (
+					not is_instance_valid(ragdoll) or ragdoll.is_queued_for_deletion()
+				)
 
 		## Verify gibbing occurred
 		if not gibbing_occurred:
-			failures.append({
-				"iteration": i,
-				"damage": damage,
-				"part_id": part_id,
-				"reason": "Gibbing did not occur despite damage > threshold"
-			})
+			failures.append(
+				{
+					"iteration": i,
+					"damage": damage,
+					"part_id": part_id,
+					"reason": "Gibbing did not occur despite damage > threshold"
+				}
+			)
 
 		## Cleanup
 		if is_instance_valid(ragdoll) and not ragdoll.is_queued_for_deletion():
@@ -95,7 +99,13 @@ func test_ragdoll_gibbing_preservation() -> void:
 	## Report results
 	if failures.size() > 0:
 		var summary: String = _format_preservation_failures(failures)
-		assert_true(false, "Gibbing preservation failed in %d/%d iterations:\n%s" % [failures.size(), TEST_ITERATIONS, summary])
+		assert_true(
+			false,
+			(
+				"Gibbing preservation failed in %d/%d iterations:\n%s"
+				% [failures.size(), TEST_ITERATIONS, summary]
+			)
+		)
 	else:
 		assert_true(true, "Gibbing preservation verified - feature works as expected")
 
@@ -110,12 +120,14 @@ func test_ragdoll_blood_spawning_preservation() -> void:
 
 	for i: int in range(TEST_ITERATIONS):
 		var rng: RandomNumberGenerator = get_seeded_rng(i)
-		
+
 		## Generate test case with moderate damage (not gibbing)
 		var damage: float = rng.randf_range(5.0, DISMEMBER_THRESHOLD - 0.1)
-		var all_parts: Array[String] = ["Head", "Spine", "LeftArm", "RightArm", "LeftForeArm", "RightForeArm"]
+		var all_parts: Array[String] = [
+			"Head", "Spine", "LeftArm", "RightArm", "LeftForeArm", "RightForeArm"
+		]
 		var part_id: String = all_parts[rng.randi_range(0, all_parts.size() - 1)]
-		
+
 		## Spawn ragdoll
 		var ragdoll: Node3D = _spawn_ragdoll()
 		if not ragdoll:
@@ -134,7 +146,7 @@ func test_ragdoll_blood_spawning_preservation() -> void:
 				)
 		)
 		var blood_mechanism_available: bool = false
-		
+
 		if ragdoll.has_method("on_part_hit"):
 			var physical_bones: Dictionary = ragdoll.get("physical_bones")
 			if physical_bones and physical_bones.has(part_id):
@@ -154,12 +166,14 @@ func test_ragdoll_blood_spawning_preservation() -> void:
 
 		## Verify blood spawning mechanism exists
 		if not blood_mechanism_available:
-			failures.append({
-				"iteration": i,
-				"damage": damage,
-				"part_id": part_id,
-				"reason": "Blood spawning mechanism not available"
-			})
+			failures.append(
+				{
+					"iteration": i,
+					"damage": damage,
+					"part_id": part_id,
+					"reason": "Blood spawning mechanism not available"
+				}
+			)
 
 		## Cleanup
 		if is_instance_valid(ragdoll):
@@ -169,7 +183,13 @@ func test_ragdoll_blood_spawning_preservation() -> void:
 	## Report results
 	if failures.size() > 0:
 		var summary: String = _format_preservation_failures(failures)
-		assert_true(false, "Blood spawning preservation failed in %d/%d iterations:\n%s" % [failures.size(), TEST_ITERATIONS, summary])
+		assert_true(
+			false,
+			(
+				"Blood spawning preservation failed in %d/%d iterations:\n%s"
+				% [failures.size(), TEST_ITERATIONS, summary]
+			)
+		)
 	else:
 		assert_true(true, "Blood spawning preservation verified - feature works as expected")
 
@@ -184,12 +204,21 @@ func test_ragdoll_dismemberment_preservation() -> void:
 
 	for i: int in range(TEST_ITERATIONS):
 		var rng: RandomNumberGenerator = get_seeded_rng(i)
-		
+
 		## Generate test case with high limb damage
 		var damage: float = rng.randf_range(DISMEMBER_THRESHOLD + 5.0, DISMEMBER_THRESHOLD + 50.0)
-		var limb_parts: Array[String] = ["LeftArm", "RightArm", "LeftForeArm", "RightForeArm", "LeftUpLeg", "RightUpLeg", "LeftLeg", "RightLeg"]
+		var limb_parts: Array[String] = [
+			"LeftArm",
+			"RightArm",
+			"LeftForeArm",
+			"RightForeArm",
+			"LeftUpLeg",
+			"RightUpLeg",
+			"LeftLeg",
+			"RightLeg"
+		]
 		var part_id: String = limb_parts[rng.randi_range(0, limb_parts.size() - 1)]
-		
+
 		## Spawn ragdoll
 		var ragdoll: Node3D = _spawn_ragdoll()
 		if not ragdoll:
@@ -202,20 +231,20 @@ func test_ragdoll_dismemberment_preservation() -> void:
 		## Track dismemberment
 		var dismemberment_occurred: bool = false
 		var skeleton: Skeleton3D = ragdoll.get("skeleton")
-		
+
 		if skeleton:
 			## Apply damage to limb
 			if ragdoll.has_method("on_part_hit"):
 				var physical_bones: Dictionary = ragdoll.get("physical_bones")
 				if physical_bones and physical_bones.has(part_id):
 					var part: PhysicalBone3D = physical_bones[part_id]
-					
+
 					## Apply damage
 					ragdoll.on_part_hit(part, damage)
-					
+
 					## Wait for dismemberment
 					await await_physics_frames(1)
-					
+
 					## Check if bone was scaled to zero (dismembered)
 					var skeleton_bone_name: String = ragdoll.get_skeleton_bone_name(part_id)
 					var bone_idx: int = skeleton.find_bone(skeleton_bone_name)
@@ -225,12 +254,14 @@ func test_ragdoll_dismemberment_preservation() -> void:
 
 		## Verify dismemberment occurred
 		if not dismemberment_occurred:
-			failures.append({
-				"iteration": i,
-				"damage": damage,
-				"part_id": part_id,
-				"reason": "Dismemberment did not occur despite damage > threshold"
-			})
+			failures.append(
+				{
+					"iteration": i,
+					"damage": damage,
+					"part_id": part_id,
+					"reason": "Dismemberment did not occur despite damage > threshold"
+				}
+			)
 
 		## Cleanup
 		if is_instance_valid(ragdoll):
@@ -240,7 +271,13 @@ func test_ragdoll_dismemberment_preservation() -> void:
 	## Report results
 	if failures.size() > 0:
 		var summary: String = _format_preservation_failures(failures)
-		assert_true(false, "Dismemberment preservation failed in %d/%d iterations:\n%s" % [failures.size(), TEST_ITERATIONS, summary])
+		assert_true(
+			false,
+			(
+				"Dismemberment preservation failed in %d/%d iterations:\n%s"
+				% [failures.size(), TEST_ITERATIONS, summary]
+			)
+		)
 	else:
 		assert_true(true, "Dismemberment preservation verified - feature works as expected")
 
@@ -267,12 +304,11 @@ func test_ragdoll_cleanup_timer_preservation() -> void:
 
 		## Ragdoll should still be valid (not cleaned up yet)
 		var still_valid: bool = is_instance_valid(ragdoll)
-		
+
 		if not still_valid:
-			failures.append({
-				"iteration": i,
-				"reason": "Ragdoll was cleaned up too early (before 30 seconds)"
-			})
+			failures.append(
+				{"iteration": i, "reason": "Ragdoll was cleaned up too early (before 30 seconds)"}
+			)
 
 		## Cleanup
 		if is_instance_valid(ragdoll):
@@ -282,7 +318,13 @@ func test_ragdoll_cleanup_timer_preservation() -> void:
 	## Report results
 	if failures.size() > 0:
 		var summary: String = _format_preservation_failures(failures)
-		assert_true(false, "Cleanup timer preservation failed in %d/%d iterations:\n%s" % [failures.size(), cleanup_iterations, summary])
+		assert_true(
+			false,
+			(
+				"Cleanup timer preservation failed in %d/%d iterations:\n%s"
+				% [failures.size(), cleanup_iterations, summary]
+			)
+		)
 	else:
 		assert_true(true, "Cleanup timer preservation verified - feature works as expected")
 
@@ -302,7 +344,7 @@ func _spawn_ragdoll() -> Node3D:
 func _format_preservation_failures(failures: Array[Dictionary]) -> String:
 	var summary: String = ""
 	var max_show: int = min(3, failures.size())
-	
+
 	for i: int in range(max_show):
 		var failure: Dictionary = failures[i]
 		summary += "  Iteration %d:\n" % failure.iteration

@@ -34,7 +34,7 @@ func setup(v: SkeletalCharacterVisuals) -> void:
 
 
 func _ready() -> void:
-	# Check get_node_or_null("/root/GameManager").get_core_system("config") if get_node_or_null("/root/GameManager") else null for enabled state
+	# Check the GameManager config service for the enabled state.
 	var gm: Node = get_node_or_null("/root/GameManager")
 	var config: Node = gm.get_core_system("config") if gm else null
 	if config and config.has_method("is_feature_enabled"):
@@ -85,7 +85,11 @@ func _finish_dismember_body(
 	if not enabled:
 		return
 
-	var config: Node = get_node_or_null("/root/GameManager").get_core_system("config") if get_node_or_null("/root/GameManager") else null
+	var config: Node = (
+		get_node_or_null("/root/GameManager").get_core_system("config")
+		if get_node_or_null("/root/GameManager")
+		else null
+	)
 	if not config or not config.has_method("is_feature_enabled"):
 		return
 	if not config.is_feature_enabled("dismemberment"):
@@ -153,7 +157,14 @@ func _spawn_limb(
 		_spawn_limb_procedural(limb_type, base_position, base_velocity, hit_direction)
 		return
 
-	var gs := get_node_or_null("/root/GameManager").get_core_system("gameplay") if get_node_or_null("/root/GameManager") else null as GameplaySvc
+	var gs := (
+		(
+			get_node_or_null("/root/GameManager").get_core_system("gameplay")
+			if get_node_or_null("/root/GameManager")
+			else null
+		)
+		as GameplaySvc
+	)
 	if not gs or not gs.effects:
 		return
 
@@ -512,8 +523,12 @@ func _setup_limb_definitions() -> void:
 
 
 func _load_config() -> void:
-	## Load configuration from get_node_or_null("/root/GameManager").get_core_system("config") if get_node_or_null("/root/GameManager") else null
-	var config: Node = get_node_or_null("/root/GameManager").get_core_system("config") if get_node_or_null("/root/GameManager") else null
+	## Load configuration from the GameManager config service.
+	var config: Node = (
+		get_node_or_null("/root/GameManager").get_core_system("config")
+		if get_node_or_null("/root/GameManager")
+		else null
+	)
 	if not config or not config.has_method("get_value"):
 		return
 
@@ -542,7 +557,11 @@ func _apply_config(config: Dictionary) -> void:
 		limb_friction = dismember.get("friction", limb_friction)
 		limb_gravity_scale = dismember.get("gravity_scale", limb_gravity_scale)
 		spawn_blood_fountain = dismember.get("blood_fountain", spawn_blood_fountain)
-		var logger: Node = get_node_or_null("/root/GameManager").get_core_system("logger") if get_node_or_null("/root/GameManager") else null
+		var logger: Node = (
+			get_node_or_null("/root/GameManager").get_core_system("logger")
+			if get_node_or_null("/root/GameManager")
+			else null
+		)
 		if logger and logger.has_method("info"):
 			logger.info(
 				"[DismembermentSystem] Config loaded - overkill_threshold: %d" % overkill_threshold,

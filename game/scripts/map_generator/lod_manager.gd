@@ -351,9 +351,7 @@ func _simplify_mesh(mesh: Mesh, target_ratio: float) -> Mesh:
 	return simplified_mesh
 
 
-func _select_imported_lod(
-	mesh: Mesh, surface_idx: int, target_ratio: float
-) -> PackedInt32Array:
+func _select_imported_lod(mesh: Mesh, surface_idx: int, target_ratio: float) -> PackedInt32Array:
 	var original_indices: PackedInt32Array = mesh.surface_get_arrays(surface_idx)[Mesh.ARRAY_INDEX]
 	var target_count := maxi(3, int(original_indices.size() * target_ratio))
 	var selected := PackedInt32Array()

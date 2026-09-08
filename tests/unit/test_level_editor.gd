@@ -17,12 +17,16 @@ func after_each() -> void:
 
 func test_editor_core_directory_exists() -> void:
 	var path: String = "res://shared/editor_core/"
-	assert_true(DirAccess.dir_exists_absolute(path), "Editor core directory should exist at: %s" % path)
+	assert_true(
+		DirAccess.dir_exists_absolute(path), "Editor core directory should exist at: %s" % path
+	)
 
 
 func test_editor_actors_directory_exists() -> void:
 	var path: String = "res://shared/editor_core/actors/"
-	assert_true(DirAccess.dir_exists_absolute(path), "Editor actors directory should exist at: %s" % path)
+	assert_true(
+		DirAccess.dir_exists_absolute(path), "Editor actors directory should exist at: %s" % path
+	)
 
 	var registry: Node = ActorRegistryScript.new()
 	registry._register_builtin_actors()
@@ -42,17 +46,23 @@ func test_editor_actors_directory_exists() -> void:
 
 func test_editor_tools_directory_exists() -> void:
 	var path: String = "res://shared/editor_core/tools/"
-	assert_true(DirAccess.dir_exists_absolute(path), "Editor tools directory should exist at: %s" % path)
+	assert_true(
+		DirAccess.dir_exists_absolute(path), "Editor tools directory should exist at: %s" % path
+	)
 
 
 func test_editor_ui_directory_exists() -> void:
 	var path: String = "res://shared/editor_core/ui/"
-	assert_true(DirAccess.dir_exists_absolute(path), "Editor UI directory should exist at: %s" % path)
+	assert_true(
+		DirAccess.dir_exists_absolute(path), "Editor UI directory should exist at: %s" % path
+	)
 
 
 func test_editor_gizmos_directory_exists() -> void:
 	var path: String = "res://shared/editor_core/gizmos/"
-	assert_true(DirAccess.dir_exists_absolute(path), "Editor gizmos directory should exist at: %s" % path)
+	assert_true(
+		DirAccess.dir_exists_absolute(path), "Editor gizmos directory should exist at: %s" % path
+	)
 
 
 # =============================================================================
@@ -62,7 +72,9 @@ func test_editor_gizmos_directory_exists() -> void:
 
 func test_editor_data_directory_exists() -> void:
 	var path: String = "res://shared/editor_core/data/"
-	assert_true(DirAccess.dir_exists_absolute(path), "Editor data directory should exist at: %s" % path)
+	assert_true(
+		DirAccess.dir_exists_absolute(path), "Editor data directory should exist at: %s" % path
+	)
 
 	var registry: Node = AssetRegistryScript.new()
 	registry._init_asset_categories()
@@ -76,11 +88,18 @@ func test_editor_data_directory_exists() -> void:
 		)
 
 	for scene_asset_id: String in [
-		"glass_window", "breakable_crate", "breakable_barrel", "elevator", "crusher", "rope", "lever"
+		"glass_window",
+		"breakable_crate",
+		"breakable_barrel",
+		"elevator",
+		"crusher",
+		"rope",
+		"lever"
 	]:
 		var scene_asset: Dictionary = registry.get_asset_by_id(scene_asset_id)
 		assert_false(
-			scene_asset.is_empty(), "Canonical scene asset '%s' should be discovered" % scene_asset_id
+			scene_asset.is_empty(),
+			"Canonical scene asset '%s' should be discovered" % scene_asset_id
 		)
 		assert_true(
 			ResourceLoader.exists(scene_asset.get("scene_path", "")),
@@ -96,7 +115,9 @@ func test_editor_data_directory_exists() -> void:
 
 func test_embedded_level_editor_exists() -> void:
 	var path: String = "res://game/editor/embedded_level_editor.gd"
-	assert_true(FileAccess.file_exists(path), "Embedded level editor script should exist at: %s" % path)
+	assert_true(
+		FileAccess.file_exists(path), "Embedded level editor script should exist at: %s" % path
+	)
 
 
 # =============================================================================
@@ -106,7 +127,9 @@ func test_embedded_level_editor_exists() -> void:
 
 func test_showcase_level_exists() -> void:
 	var path: String = "res://game/world/maps/comprehensive_showcase.tscn"
-	assert_true(ResourceLoader.exists(path), "Comprehensive showcase level should exist at: %s" % path)
+	assert_true(
+		ResourceLoader.exists(path), "Comprehensive showcase level should exist at: %s" % path
+	)
 
 
 func test_dm_arena_exists() -> void:

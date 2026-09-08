@@ -3,17 +3,21 @@ extends ModusGutTestBase
 # Test MODUS Framework EventBus functionality
 # Converted from legacy Dictionary format to GUT assertions
 
+
 class TestState:
 	extends RefCounted
 	var received: bool = false
 	var data: Dictionary = {}
 	var count: int = 0
 
+
 func before_each():
 	await modus_setup()
 
+
 func after_each():
 	modus_teardown()
+
 
 func test_subscribe_and_emit() -> void:
 	var state: TestState = TestState.new()
@@ -36,6 +40,7 @@ func test_subscribe_and_emit() -> void:
 	assert_true(state.received, "Event should be received")
 	assert_eq(state.data.get("value"), 42, "Event data should match")
 
+
 func test_unsubscribe() -> void:
 	var state: TestState = TestState.new()
 
@@ -55,6 +60,7 @@ func test_unsubscribe() -> void:
 	gm.emit_event("test_unsub", {})
 
 	assert_eq(state.count, 1, "Callback should not be called after unsubscribe")
+
 
 func test_multiple_listeners() -> void:
 	var state_a: TestState = TestState.new()

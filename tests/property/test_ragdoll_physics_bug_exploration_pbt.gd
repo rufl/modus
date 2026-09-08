@@ -71,12 +71,14 @@ func test_ragdoll_physics_bug_detection() -> void:
 			or measurements.momentum_loss > MOMENTUM_LOSS_THRESHOLD
 			or measurements.ground_sinking > GROUND_SINKING_THRESHOLD
 		):
-			failures.append({
-				"iteration": i,
-				"test_case": test_case,
-				"measurements": measurements,
-				"bug_types": _identify_bug_types(measurements)
-			})
+			failures.append(
+				{
+					"iteration": i,
+					"test_case": test_case,
+					"measurements": measurements,
+					"bug_types": _identify_bug_types(measurements)
+				}
+			)
 
 		## Cleanup
 		if is_instance_valid(ragdoll):
@@ -86,7 +88,13 @@ func test_ragdoll_physics_bug_detection() -> void:
 	## Report results
 	if failures.size() > 0:
 		var summary: String = _format_bug_summary(failures)
-		assert_true(false, "Ragdoll physics bug detected in %d/%d iterations:\n%s" % [failures.size(), TEST_ITERATIONS, summary])
+		assert_true(
+			false,
+			(
+				"Ragdoll physics bug detected in %d/%d iterations:\n%s"
+				% [failures.size(), TEST_ITERATIONS, summary]
+			)
+		)
 	else:
 		assert_true(true, "No ragdoll physics bugs detected - code may already be fixed")
 
@@ -99,23 +107,21 @@ func _generate_test_case(rng: RandomNumberGenerator, iteration: int) -> Dictiona
 			"spawn_position": Vector3(0, 5, 0),
 			"impact_direction": _edge_case_direction(rng),
 			"force": rng.randf_range(50.0, 100.0),
-			"spin_force": Vector3(
+			"spin_force":
+			Vector3(
 				rng.randf_range(-20.0, 20.0),
 				rng.randf_range(-20.0, 20.0),
 				rng.randf_range(-20.0, 20.0)
 			),
 			"is_edge_case": true
 		}
-	
+
 	return {
 		"spawn_position": Vector3(0, 2, 0),
 		"impact_direction": _typical_direction(rng),
 		"force": rng.randf_range(10.0, 30.0),
-		"spin_force": Vector3(
-			rng.randf_range(-5.0, 5.0),
-			rng.randf_range(-5.0, 5.0),
-			rng.randf_range(-5.0, 5.0)
-		),
+		"spin_force":
+		Vector3(rng.randf_range(-5.0, 5.0), rng.randf_range(-5.0, 5.0), rng.randf_range(-5.0, 5.0)),
 		"is_edge_case": false
 	}
 
@@ -127,7 +133,9 @@ func _typical_direction(rng: RandomNumberGenerator) -> Vector3:
 
 
 func _edge_case_direction(rng: RandomNumberGenerator) -> Vector3:
-	var directions: Array[Vector3] = [Vector3.UP, Vector3.DOWN, Vector3.LEFT, Vector3.RIGHT, Vector3.FORWARD, Vector3.BACK]
+	var directions: Array[Vector3] = [
+		Vector3.UP, Vector3.DOWN, Vector3.LEFT, Vector3.RIGHT, Vector3.FORWARD, Vector3.BACK
+	]
 	return directions[rng.randi_range(0, directions.size() - 1)]
 
 
@@ -145,9 +153,7 @@ func _spawn_ragdoll(test_case: Dictionary) -> Node3D:
 	## Apply impulse
 	if ragdoll.has_method("apply_death_impulse"):
 		ragdoll.apply_death_impulse(
-			test_case.impact_direction,
-			test_case.force,
-			test_case.spin_force
+			test_case.impact_direction, test_case.force, test_case.spin_force
 		)
 
 	return ragdoll
@@ -155,10 +161,11 @@ func _spawn_ragdoll(test_case: Dictionary) -> Node3D:
 
 func _measure_bug_conditions(ragdoll: Node3D, test_case: Dictionary) -> Dictionary:
 	var physical_bones: Dictionary = ragdoll.get("physical_bones")
-	
+
 	return {
 		"impulse_delay": 0.0,  ## Fixed code applies immediately
-		"limb_separation_retention": _measure_limb_separation_retention(
+		"limb_separation_retention":
+		_measure_limb_separation_retention(
 			physical_bones, test_case.get("initial_limb_distances", {})
 		),
 		"momentum_loss": _measure_momentum_loss(physical_bones, test_case),
@@ -183,8 +190,17 @@ func _measure_limb_distances(physical_bones: Dictionary) -> Dictionary:
 		return {}
 
 	var distances: Dictionary = {}
-	var limbs: Array[String] = ["LeftArm", "RightArm", "LeftForeArm", "RightForeArm", "LeftUpLeg", "RightUpLeg", "LeftLeg", "RightLeg"]
-	
+	var limbs: Array[String] = [
+		"LeftArm",
+		"RightArm",
+		"LeftForeArm",
+		"RightForeArm",
+		"LeftUpLeg",
+		"RightUpLeg",
+		"LeftLeg",
+		"RightLeg"
+	]
+
 	for bone_name: String in limbs:
 		if physical_bones.has(bone_name):
 			var bone: PhysicalBone3D = physical_bones[bone_name]
@@ -246,45 +262,68 @@ func _measure_ground_sinking(physical_bones: Dictionary) -> float:
 
 func _identify_bug_types(measurements: Dictionary) -> Array[String]:
 	var bugs: Array[String] = []
-	
+
 	if measurements.impulse_delay > IMPULSE_TIMING_THRESHOLD:
-		bugs.append("Delayed impulse (%.3fs > %.3fs)" % [measurements.impulse_delay, IMPULSE_TIMING_THRESHOLD])
+		bugs.append(
+			(
+				"Delayed impulse (%.3fs > %.3fs)"
+				% [measurements.impulse_delay, IMPULSE_TIMING_THRESHOLD]
+			)
+		)
 	if measurements.limb_separation_retention < LIMB_SEPARATION_RETENTION_THRESHOLD:
 		bugs.append(
-			"Limb collapse (%.1f%% < %.1f%% pose retention)"
-			% [
-				measurements.limb_separation_retention * 100.0,
-				LIMB_SEPARATION_RETENTION_THRESHOLD * 100.0
-			]
+			(
+				"Limb collapse (%.1f%% < %.1f%% pose retention)"
+				% [
+					measurements.limb_separation_retention * 100.0,
+					LIMB_SEPARATION_RETENTION_THRESHOLD * 100.0
+				]
+			)
 		)
 	if measurements.momentum_loss > MOMENTUM_LOSS_THRESHOLD:
-		bugs.append("Momentum loss (%.1f%% > %.1f%%)" % [measurements.momentum_loss * 100, MOMENTUM_LOSS_THRESHOLD * 100])
+		bugs.append(
+			(
+				"Momentum loss (%.1f%% > %.1f%%)"
+				% [measurements.momentum_loss * 100, MOMENTUM_LOSS_THRESHOLD * 100]
+			)
+		)
 	if measurements.ground_sinking > GROUND_SINKING_THRESHOLD:
-		bugs.append("Ground sinking (%.3fm > %.3fm)" % [measurements.ground_sinking, GROUND_SINKING_THRESHOLD])
-	
+		bugs.append(
+			(
+				"Ground sinking (%.3fm > %.3fm)"
+				% [measurements.ground_sinking, GROUND_SINKING_THRESHOLD]
+			)
+		)
+
 	return bugs
 
 
 func _format_bug_summary(failures: Array[Dictionary]) -> String:
 	var summary: String = ""
 	var bug_counts: Dictionary = {}
-	
+
 	for f: Dictionary in failures:
 		for bug: String in f.bug_types:
 			bug_counts[bug] = bug_counts.get(bug, 0) + 1
-	
+
 	summary += "Bug type occurrences:\n"
 	for bug: String in bug_counts:
 		summary += "  - %s: %d times\n" % [bug, bug_counts[bug]]
-	
+
 	if failures.size() > 0:
 		var first: Dictionary = failures[0]
 		summary += "\nFirst failure (iteration %d):\n" % first.iteration
-		summary += "  Impact: %s @ force %.1f\n" % [first.test_case.impact_direction, first.test_case.force]
+		summary += (
+			"  Impact: %s @ force %.1f\n"
+			% [first.test_case.impact_direction, first.test_case.force]
+		)
 		summary += "  Measurements:\n"
 		summary += "    Impulse delay: %.3fs\n" % first.measurements.impulse_delay
-		summary += "    Limb separation retained: %.1f%%\n" % (first.measurements.limb_separation_retention * 100.0)
+		summary += (
+			"    Limb separation retained: %.1f%%\n"
+			% (first.measurements.limb_separation_retention * 100.0)
+		)
 		summary += "    Momentum loss: %.1f%%\n" % (first.measurements.momentum_loss * 100)
 		summary += "    Ground sinking: %.3fm\n" % first.measurements.ground_sinking
-	
+
 	return summary

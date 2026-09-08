@@ -17,10 +17,10 @@ func before_each() -> void:
 	add_child_autofree(assignment_ui)
 
 	# Add device_claimed signal
-	assignment_ui.add_user_signal("device_claimed", [
-		{"name": "player_slot", "type": TYPE_INT},
-		{"name": "device_id", "type": TYPE_INT}
-	])
+	assignment_ui.add_user_signal(
+		"device_claimed",
+		[{"name": "player_slot", "type": TYPE_INT}, {"name": "device_id", "type": TYPE_INT}]
+	)
 
 
 func after_each() -> void:
@@ -33,8 +33,7 @@ func test_show_assignment_ui() -> void:
 	# Mock the scene loading by setting _assignment_ui directly
 	gamepad_controller._assignment_ui = assignment_ui
 
-	assert_not_null(gamepad_controller._assignment_ui,
-		"Assignment UI should be set")
+	assert_not_null(gamepad_controller._assignment_ui, "Assignment UI should be set")
 
 
 ## Test: Assignment UI can be hidden
@@ -43,8 +42,7 @@ func test_hide_assignment_ui() -> void:
 	gamepad_controller.hide_assignment_ui()
 
 	# UI should be queued for deletion
-	assert_null(gamepad_controller._assignment_ui,
-		"Assignment UI reference should be cleared")
+	assert_null(gamepad_controller._assignment_ui, "Assignment UI reference should be cleared")
 
 
 ## Test: Device claim triggers gamepad assignment
@@ -59,8 +57,11 @@ func test_device_claim_triggers_assignment() -> void:
 	# Simulate device claim
 	assignment_ui.emit_signal("device_claimed", 0, 0)
 
-	assert_eq(gamepad_controller.get_assigned_device(0), 0,
-		"Device should be assigned to player after claim")
+	assert_eq(
+		gamepad_controller.get_assigned_device(0),
+		0,
+		"Device should be assigned to player after claim"
+	)
 
 
 ## Test: Multiple players can claim devices
@@ -78,8 +79,9 @@ func test_multiple_players_claim_devices() -> void:
 		assignment_ui.emit_signal("device_claimed", i, i)
 
 	for i in range(4):
-		assert_eq(gamepad_controller.get_assigned_device(i), i,
-			"Player %d should have device %d" % [i, i])
+		assert_eq(
+			gamepad_controller.get_assigned_device(i), i, "Player %d should have device %d" % [i, i]
+		)
 
 
 ## Test: Assignment UI shows connected devices
@@ -89,8 +91,7 @@ func test_assignment_ui_shows_connected_devices() -> void:
 
 	var connected = gamepad_controller.get_connected_devices()
 
-	assert_eq(connected.size(), 3,
-		"UI should show 3 connected devices")
+	assert_eq(connected.size(), 3, "UI should show 3 connected devices")
 
 
 ## Test: Assignment UI prevents duplicate assignments
@@ -108,8 +109,11 @@ func test_assignment_ui_prevents_duplicate_assignments() -> void:
 	# Second claim to same device fails
 	assignment_ui.emit_signal("device_claimed", 1, 0)
 	assert_push_error("already assigned")
-	assert_eq(gamepad_controller.get_assigned_device(1), -1,
-		"Second player should not get already assigned device")
+	assert_eq(
+		gamepad_controller.get_assigned_device(1),
+		-1,
+		"Second player should not get already assigned device"
+	)
 
 
 ## Test: Assignment UI updates on device connect
@@ -118,8 +122,9 @@ func test_assignment_ui_updates_on_device_connect() -> void:
 
 	gamepad_controller._on_device_connected(0)
 
-	assert_signal_emitted(gamepad_controller, "gamepad_connected",
-		"UI should be notified of new device")
+	assert_signal_emitted(
+		gamepad_controller, "gamepad_connected", "UI should be notified of new device"
+	)
 
 
 ## Test: Assignment UI updates on device disconnect
@@ -131,8 +136,9 @@ func test_assignment_ui_updates_on_device_disconnect() -> void:
 
 	gamepad_controller._on_device_disconnected(0)
 
-	assert_signal_emitted(gamepad_controller, "gamepad_disconnected",
-		"UI should be notified of device disconnect")
+	assert_signal_emitted(
+		gamepad_controller, "gamepad_disconnected", "UI should be notified of device disconnect"
+	)
 
 
 ## Test: Assignment complete hides UI
@@ -147,24 +153,25 @@ func test_assignment_complete_hides_ui() -> void:
 	gamepad_controller.assign_gamepad(0, 0)
 	gamepad_controller.assign_gamepad(1, 1)
 
-	assert_signal_emitted(gamepad_controller, "assignment_complete",
-		"UI should be notified when assignment is complete")
+	assert_signal_emitted(
+		gamepad_controller,
+		"assignment_complete",
+		"UI should be notified when assignment is complete"
+	)
 
 
 ## Test: Assignment UI shows player slots
 func test_assignment_ui_shows_player_slots() -> void:
 	gamepad_controller.set_expected_player_count(4)
 
-	assert_eq(gamepad_controller._expected_player_count, 4,
-		"UI should show 4 player slots")
+	assert_eq(gamepad_controller._expected_player_count, 4, "UI should show 4 player slots")
 
 
 ## Test: Assignment UI handles no devices
 func test_assignment_ui_handles_no_devices() -> void:
 	var devices = gamepad_controller.get_connected_devices()
 
-	assert_eq(devices.size(), 0,
-		"UI should handle no connected devices gracefully")
+	assert_eq(devices.size(), 0, "UI should handle no connected devices gracefully")
 
 
 ## Test: Assignment UI allows device reassignment
@@ -177,8 +184,11 @@ func test_assignment_ui_allows_device_reassignment() -> void:
 
 	# Reassign to different device
 	gamepad_controller.assign_gamepad(0, 1)
-	assert_eq(gamepad_controller.get_assigned_device(0), 1,
-		"UI should allow reassigning player to different device")
+	assert_eq(
+		gamepad_controller.get_assigned_device(0),
+		1,
+		"UI should allow reassigning player to different device"
+	)
 
 
 ## Test: Assignment UI shows device names
@@ -188,8 +198,7 @@ func test_assignment_ui_shows_device_names() -> void:
 	input_comp.set_device(0, gamepad_controller, 0)
 
 	var name = input_comp.get_gamepad_name()
-	assert_typeof(name, TYPE_STRING,
-		"UI should be able to display device names")
+	assert_typeof(name, TYPE_STRING, "UI should be able to display device names")
 
 	input_comp.free()
 
@@ -205,8 +214,7 @@ func test_assignment_ui_progress_indicator() -> void:
 	var assigned_count = gamepad_controller.get_assigned_players().size()
 	var progress = float(assigned_count) / float(gamepad_controller._expected_player_count)
 
-	assert_almost_eq(progress, 0.5, 0.01,
-		"UI should show 50% progress with 2/4 players assigned")
+	assert_almost_eq(progress, 0.5, 0.01, "UI should show 50% progress with 2/4 players assigned")
 
 
 ## Test: Assignment UI cancel button
@@ -217,5 +225,6 @@ func test_assignment_ui_cancel_button() -> void:
 	gamepad_controller.hide_assignment_ui()
 	gamepad_controller.clear_assignments()
 
-	assert_eq(gamepad_controller.get_assigned_players().size(), 0,
-		"Cancel should clear all assignments")
+	assert_eq(
+		gamepad_controller.get_assigned_players().size(), 0, "Cancel should clear all assignments"
+	)

@@ -34,14 +34,17 @@ func start_session(p_session_name: String = "", metadata: Dictionary = {}) -> St
 
 	if p_session_name.is_empty():
 		var datetime: Dictionary = Time.get_datetime_dict_from_system()
-		p_session_name = "manual_test_%04d%02d%02d_%02d%02d%02d" % [
-			datetime.year,
-			datetime.month,
-			datetime.day,
-			datetime.hour,
-			datetime.minute,
-			datetime.second,
-		]
+		p_session_name = (
+			"manual_test_%04d%02d%02d_%02d%02d%02d"
+			% [
+				datetime.year,
+				datetime.month,
+				datetime.day,
+				datetime.hour,
+				datetime.minute,
+				datetime.second,
+			]
+		)
 
 	session_name = _safe_session_name(p_session_name)
 	session_metadata = _metadata_with_defaults(metadata)
@@ -68,8 +71,10 @@ func start_test(test_name: String) -> void:
 
 	if not current_test_name.is_empty():
 		push_warning(
-			"[ManualTestTimer] Test '%s' still in progress. Completing it first."
-			% current_test_name
+			(
+				"[ManualTestTimer] Test '%s' still in progress. Completing it first."
+				% current_test_name
+			)
 		)
 		complete_test("incomplete", "A new test started before this item was reviewed")
 
@@ -102,22 +107,29 @@ func complete_test(result: String = "pass", notes: String = "") -> void:
 	completed_tests.append(test_result)
 
 	if log_file:
-		log_file.store_line(
-			"%s,%s,%.2f,%s,%s"
-			% [
-				test_result.timestamp,
-				test_result.name,
-				test_result.duration,
-				test_result.result,
-				test_result.notes,
-			]
+		(
+			log_file
+			. store_line(
+				(
+					"%s,%s,%.2f,%s,%s"
+					% [
+						test_result.timestamp,
+						test_result.name,
+						test_result.duration,
+						test_result.result,
+						test_result.notes,
+					]
+				)
+			)
 		)
 		log_file.flush()
 
 	test_completed.emit(current_test_name, duration)
 	print(
-		"[ManualTestTimer] Completed test: %s (%.2fs, %s)"
-		% [current_test_name, duration, normalized_result]
+		(
+			"[ManualTestTimer] Completed test: %s (%.2fs, %s)"
+			% [current_test_name, duration, normalized_result]
+		)
 	)
 	current_test_name = ""
 	current_test_start_time = 0.0
@@ -274,7 +286,9 @@ func _write_summary(stats: Dictionary) -> void:
 	for key: String in [
 		"tester", "os", "renderer", "resolution", "input_devices", "scene", "build_identity"
 	]:
-		log_file.store_line("metadata_%s,%s" % [key, _clean_csv_value(session_metadata.get(key, ""))])
+		log_file.store_line(
+			"metadata_%s,%s" % [key, _clean_csv_value(session_metadata.get(key, ""))]
+		)
 	log_file.flush()
 
 
@@ -314,12 +328,20 @@ func print_statistics() -> void:
 	print("  Skipped: %d" % stats.skipped)
 	print("  Incomplete: %d" % stats.incomplete)
 	print("Average Test Duration: %.2fs" % stats.avg_test_duration)
-	print("Min/Max Test Duration: %.2fs / %.2fs" % [stats.min_test_duration, stats.max_test_duration])
 	print(
-		"Overhead Time: %.2fs (%.1f%%)"
-		% [
-			stats.overhead_time,
-			(stats.overhead_time / stats.total_duration * 100.0) if stats.total_duration > 0 else 0.0,
-		]
+		"Min/Max Test Duration: %.2fs / %.2fs" % [stats.min_test_duration, stats.max_test_duration]
+	)
+	print(
+		(
+			"Overhead Time: %.2fs (%.1f%%)"
+			% [
+				stats.overhead_time,
+				(
+					(stats.overhead_time / stats.total_duration * 100.0)
+					if stats.total_duration > 0
+					else 0.0
+				),
+			]
+		)
 	)
 	print("=".repeat(60) + "\n")

@@ -263,7 +263,9 @@ func _target_flag(target: Node, flag_name: String) -> bool:
 
 
 func _clear_target_if_current(target: Node) -> void:
-	var ai_controller: Node = _parent_enemy.get_node_or_null("EnemyAIController") if _parent_enemy else null
+	var ai_controller: Node = (
+		_parent_enemy.get_node_or_null("EnemyAIController") if _parent_enemy else null
+	)
 	var controller_has_target: bool = ai_controller and "target" in ai_controller
 	if _current_target == target:
 		_current_target = null

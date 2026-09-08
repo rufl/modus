@@ -3,11 +3,14 @@ extends ModusGutTestBase
 # Test MODUS Framework Modding System functionality
 # Converted from legacy Dictionary format to GUT assertions
 
+
 func before_each() -> void:
 	await modus_setup()
 
+
 func after_each() -> void:
 	modus_teardown()
+
 
 func test_mod_loader_service_exists() -> void:
 	# Wait for services
@@ -18,6 +21,7 @@ func test_mod_loader_service_exists() -> void:
 	if gm:
 		var mod_loader: Node = gm.get_core_system("mod_loader")
 		assert_not_null(mod_loader, "ModLoader service should exist")
+
 
 func test_mod_loader_has_required_methods() -> void:
 	var gm: Node = get_node_or_null("/root/GameManager")
@@ -52,6 +56,7 @@ func test_mod_loader_returns_mods_array() -> void:
 			var mods: Variant = mod_loader.get_loaded_mods()
 			assert_true(mods is Array, "get_loaded_mods() should return Array")
 
+
 func test_installed_mod_settings_update_before_reload() -> void:
 	var gm: Node = get_node_or_null("/root/GameManager")
 	assert_not_null(gm, "GameManager should exist")
@@ -85,13 +90,16 @@ func test_installed_mod_settings_update_before_reload() -> void:
 		if mod_info.get("id", "") == mod_id:
 			saved_enabled = mod_info.get("enabled", original_enabled)
 			break
-	assert_eq(saved_enabled, not original_enabled, "Disabled mods should be enableable before reload")
+	assert_eq(
+		saved_enabled, not original_enabled, "Disabled mods should be enableable before reload"
+	)
 	mod_loader.set_mod_enabled(mod_id, original_enabled)
 
 
 # =============================================================================
 # MOD SCRIPT BASE CLASS
 # =============================================================================
+
 
 func test_mod_script_class_exists() -> void:
 	# ModScript should be a globally accessible class
@@ -100,6 +108,7 @@ func test_mod_script_class_exists() -> void:
 
 	if script:
 		script.free()
+
 
 func test_mod_script_has_lifecycle_methods() -> void:
 	var script: Script = load("res://game/scripts/features/modding/mod_script.gd")
@@ -123,29 +132,36 @@ func test_mod_script_has_lifecycle_methods() -> void:
 
 			instance.free()
 
+
 # =============================================================================
 # MODS DIRECTORY
 # =============================================================================
+
 
 func test_mods_directory_exists() -> void:
 	var path: String = "res://mods/"
 	assert_true(DirAccess.dir_exists_absolute(path), "Mods directory should exist")
 
+
 func test_example_mod_exists() -> void:
 	var path: String = "res://mods/example_mod/"
 	assert_true(DirAccess.dir_exists_absolute(path), "Example mod directory should exist")
+
 
 func test_example_mod_has_manifest() -> void:
 	var path: String = "res://mods/example_mod/manifest.json"
 	assert_true(FileAccess.file_exists(path), "Example mod should have manifest.json")
 
+
 func test_example_mod_script_exists() -> void:
 	var path: String = "res://mods/example_mod/scripts/example_script.gd"
 	assert_true(FileAccess.file_exists(path), "Example mod should have script file")
 
+
 # =============================================================================
 # CONFIG OVERRIDE SYSTEM
 # =============================================================================
+
 
 func test_config_manager_supports_overrides() -> void:
 	assert_gamecore_subsystem_exists("config")
@@ -154,8 +170,8 @@ func test_config_manager_supports_overrides() -> void:
 	if gm and gm.get_core_system("config"):
 		# Check if ConfigManager has mod override support
 		var _has_override_support: bool = (
-			gm.get_core_system("config").has_method("apply_mod_overrides") or
-			gm.get_core_system("config").has_method("register_override")
+			gm.get_core_system("config").has_method("apply_mod_overrides")
+			or gm.get_core_system("config").has_method("register_override")
 		)
 
 		# Still pass - override system may be handled differently

@@ -23,33 +23,26 @@ func after_each() -> void:
 
 ## Test: Initial state has no device
 func test_initial_state_no_device() -> void:
-	assert_eq(input_component.get_device_id(), -1,
-		"Should have no device initially")
-	assert_false(input_component.has_device(),
-		"Should not have device initially")
+	assert_eq(input_component.get_device_id(), -1, "Should have no device initially")
+	assert_false(input_component.has_device(), "Should not have device initially")
 
 
 ## Test: Set device assigns correctly
 func test_set_device() -> void:
 	input_component.set_device(0, gamepad_controller, 0)
-	
-	assert_eq(input_component.get_device_id(), 0,
-		"Device ID should be 0")
-	assert_eq(input_component.player_id, 0,
-		"Player ID should be 0")
-	assert_true(input_component.has_device(),
-		"Should have device after assignment")
+
+	assert_eq(input_component.get_device_id(), 0, "Device ID should be 0")
+	assert_eq(input_component.player_id, 0, "Player ID should be 0")
+	assert_true(input_component.has_device(), "Should have device after assignment")
 
 
 ## Test: Has device check
 func test_has_device_check() -> void:
-	assert_false(input_component.has_device(),
-		"Should not have device without assignment")
-	
+	assert_false(input_component.has_device(), "Should not have device without assignment")
+
 	input_component.set_device(0, gamepad_controller, 0)
-	
-	assert_true(input_component.has_device(),
-		"Should have device after assignment")
+
+	assert_true(input_component.has_device(), "Should have device after assignment")
 
 
 ## Test: Is action pressed returns false without device
@@ -129,9 +122,9 @@ func test_is_joy_button_pressed_without_device() -> void:
 ## Test: Get input summary
 func test_get_input_summary() -> void:
 	input_component.set_device(0, gamepad_controller, 5)
-	
+
 	var summary = input_component.get_input_summary()
-	
+
 	assert_true(summary.has("player_id"), "Summary should have player_id")
 	assert_true(summary.has("device_id"), "Summary should have device_id")
 	assert_true(summary.has("has_device"), "Summary should have has_device")
@@ -143,7 +136,7 @@ func test_get_input_summary() -> void:
 ## Test: Get input summary without device
 func test_get_input_summary_without_device() -> void:
 	var summary = input_component.get_input_summary()
-	
+
 	assert_eq(summary["player_id"], -1, "Player ID should be -1")
 	assert_eq(summary["device_id"], -1, "Device ID should be -1")
 	assert_false(summary["has_device"], "Should not have device")
@@ -153,28 +146,26 @@ func test_get_input_summary_without_device() -> void:
 func test_device_assignment_with_controller() -> void:
 	gamepad_controller._connected_devices.append(0)
 	gamepad_controller.assign_gamepad(0, 0)
-	
+
 	input_component.set_device(0, gamepad_controller, 0)
-	
-	assert_eq(input_component.assigned_device_id, 0,
-		"Device ID should be assigned")
-	assert_eq(input_component.gamepad_controller, gamepad_controller,
-		"Controller reference should be set")
-	assert_eq(input_component.player_id, 0,
-		"Player ID should be set")
+
+	assert_eq(input_component.assigned_device_id, 0, "Device ID should be assigned")
+	assert_eq(
+		input_component.gamepad_controller, gamepad_controller, "Controller reference should be set"
+	)
+	assert_eq(input_component.player_id, 0, "Player ID should be set")
 
 
 ## Test: Input routing through gamepad controller
 func test_input_routing_through_controller() -> void:
 	gamepad_controller._connected_devices.append(0)
 	gamepad_controller.assign_gamepad(0, 0)
-	
+
 	input_component.set_device(0, gamepad_controller, 0)
-	
+
 	# Test that input methods use the gamepad controller
 	# (Actual input testing would require mocking Input system)
-	assert_true(input_component.has_device(),
-		"Should have device for input routing")
+	assert_true(input_component.has_device(), "Should have device for input routing")
 
 
 ## Test: Vibration routing through gamepad controller
@@ -182,9 +173,9 @@ func test_vibration_routing_through_controller() -> void:
 	gamepad_controller._connected_devices.append(0)
 	gamepad_controller.assign_gamepad(0, 0)
 	gamepad_controller.vibration_enabled = true
-	
+
 	input_component.set_device(0, gamepad_controller, 0)
-	
+
 	# Should not crash
 	input_component.trigger_vibration(0.5, 0.5, 1.0)
 	assert_true(true, "Should route vibration through controller")
@@ -193,7 +184,7 @@ func test_vibration_routing_through_controller() -> void:
 ## Test: Stop vibration with assigned device
 func test_stop_vibration_with_device() -> void:
 	input_component.set_device(0, gamepad_controller, 0)
-	
+
 	# Should not crash
 	input_component.stop_vibration()
 	assert_true(true, "Should handle stop vibration")
@@ -202,8 +193,8 @@ func test_stop_vibration_with_device() -> void:
 ## Test: Get input vector with custom deadzone
 func test_get_input_vector_with_custom_deadzone() -> void:
 	input_component.set_device(0, gamepad_controller, 0)
-	
+
 	var vector = input_component.get_input_vector("ui_left", "ui_right", "ui_up", "ui_down", 0.2)
-	
+
 	# Should return a vector (even if zero without actual input)
 	assert_typeof(vector, TYPE_VECTOR2, "Should return Vector2")

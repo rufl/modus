@@ -8,8 +8,13 @@ func test_health_component_extends_game_component() -> void:
 	add_child_autofree(health_comp)
 
 	# Verify it extends GameComponent
-	assert_true(health_comp.has_method("safe_connect"), "HealthComponent should have safe_connect method")
-	assert_true(health_comp.has_method("get_tracked_connection_count"), "HealthComponent should have tracking method")
+	assert_true(
+		health_comp.has_method("safe_connect"), "HealthComponent should have safe_connect method"
+	)
+	assert_true(
+		health_comp.has_method("get_tracked_connection_count"),
+		"HealthComponent should have tracking method"
+	)
 
 
 func test_downed_state_signal_cleanup() -> void:
@@ -28,16 +33,18 @@ func test_downed_state_signal_cleanup() -> void:
 	var config_reloaded := Signal(mock_config, "config_reloaded")
 
 	# Simulate the component connecting to config
-	var callback := func() -> void:
-		pass
+	var callback := func() -> void: pass
 
 	var initial_connections := downed_state.get_tracked_connection_count()
 	downed_state.safe_connect(config_reloaded, callback)
 
 	# Verify connection exists
 	assert_true(config_reloaded.is_connected(callback), "Config signal should be connected")
-	assert_eq(downed_state.get_tracked_connection_count(), initial_connections + 1,
-		"Should track the added connection")
+	assert_eq(
+		downed_state.get_tracked_connection_count(),
+		initial_connections + 1,
+		"Should track the added connection"
+	)
 
 	# Remove component (triggers cleanup)
 	remove_child(downed_state)
@@ -52,12 +59,16 @@ func test_status_effect_manager_signal_cleanup() -> void:
 	add_child_autofree(status_mgr)
 
 	# Verify it extends GameComponent
-	assert_true(status_mgr.has_method("safe_connect"), "StatusEffectManager should have safe_connect method")
-	assert_true(status_mgr.has_method("get_tracked_connection_count"), "StatusEffectManager should have tracking method")
+	assert_true(
+		status_mgr.has_method("safe_connect"), "StatusEffectManager should have safe_connect method"
+	)
+	assert_true(
+		status_mgr.has_method("get_tracked_connection_count"),
+		"StatusEffectManager should have tracking method"
+	)
 
 	# Test that effect_removed signal connections are tracked
-	var callback := func(_effect_name: String) -> void:
-		pass
+	var callback := func(_effect_name: String) -> void: pass
 
 	status_mgr.safe_connect(status_mgr.effect_removed, callback)
 
@@ -76,8 +87,14 @@ func test_weapon_feedback_system_extends_game_component_3d() -> void:
 	add_child_autofree(weapon_feedback)
 
 	# Verify it extends GameComponent3D (which has the same methods)
-	assert_true(weapon_feedback.has_method("safe_connect"), "WeaponFeedbackSystem should have safe_connect method")
-	assert_true(weapon_feedback.has_method("get_tracked_connection_count"), "WeaponFeedbackSystem should have tracking method")
+	assert_true(
+		weapon_feedback.has_method("safe_connect"),
+		"WeaponFeedbackSystem should have safe_connect method"
+	)
+	assert_true(
+		weapon_feedback.has_method("get_tracked_connection_count"),
+		"WeaponFeedbackSystem should have tracking method"
+	)
 
 
 func test_component_removal_prevents_memory_leaks() -> void:
@@ -99,8 +116,7 @@ func test_component_removal_prevents_memory_leaks() -> void:
 
 	# Connect all components to the signal
 	for comp in components:
-		var callback := func() -> void:
-			pass
+		var callback := func() -> void: pass
 		comp.safe_connect(test_signal, callback)
 
 	# Verify all connections exist

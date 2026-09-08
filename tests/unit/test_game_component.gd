@@ -7,7 +7,9 @@ const MockGameComponent = preload("res://tests/mocks/mock_game_component.gd")
 
 
 # Test helper: Mock entity node
-class MockEntity extends Node:
+class MockEntity:
+	extends Node
+
 	func _init() -> void:
 		name = "MockEntity"
 
@@ -187,9 +189,7 @@ func test_component_physics_process_called_when_enabled() -> void:
 	await get_tree().physics_frame
 	await get_tree().physics_frame
 
-	assert_true(
-		component.physics_process_called, "Physics process should be called when enabled"
-	)
+	assert_true(component.physics_process_called, "Physics process should be called when enabled")
 
 	entity.free()
 

@@ -3,14 +3,18 @@ extends ModusGutTestBase
 # Test MODUS Framework CombatService functionality
 # Converted from legacy Dictionary format to GUT assertions
 
+
 func before_each() -> void:
 	await modus_setup()
+
 
 func after_each() -> void:
 	modus_teardown()
 
+
 func test_service_exists() -> void:
 	assert_service_registered_with_gamecore("combat", "CombatService should be registered")
+
 
 func test_validate_hit() -> void:
 	# Test hit validation method exists and returns bool
@@ -28,6 +32,7 @@ func test_validate_hit() -> void:
 
 			# Currently returns true (stub), just verify it works
 			assert_eq(typeof(result), TYPE_BOOL, "validate_hit should return bool")
+
 
 func test_max_damage_constant() -> void:
 	# Verify MAX_DAMAGE constant is defined

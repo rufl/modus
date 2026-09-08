@@ -40,16 +40,14 @@ func test_combat_component_exists() -> void:
 func test_perception_component_exists() -> void:
 	var path: String = "res://game/entities/components/perception_component.gd"
 	assert_true(
-		FileAccess.file_exists(path),
-		"Perception component script should exist at: %s" % path
+		FileAccess.file_exists(path), "Perception component script should exist at: %s" % path
 	)
 
 
 func test_status_effect_manager_exists() -> void:
 	var path: String = "res://game/entities/components/status_effect_manager.gd"
 	assert_true(
-		FileAccess.file_exists(path),
-		"Status effect manager script should exist at: %s" % path
+		FileAccess.file_exists(path), "Status effect manager script should exist at: %s" % path
 	)
 
 
@@ -61,8 +59,7 @@ func test_status_effect_manager_exists() -> void:
 func test_rocket_jump_system_exists() -> void:
 	var path: String = "res://game/entities/player/rocket_jump_system.gd"
 	assert_true(
-		FileAccess.file_exists(path),
-		"Rocket jump system script should exist at: %s" % path
+		FileAccess.file_exists(path), "Rocket jump system script should exist at: %s" % path
 	)
 
 
@@ -74,8 +71,7 @@ func test_rocket_jump_system_exists() -> void:
 func test_player_state_manager_exists() -> void:
 	var path: String = "res://game/entities/player/components/player_state_manager.gd"
 	assert_true(
-		FileAccess.file_exists(path),
-		"Player state manager script should exist at: %s" % path
+		FileAccess.file_exists(path), "Player state manager script should exist at: %s" % path
 	)
 
 
@@ -97,8 +93,7 @@ func test_weapon_manager_exists() -> void:
 func test_interaction_component_exists() -> void:
 	var path: String = "res://game/entities/player/components/interaction_component.gd"
 	assert_true(
-		FileAccess.file_exists(path),
-		"Interaction component script should exist at: %s" % path
+		FileAccess.file_exists(path), "Interaction component script should exist at: %s" % path
 	)
 
 

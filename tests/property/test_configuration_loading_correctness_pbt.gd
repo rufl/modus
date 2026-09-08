@@ -191,11 +191,17 @@ func _verify_config_structure(config_file: String, config_data: Dictionary) -> b
 
 	if config_file.contains("movement"):
 		# Should have movement-related keys
-		return config_data.has("walk_speed") or config_data.has("sprint_speed") or config_data.size() > 0
+		return (
+			config_data.has("walk_speed")
+			or config_data.has("sprint_speed")
+			or config_data.size() > 0
+		)
 
 	if config_file.contains("network_config"):
 		# Should have network-related keys
-		return config_data.has("prediction") or config_data.has("tick_rate") or config_data.size() > 0
+		return (
+			config_data.has("prediction") or config_data.has("tick_rate") or config_data.size() > 0
+		)
 
 	return config_data.size() > 0
 

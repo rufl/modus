@@ -42,7 +42,9 @@ func test_features_json5_features_are_valid():
 		for feature_name in features.keys():
 			var feature = features[feature_name]
 			assert_true(feature is Dictionary, "Each feature should be a Dictionary")
-			assert_true(feature.has("enabled"), "Feature '%s' should have 'enabled' field" % feature_name)
+			assert_true(
+				feature.has("enabled"), "Feature '%s' should have 'enabled' field" % feature_name
+			)
 
 
 func test_gameplay_json5_exists_and_valid():
@@ -127,7 +129,9 @@ func test_features_json5_profiles_are_valid():
 		for profile_name in profiles.keys():
 			var profile = profiles[profile_name]
 			assert_true(profile is Dictionary, "Profile '%s' should be a Dictionary" % profile_name)
-			assert_true(profile.has("features"), "Profile '%s' should have 'features' field" % profile_name)
+			assert_true(
+				profile.has("features"), "Profile '%s' should have 'features' field" % profile_name
+			)
 
 
 func test_feature_dependencies_are_valid():
@@ -183,12 +187,18 @@ func test_config_files_use_correct_types():
 			# enabled should be boolean
 			if feature.has("enabled"):
 				var enabled = feature.get("enabled")
-				assert_eq(typeof(enabled), TYPE_BOOL, "Feature '%s' enabled should be boolean" % feature_name)
+				assert_eq(
+					typeof(enabled),
+					TYPE_BOOL,
+					"Feature '%s' enabled should be boolean" % feature_name
+				)
 
 			# dependencies should be array
 			if feature.has("dependencies"):
 				var deps = feature.get("dependencies")
-				assert_true(deps is Array, "Feature '%s' dependencies should be array" % feature_name)
+				assert_true(
+					deps is Array, "Feature '%s' dependencies should be array" % feature_name
+				)
 
 
 func test_required_features_are_present():
@@ -202,4 +212,6 @@ func test_required_features_are_present():
 		var required_features = ["combat", "inventory", "physics", "audio"]
 
 		for required in required_features:
-			assert_true(features.has(required), "Required feature '%s' should be present" % required)
+			assert_true(
+				features.has(required), "Required feature '%s' should be present" % required
+			)

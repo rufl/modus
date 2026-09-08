@@ -75,7 +75,10 @@ func validate_hit(attacker_pos: Vector3, target_pos: Vector3, weapon_id: String)
 		var logger_check: Node = gm_check.get_core_system("logger")
 		if logger_check:
 			logger_check.trace(
-				"Validating hit: Attacker=%v Target=%v Weapon=%s" % [attacker_pos, target_pos, weapon_id],
+				(
+					"Validating hit: Attacker=%v Target=%v Weapon=%s"
+					% [attacker_pos, target_pos, weapon_id]
+				),
 				"Combat"
 			)
 
@@ -295,7 +298,8 @@ func apply_damage(
 			var logger_dmg: Node = gm_dmg.get_core_system("logger")
 			if logger_dmg:
 				logger_dmg.info(
-					"[Combat] Applying damage to %s via take_damage: %.1f" % [target.name, amount], "Combat"
+					"[Combat] Applying damage to %s via take_damage: %.1f" % [target.name, amount],
+					"Combat"
 				)
 		target.take_damage(damage_info)
 
@@ -324,7 +328,9 @@ func apply_damage(
 		# Register hit (Stats)
 		if source and source.is_in_group("player"):
 			# Use source_id from damage info as it's reliable
-			var gameplay_svc := gm_dmg.get_core_system("gameplay") as GameplaySvc if gm_dmg else null
+			var gameplay_svc := (
+				gm_dmg.get_core_system("gameplay") as GameplaySvc if gm_dmg else null
+			)
 			if (
 				gameplay_svc
 				and gameplay_svc.match_service
@@ -352,15 +358,15 @@ func apply_damage(
 
 		if gm_recv:
 			gm_recv.emit_event(
-			"damage_dealt",
-			{
-				"amount": amount,
-				"target": target,
-				"source": source,
-				"source_id": damage_info.source_id,
-				"is_critical": is_critical
-			}
-		)
+				"damage_dealt",
+				{
+					"amount": amount,
+					"target": target,
+					"source": source,
+					"source_id": damage_info.source_id,
+					"is_critical": is_critical
+				}
+			)
 	else:
 		# Only warn for objects that should have damage methods (not debris/gibs)
 		if not target is RigidBody3D:
@@ -418,7 +424,8 @@ func request_melee_hit(target_name: String, damage: float) -> void:
 			var logger_melee: Node = gm_melee.get_core_system("logger")
 			if logger_melee:
 				logger_melee.warning(
-					"[Combat] Melee hit rejected (too far): %.2fm peer %d" % [dist, sender_id], "Combat"
+					"[Combat] Melee hit rejected (too far): %.2fm peer %d" % [dist, sender_id],
+					"Combat"
 				)
 		return
 

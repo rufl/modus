@@ -40,7 +40,7 @@ static func create_enemy(data: Dictionary) -> Node:
 
 static func _safe_node_name(value: String) -> String:
 	var result := value.strip_edges()
-	for forbidden in [".", ":", "@", "/", "\"", "%"]:
+	for forbidden in [".", ":", "@", "/", '"', "%"]:
 		result = result.replace(forbidden, "_")
 	return result if not result.is_empty() else "Enemy"
 
@@ -105,10 +105,7 @@ static func _setup_perception(enemy: Node, data: Dictionary) -> void:
 	perception_comp.configure_from_data(perception_config, enemy.tier)
 
 	# Connect signals for alert icons (use Callable for proper signal connection)
-	if (
-		not enemy.multiplayer.has_multiplayer_peer()
-		or enemy.multiplayer.is_server()
-	):
+	if not enemy.multiplayer.has_multiplayer_peer() or enemy.multiplayer.is_server():
 		if not perception_comp.target_spotted.is_connected(Callable(enemy, "_on_target_spotted")):
 			perception_comp.target_spotted.connect(Callable(enemy, "_on_target_spotted"))
 		if not perception_comp.target_lost.is_connected(Callable(enemy, "_on_target_lost")):

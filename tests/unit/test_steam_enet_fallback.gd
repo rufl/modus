@@ -32,8 +32,10 @@ func test_server_creation_with_enet_when_steam_unavailable() -> void:
 	var err = peer.create_server(7777, 8)
 
 	assert_eq(err, OK, "ENet server creation should succeed")
-	assert_true(peer.get_connection_status() == MultiplayerPeer.CONNECTION_CONNECTED,
-		"ENet server should be connected")
+	assert_true(
+		peer.get_connection_status() == MultiplayerPeer.CONNECTION_CONNECTED,
+		"ENet server should be connected"
+	)
 
 	# Clean up
 	peer.close()
@@ -84,8 +86,7 @@ func test_fallback_to_enet_config_setting() -> void:
 		# If fallback_to_enet is not specified, default should be true
 		var fallback_enabled = connection.get("fallback_to_enet", true)
 
-		assert_typeof(fallback_enabled, TYPE_BOOL,
-			"fallback_to_enet should be a boolean")
+		assert_typeof(fallback_enabled, TYPE_BOOL, "fallback_to_enet should be a boolean")
 	else:
 		pass_test("Connection settings not found in config")
 
@@ -131,8 +132,11 @@ func test_fallback_error_handling() -> void:
 	assert_engine_error("p_port < 0 || p_port > 65535")
 
 	assert_ne(err, OK, "Invalid port should fail")
-	assert_ne(peer.get_connection_status(), MultiplayerPeer.CONNECTION_CONNECTED,
-		"Should not be connected with invalid port")
+	assert_ne(
+		peer.get_connection_status(),
+		MultiplayerPeer.CONNECTION_CONNECTED,
+		"Should not be connected with invalid port"
+	)
 
 
 ## Test: Multiple fallback attempts
@@ -147,7 +151,7 @@ func test_multiple_fallback_attempts() -> void:
 	# Second attempt on same port should fail
 	var peer2 = ENetMultiplayerPeer.new()
 	var error2 = peer2.create_server(7779, 8)
-	assert_engine_error("Parameter \"host\" is null")
+	assert_engine_error('Parameter "host" is null')
 	assert_ne(error2, OK, "Second server on same port should fail")
 
 	# Third attempt on different port should succeed
@@ -223,8 +227,7 @@ func test_max_clients_configuration() -> void:
 		var peer = ENetMultiplayerPeer.new()
 		var err = peer.create_server(7781 + max_clients, max_clients)
 
-		assert_eq(err, OK,
-			"Server creation with %d max clients should succeed" % max_clients)
+		assert_eq(err, OK, "Server creation with %d max clients should succeed" % max_clients)
 
 		peer.close()
 		await get_tree().process_frame
@@ -252,8 +255,10 @@ func test_full_fallback_scenario() -> void:
 		var err = peer.create_server(7782, 8)
 
 		assert_eq(err, OK, "ENet fallback server creation should succeed")
-		assert_true(peer.get_connection_status() == MultiplayerPeer.CONNECTION_CONNECTED,
-			"ENet fallback server should be connected")
+		assert_true(
+			peer.get_connection_status() == MultiplayerPeer.CONNECTION_CONNECTED,
+			"ENet fallback server should be connected"
+		)
 
 		# Set as multiplayer peer
 		var original_peer = multiplayer.multiplayer_peer

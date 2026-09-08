@@ -138,8 +138,10 @@ func _test_no_memory_leaks(test_data: Dictionary) -> bool:
 
 	if not no_leak:
 		print(
-			"Potential memory leak detected: %d bytes after %d reloads"
-			% [memory_increase, reload_count]
+			(
+				"Potential memory leak detected: %d bytes after %d reloads"
+				% [memory_increase, reload_count]
+			)
 		)
 
 	return no_leak

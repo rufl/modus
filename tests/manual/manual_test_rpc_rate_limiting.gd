@@ -3,6 +3,7 @@ extends SceneTree
 # Manual test for RPC rate limiting
 # Run with: godot --headless --path . --script tests/manual_test_rpc_rate_limiting.gd
 
+
 func _init():
 	print("\n=== Manual RPC Rate Limiting Test ===\n")
 
@@ -87,10 +88,17 @@ func _init():
 	# Summary
 	print("\n=== Test Summary ===")
 	var all_passed = (
-		result1 == true and result2 == false and result3 == true and
-		result4 == true and result5 == false and result6 == true and
-		result7 == true and result8 == false and result9 == true and
-		result10 == true and result11 == false
+		result1 == true
+		and result2 == false
+		and result3 == true
+		and result4 == true
+		and result5 == false
+		and result6 == true
+		and result7 == true
+		and result8 == false
+		and result9 == true
+		and result10 == true
+		and result11 == false
 	)
 
 	if all_passed:

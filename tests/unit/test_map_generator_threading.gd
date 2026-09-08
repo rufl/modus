@@ -6,14 +6,17 @@ extends ModusGutTestBase
 const MapGeneratorScript: GDScript = preload("res://game/scripts/map_generator/map_generator.gd")
 var map_generator: Node
 
+
 func before_each() -> void:
 	map_generator = MapGeneratorScript.new()
 	add_child_autofree(map_generator)
+
 
 func after_each() -> void:
 	if map_generator:
 		map_generator.cancel_generation()
 		map_generator = null
+
 
 ## Test that threaded generation starts and completes
 func test_threaded_generation_completes() -> void:
@@ -22,9 +25,7 @@ func test_threaded_generation_completes() -> void:
 
 	var signals_received := {"started": false, "completed": false, "scene": null}
 
-	map_generator.generation_started.connect(func() -> void:
-		signals_received["started"] = true
-	)
+	map_generator.generation_started.connect(func() -> void: signals_received["started"] = true)
 
 	map_generator.generation_completed.connect(
 		func(scene: PackedScene, _metadata: Dictionary) -> void:
@@ -58,6 +59,7 @@ func test_threaded_generation_completes() -> void:
 	)
 	generated_map.free()
 
+
 ## Test that phase profiling tracks time for each phase
 func test_phase_profiling_tracks_times() -> void:
 	var config := GenerationConfig.new()
@@ -66,8 +68,7 @@ func test_phase_profiling_tracks_times() -> void:
 	var result := {"metadata": {}}
 
 	map_generator.generation_completed.connect(
-		func(_scene: PackedScene, meta: Dictionary) -> void:
-			result["metadata"] = meta
+		func(_scene: PackedScene, meta: Dictionary) -> void: result["metadata"] = meta
 	)
 
 	map_generator.generate_map("test_profiling", config)
@@ -81,28 +82,14 @@ func test_phase_profiling_tracks_times() -> void:
 
 	var metadata: Dictionary = result["metadata"]
 	assert_true(metadata.has("phase_times"), "Metadata should contain phase_times")
-	assert_true(
-		metadata.has("generation_time"),
-		"Metadata should contain generation_time"
-	)
+	assert_true(metadata.has("generation_time"), "Metadata should contain generation_time")
 
 	var phase_times: Dictionary = metadata.get("phase_times", {})
-	assert_true(
-		phase_times.has("grid_layout"),
-		"Should track grid_layout phase time"
-	)
-	assert_true(
-		phase_times.has("shape_grammar"),
-		"Should track shape_grammar phase time"
-	)
-	assert_true(
-		phase_times.has("hallway_generation"),
-		"Should track hallway_generation phase time"
-	)
-	assert_true(
-		phase_times.has("cave_generation"),
-		"Should track cave_generation phase time"
-	)
+	assert_true(phase_times.has("grid_layout"), "Should track grid_layout phase time")
+	assert_true(phase_times.has("shape_grammar"), "Should track shape_grammar phase time")
+	assert_true(phase_times.has("hallway_generation"), "Should track hallway_generation phase time")
+	assert_true(phase_times.has("cave_generation"), "Should track cave_generation phase time")
+
 
 ## Test that generation can be cancelled
 func test_generation_can_be_cancelled() -> void:
@@ -111,9 +98,7 @@ func test_generation_can_be_cancelled() -> void:
 
 	var signals_received := {"cancelled": false}
 
-	map_generator.generation_cancelled.connect(func() -> void:
-		signals_received["cancelled"] = true
-	)
+	map_generator.generation_cancelled.connect(func() -> void: signals_received["cancelled"] = true)
 
 	map_generator.generate_map("test_cancel", config)
 
@@ -124,14 +109,9 @@ func test_generation_can_be_cancelled() -> void:
 	# Wait for cancellation to process
 	await get_tree().create_timer(0.2).timeout
 
-	assert_true(
-		signals_received["cancelled"],
-		"Generation should have been cancelled"
-	)
-	assert_false(
-		map_generator.is_generating,
-		"Should not be generating after cancel"
-	)
+	assert_true(signals_received["cancelled"], "Generation should have been cancelled")
+	assert_false(map_generator.is_generating, "Should not be generating after cancel")
+
 
 ## Test that generation progress signals are emitted
 func test_generation_progress_signals() -> void:
@@ -157,15 +137,9 @@ func test_generation_progress_signals() -> void:
 		elapsed += 0.1
 
 	var progress_phases: Array = result["phases"]
-	assert_gt(
-		progress_phases.size(),
-		0,
-		"Should have emitted progress for at least one phase"
-	)
-	assert_true(
-		"grid_layout" in progress_phases,
-		"Should have emitted progress for grid_layout"
-	)
+	assert_gt(progress_phases.size(), 0, "Should have emitted progress for at least one phase")
+	assert_true("grid_layout" in progress_phases, "Should have emitted progress for grid_layout")
+
 
 ## Test that metadata includes map size and seed hash
 func test_metadata_includes_config_info() -> void:
@@ -175,8 +149,7 @@ func test_metadata_includes_config_info() -> void:
 	var result := {"metadata": {}}
 
 	map_generator.generation_completed.connect(
-		func(_scene: PackedScene, meta: Dictionary) -> void:
-			result["metadata"] = meta
+		func(_scene: PackedScene, meta: Dictionary) -> void: result["metadata"] = meta
 	)
 
 	map_generator.generate_map("test_metadata", config)
@@ -195,6 +168,7 @@ func test_metadata_includes_config_info() -> void:
 	var map_size: Array = metadata.get("map_size", [])
 	assert_eq(map_size[0], 128, "Map size X should be 128")
 	assert_eq(map_size[1], 128, "Map size Y should be 128")
+
 
 ## Test that generation doesn't start if already generating
 func test_prevents_concurrent_generation() -> void:
@@ -221,6 +195,7 @@ func test_prevents_concurrent_generation() -> void:
 		await get_tree().create_timer(0.1).timeout
 		elapsed += 0.1
 
+
 ## Test that total generation time is tracked
 func test_total_generation_time_tracked() -> void:
 	var config := GenerationConfig.new()
@@ -229,8 +204,7 @@ func test_total_generation_time_tracked() -> void:
 	var result := {"metadata": {}}
 
 	map_generator.generation_completed.connect(
-		func(_scene: PackedScene, meta: Dictionary) -> void:
-			result["metadata"] = meta
+		func(_scene: PackedScene, meta: Dictionary) -> void: result["metadata"] = meta
 	)
 
 	map_generator.generate_map("test_total_time", config)
@@ -243,10 +217,7 @@ func test_total_generation_time_tracked() -> void:
 		elapsed += 0.1
 
 	var metadata: Dictionary = result["metadata"]
-	assert_true(
-		metadata.has("generation_time"),
-		"Should track total generation time"
-	)
+	assert_true(metadata.has("generation_time"), "Should track total generation time")
 	var total_time: float = metadata.get("generation_time", 0.0)
 	assert_gt(total_time, 0, "Total generation time should be greater than 0")
 
@@ -256,13 +227,11 @@ func test_total_generation_time_tracked() -> void:
 	for phase_name: String in phase_times:
 		phase_sum += phase_times[phase_name]
 
-	assert_ge(
-		total_time,
-		phase_sum,
-		"Total time should be at least the sum of phase times"
-	)
+	assert_ge(total_time, phase_sum, "Total time should be at least the sum of phase times")
+
 
 ## Test performance target helper methods
+
 
 func test_performance_target_helpers() -> void:
 	# Test map size targets

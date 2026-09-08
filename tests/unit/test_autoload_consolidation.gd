@@ -23,7 +23,9 @@ func test_gamecore_has_constants() -> void:
 		GameManagerScript.PATH_CFG,
 	]
 	for path: String in resource_paths:
-		assert_true(DirAccess.dir_exists_absolute(path), "Resource directory should exist: %s" % path)
+		assert_true(
+			DirAccess.dir_exists_absolute(path), "Resource directory should exist: %s" % path
+		)
 
 
 func test_gamecore_has_child_services() -> void:
@@ -33,10 +35,16 @@ func test_gamecore_has_child_services() -> void:
 		await gm.ready
 
 	if gm:
-		assert_not_null(gm.get_core_system("localization"), "GameCore should have localization child")
+		assert_not_null(
+			gm.get_core_system("localization"), "GameCore should have localization child"
+		)
 		assert_not_null(gm.get_core_system("mod_loader"), "GameCore should have mod_loader child")
-		assert_not_null(gm.get_core_system("state_manager"), "GameCore should have state_manager child")
-		assert_not_null(gm.get_core_system("blood_effects"), "GameCore should have blood_effects child")
+		assert_not_null(
+			gm.get_core_system("state_manager"), "GameCore should have state_manager child"
+		)
+		assert_not_null(
+			gm.get_core_system("blood_effects"), "GameCore should have blood_effects child"
+		)
 
 
 func test_get_service_returns_child_services() -> void:
@@ -70,9 +78,7 @@ func test_localization_service_methods() -> void:
 		assert_has_method(localization, "translate", "Should have translate method")
 		assert_has_method(localization, "load_language", "Should have load_language method")
 		assert_has_method(
-			localization,
-			"get_available_languages",
-			"Should have get_available_languages method"
+			localization, "get_available_languages", "Should have get_available_languages method"
 		)
 
 
@@ -121,7 +127,9 @@ func test_blood_effects_service_methods() -> void:
 
 
 func test_constants_backward_compatibility() -> void:
-	assert_eq(LegacyConstants.BUS_MASTER, GameManagerScript.BUS_MASTER, "Bus constants should match")
+	assert_eq(
+		LegacyConstants.BUS_MASTER, GameManagerScript.BUS_MASTER, "Bus constants should match"
+	)
 	assert_eq(
 		LegacyConstants.GROUP_PLAYER, GameManagerScript.GROUP_PLAYER, "Group constants should match"
 	)

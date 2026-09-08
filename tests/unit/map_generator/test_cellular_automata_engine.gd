@@ -11,10 +11,12 @@ const Cell = preload("res://game/scripts/map_generator/cell.gd")
 var engine: CellularAutomataEngine
 var rng: RandomNumberGenerator
 
+
 func before_each():
 	engine = CellularAutomataEngine.new()
 	rng = RandomNumberGenerator.new()
 	rng.seed = 12345  # Fixed seed for deterministic tests
+
 
 func test_generate_area_creates_cave_cells():
 	# Arrange
@@ -29,6 +31,7 @@ func test_generate_area_creates_cave_cells():
 	var cave_count := _count_cells_in_region(grid, region, Cell.Type.CAVE)
 	assert_gt(cave_count, 0, "Should generate at least some cave cells")
 
+
 func test_generate_area_creates_outdoor_cells():
 	# Arrange
 	var grid_size := Vector2i(20, 20)
@@ -41,6 +44,7 @@ func test_generate_area_creates_outdoor_cells():
 	# Assert - should have some outdoor cells in the region
 	var outdoor_count := _count_cells_in_region(grid, region, Cell.Type.OUTDOOR)
 	assert_gt(outdoor_count, 0, "Should generate at least some outdoor cells")
+
 
 func test_generate_area_respects_region_bounds():
 	# Arrange
@@ -56,8 +60,12 @@ func test_generate_area_respects_region_bounds():
 		for x in range(grid_size.x):
 			var pos := Vector2i(x, y)
 			if not region.has_point(pos):
-				assert_eq(grid[y][x].type, Cell.Type.EMPTY,
-					"Cells outside region should remain empty at (%d, %d)" % [x, y])
+				assert_eq(
+					grid[y][x].type,
+					Cell.Type.EMPTY,
+					"Cells outside region should remain empty at (%d, %d)" % [x, y]
+				)
+
 
 func test_generate_area_with_zero_iterations_warns():
 	# Arrange
@@ -70,6 +78,7 @@ func test_generate_area_with_zero_iterations_warns():
 	# Should still generate something (uses 1 iteration minimum)
 	var cave_count := _count_cells_in_region(grid, region, Cell.Type.CAVE)
 	assert_gt(cave_count, 0, "Should generate cells even with 0 iterations (uses minimum 1)")
+
 
 func test_generate_area_with_invalid_cell_type_errors():
 	# Arrange
@@ -84,6 +93,7 @@ func test_generate_area_with_invalid_cell_type_errors():
 	# Assert - should not generate any cells
 	var room_count := _count_cells_in_region(grid, region, Cell.Type.ROOM)
 	assert_eq(room_count, 0, "Should not generate cells with invalid type")
+
 
 func test_deterministic_generation_with_same_seed():
 	# Arrange
@@ -105,8 +115,12 @@ func test_deterministic_generation_with_same_seed():
 	# Assert - grids should be identical
 	for y in range(grid_size.y):
 		for x in range(grid_size.x):
-			assert_eq(grid1[y][x].type, grid2[y][x].type,
-				"Grids should be identical with same seed at (%d, %d)" % [x, y])
+			assert_eq(
+				grid1[y][x].type,
+				grid2[y][x].type,
+				"Grids should be identical with same seed at (%d, %d)" % [x, y]
+			)
+
 
 func test_ca_iterations_create_organic_shapes():
 	# Arrange
@@ -144,6 +158,7 @@ func test_ca_iterations_create_organic_shapes():
 		var cluster_ratio := float(clustered_cells) / float(total_cells)
 		assert_gt(cluster_ratio, 0.5, "Most cells should be clustered (organic shapes)")
 
+
 func test_edge_smoothing_removes_isolated_cells():
 	# Arrange
 	var grid_size := Vector2i(10, 10)
@@ -158,6 +173,7 @@ func test_edge_smoothing_removes_isolated_cells():
 
 	# Assert - isolated cell should be removed
 	assert_eq(grid[5][5].type, Cell.Type.EMPTY, "Isolated cell should be removed")
+
 
 func test_edge_smoothing_fills_small_gaps():
 	# Arrange
@@ -181,6 +197,7 @@ func test_edge_smoothing_fills_small_gaps():
 	# Assert - gap should be filled
 	assert_eq(grid[5][5].type, Cell.Type.CAVE, "Small gap should be filled")
 
+
 ## Helper: Create empty grid
 func _create_empty_grid(size: Vector2i) -> Array[Array]:
 	var grid: Array[Array] = []
@@ -191,6 +208,7 @@ func _create_empty_grid(size: Vector2i) -> Array[Array]:
 			row[x] = Cell.new(Cell.Type.EMPTY)
 		grid.append(row)
 	return grid
+
 
 ## Helper: Count cells of a specific type in a region
 func _count_cells_in_region(grid: Array[Array], region: Rect2i, cell_type: Cell.Type) -> int:

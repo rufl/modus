@@ -69,9 +69,7 @@ func _generate() -> void:
 	nav_region.owner = level_root
 
 	# Weather Interaction
-	var weather_scn_path: String = (
-		"res://game/world/actors/weather/weather_controller.tscn"
-	)
+	var weather_scn_path: String = "res://game/world/actors/weather/weather_controller.tscn"
 	if ResourceLoader.exists(weather_scn_path):
 		var wc: Node3D = load(weather_scn_path).instantiate()
 		wc.name = "WeatherController"

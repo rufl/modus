@@ -1,8 +1,6 @@
 extends ModusGutTestBase
 
-const MapLODManagerScript := preload(
-	"res://game/scripts/map_generator/lod_manager.gd"
-)
+const MapLODManagerScript := preload("res://game/scripts/map_generator/lod_manager.gd")
 
 
 func test_mesh_without_imported_lods_is_not_replaced() -> void:

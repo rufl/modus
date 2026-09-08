@@ -46,8 +46,10 @@ func spawn_prop() -> Node3D:
 	var scene_path: String = _get_scene_path()
 	if scene_path.is_empty():
 		push_warning(
-			"[LootPropSpawner] No scene is registered for prop type: %s"
-			% PropType.keys()[prop_type]
+			(
+				"[LootPropSpawner] No scene is registered for prop type: %s"
+				% PropType.keys()[prop_type]
+			)
 		)
 		return null
 	if not ResourceLoader.exists(scene_path):
@@ -156,9 +158,7 @@ func _get_configuration_warnings() -> PackedStringArray:
 
 	var scene_path: String = _get_scene_path()
 	if scene_path.is_empty():
-		warnings.append(
-			"No prop scene is registered for type: %s" % PropType.keys()[prop_type]
-		)
+		warnings.append("No prop scene is registered for type: %s" % PropType.keys()[prop_type])
 	elif not ResourceLoader.exists(scene_path):
 		warnings.append("Prop scene not found: %s" % scene_path)
 

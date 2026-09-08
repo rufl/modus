@@ -40,8 +40,11 @@ func test_property_final_state_consistency() -> void:
 		var actual_final_weapon = _simulate_rapid_switching(switch_sequence)
 
 		# Property: Final weapon should match last requested weapon
-		assert_eq(actual_final_weapon, final_weapon,
-			"Iteration %d: Final weapon should be %d after rapid switching" % [i, final_weapon])
+		assert_eq(
+			actual_final_weapon,
+			final_weapon,
+			"Iteration %d: Final weapon should be %d after rapid switching" % [i, final_weapon]
+		)
 
 
 ## Property: Weapon state synchronization with rate limiting
@@ -61,8 +64,11 @@ func test_property_state_sync_with_rate_limiting() -> void:
 				accepted_count += 1
 
 		# Property: All rate-limited switches should be accepted
-		assert_eq(accepted_count, switch_sequence.size(),
-			"Iteration %d: All rate-limited switches should be accepted" % i)
+		assert_eq(
+			accepted_count,
+			switch_sequence.size(),
+			"Iteration %d: All rate-limited switches should be accepted" % i
+		)
 
 
 ## Property: Weapon state consistency across multiple clients
@@ -78,12 +84,13 @@ func test_property_multi_client_consistency() -> void:
 		var client2_state = _simulate_client_receive_state(server_state)
 
 		# Property: All clients should have same weapon state
-		assert_eq(client1_state, server_state,
-			"Iteration %d: Client 1 should match server state" % i)
-		assert_eq(client2_state, server_state,
-			"Iteration %d: Client 2 should match server state" % i)
-		assert_eq(client1_state, client2_state,
-			"Iteration %d: Clients should match each other" % i)
+		assert_eq(
+			client1_state, server_state, "Iteration %d: Client 1 should match server state" % i
+		)
+		assert_eq(
+			client2_state, server_state, "Iteration %d: Client 2 should match server state" % i
+		)
+		assert_eq(client1_state, client2_state, "Iteration %d: Clients should match each other" % i)
 
 
 ## Property: Rejected switches don't change weapon state
@@ -118,8 +125,10 @@ func test_property_switch_confirmation_flow() -> void:
 			var response = _wait_for_switch_response()
 
 			# Property: Response should be either confirm or reject
-			assert_true(response == "confirm" or response == "reject",
-				"Iteration %d: Response should be confirm or reject" % i)
+			assert_true(
+				response == "confirm" or response == "reject",
+				"Iteration %d: Response should be confirm or reject" % i
+			)
 
 			if response == "confirm":
 				# Weapon should change
@@ -142,8 +151,11 @@ func test_property_no_desync_after_packet_loss() -> void:
 		var client_final = _sync_with_server(received_sequence, server_final)
 
 		# Property: Client should eventually match server
-		assert_eq(client_final, server_final,
-			"Iteration %d: Client should sync with server after packet loss" % i)
+		assert_eq(
+			client_final,
+			server_final,
+			"Iteration %d: Client should sync with server after packet loss" % i
+		)
 
 
 ## Helper: Generate random weapon switch sequence
@@ -171,15 +183,14 @@ func _generate_rate_limited_sequence(rate_limit: int, time_window: float) -> Arr
 ## Helper: Simulate rapid weapon switching
 var _current_weapon = 0
 var _switch_requests = []
+
+
 func _simulate_rapid_switching(sequence: Array) -> int:
 	_current_weapon = 0
 	_switch_requests.clear()
 
 	for weapon_id in sequence:
-		_switch_requests.append({
-			"weapon": weapon_id,
-			"time": Time.get_ticks_msec()
-		})
+		_switch_requests.append({"weapon": weapon_id, "time": Time.get_ticks_msec()})
 		_current_weapon = weapon_id
 
 	return _current_weapon
@@ -187,13 +198,15 @@ func _simulate_rapid_switching(sequence: Array) -> int:
 
 ## Helper: Check if switch is allowed by rate limit
 var _switch_history = []
+
+
 func _is_switch_allowed(weapon_id: int, rate_limit: int) -> bool:
 	var current_time = Time.get_ticks_msec()
 	var time_window = 1000  # 1 second in milliseconds
 
 	# Remove old entries
-	_switch_history = _switch_history.filter(func(entry):
-		return current_time - entry.time < time_window
+	_switch_history = _switch_history.filter(
+		func(entry): return current_time - entry.time < time_window
 	)
 
 	# Check if under rate limit
@@ -207,9 +220,7 @@ func _is_switch_allowed(weapon_id: int, rate_limit: int) -> bool:
 ## Helper: Simulate server weapon switch
 func _simulate_server_weapon_switch(weapon_id: int) -> Dictionary:
 	return {
-		"weapon_id": weapon_id,
-		"timestamp": Time.get_ticks_msec(),
-		"server_authoritative": true
+		"weapon_id": weapon_id, "timestamp": Time.get_ticks_msec(), "server_authoritative": true
 	}
 
 

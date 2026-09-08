@@ -38,7 +38,9 @@ func _ready() -> void:
 	)
 	var is_editor: bool = OS.has_feature("editor") or Engine.is_editor_hint()
 
-	is_dedicated = (has_dedicated_feature or has_dedicated_arg or has_dedicated_env) and not is_editor
+	is_dedicated = (
+		(has_dedicated_feature or has_dedicated_arg or has_dedicated_env) and not is_editor
+	)
 
 	if is_dedicated:
 		var gm: Node = _get_game_manager()
@@ -74,8 +76,7 @@ func _load_config() -> void:
 				var logger: Node = gm.get_core_system("logger")
 				if logger and logger.has_method("info"):
 					logger.info(
-						"[DedicatedServer] Loaded JSON5 config: %s" % config,
-						"DedicatedServer"
+						"[DedicatedServer] Loaded JSON5 config: %s" % config, "DedicatedServer"
 					)
 			return
 
@@ -134,8 +135,7 @@ func _save_config() -> void:
 			var logger: Node = gm.get_core_system("logger")
 			if logger and logger.has_method("info"):
 				logger.info(
-					"[DedicatedServer] Saved config to: %s" % CONFIG_PATH,
-					"DedicatedServer"
+					"[DedicatedServer] Saved config to: %s" % CONFIG_PATH, "DedicatedServer"
 				)
 
 
@@ -182,8 +182,7 @@ func _load_mod(mod_name: String) -> bool:
 				var logger: Node = gm.get_core_system("logger")
 				if logger and logger.has_method("info"):
 					logger.info(
-						"[DedicatedServer] Loaded PCK mod: %s" % mod_name,
-						"DedicatedServer"
+						"[DedicatedServer] Loaded PCK mod: %s" % mod_name, "DedicatedServer"
 					)
 			mod_loaded.emit(mod_name)
 			return true
@@ -200,8 +199,7 @@ func _load_mod(mod_name: String) -> bool:
 				var logger2: Node = gm.get_core_system("logger")
 				if logger2 and logger2.has_method("info"):
 					logger2.info(
-						"[DedicatedServer] Loaded ZIP mod: %s" % mod_name,
-						"DedicatedServer"
+						"[DedicatedServer] Loaded ZIP mod: %s" % mod_name, "DedicatedServer"
 					)
 			mod_loaded.emit(mod_name)
 			return true
@@ -339,7 +337,7 @@ func _start_steam_game_server() -> void:
 	var gm: Node = _get_game_manager()
 	if not gm:
 		return
-	
+
 	var ns: Node = gm.get_core_system("network")
 	var steam: Node = ns.steam_manager if ns else null
 	if not steam or not steam.is_steam_running():

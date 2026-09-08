@@ -31,7 +31,9 @@ func test_slipgate_script_exists() -> void:
 
 func test_teleporter_platform_script_exists() -> void:
 	var path: String = "res://game/world/actors/traversal/teleporter_platform.gd"
-	assert_true(FileAccess.file_exists(path), "Teleporter platform script should exist at: %s" % path)
+	assert_true(
+		FileAccess.file_exists(path), "Teleporter platform script should exist at: %s" % path
+	)
 
 
 func test_rope_script_exists() -> void:
@@ -81,7 +83,9 @@ func test_spikes_script_exists() -> void:
 
 func test_day_night_controller_exists() -> void:
 	var path: String = "res://game/world/actors/day_night_controller.gd"
-	assert_true(FileAccess.file_exists(path), "Day/night controller script should exist at: %s" % path)
+	assert_true(
+		FileAccess.file_exists(path), "Day/night controller script should exist at: %s" % path
+	)
 
 
 func test_liquid_volume_exists() -> void:

@@ -145,8 +145,7 @@ func validate_hit_with_lag_compensation(
 				logger.warning(
 					(
 						"[Combat] Lag-compensated hit rejected: "
-						+ "distance %.1fm exceeds max range %.1fm"
-						% [distance, max_range]
+						+ "distance %.1fm exceeds max range %.1fm" % [distance, max_range]
 					),
 					"Combat"
 				)

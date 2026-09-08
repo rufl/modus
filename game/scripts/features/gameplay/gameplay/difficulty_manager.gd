@@ -126,7 +126,9 @@ func _recalculate_multipliers() -> void:
 				"Core"
 			)
 		else:
-			print(msg % [current_player_count, current_health_multiplier, current_damage_multiplier])
+			print(
+				msg % [current_player_count, current_health_multiplier, current_damage_multiplier]
+			)
 	else:
 		print(msg % [current_player_count, current_health_multiplier, current_damage_multiplier])
 

@@ -64,8 +64,10 @@ func _test_frame_time_within_bounds(test_data: Dictionary) -> bool:
 
 	if not within_bounds:
 		print(
-			"Frame time increase too large: %.2f ms (baseline: %.2f ms, new: %.2f ms)"
-			% [difference, baseline_avg, new_avg]
+			(
+				"Frame time increase too large: %.2f ms (baseline: %.2f ms, new: %.2f ms)"
+				% [difference, baseline_avg, new_avg]
+			)
 		)
 
 	# Property callbacks run up to 100 times inside one GUT test. Free each

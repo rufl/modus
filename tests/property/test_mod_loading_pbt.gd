@@ -46,8 +46,14 @@ func _test_registration_methods_exist(test_data: Dictionary) -> bool:
 	var has_get_registered_components: bool = content.contains("func get_registered_components(")
 	var has_get_registered_entities: bool = content.contains("func get_registered_entities(")
 
-	return (has_register_feature and has_register_component and has_register_entity and
-			has_get_registered_features and has_get_registered_components and has_get_registered_entities)
+	return (
+		has_register_feature
+		and has_register_component
+		and has_register_entity
+		and has_get_registered_features
+		and has_get_registered_components
+		and has_get_registered_entities
+	)
 
 
 func test_property_mod_manifest_includes_registration_fields() -> void:
@@ -69,19 +75,13 @@ func _test_manifest_fields(test_data: Dictionary) -> bool:
 	var manifest: Dictionary = {
 		"name": "TestMod",
 		"version": "1.0.0",
-		"features": {
-			"custom_feature": {
-				"name": "Custom Feature",
-				"module_path": "res://test/feature.gd",
-				"enabled": true
-			}
+		"features":
+		{
+			"custom_feature":
+			{"name": "Custom Feature", "module_path": "res://test/feature.gd", "enabled": true}
 		},
-		"components": {
-			"CustomComponent": "scripts/custom_component.gd"
-		},
-		"entities": {
-			"CustomEntity": "scenes/custom_entity.tscn"
-		}
+		"components": {"CustomComponent": "scripts/custom_component.gd"},
+		"entities": {"CustomEntity": "scenes/custom_entity.tscn"}
 	}
 
 	# Property: Manifest should contain all registration fields
@@ -94,8 +94,14 @@ func _test_manifest_fields(test_data: Dictionary) -> bool:
 	var components_is_dict: bool = typeof(manifest.get("components")) == TYPE_DICTIONARY
 	var entities_is_dict: bool = typeof(manifest.get("entities")) == TYPE_DICTIONARY
 
-	return (has_features and has_components and has_entities and
-			features_is_dict and components_is_dict and entities_is_dict)
+	return (
+		has_features
+		and has_components
+		and has_entities
+		and features_is_dict
+		and components_is_dict
+		and entities_is_dict
+	)
 
 
 func test_property_mod_dependency_resolution_exists() -> void:
@@ -154,5 +160,9 @@ func _test_config_override_exists(test_data: Dictionary) -> bool:
 	var has_apply_weapon_overrides: bool = content.contains("func _apply_weapon_overrides(")
 	var has_apply_enemy_overrides: bool = content.contains("func _apply_enemy_overrides(")
 
-	return (has_apply_mod_config and has_apply_system_overrides and
-			has_apply_weapon_overrides and has_apply_enemy_overrides)
+	return (
+		has_apply_mod_config
+		and has_apply_system_overrides
+		and has_apply_weapon_overrides
+		and has_apply_enemy_overrides
+	)

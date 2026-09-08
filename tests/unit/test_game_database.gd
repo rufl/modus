@@ -3,14 +3,18 @@ extends ModusGutTestBase
 # Test MODUS Framework GameManager data service functionality
 # Converted from legacy GameDatabase to GameManager pattern
 
+
 func before_each() -> void:
 	await modus_setup()
+
 
 func after_each() -> void:
 	modus_teardown()
 
+
 func test_autoload_exists() -> void:
 	assert_autoload_exists("GameManager")
+
 
 func test_weapons_loaded() -> void:
 	assert_autoload_exists("GameManager")
@@ -26,7 +30,10 @@ func test_weapons_loaded() -> void:
 
 			# Verify at least one expected weapon exists
 			var has_expected_weapon: bool = weapons.has("pistol") or weapons.has("shotgun")
-			assert_true(has_expected_weapon, "Should have at least one expected weapon (pistol or shotgun)")
+			assert_true(
+				has_expected_weapon, "Should have at least one expected weapon (pistol or shotgun)"
+			)
+
 
 func test_enemies_loaded() -> void:
 	assert_autoload_exists("GameManager")
@@ -40,6 +47,7 @@ func test_enemies_loaded() -> void:
 			assert_not_null(enemies, "Enemies data should not be null")
 			assert_false(enemies.is_empty(), "Enemies should be loaded from JSON")
 
+
 func test_get_weapon_data() -> void:
 	assert_autoload_exists("GameManager")
 
@@ -52,9 +60,12 @@ func test_get_weapon_data() -> void:
 			if pistol.is_empty():
 				# Try shotgun as fallback
 				var shotgun: Dictionary = data_service.call("get_weapon_data", "shotgun")
-				assert_false(shotgun.is_empty(), "get_weapon_data should return data for at least one weapon")
+				assert_false(
+					shotgun.is_empty(), "get_weapon_data should return data for at least one weapon"
+				)
 			else:
 				assert_true(true, "get_weapon_data returned pistol data successfully")
+
 
 func test_get_enemy_data() -> void:
 	assert_autoload_exists("GameManager")
@@ -68,6 +79,7 @@ func test_get_enemy_data() -> void:
 			# Just verify method works without crashing
 			assert_eq(typeof(grunt), TYPE_DICTIONARY, "get_enemy_data should return dictionary")
 
+
 func test_get_nonexistent() -> void:
 	assert_autoload_exists("GameManager")
 
@@ -78,5 +90,8 @@ func test_get_nonexistent() -> void:
 			var result: Dictionary = data_service.call("get_weapon_data", "nonexistent")
 
 			# Should return empty dictionary, not crash
-			assert_eq(typeof(result), TYPE_DICTIONARY, "Invalid ID should return dictionary (empty is acceptable)")
-
+			assert_eq(
+				typeof(result),
+				TYPE_DICTIONARY,
+				"Invalid ID should return dictionary (empty is acceptable)"
+			)

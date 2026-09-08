@@ -89,6 +89,7 @@ func _deferred_warning(message: String) -> void:
 func _deferred_error(message: String) -> void:
 	push_error(message)
 
+
 # Performance targets (in milliseconds)
 const PHASE_TIME_TARGETS: Dictionary = {
 	"grid_layout": 500,
@@ -106,7 +107,10 @@ const PHASE_TIME_TARGETS: Dictionary = {
 }
 
 # Map size time targets (in milliseconds)
-const MAP_SIZE_TARGETS: Dictionary = {Vector2i(128, 128): 15000, Vector2i(256, 256): 30000}  # 15 seconds  # 30 seconds
+const MAP_SIZE_TARGETS: Dictionary = {
+	Vector2i(128, 128): 15000,  # 15 seconds
+	Vector2i(256, 256): 30000,  # 30 seconds
+}
 
 
 func _ready() -> void:

@@ -32,7 +32,7 @@ func _run_tests() -> void:
 		await get_tree().process_frame
 		_run_tests()
 		return
-		
+
 	_test_subsystems_exist()
 	_test_audio_service()
 	_test_event_service()
@@ -50,7 +50,7 @@ func _test_subsystems_exist() -> void:
 	var events = manager.get_core_system("events") if manager else null
 	var logger = manager.get_core_system("logger") if manager else null
 	var globals = manager.get_core_system("globals") if manager else null
-	
+
 	if manager and audio and events and logger and globals:
 		test_results["subsystems_exist"] = true
 		print("  ✓ All subsystems exist")
@@ -72,7 +72,7 @@ func _test_audio_service() -> void:
 	print("[TEST] Testing AudioService...")
 	var manager: Node = get_node_or_null("/root/GameManager")
 	var audio = manager.get_core_system("audio") if manager else null
-	
+
 	if manager and audio:
 		# Test method exists
 		if audio.has_method("play_sound_3d"):
@@ -88,7 +88,7 @@ func _test_event_service() -> void:
 	print("[TEST] Testing EventService...")
 	var manager: Node = get_node_or_null("/root/GameManager")
 	var events = manager.get_core_system("events") if manager else null
-	
+
 	if manager and events:
 		# Test signals exist
 		var has_signals: bool = (
@@ -107,14 +107,10 @@ func _test_logger_service() -> void:
 	print("[TEST] Testing LogService...")
 	var manager: Node = get_node_or_null("/root/GameManager")
 	var logger = manager.get_core_system("logger") if manager else null
-	
+
 	if manager and logger:
 		# Test logging methods exist
-		if (
-			logger.has_method("info")
-			and logger.has_method("debug")
-			and logger.has_method("error")
-		):
+		if logger.has_method("info") and logger.has_method("debug") and logger.has_method("error"):
 			test_results["logger_service_works"] = true
 			logger.info("Test log message", "Test")
 			print("  ✓ LogService has expected methods")
@@ -128,7 +124,7 @@ func _test_globals_service() -> void:
 	print("[TEST] Testing GlobalState...")
 	var manager: Node = get_node_or_null("/root/GameManager")
 	var globals = manager.get_core_system("globals") if manager else null
-	
+
 	if manager and globals:
 		# Test properties exist
 		if "sensitivity" in globals and "current_save_slot" in globals:

@@ -5,7 +5,8 @@ extends GutTest
 
 
 # Test helper: Mock FeatureModule for testing
-class MockFeatureModule extends FeatureModule:
+class MockFeatureModule:
+	extends FeatureModule
 	var initialize_called: bool = false
 	var shutdown_called: bool = false
 	var reload_config_called: bool = false
@@ -149,9 +150,7 @@ func test_feature_module_get_config_value_with_default() -> void:
 	assert_eq(feature.get_config_value("max_health"), 100, "Should return config value")
 	assert_eq(feature.get_config_value("speed"), 5.0, "Should return float config value")
 	assert_eq(
-		feature.get_config_value("missing_key", 42),
-		42,
-		"Should return default for missing key"
+		feature.get_config_value("missing_key", 42), 42, "Should return default for missing key"
 	)
 	assert_null(
 		feature.get_config_value("missing_key"), "Should return null when no default provided"
@@ -225,9 +224,7 @@ func test_feature_module_empty_config() -> void:
 	feature.config = {}
 
 	assert_null(feature.get_config_value("any_key"), "Empty config should return null")
-	assert_eq(
-		feature.get_config_value("any_key", "default"), "default", "Should use default value"
-	)
+	assert_eq(feature.get_config_value("any_key", "default"), "default", "Should use default value")
 
 
 func test_feature_module_config_with_nested_values() -> void:

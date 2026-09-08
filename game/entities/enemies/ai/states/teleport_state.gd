@@ -68,9 +68,7 @@ func _teleport_to(dest: Vector3) -> void:
 		var effects: Node = gm.get_core_system("effects")
 		if effects:
 			# spawn_explosion(position, explosion_type, damage, radius)
-			effects.spawn_explosion.rpc(
-				body.global_position, 0, 0.0, 0.5
-			)
+			effects.spawn_explosion.rpc(body.global_position, 0, 0.0, 0.5)
 
 	# Move
 	body.global_position = dest + Vector3.UP * 0.5
@@ -80,14 +78,10 @@ func _teleport_to(dest: Vector3) -> void:
 		var effects2: Node = gm.get_core_system("effects")
 		if effects2:
 			# spawn_explosion(position, explosion_type, damage, radius)
-			effects2.spawn_explosion.rpc(
-				body.global_position, 0, 0.0, 0.5
-			)
+			effects2.spawn_explosion.rpc(body.global_position, 0, 0.0, 0.5)
 
 	_timer = teleport_cooldown
 	if gm:
 		var logger: Node = gm.get_core_system("logger")
 		if logger:
-			logger.info(
-				"[Teleport] %s blinked to %s" % [body.name, dest], "Enemy"
-			)
+			logger.info("[Teleport] %s blinked to %s" % [body.name, dest], "Enemy")

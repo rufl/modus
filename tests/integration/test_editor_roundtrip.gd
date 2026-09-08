@@ -59,9 +59,7 @@ func test_editor_save_export_reload_preserves_key_actors() -> void:
 	assert_eq(reloaded_level.get_node("DoorTrigger").actor_id, "door_trigger")
 	reloaded_level.free()
 
-	assert_true(
-		save_system.export_as_mod(EXPORT_DIR), "Level should export as a mod folder"
-	)
+	assert_true(save_system.export_as_mod(EXPORT_DIR), "Level should export as a mod folder")
 	var exported_level_path := EXPORT_DIR + "level.tscn"
 	var exported_info_path := EXPORT_DIR + "level_info.json"
 	assert_true(FileAccess.file_exists(exported_level_path), "Mod folder should contain level.tscn")

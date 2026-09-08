@@ -117,7 +117,9 @@ func _open_log_file() -> void:
 func _exit_tree() -> void:
 	if _log_file:
 		if _log_file.is_open():
-			_log_file.store_line("=== Game Log Ended: %s ===" % Time.get_datetime_string_from_system())
+			_log_file.store_line(
+				"=== Game Log Ended: %s ===" % Time.get_datetime_string_from_system()
+			)
 			_log_file.close()
 		_log_file = null
 

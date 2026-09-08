@@ -23,7 +23,7 @@ static func get_service() -> GameplaySvc:
 	var tree: SceneTree = Engine.get_main_loop() as SceneTree
 	if not tree:
 		return null
-	
+
 	# Prefer the canonical GameManager service locator.
 	var gm: Node = tree.root.get_node_or_null("/root/GameManager")
 	if gm and gm.has_method("get_core_system"):
@@ -119,7 +119,9 @@ func _init_subsystems() -> void:
 func _load_and_add(path: String, node_name: String) -> Node:
 	var gm: Node = _get_game_manager()
 	# GameManager owns these core services before gameplay is constructed.
-	var core_id: String = "player" if node_name == "PlayerSvc" else "match" if node_name == "MatchSvc" else ""
+	var core_id: String = (
+		"player" if node_name == "PlayerSvc" else "match" if node_name == "MatchSvc" else ""
+	)
 	if gm and not core_id.is_empty():
 		var existing: Node = gm.get_core_system(core_id)
 		if existing:
@@ -161,7 +163,10 @@ func _load_and_add(path: String, node_name: String) -> Node:
 func _get_game_manager() -> Node:
 	var parent_node := get_parent()
 	while parent_node:
-		if parent_node.has_method("get_core_system") and parent_node.has_method("register_core_system"):
+		if (
+			parent_node.has_method("get_core_system")
+			and parent_node.has_method("register_core_system")
+		):
 			return parent_node
 		parent_node = parent_node.get_parent()
 

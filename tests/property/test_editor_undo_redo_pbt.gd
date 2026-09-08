@@ -31,59 +31,61 @@ func test_property_undo_redo_round_trip() -> void:
 	if not editor_main:
 		pass_test("Editor not available for testing")
 		return
-	
+
 	# Check if editor has undo/redo methods
 	if not editor_main.has_method("_setup_undo_redo"):
 		pass_test("_setup_undo_redo method not yet implemented")
 		return
-	
+
 	for i in range(ITERATIONS):
 		# Generate random action
 		var action_type: String = _random_action_type()
 		var initial_state: Dictionary = _capture_editor_state()
-		
+
 		# Perform action
 		_perform_action(action_type)
 		var _modified_state: Dictionary = _capture_editor_state()
-		
+
 		# Undo action
 		if undo_redo.has_undo():
 			undo_redo.undo()
-		
+
 		var final_state: Dictionary = _capture_editor_state()
-		
+
 		# Property: Final state should match initial state
-		assert_eq(final_state, initial_state,
-			"Iteration %d: Undo should restore original state for action %s" % [i, action_type])
+		assert_eq(
+			final_state,
+			initial_state,
+			"Iteration %d: Undo should restore original state for action %s" % [i, action_type]
+		)
 
 
 ## Property: Multiple undo/redo operations maintain consistency
 func test_property_multiple_undo_redo_consistency() -> void:
 	var action_history: Array[String] = []
 	var state_history: Array[Dictionary] = []
-	
+
 	# Capture initial state
 	state_history.append(_capture_editor_state())
-	
+
 	# Perform multiple actions
 	for i in range(10):
 		var action_type: String = _random_action_type()
 		action_history.append(action_type)
-		
+
 		_perform_action(action_type)
 		state_history.append(_capture_editor_state())
-	
+
 	# Undo all actions
 	for i in range(action_history.size()):
 		if undo_redo.has_undo():
 			undo_redo.undo()
-	
+
 	var final_state: Dictionary = _capture_editor_state()
 	var initial_state: Dictionary = state_history[0]
-	
+
 	# Property: Undoing all actions should restore initial state
-	assert_eq(final_state, initial_state,
-		"Undoing all actions should restore initial state")
+	assert_eq(final_state, initial_state, "Undoing all actions should restore initial state")
 
 
 ## Property: Redo after undo restores modified state
@@ -91,24 +93,27 @@ func test_property_redo_after_undo() -> void:
 	for i in range(ITERATIONS):
 		var action_type: String = _random_action_type()
 		var _initial_state: Dictionary = _capture_editor_state()
-		
+
 		# Perform action
 		_perform_action(action_type)
 		var modified_state: Dictionary = _capture_editor_state()
-		
+
 		# Undo
 		if undo_redo.has_undo():
 			undo_redo.undo()
-		
+
 		# Redo
 		if undo_redo.has_redo():
 			undo_redo.redo()
-		
+
 		var final_state: Dictionary = _capture_editor_state()
-		
+
 		# Property: Redo should restore modified state
-		assert_eq(final_state, modified_state,
-			"Iteration %d: Redo should restore modified state for action %s" % [i, action_type])
+		assert_eq(
+			final_state,
+			modified_state,
+			"Iteration %d: Redo should restore modified state for action %s" % [i, action_type]
+		)
 
 
 ## Property: Undo/redo with place_block action
@@ -116,22 +121,25 @@ func test_property_place_block_undo_redo() -> void:
 	for i in range(50):
 		var position: Vector3 = _random_position()
 		var block_type: String = _random_block_type()
-		
+
 		var initial_blocks: int = _count_blocks()
-		
+
 		# Place block
 		_perform_place_block(position, block_type)
 		var _blocks_after_place: int = _count_blocks()
-		
+
 		# Undo
 		if undo_redo.has_undo():
 			undo_redo.undo()
-		
+
 		var blocks_after_undo: int = _count_blocks()
-		
+
 		# Property: Block count should return to initial
-		assert_eq(blocks_after_undo, initial_blocks,
-			"Iteration %d: Undo place_block should restore block count" % i)
+		assert_eq(
+			blocks_after_undo,
+			initial_blocks,
+			"Iteration %d: Undo place_block should restore block count" % i
+		)
 
 
 ## Property: Undo/redo with delete_node action
@@ -141,22 +149,25 @@ func test_property_delete_node_undo_redo() -> void:
 		var position: Vector3 = _random_position()
 		var block_type: String = _random_block_type()
 		_perform_place_block(position, block_type)
-		
+
 		var blocks_before_delete: int = _count_blocks()
-		
+
 		# Delete the block
 		_perform_delete_node(position)
 		var _blocks_after_delete: int = _count_blocks()
-		
+
 		# Undo delete
 		if undo_redo.has_undo():
 			undo_redo.undo()
-		
+
 		var blocks_after_undo: int = _count_blocks()
-		
+
 		# Property: Block count should be restored
-		assert_eq(blocks_after_undo, blocks_before_delete,
-			"Iteration %d: Undo delete_node should restore block" % i)
+		assert_eq(
+			blocks_after_undo,
+			blocks_before_delete,
+			"Iteration %d: Undo delete_node should restore block" % i
+		)
 
 
 ## Property: Undo/redo with paint_block action
@@ -165,19 +176,20 @@ func test_property_paint_block_undo_redo() -> void:
 		var position: Vector3 = _random_position()
 		var initial_color: Color = Color.WHITE
 		var new_color: Color = _random_color()
-		
+
 		# Paint block
 		_perform_paint_block(position, new_color)
-		
+
 		# Undo
 		if undo_redo.has_undo():
 			undo_redo.undo()
-		
+
 		var final_color: Color = _get_block_color(position)
-		
+
 		# Property: Color should be restored
-		assert_eq(final_color, initial_color,
-			"Iteration %d: Undo paint_block should restore color" % i)
+		assert_eq(
+			final_color, initial_color, "Iteration %d: Undo paint_block should restore color" % i
+		)
 
 
 ## Helper: Generate random action type
@@ -237,7 +249,7 @@ func _perform_delete_node(position: Vector3) -> void:
 ## Helper: Perform paint_block action
 func _perform_paint_block(position: Vector3, color: Color) -> void:
 	var old_color: Color = _get_block_color(position)
-	
+
 	# Create undo/redo action
 	undo_redo.create_action("Paint Block")
 	undo_redo.add_do_method(Callable(self, "_do_paint_block").bind(position, color))
@@ -247,6 +259,8 @@ func _perform_paint_block(position: Vector3, color: Color) -> void:
 
 ## Helper: Do place block
 var _blocks: Dictionary = {}
+
+
 func _do_place_block(position: Vector3, block_type: String) -> void:
 	var key: String = _position_to_key(position)
 	_blocks[key] = {"type": block_type, "color": Color.WHITE}
@@ -289,11 +303,7 @@ func _get_block_color(position: Vector3) -> Color:
 
 ## Helper: Generate random position
 func _random_position() -> Vector3:
-	return Vector3(
-		randf_range(-10.0, 10.0),
-		randf_range(0.0, 10.0),
-		randf_range(-10.0, 10.0)
-	)
+	return Vector3(randf_range(-10.0, 10.0), randf_range(0.0, 10.0), randf_range(-10.0, 10.0))
 
 
 ## Helper: Generate random block type

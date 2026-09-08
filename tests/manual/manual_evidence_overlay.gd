@@ -4,26 +4,81 @@ extends CanvasLayer
 ## Test-only recorder overlay. F8 switches between gameplay and evidence review.
 
 const CHECKLIST: Array[Dictionary] = [
-	{"id": "main_menu_actions", "title": "Main menu opens and every visible primary action responds."},
+	{
+		"id": "main_menu_actions",
+		"title": "Main menu opens and every visible primary action responds."
+	},
 	{"id": "showcase_route", "title": "Showcase loads through the intended main-menu route."},
-	{"id": "player_spawn", "title": "The local player spawns safely without falling through geometry."},
-	{"id": "pause_resume_exit", "title": "Pause, resume, and clean exit behavior work without trapping input."},
-	{"id": "keyboard_mouse_movement", "title": "Keyboard and mouse movement, look, jump, sprint, crouch, and pause work."},
-	{"id": "gamepad_control", "title": "A real gamepad navigates UI and controls the player without keyboard cross-talk."},
-	{"id": "advanced_movement", "title": "Available slide, dash, dodge, wall-run, rope, rocket-jump, and fly paths recover cleanly."},
-	{"id": "collision_recovery", "title": "Slopes, stairs, ceilings, ledges, collisions, and respawn do not trap the player."},
+	{
+		"id": "player_spawn",
+		"title": "The local player spawns safely without falling through geometry."
+	},
+	{
+		"id": "pause_resume_exit",
+		"title": "Pause, resume, and clean exit behavior work without trapping input."
+	},
+	{
+		"id": "keyboard_mouse_movement",
+		"title": "Keyboard and mouse movement, look, jump, sprint, crouch, and pause work."
+	},
+	{
+		"id": "gamepad_control",
+		"title": "A real gamepad navigates UI and controls the player without keyboard cross-talk."
+	},
+	{
+		"id": "advanced_movement",
+		"title":
+		"Available slide, dash, dodge, wall-run, rope, rocket-jump, and fly paths recover cleanly."
+	},
+	{
+		"id": "collision_recovery",
+		"title": "Slopes, stairs, ceilings, ledges, collisions, and respawn do not trap the player."
+	},
 	{"id": "weapon_loop", "title": "A loaded weapon is visible and can fire, reload, and switch."},
 	{"id": "ammo_hud", "title": "Ammo and weapon HUD state match every action performed."},
-	{"id": "enemy_result", "title": "A valid enemy receives damage and reaches a bounded death state."},
-	{"id": "combat_feedback", "title": "Muzzle, tracer, impact, blood, hit, audio, and directional feedback are readable."},
-	{"id": "world_rendering", "title": "Collision, lighting, environment, and navigation-visible areas render as intended."},
-	{"id": "interaction_hazard", "title": "At least one visible interactable or hazard responds, or its absence is recorded."},
-	{"id": "pickup_inventory", "title": "A loot or inventory pickup is collected and used where available."},
-	{"id": "save_load", "title": "Save, reload, and restored state are observed through the gameplay path."},
-	{"id": "sample_mod", "title": "Bundled sample-mod behavior is observed separately from automated proof."},
-	{"id": "hud_readability", "title": "Crosshair, health, ammo, prompts, and pause surfaces remain readable."},
-	{"id": "focus_accessibility", "title": "Keyboard/gamepad focus, clipping, contrast, scaling, color, and motion comfort are reviewed."},
-	{"id": "runtime_log_review", "title": "The runtime log and teardown are reviewed for errors, repeated exceptions, and severe warnings."},
+	{
+		"id": "enemy_result",
+		"title": "A valid enemy receives damage and reaches a bounded death state."
+	},
+	{
+		"id": "combat_feedback",
+		"title": "Muzzle, tracer, impact, blood, hit, audio, and directional feedback are readable."
+	},
+	{
+		"id": "world_rendering",
+		"title":
+		"Collision, lighting, environment, and navigation-visible areas render as intended."
+	},
+	{
+		"id": "interaction_hazard",
+		"title": "At least one visible interactable or hazard responds, or its absence is recorded."
+	},
+	{
+		"id": "pickup_inventory",
+		"title": "A loot or inventory pickup is collected and used where available."
+	},
+	{
+		"id": "save_load",
+		"title": "Save, reload, and restored state are observed through the gameplay path."
+	},
+	{
+		"id": "sample_mod",
+		"title": "Bundled sample-mod behavior is observed separately from automated proof."
+	},
+	{
+		"id": "hud_readability",
+		"title": "Crosshair, health, ammo, prompts, and pause surfaces remain readable."
+	},
+	{
+		"id": "focus_accessibility",
+		"title":
+		"Keyboard/gamepad focus, clipping, contrast, scaling, color, and motion comfort are reviewed."
+	},
+	{
+		"id": "runtime_log_review",
+		"title":
+		"The runtime log and teardown are reviewed for errors, repeated exceptions, and severe warnings."
+	},
 ]
 
 @export var auto_start: bool = true
@@ -34,14 +89,16 @@ const CHECKLIST: Array[Dictionary] = [
 @onready var _review_shade: ColorRect = %ReviewShade
 @onready var _safe_margins: MarginContainer = %SafeMargins
 @onready var _review_panel: PanelContainer = %ReviewPanel
-@onready var _panel_margins: MarginContainer = $Root/SafeMargins/ReviewAlign/ReviewPanel/PanelMargins
-@onready var _content: VBoxContainer = $Root/SafeMargins/ReviewAlign/ReviewPanel/PanelMargins/Content
-@onready var _title_label: Label = $Root/SafeMargins/ReviewAlign/ReviewPanel/PanelMargins/Content/TitleLabel
+@onready var _panel_margins: MarginContainer = _review_panel.get_node("PanelMargins")
+@onready var _content: VBoxContainer = _panel_margins.get_node("Content")
+@onready
+var _title_label: Label = $Root/SafeMargins/ReviewAlign/ReviewPanel/PanelMargins/Content/TitleLabel
 @onready var _progress_label: Label = %ProgressLabel
 @onready var _progress_bar: ProgressBar = %ProgressBar
 @onready var _current_test_label: Label = %CurrentTestLabel
-@onready var _instruction_label: Label = $Root/SafeMargins/ReviewAlign/ReviewPanel/PanelMargins/Content/InstructionLabel
-@onready var _notes_label: Label = $Root/SafeMargins/ReviewAlign/ReviewPanel/PanelMargins/Content/NotesLabel
+@onready var _instruction_label: Label = _content.get_node("InstructionLabel")
+@onready
+var _notes_label: Label = $Root/SafeMargins/ReviewAlign/ReviewPanel/PanelMargins/Content/NotesLabel
 @onready var _notes: TextEdit = %Notes
 @onready var _result_status: Label = %ResultStatus
 @onready var _result_buttons: BoxContainer = %ResultButtons
@@ -108,8 +165,10 @@ func _start_session() -> void:
 	var input_devices := OS.get_environment("MODUS_MANUAL_INPUTS").strip_edges()
 	if tester.is_empty() or input_devices.is_empty():
 		_show_setup_failure(
-			"Tester and input-device metadata are required. Launch with "
-			+ "tools/run_manual_showcase_session.sh --tester NAME --input DEVICES."
+			(
+				"Tester and input-device metadata are required. Launch with "
+				+ "tools/run_manual_showcase_session.sh --tester NAME --input DEVICES."
+			)
 		)
 		return
 
@@ -121,10 +180,13 @@ func _start_session() -> void:
 		"scene": "main_menu_to_showcase",
 		"build_identity": OS.get_environment("MODUS_MANUAL_BUILD"),
 		"renderer": RenderingServer.get_current_rendering_method(),
-		"resolution": "%dx%d" % [DisplayServer.window_get_size().x, DisplayServer.window_get_size().y],
+		"resolution":
+		"%dx%d" % [DisplayServer.window_get_size().x, DisplayServer.window_get_size().y],
 	}
 	if _timer.start_session(session, metadata).is_empty():
-		_show_setup_failure("The evidence CSV could not be created. Check the configured output directory.")
+		_show_setup_failure(
+			"The evidence CSV could not be created. Check the configured output directory."
+		)
 		return
 
 	_current_index = 0
@@ -146,7 +208,9 @@ func _record_result(result: String) -> void:
 		return
 	var notes := _notes.text.strip_edges()
 	if result != "pass" and notes.is_empty():
-		_result_status.text = "%s needs a short reason before it can be recorded." % result.to_upper()
+		_result_status.text = (
+			"%s needs a short reason before it can be recorded." % result.to_upper()
+		)
 		_result_status.add_theme_color_override("font_color", Color(1.0, 0.58, 0.58))
 		_notes.grab_focus()
 		return

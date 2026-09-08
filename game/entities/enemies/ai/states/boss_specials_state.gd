@@ -75,9 +75,7 @@ func _perform_stomp() -> void:
 	if gm:
 		var logger: Node = gm.get_core_system("logger")
 		if logger:
-			logger.info(
-				"[Boss] %s performed Ground Pound!" % body.name, "Enemy"
-			)
+			logger.info("[Boss] %s performed Ground Pound!" % body.name, "Enemy")
 
 
 func _try_charge() -> void:
@@ -103,9 +101,7 @@ func _start_charge(target_pos: Vector3) -> void:
 	if gm2:
 		var logger2: Node = gm2.get_core_system("logger")
 		if logger2:
-			logger2.info(
-				"[Boss] %s is charging!" % controller.parent_body.name, "Enemy"
-			)
+			logger2.info("[Boss] %s is charging!" % controller.parent_body.name, "Enemy")
 
 
 func _process_charge(delta: float) -> void:

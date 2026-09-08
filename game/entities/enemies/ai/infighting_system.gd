@@ -96,11 +96,15 @@ func _load_config() -> void:
 		if tier_aggression_enabled == DEFAULT_TIER_AGGRESSION_ENABLED:
 			tier_aggression_enabled = ta.get("enabled", tier_aggression_enabled)
 		if lower_tier_attacks_higher == DEFAULT_LOWER_TIER_ATTACKS_HIGHER:
-			lower_tier_attacks_higher = ta.get("lower_tier_attacks_higher", lower_tier_attacks_higher)
+			lower_tier_attacks_higher = ta.get(
+				"lower_tier_attacks_higher", lower_tier_attacks_higher
+			)
 		if same_tier_infighting == DEFAULT_SAME_TIER_INFIGHTING:
 			same_tier_infighting = ta.get("same_tier_infighting", same_tier_infighting)
 		if higher_tier_attacks_lower == DEFAULT_HIGHER_TIER_ATTACKS_LOWER:
-			higher_tier_attacks_lower = ta.get("higher_tier_attacks_lower", higher_tier_attacks_lower)
+			higher_tier_attacks_lower = ta.get(
+				"higher_tier_attacks_lower", higher_tier_attacks_lower
+			)
 
 
 func _process(delta: float) -> void:
@@ -305,9 +309,7 @@ func _end_infighting() -> void:
 	var gm: Node = get_node_or_null("/root/GameManager")
 	var logger: Node = gm.get_core_system("logger") if gm else null
 	if logger:
-		logger.info(
-			"[InfightingSystem] %s ended infighting" % _parent.name, "Enemy"
-		)
+		logger.info("[InfightingSystem] %s ended infighting" % _parent.name, "Enemy")
 
 	# Restore original target
 	if original_target and is_instance_valid(original_target):

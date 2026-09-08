@@ -3,6 +3,7 @@ extends SceneTree
 # Simple synchronous test for RPC rate limiting
 # Run with: godot --headless --path . --script tests/simple_rate_limit_test.gd
 
+
 func _init():
 	print("\n=== Simple RPC Rate Limiting Test ===\n")
 
@@ -36,7 +37,9 @@ func _init():
 		print("  send_chat_message: %.1f calls/sec" % chat_limit)
 
 	if has_status_limit:
-		var status_limit = network_manager._rpc_rate_limits["update_player_status"]["calls_per_second"]
+		var status_limit = (
+			network_manager._rpc_rate_limits["update_player_status"]["calls_per_second"]
+		)
 		print("  update_player_status: %.1f calls/sec" % status_limit)
 
 	if has_place_limit:
@@ -71,10 +74,15 @@ func _init():
 	# Summary
 	print("\n=== Test Summary ===")
 	var all_configured = (
-		has_chat_limit and has_status_limit and has_place_limit and
-		has_delete_limit and has_paint_limit and has_state_limit and has_mode_limit
+		has_chat_limit
+		and has_status_limit
+		and has_place_limit
+		and has_delete_limit
+		and has_paint_limit
+		and has_state_limit
+		and has_mode_limit
 	)
-	var basic_works = (result1 == true and result2 == false)
+	var basic_works = result1 == true and result2 == false
 
 	if all_configured and basic_works:
 		print("✓ All tests PASSED")

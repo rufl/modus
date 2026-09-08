@@ -42,7 +42,9 @@ func test_service_has_required_methods() -> void:
 	]
 
 	for method_name: String in required_methods:
-		assert_true(_loot_svc.has_method(method_name), "LootSvc should have method: %s" % method_name)
+		assert_true(
+			_loot_svc.has_method(method_name), "LootSvc should have method: %s" % method_name
+		)
 
 
 # =============================================================================
@@ -71,7 +73,9 @@ func test_item_rarity_from_tier() -> void:
 	]
 	for tier: ItemRarity.Tier in tiers:
 		var r: ItemRarity = ItemRarity.from_tier(tier)
-		assert_not_null(r, "ItemRarity.from_tier should return valid instance for tier: %s" % str(tier))
+		assert_not_null(
+			r, "ItemRarity.from_tier should return valid instance for tier: %s" % str(tier)
+		)
 
 
 func test_item_rarity_has_name() -> void:
@@ -81,8 +85,12 @@ func test_item_rarity_has_name() -> void:
 	if not rarity:
 		return
 
-	var has_name_property: bool = "name" in rarity or rarity.has_method("get_name") or "display_name" in rarity
-	assert_true(has_name_property, "ItemRarity should have name/display_name property or get_name() method")
+	var has_name_property: bool = (
+		"name" in rarity or rarity.has_method("get_name") or "display_name" in rarity
+	)
+	assert_true(
+		has_name_property, "ItemRarity should have name/display_name property or get_name() method"
+	)
 
 
 # =============================================================================

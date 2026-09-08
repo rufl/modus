@@ -10,7 +10,7 @@ signal close_requested
 @onready var right_panel: VBoxContainer = %RightPanel
 @onready var title_label: Label = %Title
 @onready var info_title: Label = %InfoTitle
-@onready var scroll_container: ScrollContainer = $SafeMargins/CenterContainer/MainPanel/PanelMargins/MainContainer/LeftPanel/ScrollContainer
+@onready var scroll_container: ScrollContainer = left_panel.get_node("ScrollContainer")
 @onready var mod_list: VBoxContainer = %ModList
 @onready var description_label: Label = %DescriptionLabel
 @onready var author_label: Label = %AuthorLabel
@@ -143,7 +143,9 @@ func _add_mod_entry(mod_info: Dictionary) -> void:
 	var mod_name: String = mod_info.get("name", mod_id)
 	var enabled: bool = mod_info.get("enabled", false)
 	var priority: int = mod_info.get("priority", 0)
-	var state := _tr("mods_state_enabled", "Enabled") if enabled else _tr("mods_state_disabled", "Disabled")
+	var state := (
+		_tr("mods_state_enabled", "Enabled") if enabled else _tr("mods_state_disabled", "Disabled")
+	)
 
 	var button := Button.new()
 	button.custom_minimum_size.y = 48
@@ -164,7 +166,9 @@ func _add_mod_entry(mod_info: Dictionary) -> void:
 func _on_mod_selected(mod_info: Dictionary) -> void:
 	_selected_mod = mod_info
 	_selected_mod_id = mod_info.get("id", "")
-	description_label.text = mod_info.get("description", _tr("mods_no_description", "No description provided."))
+	description_label.text = mod_info.get(
+		"description", _tr("mods_no_description", "No description provided.")
+	)
 	author_label.text = _tr("mods_author", "Author: {author}").format(
 		{"author": mod_info.get("author", _tr("mods_unknown", "Unknown"))}
 	)
@@ -232,7 +236,9 @@ func _change_priority(delta: int) -> void:
 
 func _on_reload_pressed() -> void:
 	if not _mod_loader or not _mod_loader.has_method("reload_mods"):
-		_set_status(_tr("mods_reload_failed", "Reload failed because the mod loader is unavailable."), true)
+		_set_status(
+			_tr("mods_reload_failed", "Reload failed because the mod loader is unavailable."), true
+		)
 		return
 
 	_mod_loader.reload_mods()
@@ -278,8 +284,7 @@ func _update_responsive_layout() -> void:
 	for side: String in ["margin_left", "margin_right", "margin_top", "margin_bottom"]:
 		safe_margins.add_theme_constant_override(side, edge)
 	main_panel.custom_minimum_size = Vector2(
-		clampf(size.x - edge * 2.0, 320.0, 900.0),
-		clampf(size.y - edge * 2.0, 400.0, 560.0)
+		clampf(size.x - edge * 2.0, 320.0, 900.0), clampf(size.y - edge * 2.0, 400.0, 560.0)
 	)
 	main_container.vertical = narrow
 	main_container.add_theme_constant_override("separation", 14 if narrow else 24)

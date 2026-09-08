@@ -193,9 +193,7 @@ func on_damage_received(attacker: Node3D, _damage_amount: float) -> void:
 				)
 		else:
 			if logger:
-				logger.info(
-					"[AI] Retaliating against: " + " " + str(attacker.name), "Enemy"
-				)
+				logger.info("[AI] Retaliating against: " + " " + str(attacker.name), "Enemy")
 
 		# Low Health Check (Crisis Mode)
 		if health and health.max_health > 0:
@@ -314,9 +312,7 @@ func _try_reflect_grenade(grenade: Node3D) -> void:
 
 	var audio: Node = gm.get_core_system("audio") if gm else null
 	if audio and parent_body:
-		audio.play_sfx_at_position(
-			"grabbed", parent_body.global_position
-		)
+		audio.play_sfx_at_position("grabbed", parent_body.global_position)
 
 
 func set_active(active: bool) -> void:

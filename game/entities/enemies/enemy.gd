@@ -84,7 +84,8 @@ var sync_visible: bool = true:
 	get:
 		return visible
 
-@onready var visuals: SkeletalCharacterVisuals = get_node_or_null("Visuals") as SkeletalCharacterVisuals
+@onready
+var visuals: SkeletalCharacterVisuals = get_node_or_null("Visuals") as SkeletalCharacterVisuals
 
 var _ai_update_rate: float = 1.0  # 1.0 = full rate, 0.5 = half rate, etc.
 var _ai_update_offset: float = 0.0  # Stagger updates across frames
@@ -413,8 +414,7 @@ func _get_tier_health_floor(tier_value: int) -> float:
 	var cfg: Node = gm.get_core_system("config") if gm else null
 	if cfg:
 		var configured: Variant = cfg.get_value(
-			"ai_combat.tier_system.tier_%d.health_max" % tier_value,
-			fallback.get(tier_value, 0.0)
+			"ai_combat.tier_system.tier_%d.health_max" % tier_value, fallback.get(tier_value, 0.0)
 		)
 		return float(configured)
 
@@ -1044,8 +1044,6 @@ func consume_ai_update_delta(delta: float) -> float:
 	var elapsed: float = _ai_elapsed_since_update
 	_ai_elapsed_since_update = 0.0
 	return elapsed
-
-
 
 
 # ============================================================================

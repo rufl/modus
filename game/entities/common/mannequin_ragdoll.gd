@@ -2,9 +2,7 @@ class_name MannequinRagdoll
 extends Node3D
 
 const MANNEQUIN_GLB_PATH: String = "res://game/art/models/mannequin_mesh.glb"
-const RagdollPartScript = preload(
-	"res://game/entities/enemies/dummy/physical_ragdoll_part.gd"
-)
+const RagdollPartScript = preload("res://game/entities/enemies/dummy/physical_ragdoll_part.gd")
 const GIB_THRESHOLD: float = 50.0
 
 signal blood_effect_requested(position: Vector3, direction: Vector3, intensity: float)

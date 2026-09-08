@@ -140,17 +140,13 @@ func validate_spawn_position() -> void:
 			if not result.is_empty():
 				_enemy.global_position = result.position + Vector3(0, 0.5, 0)
 				_enemy.velocity = Vector3.ZERO  # CRITICAL: Reset velocity after teleport
-				logger.info(
-					"[Enemy] Repositioned to ground: %s" % _enemy.global_position, "Enemy"
-				)
+				logger.info("[Enemy] Repositioned to ground: %s" % _enemy.global_position, "Enemy")
 				return
 
 		# Method 3: Last resort - push up significantly
 		_enemy.global_position.y += 5.0
 		_enemy.velocity = Vector3.ZERO  # CRITICAL: Reset velocity after teleport
-		logger.warning(
-			"[Enemy] Pushed upward as fallback: %s" % _enemy.global_position, "Enemy"
-		)
+		logger.warning("[Enemy] Pushed upward as fallback: %s" % _enemy.global_position, "Enemy")
 
 	# Capture valid position after all checks/adjustments are done
 	init_last_valid_position()
@@ -239,9 +235,7 @@ func check_stuck_in_geometry(_delta: float) -> void:
 					# Last resort: push up
 					_enemy.global_position.y += 3.0
 					_enemy.velocity = Vector3.ZERO  # CRITICAL: Reset velocity after teleport
-					logger.warning(
-						"[Enemy] %s pushed up as last resort" % _enemy.name, "Enemy"
-					)
+					logger.warning("[Enemy] %s pushed up as last resort" % _enemy.name, "Enemy")
 	else:
 		# Not stuck - update last valid position
 		_last_valid_position = _enemy.global_position

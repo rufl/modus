@@ -32,33 +32,40 @@ func start_logging(p_session_name: String = "") -> String:
 	if is_logging:
 		push_warning("[PerformanceLogger] Already logging")
 		return ""
-	
+
 	# Generate session name if not provided
 	if p_session_name.is_empty():
 		var datetime: Dictionary = Time.get_datetime_dict_from_system()
-		p_session_name = "session_%04d%02d%02d_%02d%02d%02d" % [
-			datetime.year, datetime.month, datetime.day,
-			datetime.hour, datetime.minute, datetime.second
-		]
-	
+		p_session_name = (
+			"session_%04d%02d%02d_%02d%02d%02d"
+			% [
+				datetime.year,
+				datetime.month,
+				datetime.day,
+				datetime.hour,
+				datetime.minute,
+				datetime.second
+			]
+		)
+
 	session_name = p_session_name
-	
+
 	# Create logs directory
 	var log_dir: String = "user://performance_logs"
 	if not DirAccess.dir_exists_absolute(log_dir):
 		DirAccess.make_dir_recursive_absolute(log_dir)
-	
+
 	# Create log file
 	var file_path: String = "%s/%s.csv" % [log_dir, session_name]
 	log_file = FileAccess.open(file_path, FileAccess.WRITE)
-	
+
 	if not log_file:
 		push_error("[PerformanceLogger] Failed to create log file: %s" % file_path)
 		return ""
-	
+
 	# Write CSV header
 	log_file.store_line("Time,FPS,FrameTime,Memory,ActivePools,VisibleEnemies")
-	
+
 	# Initialize tracking
 	is_logging = true
 	start_time = Time.get_ticks_msec() / 1000.0
@@ -67,12 +74,12 @@ func start_logging(p_session_name: String = "") -> String:
 	fps_samples.clear()
 	memory_samples.clear()
 	frame_time_samples.clear()
-	
+
 	set_process(true)
-	
+
 	logging_started.emit(session_name)
 	print("[PerformanceLogger] Started logging: %s" % file_path)
-	
+
 	return file_path
 
 
@@ -81,18 +88,18 @@ func stop_logging() -> void:
 	if not is_logging:
 		push_warning("[PerformanceLogger] Not currently logging")
 		return
-	
+
 	is_logging = false
 	set_process(false)
-	
+
 	# Write statistics summary
 	_write_statistics()
-	
+
 	# Close file
 	var file_path: String = log_file.get_path_absolute()
 	log_file.close()
 	log_file = null
-	
+
 	logging_stopped.emit(session_name, file_path)
 	print("[PerformanceLogger] Stopped logging: %s" % file_path)
 	print("[PerformanceLogger] Frames logged: %d" % frame_count)
@@ -101,10 +108,10 @@ func stop_logging() -> void:
 func _process(_delta: float) -> void:
 	if not is_logging:
 		return
-	
+
 	var current_time: float = Time.get_ticks_msec() / 1000.0
 	var elapsed: float = current_time - last_sample_time
-	
+
 	# Sample at configured interval
 	if elapsed >= sample_interval:
 		_log_frame()
@@ -114,38 +121,39 @@ func _process(_delta: float) -> void:
 func _log_frame() -> void:
 	if not log_file:
 		return
-	
+
 	# Calculate metrics
 	var elapsed_time: float = (Time.get_ticks_msec() / 1000.0) - start_time
 	var fps: float = Engine.get_frames_per_second()
 	# Convert to ms
 	var frame_time: float = Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0
 	# Convert to MB
-	var memory: float = (
-		Performance.get_monitor(Performance.MEMORY_STATIC) / 1024.0 / 1024.0
-	)
-	
+	var memory: float = Performance.get_monitor(Performance.MEMORY_STATIC) / 1024.0 / 1024.0
+
 	# Get game-specific metrics
 	var active_pools: int = _get_active_pool_count()
 	var visible_enemies: int = _get_visible_enemy_count()
-	
+
 	# Store samples for statistics
 	fps_samples.append(fps)
 	memory_samples.append(memory)
 	frame_time_samples.append(frame_time)
-	
+
 	# Write to CSV
-	log_file.store_line("%.1f,%.1f,%.2f,%.1f,%d,%d" % [
-		elapsed_time, fps, frame_time, memory, active_pools, visible_enemies
-	])
-	
+	log_file.store_line(
+		(
+			"%.1f,%.1f,%.2f,%.1f,%d,%d"
+			% [elapsed_time, fps, frame_time, memory, active_pools, visible_enemies]
+		)
+	)
+
 	frame_count += 1
 
 
 func _write_statistics() -> void:
 	if not log_file or fps_samples.is_empty():
 		return
-	
+
 	# Calculate statistics
 	var avg_fps: float = _calculate_average(fps_samples)
 	var min_fps: float = _calculate_min(fps_samples)
@@ -154,7 +162,7 @@ func _write_statistics() -> void:
 	var max_memory: float = _calculate_max(memory_samples)
 	var avg_frame_time: float = _calculate_average(frame_time_samples)
 	var max_frame_time: float = _calculate_max(frame_time_samples)
-	
+
 	# Write statistics section
 	log_file.store_line("")
 	log_file.store_line("# Statistics")
@@ -188,23 +196,23 @@ func _get_visible_enemy_count() -> int:
 	var gameplay_service: Node = gm.get_core_system("gameplay")
 	if not gameplay_service:
 		return 0
-	
+
 	# Try to get entity registry
 	if not ("entity_registry" in gameplay_service):
 		return 0
-	
+
 	var entity_registry: Node = gameplay_service.entity_registry
 	if not entity_registry or not entity_registry.has_method("get_all_enemies"):
 		return 0
-	
+
 	var enemies: Array = entity_registry.get_all_enemies()
-	
+
 	# Count visible enemies (in camera frustum)
 	var visible_count: int = 0
 	for enemy: Node in enemies:
 		if enemy is Node3D and enemy.is_visible_in_tree():
 			visible_count += 1
-	
+
 	return visible_count
 
 
@@ -244,7 +252,7 @@ func _calculate_max(samples: Array[float]) -> float:
 func get_current_statistics() -> Dictionary:
 	if fps_samples.is_empty():
 		return {}
-	
+
 	return {
 		"avg_fps": _calculate_average(fps_samples),
 		"min_fps": _calculate_min(fps_samples),

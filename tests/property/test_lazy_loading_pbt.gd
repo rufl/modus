@@ -122,7 +122,6 @@ func _test_lazy_loaded_feature_same_as_eager(test_data: Dictionary) -> bool:
 	if lazy_feature != null and eager_feature != null:
 		result = result and (lazy_feature is Node) and (eager_feature is Node)
 
-
 	return result
 
 

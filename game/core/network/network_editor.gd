@@ -208,9 +208,7 @@ func _sync_place_block(data: Dictionary) -> void:
 	if gm:
 		var logger: Variant = gm.get_core_system("logger")
 		if logger and logger.has_method("debug"):
-			logger.debug(
-				"[NetworkEditor] Syncing block placement from peer %d" % origin_peer
-			)
+			logger.debug("[NetworkEditor] Syncing block placement from peer %d" % origin_peer)
 	block_placed.emit(data)
 
 

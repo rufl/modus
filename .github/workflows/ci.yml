@@ -2,393 +2,254 @@ name: CI/CD Pipeline - MODUS Framework
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
 
 env:
-  GODOT_VERSION: "4.7"
-  EXPORT_NAME: "MODUS"
+  GODOT_VERSION: "4.7.2"
 
 jobs:
   code-quality:
     name: Code Quality & Formatting
     runs-on: ubuntu-latest
-    
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    
-    - name: Setup Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-    
-    - name: Install GDScript Toolkit
-      run: |
-        pip install gdtoolkit
-    
-    - name: Check GDScript Formatting
-      run: |
-        echo "Checking GDScript code formatting..."
-        gdformat --check --diff game/ tests/
-      continue-on-error: false
-    
-    - name: Run GDScript Linting
-      run: |
-        echo "Running GDScript linting..."
-        gdlint game/ tests/
-      continue-on-error: false
-    
-    - name: Auto-format GDScript (if needed)
-      if: failure()
-      run: |
-        echo "Auto-formatting GDScript files..."
-        gdformat game/ tests/
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add -A
-        git diff --staged --quiet || git commit -m "Auto-format GDScript files [skip ci]"
-    
-    - name: Push formatting changes
-      if: failure() && github.event_name == 'push'
-      uses: ad-m/github-push-action@master
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        branch: ${{ github.ref }}
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install GDScript Toolkit
+        run: python -m pip install gdtoolkit==4.5.0
+
+      - name: Check GDScript Formatting
+        run: gdformat --check --diff game/ tests/
+
+      - name: Run GDScript Linting
+        run: gdlint game/ tests/
 
   test:
     name: Run GUT Tests
     runs-on: ubuntu-latest
     needs: code-quality
-    container:
-      image: barichello/godot-ci:4.7
-    
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        lfs: true
-    
-    - name: Setup Godot Environment
-      run: |
-        mkdir -v -p ~/.local/share/godot/export_templates/
-        mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
-        
-        # Create test results directory
-        mkdir -p test-results
-        
-        # Verify Godot installation
-        godot --version
-        echo "Godot environment setup complete"
-    
-    - name: Cache import assets
-      uses: actions/cache@v3
-      with:
-        path: .godot/imported/
-        key: import-assets-${{ runner.os }}-${{ hashFiles('**/*.import') }}
-        restore-keys: |
-          import-assets-${{ runner.os }}-
-    
-    - name: Import project assets
-      run: |
-        echo "Importing project assets for headless execution..."
-        godot --headless --verbose --editor --quit
-        echo "Asset import completed"
-    
-    - name: Run Unit Tests (GUT Framework)
-      id: unit-tests
-      run: |
-        echo "=== Running GUT Unit Tests ==="
-        echo "Test suite: Unit tests (excluding benchmarks)"
-        echo "Start time: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
-        
-        # Run unit tests with proper error handling
-        godot --headless --script tests/runners/run_unit_tests_only.gd 2>&1 | tee test-results/unit-tests.log
-        
-        # Capture exit code
-        TEST_EXIT_CODE=${PIPESTATUS[0]}
-        echo "Unit tests exit code: $TEST_EXIT_CODE"
-        
-        # Parse test results
-        if [ -f "test-results/unit-tests.log" ]; then
-          PASSED=$(grep -c "✓" test-results/unit-tests.log || echo "0")
-          FAILED=$(grep -c "✗" test-results/unit-tests.log || echo "0")
-          echo "unit_tests_passed=$PASSED" >> $GITHUB_OUTPUT
-          echo "unit_tests_failed=$FAILED" >> $GITHUB_OUTPUT
-          echo "Unit tests: $PASSED passed, $FAILED failed"
-        fi
-        
-        # Fail if tests failed
-        if [ $TEST_EXIT_CODE -ne 0 ]; then
-          echo "::error::Unit tests failed with exit code $TEST_EXIT_CODE"
-          exit $TEST_EXIT_CODE
-        fi
-        
-        echo "Unit tests completed successfully"
-      continue-on-error: false
-    
-    - name: Run Property-Based Tests
-      id: property-tests
-      run: |
-        echo "=== Running Property-Based Tests ==="
-        echo "Test suite: Property-based tests (PBT)"
-        echo "Start time: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
-        
-        # Run property-based tests
-        godot --headless --script tests/runners/run_gut_tests.gd 2>&1 | tee test-results/property-tests.log
-        
-        # Capture exit code
-        TEST_EXIT_CODE=${PIPESTATUS[0]}
-        echo "Property tests exit code: $TEST_EXIT_CODE"
-        
-        # Parse test results
-        if [ -f "test-results/property-tests.log" ]; then
-          PASSED=$(grep -c "✓" test-results/property-tests.log || echo "0")
-          FAILED=$(grep -c "✗" test-results/property-tests.log || echo "0")
-          echo "property_tests_passed=$PASSED" >> $GITHUB_OUTPUT
-          echo "property_tests_failed=$FAILED" >> $GITHUB_OUTPUT
-          echo "Property tests: $PASSED passed, $FAILED failed"
-        fi
-        
-        # Fail if tests failed
-        if [ $TEST_EXIT_CODE -ne 0 ]; then
-          echo "::error::Property-based tests failed with exit code $TEST_EXIT_CODE"
-          exit $TEST_EXIT_CODE
-        fi
-        
-        echo "Property-based tests completed successfully"
-      continue-on-error: false
-    
-    - name: Run Benchmark Tests
-      id: benchmark-tests
-      run: |
-        echo "=== Running Benchmark Tests ==="
-        echo "Test suite: Performance benchmarks"
-        echo "Start time: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
-        echo "Note: Benchmark tests are informational and do not block deployment"
-        
-        # Run benchmark tests (non-blocking)
-        godot --headless --script tests/runners/run_benchmark_tests_only.gd 2>&1 | tee test-results/benchmark-tests.log || true
-        
-        # Parse benchmark results
-        if [ -f "test-results/benchmark-tests.log" ]; then
-          echo "Benchmark results captured"
-        fi
-        
-        echo "Benchmark tests completed"
-      continue-on-error: true
-    
-    - name: Generate Test Coverage Report
-      if: always()
-      run: |
-        echo "=== Test Coverage Summary ==="
-        echo "Generating comprehensive test report..."
-        
-        # Create coverage summary
-        cat > test-results/coverage-summary.md << EOF
-        # MODUS Framework Test Results
-        
-        **Test Run:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
-        **Branch:** ${{ github.ref_name }}
-        **Commit:** ${{ github.sha }}
-        
-        ## Test Results Summary
-        
-        ### Unit Tests
-        - Passed: ${{ steps.unit-tests.outputs.unit_tests_passed || 'N/A' }}
-        - Failed: ${{ steps.unit-tests.outputs.unit_tests_failed || 'N/A' }}
-        - Status: ${{ steps.unit-tests.outcome }}
-        
-        ### Property-Based Tests
-        - Passed: ${{ steps.property-tests.outputs.property_tests_passed || 'N/A' }}
-        - Failed: ${{ steps.property-tests.outputs.property_tests_failed || 'N/A' }}
-        - Status: ${{ steps.property-tests.outcome }}
-        
-        ### Benchmark Tests
-        - Status: ${{ steps.benchmark-tests.outcome }}
-        - Note: Benchmarks are informational only
-        
-        ## Test Logs
-        
-        Detailed test logs are available in the artifacts section.
-        EOF
-        
-        cat test-results/coverage-summary.md
-        
-        echo "Test coverage report generated"
-    
-    - name: Upload Test Results
-      if: always()
-      uses: actions/upload-artifact@v3
-      with:
-        name: test-results-${{ github.run_number }}
-        path: |
-          test-results/
-          logs/
-          *.log
-        retention-days: 30
-    
-    - name: Comment Test Results on PR
-      if: always() && github.event_name == 'pull_request'
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const fs = require('fs');
-          const coveragePath = 'test-results/coverage-summary.md';
-          
-          if (fs.existsSync(coveragePath)) {
-            const coverage = fs.readFileSync(coveragePath, 'utf8');
-            
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: coverage
-            });
-          }
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Install Godot
+        run: |
+          archive="Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          curl --fail --location --output "$RUNNER_TEMP/$archive" \
+            "https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/$archive"
+          unzip -q "$RUNNER_TEMP/$archive" -d "$RUNNER_TEMP/godot"
+          chmod +x "$RUNNER_TEMP/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64"
+          ln -s "$RUNNER_TEMP/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64" "$RUNNER_TEMP/godot/godot"
+          echo "$RUNNER_TEMP/godot" >> "$GITHUB_PATH"
+          mkdir -p test-results
+
+      - name: Cache import assets
+        uses: actions/cache@v4
+        with:
+          path: .godot/imported/
+          key: import-assets-${{ runner.os }}-${{ env.GODOT_VERSION }}-${{ hashFiles('**/*.import') }}
+          restore-keys: |
+            import-assets-${{ runner.os }}-${{ env.GODOT_VERSION }}-
+
+      - name: Import project assets
+        run: |
+          godot --version
+          godot --headless --verbose --path . --import
+
+      - name: Run Unit and Integration Tests
+        id: unit-tests
+        run: |
+          source tests/runners/headless_common.sh
+          modus_collect_gut_tests tests/unit tests/integration
+          modus_print_headless_selection
+          modus_run_godot godot --headless -s addons/gut/gut_cmdln.gd \
+            "${MODUS_GUT_TEST_ARGS[@]}" -gdisable_colors 2>&1 | tee test-results/unit-tests.log
+          # GUT's bootstrap can exit zero before running tests if imports fail.
+          grep -Eq '^[[:space:]]*Tests[[:space:]]+[1-9][0-9]*[[:space:]]*$' test-results/unit-tests.log
+
+      - name: Run Property-Based Tests
+        id: property-tests
+        if: ${{ !cancelled() && steps.unit-tests.outcome != 'skipped' }}
+        run: |
+          source tests/runners/headless_common.sh
+          modus_collect_gut_tests tests/property
+          modus_print_headless_selection
+          modus_run_godot godot --headless -s addons/gut/gut_cmdln.gd \
+            "${MODUS_GUT_TEST_ARGS[@]}" -gdisable_colors 2>&1 | tee test-results/property-tests.log
+          grep -Eq '^[[:space:]]*Tests[[:space:]]+[1-9][0-9]*[[:space:]]*$' test-results/property-tests.log
+
+      - name: Run Benchmark Tests
+        id: benchmark-tests
+        if: ${{ !cancelled() && steps.unit-tests.outcome != 'skipped' }}
+        continue-on-error: true
+        run: |
+          source tests/runners/headless_common.sh
+          modus_collect_gut_tests tests/benchmarks
+          modus_print_headless_selection
+          modus_run_godot godot --headless -s addons/gut/gut_cmdln.gd \
+            "${MODUS_GUT_TEST_ARGS[@]}" -gdisable_colors 2>&1 | tee test-results/benchmark-tests.log
+          grep -Eq '^[[:space:]]*Tests[[:space:]]+[1-9][0-9]*[[:space:]]*$' test-results/benchmark-tests.log
+
+      - name: Publish Test Summary
+        if: always()
+        env:
+          UNIT_OUTCOME: ${{ steps.unit-tests.outcome }}
+          PROPERTY_OUTCOME: ${{ steps.property-tests.outcome }}
+          BENCHMARK_OUTCOME: ${{ steps.benchmark-tests.outcome }}
+        run: |
+          mkdir -p test-results
+          {
+            printf '# MODUS Test Results\n\n'
+            printf '| Suite | Status |\n| --- | --- |\n'
+            printf '| Unit and integration | %s |\n' "$UNIT_OUTCOME"
+            printf '| Property-based | %s |\n' "$PROPERTY_OUTCOME"
+            printf '| Benchmarks (informational) | %s |\n' "$BENCHMARK_OUTCOME"
+            printf '\nDetailed GUT results are in the test-results artifact.\n'
+            printf 'GUI-required tests remain outside the maintained headless suite.\n'
+          } | tee test-results/test-summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ github.run_number }}
+          path: |
+            test-results/
+            logs/
+            *.log
+          retention-days: 30
 
   build:
-    name: Build Project
+    name: Build Project (${{ matrix.platform }})
     runs-on: ubuntu-latest
     needs: test
-    if: success()  # Only build if all tests pass
-    container:
-      image: barichello/godot-ci:4.7
-    
     strategy:
       matrix:
-        platform: [linux, windows, web]
-    
+        include:
+          - platform: linux
+            preset: Dedicated Server (Linux)
+            executable: MODUS.x86_64
+          - platform: windows
+            preset: Windows Desktop
+            executable: MODUS.exe
+          - platform: editor
+            preset: Standalone Editor
+            executable: MODUS-editor.exe
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        lfs: true
-    
-    - name: Setup
-      run: |
-        mkdir -v -p ~/.local/share/godot/export_templates/
-        mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
-        
-        echo "Build environment setup for ${{ matrix.platform }}"
-        godot --version
-    
-    - name: Cache import assets
-      uses: actions/cache@v3
-      with:
-        path: .godot/imported/
-        key: import-assets-${{ runner.os }}-${{ hashFiles('**/*.import') }}
-        restore-keys: |
-          import-assets-${{ runner.os }}-
-    
-    - name: Import project assets
-      run: |
-        godot --headless --verbose --editor --quit
-    
-    - name: Build for ${{ matrix.platform }}
-      run: |
-        echo "=== Building MODUS Framework for ${{ matrix.platform }} ==="
-        echo "Build started: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
-        
-        mkdir -v -p build/${{ matrix.platform }}
-        
-        case "${{ matrix.platform }}" in
-          "linux")
-            echo "Building Linux/X11 export..."
-            godot --headless --verbose --export-release "Linux/X11" build/${{ matrix.platform }}/$EXPORT_NAME.x86_64
-            ;;
-          "windows")
-            echo "Building Windows Desktop export..."
-            godot --headless --verbose --export-release "Windows Desktop" build/${{ matrix.platform }}/$EXPORT_NAME.exe
-            ;;
-          "web")
-            echo "Building Web export..."
-            godot --headless --verbose --export-release "Web" build/${{ matrix.platform }}/index.html
-            ;;
-        esac
-        
-        # Verify build output
-        if [ -d "build/${{ matrix.platform }}" ]; then
-          echo "Build artifacts:"
-          ls -lh build/${{ matrix.platform }}/
-          echo "Build completed successfully"
-        else
-          echo "::error::Build failed - no output directory created"
-          exit 1
-        fi
-    
-    - name: Upload Build Artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: ${{ matrix.platform }}-build-${{ github.run_number }}
-        path: build/${{ matrix.platform }}/
-        retention-days: 14
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Install Godot and export templates
+        run: |
+          archive="Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          release_url="https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable"
+          curl --fail --location --output "$RUNNER_TEMP/$archive" "$release_url/$archive"
+          unzip -q "$RUNNER_TEMP/$archive" -d "$RUNNER_TEMP/godot"
+          chmod +x "$RUNNER_TEMP/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64"
+          ln -s "$RUNNER_TEMP/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64" "$RUNNER_TEMP/godot/godot"
+          echo "$RUNNER_TEMP/godot" >> "$GITHUB_PATH"
+          curl --fail --location --output "$RUNNER_TEMP/export_templates.tpz" \
+            "$release_url/Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
+          unzip -q "$RUNNER_TEMP/export_templates.tpz" -d "$RUNNER_TEMP/godot-templates"
+          mkdir -p "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable"
+          cp -a "$RUNNER_TEMP/godot-templates/templates/." \
+            "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable/"
+
+      - name: Cache import assets
+        uses: actions/cache@v4
+        with:
+          path: .godot/imported/
+          key: import-assets-${{ runner.os }}-${{ env.GODOT_VERSION }}-${{ hashFiles('**/*.import') }}
+          restore-keys: |
+            import-assets-${{ runner.os }}-${{ env.GODOT_VERSION }}-
+
+      - name: Import project assets
+        run: |
+          godot --version
+          godot --headless --verbose --path . --import
+
+      - name: Build for ${{ matrix.platform }}
+        env:
+          EXPORT_PLATFORM: ${{ matrix.platform }}
+          EXPORT_PRESET: ${{ matrix.preset }}
+          EXPORT_EXECUTABLE: ${{ matrix.executable }}
+        run: |
+          mkdir -p "build/$EXPORT_PLATFORM"
+          godot --headless --verbose --path . --export-release "$EXPORT_PRESET" \
+            "build/$EXPORT_PLATFORM/$EXPORT_EXECUTABLE"
+          test -s "build/$EXPORT_PLATFORM/$EXPORT_EXECUTABLE"
+          test -s "build/$EXPORT_PLATFORM/${EXPORT_EXECUTABLE%.*}.pck"
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.platform }}-build-${{ github.run_number }}
+          path: build/${{ matrix.platform }}/
+          if-no-files-found: error
+          retention-days: 14
 
   security-scan:
     name: Security Vulnerability Scan
     runs-on: ubuntu-latest
-    
+    permissions:
+      contents: read
+      actions: read
+      security-events: write
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    
-    - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@master
-      with:
-        scan-type: 'fs'
-        scan-ref: '.'
-        format: 'sarif'
-        output: 'trivy-results.sarif'
-    
-    - name: Upload Trivy scan results to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@v2
-      if: always()
-      with:
-        sarif_file: 'trivy-results.sarif'
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v4
+        if: ${{ !cancelled() && hashFiles('trivy-results.sarif') != '' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && github.actor != 'dependabot[bot]' }}
+        with:
+          sarif_file: 'trivy-results.sarif'
 
   deploy:
-    name: Deploy to Staging
+    name: Verify Staging Artifacts
     runs-on: ubuntu-latest
     needs: [test, build, security-scan]
     if: github.ref == 'refs/heads/develop' && success()
-    
     steps:
-    - name: Download Build Artifacts
-      uses: actions/download-artifact@v3
-      with:
-        path: artifacts/
-    
-    - name: Verify Build Artifacts
-      run: |
-        echo "=== Verifying Build Artifacts ==="
-        echo "Available artifacts:"
-        ls -la artifacts/
-        
-        # Verify all platform builds are present
-        for platform in linux windows web; do
-          if [ -d "artifacts/${platform}-build-${{ github.run_number }}" ]; then
-            echo "✓ ${platform} build found"
-          else
-            echo "::error::${platform} build missing"
-            exit 1
-          fi
-        done
-        
-        echo "All build artifacts verified"
-    
-    - name: Deploy to Staging Environment
-      run: |
-        echo "=== Deploying to Staging Environment ==="
-        echo "Deployment started: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
-        echo "Branch: ${{ github.ref_name }}"
-        echo "Commit: ${{ github.sha }}"
-        echo "Build artifacts available in artifacts/ directory"
-        
-        # List all artifacts
-        find artifacts/ -type f
-        
-        # Add actual deployment logic here
-        # Example: rsync, scp, cloud storage upload, etc.
-        
-        echo "Deployment to staging completed successfully"
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: '*-build-${{ github.run_number }}'
+          path: artifacts/
+
+      - name: Verify Build Artifacts
+        run: |
+          test -s "artifacts/linux-build-${{ github.run_number }}/MODUS.x86_64"
+          test -s "artifacts/linux-build-${{ github.run_number }}/MODUS.pck"
+          test -s "artifacts/windows-build-${{ github.run_number }}/MODUS.exe"
+          test -s "artifacts/windows-build-${{ github.run_number }}/MODUS.pck"
+          test -s "artifacts/editor-build-${{ github.run_number }}/MODUS-editor.exe"
+          test -s "artifacts/editor-build-${{ github.run_number }}/MODUS-editor.pck"
+          printf 'Supported release artifacts verified. No staging deployment target is configured.\n' \
+            >> "$GITHUB_STEP_SUMMARY"

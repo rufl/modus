@@ -89,8 +89,6 @@ func _perform_heal(target: Node3D) -> void:
 	if gm:
 		var logger: Node = gm.get_core_system("logger")
 		if logger:
-			logger.info(
-				"[Healer] Healed %s for %.1f" % [target.name, heal_amount], "Enemy"
-			)
+			logger.info("[Healer] Healed %s for %.1f" % [target.name, heal_amount], "Enemy")
 
 	_timer = heal_cooldown

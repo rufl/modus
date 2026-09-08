@@ -358,10 +358,12 @@ func start_session(player_count: int) -> bool:
 	if connected_devices.size() < player_count:
 		_emit_error(
 			(
-				"Insufficient controllers connected. Need %d, found %d. "
-				+ "Connect at least %d controllers and try again."
+				(
+					"Insufficient controllers connected. Need %d, found %d. "
+					+ "Connect at least %d controllers and try again."
+				)
+				% [player_count, connected_devices.size(), player_count]
 			)
-			% [player_count, connected_devices.size(), player_count]
 		)
 		session_state.transition_to(SessionState.State.INACTIVE)
 		return false

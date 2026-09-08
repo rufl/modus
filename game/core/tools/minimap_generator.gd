@@ -71,7 +71,10 @@ func _capture_map() -> void:
 			"[MinimapGenerator] SUCCESS! Saved map to: %s" % full_path, "Core"
 		)
 		print(
-			"[MinimapGenerator] Update 'game/config/performance/visuals.json5' -> map_settings -> map_texture_path"
+			(
+				"[MinimapGenerator] Update 'game/config/performance/visuals.json5'"
+				+ " -> map_settings -> map_texture_path"
+			)
 		)
 		GameManager.get_core_system("logger").info(
 			"[MinimapGenerator] Also set 'minimap_capture_size' to %.1f" % capture_size_meters,

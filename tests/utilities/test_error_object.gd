@@ -1,13 +1,16 @@
 # Test helper object for error testing
 extends Node
 
+
 # Method that returns an error code
 func failing_method() -> int:
 	return ERR_UNAVAILABLE
 
+
 # Method that succeeds
 func succeeding_method() -> int:
 	return OK
+
 
 # Method that takes time
 func slow_method(duration_ms: float) -> void:

@@ -5,9 +5,7 @@ extends RefCounted
 ## Errors are structural or dependency/override failures; disabled mods are warnings.
 
 const REQUIRED_FIELDS: Array[String] = ["id", "name", "version"]
-const OVERRIDE_SECTIONS: Array[String] = [
-	"systems", "weapons", "enemies", "loot", "loot_tables"
-]
+const OVERRIDE_SECTIONS: Array[String] = ["systems", "weapons", "enemies", "loot", "loot_tables"]
 
 
 func validate_manifest(manifest: Dictionary, source: String = "<memory>") -> Dictionary:
@@ -55,9 +53,7 @@ func validate_packages(manifests: Array[Dictionary]) -> Dictionary:
 		var mod_id := str(manifest.get("id", "<unknown>"))
 		for dependency in manifest.get("dependencies", []):
 			if not package_ids.has(str(dependency)):
-				errors.append(
-					"%s: missing dependency '%s'" % [mod_id, str(dependency)]
-				)
+				errors.append("%s: missing dependency '%s'" % [mod_id, str(dependency)])
 		if not manifest.get("enabled", false):
 			continue
 		var config_overrides: Dictionary = manifest.get("config_overrides", {})
@@ -71,8 +67,7 @@ func validate_packages(manifests: Array[Dictionary]) -> Dictionary:
 				var key := "%s.%s" % [section, str(target)]
 				if overrides.has(key):
 					errors.append(
-						"override conflict on %s between %s and %s"
-						% [key, overrides[key], mod_id]
+						"override conflict on %s between %s and %s" % [key, overrides[key], mod_id]
 					)
 				else:
 					overrides[key] = mod_id

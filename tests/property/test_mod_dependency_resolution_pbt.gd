@@ -66,21 +66,9 @@ func _test_dependency_order(test_data: Dictionary) -> bool:
 	# Mod C depends on B
 
 	var mods: Array[Dictionary] = [
-		{
-			"name": "ModC",
-			"dependencies": ["ModB"],
-			"priority": rng.randi_range(0, 100)
-		},
-		{
-			"name": "ModA",
-			"dependencies": [],
-			"priority": rng.randi_range(0, 100)
-		},
-		{
-			"name": "ModB",
-			"dependencies": ["ModA"],
-			"priority": rng.randi_range(0, 100)
-		}
+		{"name": "ModC", "dependencies": ["ModB"], "priority": rng.randi_range(0, 100)},
+		{"name": "ModA", "dependencies": [], "priority": rng.randi_range(0, 100)},
+		{"name": "ModB", "dependencies": ["ModA"], "priority": rng.randi_range(0, 100)}
 	]
 
 	# Simulate dependency resolution (simplified version of _resolve_load_order logic)
@@ -119,18 +107,9 @@ func _test_circular_dependency_detection(test_data: Dictionary) -> bool:
 	# Mod C depends on A (circular!)
 
 	var mods: Array[Dictionary] = [
-		{
-			"name": "ModA",
-			"dependencies": ["ModB"]
-		},
-		{
-			"name": "ModB",
-			"dependencies": ["ModC"]
-		},
-		{
-			"name": "ModC",
-			"dependencies": ["ModA"]
-		}
+		{"name": "ModA", "dependencies": ["ModB"]},
+		{"name": "ModB", "dependencies": ["ModC"]},
+		{"name": "ModC", "dependencies": ["ModA"]}
 	]
 
 	# Simulate dependency resolution
@@ -173,12 +152,7 @@ func test_property_missing_dependency_handling() -> void:
 
 func _test_missing_dependency_detection(test_data: Dictionary) -> bool:
 	# Create a scenario where a mod depends on a non-existent mod
-	var mods: Array[Dictionary] = [
-		{
-			"name": "ModA",
-			"dependencies": ["NonExistentMod"]
-		}
-	]
+	var mods: Array[Dictionary] = [{"name": "ModA", "dependencies": ["NonExistentMod"]}]
 
 	# Simulate dependency resolution
 	var resolved_order: Array[String] = _simulate_dependency_resolution(mods)

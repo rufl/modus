@@ -176,9 +176,15 @@ func _normalize_enemy_record(data: Dictionary) -> Dictionary:
 	if normalized.get("ai_config") is Dictionary:
 		ai_config = normalized.ai_config.duplicate(true)
 
-	var stats: Dictionary = normalized.get("stats", {}) if normalized.get("stats") is Dictionary else {}
-	var combat: Dictionary = normalized.get("combat", {}) if normalized.get("combat") is Dictionary else {}
-	var movement: Dictionary = normalized.get("movement", {}) if normalized.get("movement") is Dictionary else {}
+	var stats: Dictionary = (
+		normalized.get("stats", {}) if normalized.get("stats") is Dictionary else {}
+	)
+	var combat: Dictionary = (
+		normalized.get("combat", {}) if normalized.get("combat") is Dictionary else {}
+	)
+	var movement: Dictionary = (
+		normalized.get("movement", {}) if normalized.get("movement") is Dictionary else {}
+	)
 	var perception: Dictionary = (
 		normalized.get("perception", {}) if normalized.get("perception") is Dictionary else {}
 	)

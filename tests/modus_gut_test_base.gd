@@ -128,7 +128,7 @@ func assert_config_value_exists(
 
 	var gm: Variant = get_node_or_null("/root/GameManager")
 	if not gm or not gm.get_core_system("config"):
-		assert_true(false, "GameManager.get_core_system(\"config\") not available")
+		assert_true(false, 'GameManager.get_core_system("config") not available')
 		return
 
 	var value: Variant = gm.get_core_system("config").get_value(config_path)
@@ -426,7 +426,9 @@ func modus_teardown() -> void:
 # Assert value is a boolean
 func assert_is_bool(value: Variant, custom_message: String = "") -> void:
 	var message: String = (
-		custom_message if custom_message != "" else "Value should be a boolean, got type %d" % typeof(value)
+		custom_message
+		if custom_message != ""
+		else "Value should be a boolean, got type %d" % typeof(value)
 	)
 	assert_eq(typeof(value), TYPE_BOOL, message)
 
@@ -434,7 +436,9 @@ func assert_is_bool(value: Variant, custom_message: String = "") -> void:
 # Assert value is an integer
 func assert_is_int(value: Variant, custom_message: String = "") -> void:
 	var message: String = (
-		custom_message if custom_message != "" else "Value should be an integer, got type %d" % typeof(value)
+		custom_message
+		if custom_message != ""
+		else "Value should be an integer, got type %d" % typeof(value)
 	)
 	assert_eq(typeof(value), TYPE_INT, message)
 
@@ -442,7 +446,9 @@ func assert_is_int(value: Variant, custom_message: String = "") -> void:
 # Assert value is a float
 func assert_is_float(value: Variant, custom_message: String = "") -> void:
 	var message: String = (
-		custom_message if custom_message != "" else "Value should be a float, got type %d" % typeof(value)
+		custom_message
+		if custom_message != ""
+		else "Value should be a float, got type %d" % typeof(value)
 	)
 	assert_eq(typeof(value), TYPE_FLOAT, message)
 
@@ -450,7 +456,9 @@ func assert_is_float(value: Variant, custom_message: String = "") -> void:
 # Assert value is a string
 func assert_is_string(value: Variant, custom_message: String = "") -> void:
 	var message: String = (
-		custom_message if custom_message != "" else "Value should be a string, got type %d" % typeof(value)
+		custom_message
+		if custom_message != ""
+		else "Value should be a string, got type %d" % typeof(value)
 	)
 	assert_eq(typeof(value), TYPE_STRING, message)
 

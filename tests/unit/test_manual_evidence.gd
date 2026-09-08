@@ -18,17 +18,20 @@ func test_manual_timer_writes_reviewable_metadata_and_skip_result() -> void:
 	timer.output_directory = TEST_OUTPUT
 	add_child_autofree(timer)
 
-	var session := timer.start_session(
-		"showcase reviewer / unsafe name",
-		{
-			"tester": "QA One",
-			"os": "Linux",
-			"renderer": "gl_compatibility",
-			"resolution": "1280x720",
-			"input_devices": "keyboard_mouse",
-			"scene": "main_menu_to_showcase",
-			"build_identity": "0.9.5-beta+test",
-		}
+	var session := (
+		timer
+		. start_session(
+			"showcase reviewer / unsafe name",
+			{
+				"tester": "QA One",
+				"os": "Linux",
+				"renderer": "gl_compatibility",
+				"resolution": "1280x720",
+				"input_devices": "keyboard_mouse",
+				"scene": "main_menu_to_showcase",
+				"build_identity": "0.9.5-beta+test",
+			}
+		)
 	)
 	assert_eq(session, "showcase_reviewer_unsafe_name", "Session names should be filesystem-safe")
 	assert_true(timer.is_tracking, "Timer should track only after its CSV opens")
@@ -40,11 +43,15 @@ func test_manual_timer_writes_reviewable_metadata_and_skip_result() -> void:
 
 	assert_eq(stats.skipped, 1, "Skipped observations should remain distinct")
 	assert_eq(stats.incomplete, 0, "A reviewed skip should not become incomplete")
-	assert_true(FileAccess.file_exists(stats.log_file_path), "Timer should expose its evidence path")
+	assert_true(
+		FileAccess.file_exists(stats.log_file_path), "Timer should expose its evidence path"
+	)
 	var csv := FileAccess.get_file_as_string(stats.log_file_path)
 	assert_true(csv.contains("gamepad_control"), "CSV should retain the stable checklist ID")
 	assert_true(csv.contains("metadata_tester,QA One"), "CSV should retain reviewer identity")
-	assert_true(csv.contains("metadata_build_identity,0.9.5-beta+test"), "CSV should retain build identity")
+	assert_true(
+		csv.contains("metadata_build_identity,0.9.5-beta+test"), "CSV should retain build identity"
+	)
 
 
 func test_manual_overlay_is_responsive_and_keyboard_ready() -> void:
@@ -77,7 +84,9 @@ func test_manual_overlay_is_responsive_and_keyboard_ready() -> void:
 	assert_gte(skip_button.custom_minimum_size.y, 48.0, "Skip should meet the logical target floor")
 	assert_gte(fail_button.custom_minimum_size.y, 48.0, "Fail should meet the logical target floor")
 	assert_gte(pass_button.custom_minimum_size.y, 48.0, "Pass should meet the logical target floor")
-	assert_eq(pass_button.focus_mode, Control.FOCUS_ALL, "Primary result action should accept focus")
+	assert_eq(
+		pass_button.focus_mode, Control.FOCUS_ALL, "Primary result action should accept focus"
+	)
 	assert_ne(pass_button.focus_neighbor_left, NodePath(), "Result focus order should be explicit")
 	assert_eq(overlay.CHECKLIST.size(), 20, "Showcase recorder should expose the bounded route")
 

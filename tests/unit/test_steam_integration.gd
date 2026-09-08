@@ -45,7 +45,9 @@ func test_steam_manager_has_required_methods() -> void:
 	]
 
 	for method_name: String in required_methods:
-		assert_true(steam.has_method(method_name), "SteamManager should have method: %s" % method_name)
+		assert_true(
+			steam.has_method(method_name), "SteamManager should have method: %s" % method_name
+		)
 
 
 # =============================================================================
@@ -69,7 +71,9 @@ func test_steam_manager_has_signals() -> void:
 	]
 
 	for signal_name: String in required_signals:
-		assert_true(steam.has_signal(signal_name), "SteamManager should have signal: %s" % signal_name)
+		assert_true(
+			steam.has_signal(signal_name), "SteamManager should have signal: %s" % signal_name
+		)
 
 
 # =============================================================================

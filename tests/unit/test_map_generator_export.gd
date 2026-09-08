@@ -7,6 +7,7 @@ const MapGeneratorScript: GDScript = preload("res://game/scripts/map_generator/m
 var map_generator: Node
 var temp_export_dir: String = "user://test_exports/"
 
+
 func before_each() -> void:
 	map_generator = MapGeneratorScript.new()
 	add_child_autofree(map_generator)
@@ -14,12 +15,14 @@ func before_each() -> void:
 	# Create temporary export directory
 	DirAccess.make_dir_recursive_absolute(temp_export_dir)
 
+
 func after_each() -> void:
 	# Clean up test exports
 	_cleanup_test_exports()
 
 	if map_generator:
 		map_generator = null
+
 
 ## Clean up test export files
 func _cleanup_test_exports() -> void:
@@ -33,19 +36,19 @@ func _cleanup_test_exports() -> void:
 			file_name = dir.get_next()
 		dir.list_dir_end()
 
+
 ## Test that export_map saves PackedScene to .tscn file
 func test_export_packed_scene_creates_file() -> void:
 	var map_scene := _create_test_map_scene()
 	var output_path := temp_export_dir + "test_map.tscn"
 
 	var success: bool = map_generator.export_map(
-		map_scene,
-		output_path,
-		GenerationConfig.ExportFormat.PACKED_SCENE
+		map_scene, output_path, GenerationConfig.ExportFormat.PACKED_SCENE
 	)
 
 	assert_true(success, "Export should succeed")
 	assert_true(FileAccess.file_exists(output_path), "Exported .tscn file should exist")
+
 
 ## Test that export_map saves metadata JSON with same base name
 func test_export_creates_metadata_json() -> void:
@@ -54,13 +57,12 @@ func test_export_creates_metadata_json() -> void:
 	var metadata_path := temp_export_dir + "test_map.json"
 
 	var success: bool = map_generator.export_map(
-		map_scene,
-		output_path,
-		GenerationConfig.ExportFormat.PACKED_SCENE
+		map_scene, output_path, GenerationConfig.ExportFormat.PACKED_SCENE
 	)
 
 	assert_true(success, "Export should succeed")
 	assert_true(FileAccess.file_exists(metadata_path), "Metadata JSON file should exist")
+
 
 ## Test that metadata includes required fields
 func test_metadata_includes_required_fields() -> void:
@@ -72,9 +74,7 @@ func test_metadata_includes_required_fields() -> void:
 	var metadata_path := temp_export_dir + "test_map.json"
 
 	var success: bool = map_generator.export_map(
-		map_scene,
-		output_path,
-		GenerationConfig.ExportFormat.PACKED_SCENE
+		map_scene, output_path, GenerationConfig.ExportFormat.PACKED_SCENE
 	)
 
 	assert_true(success, "Export should succeed")
@@ -102,6 +102,7 @@ func test_metadata_includes_required_fields() -> void:
 	assert_has(metadata, "rule_modules_used", "Metadata should include rule_modules_used")
 	assert_has(metadata, "phase_times", "Metadata should include phase_times")
 
+
 ## Test that metadata statistics include all required counts
 func test_metadata_statistics_complete() -> void:
 	_setup_test_generation_context()
@@ -110,11 +111,7 @@ func test_metadata_statistics_complete() -> void:
 	var output_path := temp_export_dir + "test_map.tscn"
 	var metadata_path := temp_export_dir + "test_map.json"
 
-	map_generator.export_map(
-		map_scene,
-		output_path,
-		GenerationConfig.ExportFormat.PACKED_SCENE
-	)
+	map_generator.export_map(map_scene, output_path, GenerationConfig.ExportFormat.PACKED_SCENE)
 
 	var metadata := _load_metadata_json(metadata_path)
 	var stats: Dictionary = metadata["statistics"]
@@ -125,15 +122,14 @@ func test_metadata_statistics_complete() -> void:
 	assert_has(stats, "monster_spawn_count", "Statistics should include monster_spawn_count")
 	assert_has(stats, "item_spawn_count", "Statistics should include item_spawn_count")
 
+
 ## Test that exported PackedScene is loadable
 func test_exported_scene_is_loadable() -> void:
 	var map_scene := _create_test_map_scene()
 	var output_path := temp_export_dir + "test_map.tscn"
 
 	var success: bool = map_generator.export_map(
-		map_scene,
-		output_path,
-		GenerationConfig.ExportFormat.PACKED_SCENE
+		map_scene, output_path, GenerationConfig.ExportFormat.PACKED_SCENE
 	)
 
 	assert_true(success, "Export should succeed")
@@ -148,17 +144,17 @@ func test_exported_scene_is_loadable() -> void:
 
 	instance.free()
 
+
 ## Test that export fails gracefully with null scene
 func test_export_fails_with_null_scene() -> void:
 	var output_path := temp_export_dir + "null_test.tscn"
 
 	var success: bool = map_generator.export_map(
-		null,
-		output_path,
-		GenerationConfig.ExportFormat.PACKED_SCENE
+		null, output_path, GenerationConfig.ExportFormat.PACKED_SCENE
 	)
 
 	assert_false(success, "Export should fail with null scene")
+
 
 ## Test that export creates output directory if it doesn't exist
 func test_export_creates_output_directory() -> void:
@@ -171,14 +167,13 @@ func test_export_creates_output_directory() -> void:
 
 	var map_scene := _create_test_map_scene()
 	var success: bool = map_generator.export_map(
-		map_scene,
-		output_path,
-		GenerationConfig.ExportFormat.PACKED_SCENE
+		map_scene, output_path, GenerationConfig.ExportFormat.PACKED_SCENE
 	)
 
 	assert_true(success, "Export should succeed")
 	assert_true(DirAccess.dir_exists_absolute(new_dir), "Output directory should be created")
 	assert_true(FileAccess.file_exists(output_path), "Exported file should exist in new directory")
+
 
 ## Test GLTF export format (optional)
 func test_export_gltf_format() -> void:
@@ -186,13 +181,12 @@ func test_export_gltf_format() -> void:
 	var output_path := temp_export_dir + "test_map.gltf"
 
 	var success: bool = map_generator.export_map(
-		map_scene,
-		output_path,
-		GenerationConfig.ExportFormat.GLTF
+		map_scene, output_path, GenerationConfig.ExportFormat.GLTF
 	)
 
 	assert_true(success, "GLTF export should succeed")
 	assert_true(FileAccess.file_exists(output_path), "Exported .gltf file should exist")
+
 
 ## Test that GLTF export is loadable
 func test_gltf_export_is_loadable() -> void:
@@ -200,9 +194,7 @@ func test_gltf_export_is_loadable() -> void:
 	var output_path := temp_export_dir + "test_map.gltf"
 
 	var success: bool = map_generator.export_map(
-		map_scene,
-		output_path,
-		GenerationConfig.ExportFormat.GLTF
+		map_scene, output_path, GenerationConfig.ExportFormat.GLTF
 	)
 
 	assert_true(success, "GLTF export should succeed")
@@ -219,6 +211,7 @@ func test_gltf_export_is_loadable() -> void:
 
 	scene.free()
 
+
 ## Test that phase times are converted to seconds in metadata
 func test_phase_times_in_seconds() -> void:
 	_setup_test_generation_context()
@@ -230,22 +223,16 @@ func test_phase_times_in_seconds() -> void:
 	var output_path := temp_export_dir + "test_map.tscn"
 	var metadata_path := temp_export_dir + "test_map.json"
 
-	map_generator.export_map(
-		map_scene,
-		output_path,
-		GenerationConfig.ExportFormat.PACKED_SCENE
-	)
+	map_generator.export_map(map_scene, output_path, GenerationConfig.ExportFormat.PACKED_SCENE)
 
 	var metadata := _load_metadata_json(metadata_path)
 	var phase_times: Dictionary = metadata["phase_times"]
 
 	assert_has(phase_times, "test_phase", "Phase times should include test_phase")
 	assert_almost_eq(
-		phase_times["test_phase"],
-		1.5,
-		0.01,
-		"Phase time should be converted to seconds"
+		phase_times["test_phase"], 1.5, 0.01, "Phase time should be converted to seconds"
 	)
+
 
 ## Helper: Create a simple test map scene
 func _create_test_map_scene() -> PackedScene:
@@ -263,6 +250,7 @@ func _create_test_map_scene() -> PackedScene:
 	scene.pack(root)
 	root.free()
 	return scene
+
 
 ## Helper: Set up test generation context
 func _setup_test_generation_context() -> void:
@@ -288,6 +276,7 @@ func _setup_test_generation_context() -> void:
 	hallway.start_room_id = 0
 	hallway.end_room_id = 1
 	map_generator.generation_context.hallways.append(hallway)
+
 
 ## Helper: Load and parse metadata JSON
 func _load_metadata_json(path: String) -> Dictionary:

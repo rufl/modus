@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- Repaired GitHub workflow syntax, retired actions, SARIF permissions, and supported export/test commands; removed automated formatting pushes and nonexistent coverage/deployment claims. Pinned gdtoolkit 4.5.0 and applied its formatting/lint rules. Local actionlint, 654-file format/lint checks, Bandit medium/high checks, and focused UI/manual-evidence regressions (28/28, 126 assertions) pass; hosted results remain authoritative for CI completion.
 - Gameplay now reuses GameManager's player and match services instead of constructing duplicate instances. Runtime ownership smoke confirms one instance of each; MatchService regressions pass 8/8 with 30 assertions under Godot 4.7.2.
 - Verified the AI timing tranche under Godot 4.7.2: enemy AI regression group passes 126/126 with 321 assertions, and the warrior-free main-menu runtime test passes 1/1 with 21 assertions. Headless proof does not establish rendered appearance; duplicate-service warnings and shutdown resource diagnostics remain.
 - Preserved deferred AI elapsed time when switching from throttled to full-rate updates. Corrected the minimum-rate regression's invalid two-tick expectation; focused Godot 4.7.2 timing proof passes 1/1 with 13 assertions.

@@ -26,24 +26,34 @@ func test_missing_fields_and_disabled_state_are_reported() -> void:
 
 func test_missing_dependency_is_reported() -> void:
 	var validator := Validator.new()
-	var result: Dictionary = validator.validate_packages([
-		{"id": "dependent", "name": "Dependent", "version": "1.0.0", "dependencies": ["missing"]}
-	])
+	var result: Dictionary = validator.validate_packages(
+		[{"id": "dependent", "name": "Dependent", "version": "1.0.0", "dependencies": ["missing"]}]
+	)
 	assert_false(result.valid)
-	assert_true(result.errors.any(func(error: String) -> bool: return "missing dependency" in error))
+	assert_true(
+		result.errors.any(func(error: String) -> bool: return "missing dependency" in error)
+	)
 
 
 func test_duplicate_override_is_reported() -> void:
 	var validator := Validator.new()
-	var result: Dictionary = validator.validate_packages([
-		{
-			"id": "first", "name": "First", "version": "1.0.0", "enabled": true,
-			"config_overrides": {"weapons": {"pistol": {"damage": 12}}}
-		},
-		{
-			"id": "second", "name": "Second", "version": "1.0.0", "enabled": true,
-			"config_overrides": {"weapons": {"pistol": {"damage": 20}}}
-		}
-	])
+	var result: Dictionary = validator.validate_packages(
+		[
+			{
+				"id": "first",
+				"name": "First",
+				"version": "1.0.0",
+				"enabled": true,
+				"config_overrides": {"weapons": {"pistol": {"damage": 12}}}
+			},
+			{
+				"id": "second",
+				"name": "Second",
+				"version": "1.0.0",
+				"enabled": true,
+				"config_overrides": {"weapons": {"pistol": {"damage": 20}}}
+			}
+		]
+	)
 	assert_false(result.valid)
 	assert_true(result.errors.any(func(error: String) -> bool: return "override conflict" in error))

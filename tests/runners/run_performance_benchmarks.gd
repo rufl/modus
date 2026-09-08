@@ -36,7 +36,7 @@ func _init() -> void:
 func _on_tests_finished() -> void:
 	var summary: Variant = _gut.get_summary()
 	var totals: Variant = summary.get_totals()
-	
+
 	var failed_count: int = totals.failing
 	var passed_count: int = totals.passing
 	var total_count: int = totals.tests

@@ -16,7 +16,9 @@ func test_advanced_movement_exists() -> void:
 	## Verify AdvancedMovement class/script exists
 	var script_path: String = "res://game/entities/player/advanced_movement.gd"
 
-	assert_true(ResourceLoader.exists(script_path), "advanced_movement.gd should exist at expected path")
+	assert_true(
+		ResourceLoader.exists(script_path), "advanced_movement.gd should exist at expected path"
+	)
 
 	if not ResourceLoader.exists(script_path):
 		return
