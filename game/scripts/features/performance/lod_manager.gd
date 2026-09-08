@@ -30,10 +30,9 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	_camera = get_viewport().get_camera_3d()
 	if not _camera:
-		_camera = get_viewport().get_camera_3d()
-		if not _camera:
-			return
+		return
 
 	# Update LOD
 	if enable_lod:

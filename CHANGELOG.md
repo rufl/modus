@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- LOD updates now follow the viewport's active camera after camera switches. Replaced synthetic LOD arithmetic and optional-pass tests with six runtime regressions covering camera handoff/replacement, update cadence, distance boundaries, bias, and entity registration; all 18 assertions pass under Godot 4.7.2.
 - Fixed the two hosted mesh-LOD failures by reading native LOD buffers through RenderingServer instead of a nonexistent ArrayMesh method. Focused LOD regressions pass 2/2 with six assertions; CI now installs its pinned GUT dependency on clean checkouts.
 - Repaired GitHub workflow syntax, retired actions, SARIF permissions, and supported export/test commands; removed automated formatting pushes and nonexistent coverage/deployment claims. Pinned gdtoolkit 4.5.0 and applied its formatting/lint rules. Local actionlint, 654-file format/lint checks, Bandit medium/high checks, and focused UI/manual-evidence regressions (28/28, 126 assertions) pass; hosted results remain authoritative for CI completion.
 - Gameplay now reuses GameManager's player and match services instead of constructing duplicate instances. Runtime ownership smoke confirms one instance of each; MatchService regressions pass 8/8 with 30 assertions under Godot 4.7.2.
