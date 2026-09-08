@@ -3113,16 +3113,26 @@ func test_ai_update_throttling() -> void:
 
 	enemy.set_ai_update_rate(0.0)
 	enemy.set_update_offset(0.0)
-	assert_eq(
-		enemy.consume_ai_update_delta(1.0 / 60.0),
-		0.0,
-		"AI update rate should clamp to a throttled minimum"
-	)
+	var delivered_elapsed: float = 0.0
+	var update_count: int = 0
+	for tick in range(61):
+		var elapsed: float = enemy.consume_ai_update_delta(1.0 / 60.0)
+		if elapsed > 0.0:
+			update_count += 1
+			delivered_elapsed += elapsed
+	assert_eq(update_count, 6, "Minimum-rate AI should deliver six updates per second")
 	assert_almost_eq(
-		enemy.consume_ai_update_delta(1.0 / 60.0),
-		1.0 / 6.0,
-		0.00001,
-		"Clamped minimum rate should update at six hertz"
+		delivered_elapsed, 1.0, 0.00001,
+		"Minimum-rate updates should preserve elapsed simulation time"
+	)
+
+	enemy.set_ai_update_rate(0.5)
+	enemy.set_update_offset(0.0)
+	assert_eq(enemy.consume_ai_update_delta(0.01), 0.0)
+	enemy.set_ai_update_rate(1.0)
+	assert_almost_eq(
+		enemy.consume_ai_update_delta(0.01), 0.02, 0.00001,
+		"Returning to full rate should deliver deferred elapsed time"
 	)
 
 	enemy.set_ai_update_rate(2.0)

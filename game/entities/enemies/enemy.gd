@@ -1029,9 +1029,10 @@ func set_update_offset(offset: float) -> void:
 func consume_ai_update_delta(delta: float) -> float:
 	var safe_delta: float = maxf(delta, 0.0)
 	if _ai_update_rate >= 1.0:
+		var elapsed: float = _ai_elapsed_since_update + safe_delta
 		_ai_update_timer = 0.0
 		_ai_elapsed_since_update = 0.0
-		return safe_delta
+		return elapsed
 
 	_ai_update_timer += safe_delta
 	_ai_elapsed_since_update += safe_delta

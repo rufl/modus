@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- Preserved deferred AI elapsed time when switching from throttled to full-rate updates. Corrected the minimum-rate regression's invalid two-tick expectation; focused Godot 4.7.2 timing proof passes 1/1 with 13 assertions.
 - Removed the warrior image from the main menu, restoring its existing procedural 3D background. Removed obsolete artwork assertions from the menu regression test.
 - Corrected the standalone-editor export entry route without changing the normal client menu. All supported presets retain runtime JSON/JSON5 files, and UI loading recognizes exported resource remaps. Rebuilt the Linux server and Windows client/editor packages; headless checks of the Windows resource packs confirm route loading, configuration presence, and remapped UI resource resolution, not native Windows or interactive editor readiness.
 
