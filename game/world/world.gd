@@ -172,6 +172,7 @@ func _ready() -> void:
 	spawner.add_spawnable_scene("res://game/scenes/items/pickups/ammo_pickup.tscn")
 	spawner.add_spawnable_scene("res://game/scenes/items/pickups/armor_pickup.tscn")
 	spawner.add_spawnable_scene("res://game/scenes/items/pickups/consumable_pickup.tscn")
+	spawner.add_spawnable_scene("res://game/scenes/items/pickups/pickup_base.tscn")
 	spawner.add_spawnable_scene("res://game/scenes/items/pickups/double_jump_powerup.tscn")
 	spawner.add_spawnable_scene("res://game/scenes/items/pickups/dodge_powerup.tscn")
 

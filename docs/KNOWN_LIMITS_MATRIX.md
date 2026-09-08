@@ -2,7 +2,7 @@
 
 > **Documentation status: maintained reference.** This matrix is a release-communication aid. It does not promote any source-backed or automated result into runtime, manual, multiplayer, or distribution proof.
 
-**Updated:** 2026-09-08
+**Updated:** 2026-09-09
 **Canonical sources:** [Documentation Truth](DOCUMENTATION_TRUTH.md), [Current Status](CURRENT_STATUS.md), and [Production Readiness](PRODUCTION_READINESS_REPORT.md)
 
 | Area | Verified boundary | Not verified / release limitation | Evidence |
@@ -13,10 +13,11 @@
 | Runtime gameplay | The golden-demo smoke passes scene load, player spawn, movement input, weapon fire, enemy defeat, pickup collection, encrypted save/load, and bundled sample-mod loading | Gameplay feel, failure recovery, long sessions, and human-operated completion are not manual-proven | `GOLDEN_DEMO_SMOKE.md`, `SHOWCASE_ROUTE.md` |
 | Manual evidence | Responsive 20-item recorder, direct CSV export, required metadata, Fail/Skip notes, and active-time validation are ready | Reviewed CSV count is 0 and validated manual hours are 0.00; the configured threshold is 40 hours | `MANUAL_EVIDENCE_REPORT.md`, `../tests/docs/MANUAL_TEST_TIMING.md` |
 | Performance | One bounded showcase capture passes evidence-shape validation at 66.4 seconds and 130 samples | It is not a display-synchronized FPS target; splitscreen, multiplayer, low-end hardware, and long-session behavior remain open | `PERFORMANCE_EVIDENCE_REPORT.md`, `PERFORMANCE_BASELINE_PROOF.md` |
-| Multiplayer | Local real-ENet host, disconnect/rehost, peer ownership, health restoration, and status identity pass focused regressions | Real Steam/GodotSteam, latency behavior, end-to-end automatic reconnect, and dedicated-server clients remain unproven; older sandbox-blocked reports do not describe the current local ENet test capability | `tests/unit/test_world_host_lifecycle.gd`, `tests/unit/test_save_system.gd`, `tests/unit/test_match_service.gd`, `MULTIPLAYER_PROFILE_SMOKE.md` |
+| Multiplayer | Local real-ENet host lifecycle, health/status identity, initial player/pickup state, owner inventory updates, and prediction acknowledgements pass focused checks | Real Steam/GodotSteam, latency behavior, end-to-end automatic reconnect, and dedicated-server clients remain unproven; older sandbox-blocked reports do not describe current local ENet capability | `tests/unit/test_world_host_lifecycle.gd`, `tests/unit/test_loot_service.gd`, `tests/unit/test_input_command.gd`, `MULTIPLAYER_PROFILE_SMOKE.md`, `../CHANGELOG.md` |
 | Editor | Save/export/reload and local Workshop simulation contracts pass | Live embedded/standalone UI operation, custom undo/redo, and real Workshop transfer remain open | `EDITOR_ROUNDTRIP_PROOF.md`, `WORKSHOP_LOCAL_SIMULATION_PROOF.md` |
 | Modding | Sample SDK and package validation contracts pass | Distribution packaging, live multiplayer synchronization, and real Workshop publication are unproven | `MODDING_SAMPLE_MOD.md`, `MOD_PACKAGE_VALIDATION.md` |
 | Content scope | Broad gameplay/map source exists and canonical paths are tested | Vase, corpse-pile, hidden-stash, and weapon-rack loot scenes remain missing if those enum types stay in scope | `CURRENT_STATUS.md`, `BACKLOG.md` |
+| Loot and props | Focused loot/prop/authored-spawn/wire regressions pass 23/23 with 164 assertions; real ENet collection and headless editor spawn guards pass | Rendered loot effects, inventory interaction, gameplay feel, and long-session behavior are not established by these headless checks | `tests/unit/test_loot_service.gd`, `tests/integration/test_loot_prop_spawner.gd`, `tests/integration/test_authored_spawns.gd`, `../CHANGELOG.md` |
 | Distribution | Root/project/GUT notices, verified Kenney CC0 records, dip000 MIT records, and a deterministic 220-row ledger are retained | Twelve identified music tracks and 200 unverified assets remain uncleared; packaged notice inclusion is source-configured but not export-proven | `ATTRIBUTION.md`, `PROVENANCE_LEDGER.csv` |
 | Release version | Current truth is explicitly `0.9.5-beta` | 1.0.0 release-version gate is blocked until all required proof lanes agree | `RELEASE_READINESS_REPORT.md` |
 

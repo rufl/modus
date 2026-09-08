@@ -1,6 +1,8 @@
 class_name InputCommand
 extends RefCounted
 
+const WIRE_SIZE: int = 30
+
 var sequence_number: int = 0
 var timestamp_ms: float = 0.0
 var delta_time: float = 0.0
@@ -27,7 +29,7 @@ static func create(seq: int, delta: float) -> InputCommand:
 func capture_input() -> void:
 	## Capture current input state from Input singleton
 	# Movement (WASD)
-	move_direction = Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
+	move_direction = Input.get_vector("left", "right", "up", "down")
 
 	# Actions
 	jump = Input.is_action_just_pressed("jump")
@@ -46,74 +48,55 @@ func capture_input() -> void:
 
 
 func to_bytes() -> PackedByteArray:
-	## Serialize to bytes for network transmission
-	## Actions use bit-packing (8 booleans in 1 byte)
-	## OPTIMIZATION NOTE: Vector2 could use half-precision floats to reduce size
 	var buffer := PackedByteArray()
-
-	# Header: sequence (uint32) + timestamp (float32) + delta (float32)
-	buffer.append_array(var_to_bytes(sequence_number))
-	buffer.append_array(var_to_bytes(timestamp_ms))
-	buffer.append_array(var_to_bytes(delta_time))
-
-	# Movement: move_direction (Vector2) + look_delta (Vector2)
-	buffer.append_array(var_to_bytes(move_direction))
-	buffer.append_array(var_to_bytes(look_delta))
-
-	# Actions: Pack into single byte (8 booleans)
-	var action_byte: int = 0
-	if jump:
-		action_byte |= 1
-	if crouch:
-		action_byte |= 2
-	if sprint:
-		action_byte |= 4
-	if fire:
-		action_byte |= 8
-	if aim:
-		action_byte |= 16
-	if reload:
-		action_byte |= 32
-	buffer.append(action_byte)
-
-	# Weapon switch: int8 (-1 to 8)
-	buffer.append(weapon_switch + 1)  # Store as 0-9
-
+	buffer.resize(WIRE_SIZE)
+	buffer.encode_u32(0, sequence_number)
+	buffer.encode_float(4, timestamp_ms)
+	buffer.encode_float(8, delta_time)
+	buffer.encode_float(12, move_direction.x)
+	buffer.encode_float(16, move_direction.y)
+	buffer.encode_float(20, look_delta.x)
+	buffer.encode_float(24, look_delta.y)
+	buffer[28] = (
+		int(jump)
+		| (int(crouch) << 1)
+		| (int(sprint) << 2)
+		| (int(fire) << 3)
+		| (int(aim) << 4)
+		| (int(reload) << 5)
+	)
+	buffer[29] = weapon_switch + 1
 	return buffer
 
 
 static func from_bytes(buffer: PackedByteArray) -> InputCommand:
-	## Deserialize from bytes
+	if buffer.size() != WIRE_SIZE or buffer[28] > 63 or buffer[29] > 9:
+		return null
 	var cmd := InputCommand.new()
-	var offset := 0
-
-	# Read header
-	cmd.sequence_number = bytes_to_var(buffer.slice(offset, offset + 4))
-	offset += 4
-	cmd.timestamp_ms = bytes_to_var(buffer.slice(offset, offset + 4))
-	offset += 4
-	cmd.delta_time = bytes_to_var(buffer.slice(offset, offset + 4))
-	offset += 4
-
-	# Read movement
-	cmd.move_direction = bytes_to_var(buffer.slice(offset, offset + 8))
-	offset += 8
-	cmd.look_delta = bytes_to_var(buffer.slice(offset, offset + 8))
-	offset += 8
-
-	# Read actions
-	var action_byte: int = buffer[offset]
-	offset += 1
-	cmd.jump = (action_byte & 1) != 0
-	cmd.crouch = (action_byte & 2) != 0
-	cmd.sprint = (action_byte & 4) != 0
-	cmd.fire = (action_byte & 8) != 0
-	cmd.aim = (action_byte & 16) != 0
-	cmd.reload = (action_byte & 32) != 0
-
-	# Read weapon switch
-	cmd.weapon_switch = buffer[offset] - 1
-
+	cmd.sequence_number = buffer.decode_u32(0)
+	cmd.timestamp_ms = buffer.decode_float(4)
+	cmd.delta_time = buffer.decode_float(8)
+	cmd.move_direction = Vector2(buffer.decode_float(12), buffer.decode_float(16))
+	cmd.look_delta = Vector2(buffer.decode_float(20), buffer.decode_float(24))
+	if (
+		cmd.sequence_number == 0
+		or not is_finite(cmd.timestamp_ms)
+		or not is_finite(cmd.delta_time)
+		or cmd.delta_time <= 0.0
+		or cmd.delta_time > 0.25
+		or not cmd.move_direction.is_finite()
+		or cmd.move_direction.length_squared() > 1.001
+		or not cmd.look_delta.is_finite()
+	):
+		return null
+	var actions: int = buffer[28]
+	cmd.jump = (actions & 1) != 0
+	cmd.crouch = (actions & 2) != 0
+	cmd.sprint = (actions & 4) != 0
+	cmd.fire = (actions & 8) != 0
+	cmd.aim = (actions & 16) != 0
+	cmd.reload = (actions & 32) != 0
+	cmd.weapon_switch = buffer[29] - 1
 	return cmd
 
 

@@ -14,9 +14,9 @@ var rarity_color: Color = Color.WHITE
 
 
 func _extend_synchronizer_config(config: SceneReplicationConfig) -> void:
-	#Sync affix indices
+	super._extend_synchronizer_config(config)
 	config.add_property(".:prefix_index")
-	config.add_property(".:suffix_index")  # Watch for typo in original file
+	config.add_property(".:suffix_index")
 
 
 func _ready() -> void:
@@ -72,8 +72,10 @@ func _update_display_name() -> void:
 	else:
 		description = "\n".join(stats)
 
-	# Set rarity color (use rarest affix)
-	if suffix_affix:
+	# Selected drop rarity takes precedence; affix-only map pickups retain their colors.
+	if rarity:
+		rarity_color = rarity.color
+	elif suffix_affix:
 		rarity_color = suffix_affix.color
 	elif prefix_affix:
 		rarity_color = prefix_affix.color
@@ -146,6 +148,7 @@ func generate_random_affixes(allow_prefix: bool = true, allow_suffix: bool = tru
 
 
 func _apply_rarity_visuals() -> void:
+	super._apply_rarity_visuals()
 	# Color the mesh based on rarity
 	if rarity_color != Color.WHITE:
 		var mesh: MeshInstance3D = get_node_or_null("MeshInstance3D")
@@ -166,6 +169,5 @@ func _apply_rarity_visuals() -> void:
 
 
 func set_rarity(new_rarity: ItemRarity) -> void:
-	if new_rarity:
-		rarity_color = new_rarity.color
-		_apply_rarity_visuals()
+	rarity_color = new_rarity.color if new_rarity else Color.WHITE
+	super.set_rarity(new_rarity)

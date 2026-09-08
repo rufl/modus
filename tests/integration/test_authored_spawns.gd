@@ -125,6 +125,7 @@ func test_authored_catalog_item_keeps_world_transform_and_heals_on_pickup() -> v
 	assert_true(pickup.global_basis.is_equal_approx(Basis.from_euler(marker.global_rotation)))
 	var recipient := PickupRecipient.new()
 	_world.add_child(recipient)
+	recipient.global_position = pickup.global_position
 	pickup._request_pickup(recipient.get_path())
 	assert_eq(recipient.health, 75, "The catalog potion must apply its real 50 HP effect")
 	assert_true(pickup.collected)
@@ -140,6 +141,7 @@ func test_authored_material_enters_inventory_with_its_catalog_type() -> void:
 	var recipient := PickupRecipient.new()
 	recipient.inventory = Inventory.new()
 	_world.add_child(recipient)
+	recipient.global_position = pickups[0].global_position
 	pickups[0]._request_pickup(recipient.get_path())
 	var item: InventoryItem = recipient.inventory.get_item_at(0)
 	assert_not_null(item)
@@ -158,6 +160,7 @@ func test_authored_health_tier_and_weapon_scene_keep_their_pickup_effects() -> v
 	var recipient := PickupRecipient.new()
 	_world.add_child(recipient)
 	for pickup: Node3D in pickups:
+		recipient.global_position = pickup.global_position
 		pickup._request_pickup(recipient.get_path())
 	assert_eq(recipient.health, 125, "Megahealth must retain its overhealing tier")
 	assert_eq(recipient.ammo_by_weapon.get(WeaponPickup.WeaponType.SHOTGUN, 0), 12)
@@ -174,6 +177,7 @@ func test_authored_item_respawns_at_its_marker_after_collection() -> void:
 	var original_id: int = pickups[0].get_instance_id()
 	var recipient := PickupRecipient.new()
 	_world.add_child(recipient)
+	recipient.global_position = pickups[0].global_position
 	pickups[0]._request_pickup(recipient.get_path())
 	assert_eq(recipient.armor, 25)
 	await get_tree().create_timer(0.1).timeout
@@ -184,6 +188,7 @@ func test_authored_item_respawns_at_its_marker_after_collection() -> void:
 		# Rigid-body pickups can fall between respawn and this observation.
 		assert_almost_eq(pickups[0].global_position.x, marker.global_position.x, 0.001)
 		assert_almost_eq(pickups[0].global_position.z, marker.global_position.z, 0.001)
+		recipient.global_position = pickups[0].global_position
 		pickups[0]._request_pickup(recipient.get_path())
 		assert_eq(recipient.armor, 50, "The replacement retains the authored item's effect")
 

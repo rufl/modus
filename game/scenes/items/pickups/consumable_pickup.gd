@@ -11,9 +11,11 @@ func _extend_synchronizer_config(config: SceneReplicationConfig) -> void:
 
 
 func _ready() -> void:
-	# Load item data from database
-	var data_service = GameManager.get_core_system("data")
-	var data: Dictionary = data_service.get_item_data(item_id) if data_service else {}
+	# Resource-backed drops are configured before tree entry; map pickups use the database.
+	var data: Dictionary = item_data
+	if data.is_empty():
+		var data_service = GameManager.get_core_system("data")
+		data = data_service.get_item_data(item_id) if data_service else {}
 
 	if data.is_empty():
 		push_warning("[ConsumablePickup] Item not found: %s" % item_id)
@@ -37,8 +39,8 @@ func _ready() -> void:
 	item_data["current_stack"] = stack_count
 
 	# Set rarity visuals
-	var rarity_tier: int = data.get("rarity", 0)
-	rarity = ItemRarity.from_tier(rarity_tier)
+	if not rarity:
+		set_rarity(ItemRarity.from_tier(data.get("rarity", 0)))
 
 	# Set icon display
 	var icon_path: String = data.get("icon_path", "")
@@ -65,21 +67,16 @@ func _ready() -> void:
 	super._ready()
 
 
+func _apply_pickup(player: CharacterBody3D) -> bool:
+	if "inventory" in player and player.inventory is Inventory:
+		return _add_to_inventory(player)
+	return super._apply_pickup(player)
+
+
 func _on_pickup(player: CharacterBody3D) -> void:
 	# Apply consumable effect immediately OR add to inventory
 	var effect_type: String = item_data.get("effect_type", "")
 	var effect_value: float = item_data.get("effect_value", 0.0)
-
-	# Check if player has inventory
-	if "inventory" in player and player.inventory:
-		# Add to inventory instead of instant use
-		var item: InventoryItem = InventoryItem.from_dict(item_data)
-		if item:
-			player.inventory.add_item(item)
-			GameManager.get_core_system("logger").info(
-				"[ConsumablePickup] Added %s to inventory" % pickup_name, "Game"
-			)
-		return
 
 	# Fallback: Apply effect immediately if no inventory
 	match effect_type:

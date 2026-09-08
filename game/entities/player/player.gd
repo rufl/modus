@@ -67,6 +67,15 @@ var weapon_name: String:
 			var weapon: WeaponData = weapon_manager.get_current_weapon()
 			return weapon.weapon_name if weapon else ""
 		return ""
+var _replicated_weapon_index: int = 0
+var current_weapon_index: int:
+	get:
+		return weapon_manager.current_weapon_index if weapon_manager else _replicated_weapon_index
+	set(value):
+		_replicated_weapon_index = value
+		if weapon_manager and weapon_manager.inventory:
+			if weapon_manager.current_weapon_index != value:
+				weapon_manager.inventory.switch_to_weapon(value)
 var damage_multiplier: float = 1.0
 var speed_multiplier: float = 1.0
 var can_fly: bool = false
@@ -84,7 +93,7 @@ var is_downed: bool:
 		return downed_handler.is_downed if downed_handler else false
 var move_speed: float:
 	get:
-		return movement_component.speed if movement_component else 5.0
+		return movement_component.move_speed if movement_component else 5.0
 var health_component: HealthComponent = null
 var weapon_manager: WeaponManager = null
 var dodge_system: DodgeSystem = null
@@ -137,6 +146,8 @@ var anim_player: AnimationPlayer:
 
 var _player_service: Node = null
 var _effects_service: Node = null
+var inventory: Inventory
+var _inventory_manager: InventoryMgr
 var _target_position: Vector3 = Vector3.ZERO:
 	set(value):
 		_target_position = value
@@ -156,10 +167,32 @@ func _enter_tree() -> void:
 	if peer_id != 0:
 		set_multiplayer_authority(peer_id)
 
+	if peer_id > 1 and multiplayer.has_multiplayer_peer():
+		# The owning client's live synchronizer cannot restore server-authored spawn state.
+		var spawn_sync := get_node_or_null("SpawnSynchronizer") as MultiplayerSynchronizer
+		if not spawn_sync:
+			spawn_sync = MultiplayerSynchronizer.new()
+			spawn_sync.name = "SpawnSynchronizer"
+			var spawn_config := SceneReplicationConfig.new()
+			for property: NodePath in [
+				NodePath(".:position"), NodePath(".:rotation"), NodePath(".:current_weapon_index")
+			]:
+				spawn_config.add_property(property)
+				spawn_config.property_set_replication_mode(
+					property, SceneReplicationConfig.REPLICATION_MODE_NEVER
+				)
+			spawn_sync.replication_config = spawn_config
+		spawn_sync.set_multiplayer_authority(1)
+		if not spawn_sync.get_parent():
+			add_child(spawn_sync)
+
 	add_to_group("player")
 
 
 func _exit_tree() -> void:
+	if is_instance_valid(_inventory_manager):
+		_inventory_manager.unregister_inventory(get_multiplayer_authority(), inventory)
+
 	# Unsubscribe from GameManager events
 	if not get_node_or_null("ProgressionBridge"):
 		GameManager.unsubscribe("enemy_died", on_enemy_killed_event)
@@ -223,6 +256,19 @@ func _ready() -> void:
 	_player_service = gs.player if gs else null
 	_effects_service = gs.effects if gs else null
 
+	_inventory_manager = gs.inventory if gs else null
+	var inventory_peer_id: int = get_multiplayer_authority()
+	if _inventory_manager:
+		inventory = _inventory_manager.get_inventory(inventory_peer_id)
+	if not inventory:
+		inventory = (
+			_player_service.get_inventory(inventory_peer_id) if _player_service else Inventory.new()
+		)
+	if _inventory_manager:
+		_inventory_manager.register_inventory(inventory_peer_id, inventory)
+	else:
+		inventory.owner_peer_id = inventory_peer_id
+
 	# Setup components based on player type
 	if not is_local_player:
 		# Remote player: setup visual sync components only
@@ -240,6 +286,8 @@ func _ready() -> void:
 	# Setup local components (input, movement, etc.) for local player only
 	if is_local_player:
 		PlayerComponentFactory.setup_local(self)
+	if weapon_manager and _replicated_weapon_index != weapon_manager.current_weapon_index:
+		weapon_manager.inventory.switch_to_weapon(_replicated_weapon_index)
 
 	# Configure MultiplayerSynchronizer for 60 Hz tick rate
 	var sync: MultiplayerSynchronizer = get_node_or_null("MultiplayerSynchronizer")
@@ -452,9 +500,9 @@ func _physics_process(delta: float) -> void:
 	if _melee_cooldown > 0:
 		_melee_cooldown -= delta
 
-	# CLIENT-SIDE PREDICTION & SERVER RECONCILIATION
+	# A predicting client owns its movement; disabled prediction keeps normal physics.
 	var predictor: Node = get_node_or_null("PlayerMovementPredictor")
-	if predictor and predictor.has_method("_process"):  # It uses _process for capture and prediction
+	if predictor and predictor.is_physics_processing():
 		# The predictor handles its own movement application and server sync.
 		# When using prediction, we skip the legacy physics process.
 		if not is_multiplayer_authority():

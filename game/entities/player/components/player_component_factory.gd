@@ -67,6 +67,12 @@ static func setup_network_sync(player: Node) -> void:
 		player.add_child(player.network_sync)
 		player.network_sync.setup(player, player.camera, player.is_remote_player)
 
+	# The server needs the same RPC endpoint as the owning client.
+	if player.multiplayer.has_multiplayer_peer() and player.get_multiplayer_authority() != 1:
+		var predictor: Node = PlayerPredictorScript.new()
+		predictor.name = "PlayerMovementPredictor"
+		player.add_child(predictor)
+
 
 static func setup_state_manager(player: Node) -> void:
 	## Create and attach player state manager.
@@ -157,12 +163,6 @@ static func setup_local(player: Node) -> void:
 	var ui_input_integration_script := preload("res://game/scripts/core/ui_input_integration.gd")
 	if ui_input_integration_script:
 		player.call_deferred("_integrate_ui_inputs_deferred", ui_input_integration_script)
-
-	# Client-Side Prediction (for authority player)
-	if PlayerPredictorScript and not player.multiplayer.is_server():
-		var predictor: Node = PlayerPredictorScript.new()
-		predictor.name = "PlayerMovementPredictor"
-		player.add_child(predictor)
 
 
 # --- Private Setup Helpers ---

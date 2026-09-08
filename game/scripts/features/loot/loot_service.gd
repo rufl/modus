@@ -194,7 +194,6 @@ func spawn_item(position: Vector3, item_data_path: String, owner_peer: int = -1)
 
 
 ## Request to pick up an item (client -> server)
-## Request to pick up an item (client -> server)
 
 @rpc("any_peer", "reliable")
 func request_pickup(pickup_path: NodePath) -> void:
@@ -203,99 +202,22 @@ func request_pickup(pickup_path: NodePath) -> void:
 		return
 
 	var peer_id: int = multiplayer.get_remote_sender_id()
+	if peer_id == 0:
+		peer_id = multiplayer.get_unique_id()
 
-	# Rate Limited Validation via NetworkService.network_manager
-	# Note: Validation is delegated to NetworkManager for centralized rate limiting
-	# and consistent RPC security across all services
-	var gm: Node = get_node_or_null("/root/GameManager")
-	var ns: Node = gm.get_core_system("network") if gm else null
-	if ns and ns.network_manager:
-		if not ns.network_manager.validate_rpc(peer_id, "request_pickup", [pickup_path]):
+	var network_service := NetworkSvc.get_service()
+	var network_manager: Node = network_service.network_manager if network_service else null
+	if network_manager and peer_id != multiplayer.get_unique_id():
+		if not network_manager.validate_rpc(peer_id, "request_pickup", [pickup_path]):
 			return
 
 	# Validate pickup exists
 	if not _active_pickups.has(pickup_path):
-		_deny_pickup.rpc_id(peer_id, pickup_path, "Item no longer exists")
 		return
-
-	var pickup_data: Dictionary = _active_pickups[pickup_path]
-	var pickup: Node3D = get_node_or_null(pickup_path)
-
-	if not is_instance_valid(pickup):
-		_active_pickups.erase(pickup_path)
-		_deny_pickup.rpc_id(peer_id, pickup_path, "Item no longer valid")
-		return
-
-	# Validate owner restriction
-	if pickup_data.owner_peer > 0 and pickup_data.owner_peer != peer_id:
-		_deny_pickup.rpc_id(peer_id, pickup_path, "This item is not for you")
-		return
-
-	# Validate distance (SERVER-SIDE CHECK)
-	var player: Node3D = _get_player_by_peer(peer_id)
-	if player:
-		var distance: float = player.global_position.distance_to(pickup.global_position)
-		if distance > MAX_PICKUP_DISTANCE * 1.5:  # 50% tolerance for lag
-			_deny_pickup.rpc_id(peer_id, pickup_path, "Too far away (Distance: %.1f)" % distance)
-			push_warning(
-				"[LootService] Pickup denied (Too far): Player %d at %.1f m" % [peer_id, distance]
-			)
-			return
-	else:
-		_deny_pickup.rpc_id(peer_id, pickup_path, "Player not found")
-		return
-
-	# Grant the pickup
-	_grant_pickup(peer_id, pickup_path, pickup_data.item_data_path)
-
-
-## Grant pickup to player (server -> client)
-
-@rpc("authority", "call_local", "reliable")
-func _grant_pickup(peer_id: int, pickup_path: NodePath, item_data_path: String) -> void:
-	# On server: remove from tracking
-	if not multiplayer.has_multiplayer_peer() or multiplayer.is_server():
-		_active_pickups.erase(pickup_path)
-
-		# Destroy pickup for all clients
-		_destroy_pickup.rpc(pickup_path)
-
-		# Emit event
-		# Emit event - REMOVED to prevent duplicates (PickupBase handles this)
-		# emit_event("item_picked_up", {
-		# 	"pickup_path": pickup_path,
-		# 	"item_data_path": item_data_path,
-		# 	"peer_id": peer_id
-		# })
-
-		# item_picked_up.emit(pickup_path, peer_id)
-
-	# On owning client: add to inventory
-	if peer_id == multiplayer.get_unique_id():
-		var item_data: ItemData = load(item_data_path)
-		if item_data:
-			var gm: Node = get_node_or_null("/root/GameManager")
-			var gs: Node = gm.get_core_system("gameplay") if gm else null
-			if gs and gs.inventory and gs.inventory.has_method("add_item"):
-				gs.inventory.add_item(item_data)
-			_log_info("[LootService] Picked up: %s" % item_data.display_name)
-
-
-## Deny pickup request (server -> client)
-
-@rpc("authority", "call_remote", "reliable")
-func _deny_pickup(pickup_path: NodePath, reason: String) -> void:
-	_log_info("[LootService] Pickup denied: %s - %s" % [pickup_path, reason])
-	# Could show UI feedback here
-
-
-## Destroy a pickup on all clients
-
-@rpc("authority", "call_local", "reliable")
-func _destroy_pickup(pickup_path: NodePath) -> void:
-	var pickup: Node3D = get_node_or_null(pickup_path)
-	if is_instance_valid(pickup):
-		pickup.queue_free()
+	var pickup := get_node_or_null(pickup_path) as PickupBase
+	var player := _get_player_by_peer(peer_id) as CharacterBody3D
+	if pickup and player:
+		pickup.collect_for_player(player, peer_id)
 
 
 # =============================================================================
@@ -304,80 +226,58 @@ func _destroy_pickup(pickup_path: NodePath) -> void:
 
 
 func _spawn_pickup(item_data: ItemData, position: Vector3, owner_peer: int) -> Node3D:
-	## Spawn a pickup node for an item (server only)
-	var pickup: Node3D = null
+	var scene: PackedScene = item_data.world_scene
+	if not scene:
+		scene = load(PICKUP_SCENE_PATH)
+	var instance: Node = scene.instantiate()
+	var pickup := instance as PickupBase
+	if not pickup:
+		instance.free()
+		push_warning(
+			"[LootService] Item world_scene must extend PickupBase: %s" % item_data.item_id
+		)
+		return null
 
-	# Prefer custom world scene if defined
-	if item_data.world_scene:
-		pickup = item_data.world_scene.instantiate()
-	else:
-		# Use generic pickup
-		if ResourceLoader.exists(PICKUP_SCENE_PATH):
-			var scene: PackedScene = load(PICKUP_SCENE_PATH)
-			pickup = scene.instantiate()
-		else:
-			push_warning("[LootService] No pickup scene for item: %s" % item_data.display_name)
-			return null
+	pickup.item_data = item_data.to_inventory_dict()
+	pickup.owner_peer_id = owner_peer
+	pickup.pickup_name = item_data.display_name
+	pickup.description = item_data.description
+	pickup.set_rarity(item_data.rarity)
+	var spread := Vector3(randf_range(-0.5, 0.5), 0.3, randf_range(-0.5, 0.5))
+	if not _add_pickup_to_world(pickup, position + spread):
+		return null
 
-	# Apply random spread
-	var spread: Vector3 = Vector3(randf_range(-0.5, 0.5), 0.3, randf_range(-0.5, 0.5))
+	_pickup_counter += 1
+	var pickup_path: NodePath = pickup.get_path()
+	_active_pickups[pickup_path] = {
+		"owner_peer": owner_peer,
+		"spawn_time": Time.get_ticks_msec(),
+		"rarity": item_data.rarity.tier if item_data.rarity else 0,
+	}
+	pickup.tree_exited.connect(_untrack_pickup.bind(pickup_path), CONNECT_ONE_SHOT)
 
-	# Configure pickup
-	if "item_data" in pickup:
-		pickup.item_data = item_data
+	if spawn_beacons and item_data.rarity and item_data.rarity.tier >= beacon_min_rarity:
+		_spawn_loot_beacon(position + spread, item_data.rarity.tier)
+	return pickup
 
-	if pickup.has_method("set_rarity"):
-		pickup.set_rarity(item_data.rarity)
 
-	# Add to scene
+func _untrack_pickup(pickup_path: NodePath) -> void:
+	_active_pickups.erase(pickup_path)
+
+
+func _add_pickup_to_world(pickup: Node3D, world_position: Vector3) -> bool:
 	var tree := get_tree()
 	var scene_root: Node = tree.current_scene if tree else null
 	if not scene_root and tree:
 		scene_root = tree.root
-
-	if scene_root:
-		scene_root.add_child(pickup, true)
-		pickup.global_position = position + spread
-	else:
-		pickup.queue_free()
-		return
-
-	# Setup multiplayer sync
-	_setup_pickup_sync(pickup)
-
-	# Track pickup
-	_pickup_counter += 1
-	var pickup_path: NodePath = pickup.get_path()
-	_active_pickups[pickup_path] = {
-		"item_data_path": item_data.resource_path,
-		"owner_peer": owner_peer,
-		"spawn_time": Time.get_ticks_msec(),
-		"rarity": item_data.rarity.tier if item_data.rarity else 0
-	}
-
-	# Spawn beacon for rare+ items
-	if spawn_beacons and item_data.rarity:
-		if item_data.rarity.tier >= beacon_min_rarity:
-			_spawn_loot_beacon(position + spread, item_data.rarity.tier)
-
-	return pickup
-
-
-func _setup_pickup_sync(pickup: Node3D) -> void:
-	## Add MultiplayerSynchronizer to pickup if needed
-	if pickup.has_node("MultiplayerSynchronizer"):
-		return
-
-	var synchronizer: MultiplayerSynchronizer = MultiplayerSynchronizer.new()
-	synchronizer.name = "MultiplayerSynchronizer"
-	synchronizer.replication_interval = 0.1
-
-	# Create replication config
-	var config: SceneReplicationConfig = SceneReplicationConfig.new()
-	config.add_property(":position")
-	synchronizer.replication_config = config
-
-	pickup.add_child(synchronizer)
+	if not scene_root:
+		pickup.free()
+		return false
+	pickup.position = (
+		(scene_root as Node3D).to_local(world_position) if scene_root is Node3D else world_position
+	)
+	scene_root.add_child(pickup, true)
+	return true
 
 
 func _spawn_loot_beacon(position: Vector3, rarity_tier: int) -> void:
@@ -594,18 +494,7 @@ func _spawn_random_weapon(pos: Vector3, rarity_tier: int) -> void:
 	var key: String = weapon_keys.pick_random()
 	var scene_path: String = ITEM_SCENE_MAP.get(key, "")
 	if not scene_path.is_empty():
-		var item_data: ItemData = ItemData.new()  # Create dummy data wrapper
-		item_data.item_id = key
-		item_data.display_name = key.replace("weapon_", "").capitalize()
-		item_data.item_type = ItemData.ItemType.WEAPON
-		# Map rarity_tier to appropriate ItemRarity
-		var rarity: ItemRarity = ItemRarity.from_tier(rarity_tier)
-		item_data.rarity = rarity
-
-		# Actually we should use spawn_item logic which handles scenes
-		# But internal _spawn_pickup needs real data.
-		# For now, let's load dummy data or just spawn the scene directly?
-		# Better: Configure a dummy ItemData properly.
+		# The scene already supplies weapon identity and affix configuration.
 		_spawn_pickup_direct_scene(scene_path, pos, rarity_tier)
 
 
@@ -626,30 +515,22 @@ func _spawn_consumable(pos: Vector3, attack_type: String, tier: int) -> void:
 
 	var scene_path: String = ITEM_SCENE_MAP.get(key, "")
 	if not scene_path.is_empty():
-		_spawn_pickup_direct_scene(scene_path, pos, 0)  # Consumables have fixed tier usually
+		_spawn_pickup_direct_scene(scene_path, pos, 0, HEALTH_TIER_MAP.get(key, -1))
 
 
-func _spawn_pickup_direct_scene(scene_path: String, pos: Vector3, rarity_val: int) -> void:
+func _spawn_pickup_direct_scene(
+	scene_path: String, pos: Vector3, rarity_val: int, health_tier: int = -1
+) -> Node3D:
 	if not ResourceLoader.exists(scene_path):
-		return
+		return null
 	var scene: PackedScene = load(scene_path)
 	var pickup: Node3D = scene.instantiate()
-	var tree := get_tree()
-	var scene_root: Node = tree.current_scene if tree else null
-	if not scene_root and tree:
-		scene_root = tree.root
-
-	if scene_root:
-		scene_root.add_child(pickup, true)
-		pickup.global_position = pos
-	else:
-		pickup.queue_free()
-		return
-
-	if pickup.has_method("set_rarity_tier"):  # If it accepts int tier
+	if pickup is HealthPickup and health_tier >= 0:
+		pickup.tier = health_tier
+	if pickup.has_method("set_rarity_tier"):
 		pickup.set_rarity_tier(rarity_val)
-	elif pickup.has_method("set_rarity"):  # If it needs resource
-		# construct rarity resource
-		pass
-
-# Re-implement print_stats at end of file if overwritten
+	elif pickup.has_method("set_rarity"):
+		pickup.set_rarity(ItemRarity.from_tier(rarity_val))
+	if not _add_pickup_to_world(pickup, pos):
+		return null
+	return pickup

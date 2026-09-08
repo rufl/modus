@@ -25,19 +25,50 @@ const PROP_SCENES: Dictionary = {
 @export var spawn_point_color: Color = Color(0.0, 1.0, 0.0, 0.5)
 
 var spawned_prop: Node3D = null
+var _startup_pending: bool = false
 
 
 func _ready() -> void:
+	if Engine.is_editor_hint():
+		return
 	add_to_group("loot_prop_spawners")
 
-	if spawn_on_ready:
-		# Only server spawns props
-		if multiplayer.is_server() or not multiplayer.has_multiplayer_peer():
-			call_deferred("spawn_prop")
+	if spawn_on_ready and _can_manage_props():
+		_startup_pending = true
+		_spawn_on_ready.call_deferred()
+
+
+func _exit_tree() -> void:
+	_startup_pending = false
+	# Props are siblings, so removing their spawner must also release its owned prop.
+	# Queue deletion rather than modifying a parent that may itself be exiting.
+	if _can_manage_props() and is_instance_valid(spawned_prop):
+		spawned_prop.queue_free()
+	spawned_prop = null
+
+
+func _can_manage_props() -> bool:
+	if Engine.is_editor_hint() or not is_inside_tree():
+		return false
+	return not multiplayer.has_multiplayer_peer() or multiplayer.is_server()
+
+
+func _spawn_on_ready() -> void:
+	if _startup_pending:
+		_startup_pending = false
+		spawn_prop()
 
 
 func spawn_prop() -> Node3D:
 	## Spawn a prop at this location (server-only)
+	if not _can_manage_props() or is_queued_for_deletion() or get_parent().is_queued_for_deletion():
+		return null
+	_startup_pending = false
+	if is_instance_valid(spawned_prop):
+		if not spawned_prop.is_queued_for_deletion():
+			return spawned_prop
+		despawn_prop()
+
 	# Roll spawn chance
 	if randf() > spawn_chance:
 		return null
@@ -58,32 +89,32 @@ func spawn_prop() -> Node3D:
 
 	# Load and instantiate
 	var scene: PackedScene = load(scene_path)
-	spawned_prop = scene.instantiate()
+	var prop: Node3D = scene.instantiate()
 
-	# Calculate position
-	var spawn_pos: Vector3 = global_position
+	# Set the complete local transform before entering the tree, so readiness and
+	# multiplayer observers see the configured world transform immediately.
+	var spawn_transform: Transform3D = global_transform
 	if random_offset > 0:
-		spawn_pos += Vector3(
+		spawn_transform.origin += Vector3(
 			randf_range(-random_offset, random_offset),
 			0,
 			randf_range(-random_offset, random_offset)
 		)
 
-	# Configure prop
-	_configure_prop(spawned_prop)
-
-	# Add to scene
-	get_parent().add_child(spawned_prop)
-	spawned_prop.global_position = spawn_pos
-
-	# Apply rotation
 	if random_rotation:
-		spawned_prop.rotate_y(randf() * TAU)
-	else:
-		spawned_prop.global_rotation = global_rotation
+		spawn_transform.basis = Basis(Vector3.UP, randf() * TAU) * spawn_transform.basis
+	var parent_3d: Node3D = get_parent_node_3d()
+	prop.transform = (
+		parent_3d.global_transform.affine_inverse() * spawn_transform
+		if parent_3d
+		else spawn_transform
+	)
+	_configure_prop(prop)
 
-	# Hide spawner visual
+	spawned_prop = prop
+	prop.tree_exiting.connect(_on_spawned_prop_tree_exiting.bind(prop), CONNECT_ONE_SHOT)
 	visible = false
+	get_parent().add_child(prop)
 
 	return spawned_prop
 
@@ -119,17 +150,32 @@ func _configure_prop(prop: Node3D) -> void:
 
 
 func despawn_prop() -> void:
-	## Remove spawned prop
-	if spawned_prop and is_instance_valid(spawned_prop):
-		spawned_prop.queue_free()
+	## Remove spawned prop (server-only).
+	if not _can_manage_props():
+		return
+	_startup_pending = false
+	if is_instance_valid(spawned_prop):
+		var prop: Node3D = spawned_prop
 		spawned_prop = null
+		# Detach now so a synchronous respawn never leaves two active props.
+		if prop.get_parent():
+			prop.get_parent().remove_child(prop)
+		prop.queue_free()
 	visible = true
 
 
 func respawn_prop() -> void:
-	## Respawn the prop
+	## Respawn the prop (server-only).
+	if not _can_manage_props():
+		return
 	despawn_prop()
 	spawn_prop()
+
+
+func _on_spawned_prop_tree_exiting(prop: Node3D) -> void:
+	if spawned_prop == prop:
+		spawned_prop = null
+		visible = true
 
 
 # =============================================================================

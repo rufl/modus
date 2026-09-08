@@ -49,6 +49,11 @@ func register_inventory(peer_id: int, inventory: Inventory) -> void:
 	inventory.owner_peer_id = peer_id
 
 
+func unregister_inventory(peer_id: int, inventory: Inventory) -> void:
+	if _inventories.get(peer_id) == inventory:
+		_inventories.erase(peer_id)
+
+
 ## Get player's inventory
 
 
@@ -489,9 +494,7 @@ func _sync_full_inventory(data: Dictionary) -> void:
 	var my_id: int = multiplayer.get_unique_id()
 	var inv: Inventory = _inventories.get(my_id)
 	if inv:
-		inv.load_from_dict(data)
-		inv.inventory_changed.emit()
-		GameManager.get_core_system("logger").info("[Inventory] Debug items received.", "Core")
+		inv.from_dict(data)
 
 
 # ------------------------------------------------------------------------------

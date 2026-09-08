@@ -5,6 +5,7 @@ const InputCommandScript = preload("res://game/core/network/input_command.gd")
 
 var pending_inputs: Array[RefCounted] = []  # Array of InputCommand
 var last_server_ack: int = 0
+var last_processed_sequence: int = 0
 var next_sequence: int = 1
 var player: CharacterBody3D = null
 var net_config: Resource = null
@@ -20,9 +21,15 @@ func _ready() -> void:
 	var ns: Node = GameManager.get_core_system("network")
 	net_config = ns.network_manager.config if ns and ns.network_manager else null
 
-	# Only run on clients (not server or single-player)
-	if not multiplayer.has_multiplayer_peer() or multiplayer.is_server():
-		set_process(false)
+	# Only the owning client predicts. Server replicas retain the RPC endpoint.
+	if (
+		not multiplayer.has_multiplayer_peer()
+		or multiplayer.is_server()
+		or not player.is_multiplayer_authority()
+		or not net_config
+		or not net_config.enable_client_prediction
+	):
+		set_physics_process(false)
 		return
 
 	var logger: Node = GameManager.get_core_system("logger")
@@ -33,7 +40,7 @@ func _ready() -> void:
 		)
 
 
-func _process(delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	# Only predict on client
 	if not net_config or not net_config.enable_client_prediction:
 		return
@@ -80,7 +87,11 @@ func _send_input_to_server(input_bytes: PackedByteArray) -> void:
 		return  # Only server processes
 
 	var sender_id := multiplayer.get_remote_sender_id()
+	if sender_id != player.get_multiplayer_authority():
+		return
 	var input_cmd: RefCounted = InputCommandScript.from_bytes(input_bytes)
+	if not input_cmd or input_cmd.sequence_number <= last_processed_sequence:
+		return
 
 	# Validate input (anti-cheat)
 	var ns: Node = GameManager.get_core_system("network")
@@ -88,25 +99,16 @@ func _send_input_to_server(input_bytes: PackedByteArray) -> void:
 		if not ns.network_manager.validate_rpc(sender_id, "sync_position", []):
 			return
 
-	var gs: Node = GameManager.get_core_system("gameplay")
-	var sender_player: Node = null
-	if gs and gs.entity_registry:
-		sender_player = gs.entity_registry.get_player(sender_id)
-	if not sender_player or not sender_player is CharacterBody3D:
-		return
-
-	# Apply movement on server (authoritative)
-	var predictor: Node = sender_player.get_node_or_null("PlayerMovementPredictor")
-	if predictor:
-		predictor.apply_movement(input_cmd)
+	last_processed_sequence = input_cmd.sequence_number
+	apply_movement(input_cmd)
 
 	# Send back authoritative state with ack
 	_send_state_update.rpc_id(
 		sender_id,
 		input_cmd.sequence_number,
-		sender_player.global_position,
-		sender_player.velocity,
-		sender_player.rotation.y
+		player.global_position,
+		player.velocity,
+		player.rotation.y
 	)
 
 
@@ -117,6 +119,8 @@ func _send_state_update(
 	## Client receives authoritative state from server
 	if multiplayer.is_server():
 		return  # Only clients receive
+	if ack_sequence <= last_server_ack:
+		return
 
 	# Update last acknowledged sequence
 	last_server_ack = ack_sequence

@@ -8,6 +8,15 @@ const RAY_ALWAYS_VISIBLE: bool = true
 @export var description: String = "A useful item"
 @export var pickup_sound: AudioStream
 @export var owner_peer_id: int = 0
+@export var rarity_tier: int = -1:
+	set(value):
+		rarity_tier = value
+		if value < 0:
+			rarity = null
+		elif not rarity or rarity.tier != value:
+			rarity = ItemRarity.from_tier(value)
+		if is_node_ready():
+			_apply_rarity_visuals()
 @export var use_icon: bool = false
 @export var icon_text: String = ""
 @export var icon_color: Color = Color.WHITE
@@ -22,6 +31,13 @@ var rarity: ItemRarity
 var item_data: Dictionary = {}
 
 
+func _enter_tree() -> void:
+	# Spawn fields are restored when the child synchronizer enters the tree.
+	# Configure it first so authored and dynamically-created pickups share the
+	# same property order before any derived _ready() consumes restored state.
+	_setup_synchronizer()
+
+
 func _setup_synchronizer() -> void:
 	var synchronizer: MultiplayerSynchronizer = get_node_or_null("MultiplayerSynchronizer")
 	if not synchronizer:
@@ -29,9 +45,11 @@ func _setup_synchronizer() -> void:
 		synchronizer.name = "MultiplayerSynchronizer"
 
 	var config: SceneReplicationConfig = SceneReplicationConfig.new()
-	config.add_property(".:global_position")
-	config.add_property(".:global_rotation")
+	config.add_property(".:position")
+	config.add_property(".:rotation")
 	config.add_property(".:collected")
+	config.add_property(".:owner_peer_id")
+	config.add_property(".:rarity_tier")
 
 	_extend_synchronizer_config(config)
 	synchronizer.replication_config = config
@@ -50,8 +68,6 @@ func _extend_synchronizer_config(config: SceneReplicationConfig) -> void:
 
 
 func _ready() -> void:
-	_setup_synchronizer()
-
 	# Physics setup
 	collision_layer = 16
 	collision_mask = 1
@@ -81,6 +97,7 @@ func _ready() -> void:
 
 func set_rarity(new_rarity: ItemRarity) -> void:
 	rarity = new_rarity
+	rarity_tier = new_rarity.tier if new_rarity else -1
 	if is_inside_tree():
 		_apply_rarity_visuals()
 
@@ -350,10 +367,38 @@ func _check_visibility(player: Node3D) -> bool:
 
 
 func _on_pickup(player: CharacterBody3D) -> void:
-	# Default behavior: Add to inventory if we have item_data
-	if not item_data.is_empty() and "inventory" in player and player.inventory:
-		var item: InventoryItem = InventoryItem.from_dict(item_data)
-		player.inventory.add_item(item)
+	_add_to_inventory(player)
+
+
+## Subclasses with fallible transfers can leave the pickup available.
+func _apply_pickup(player: CharacterBody3D) -> bool:
+	_on_pickup(player)
+	return true
+
+
+func _add_to_inventory(player: CharacterBody3D) -> bool:
+	if item_data.is_empty():
+		return false
+	var manager := InventoryMgr.get_instance()
+	var peer_id: int = player.get_multiplayer_authority()
+	var inventory: Inventory = player.inventory if "inventory" in player else null
+	if not inventory:
+		return false
+	var item := InventoryItem.from_dict(item_data)
+	# add_item may merge stacks before reporting full; reject before any mutation.
+	var capacity: int = 0
+	for slot: InventoryItem in inventory.slots:
+		if not slot:
+			capacity += maxi(item.max_stack, 1)
+		elif slot.can_stack_with(item):
+			capacity += slot.max_stack - slot.current_stack
+		if capacity >= item.current_stack:
+			break
+	if capacity < item.current_stack or not inventory.add_item(item):
+		return false
+	if manager and multiplayer.has_multiplayer_peer() and peer_id != multiplayer.get_unique_id():
+		manager._sync_full_inventory.rpc_id(peer_id, inventory.to_dict())
+	return true
 
 
 func _on_body_entered(body: Node3D) -> void:
@@ -386,24 +431,33 @@ func _request_pickup(player_path: NodePath) -> void:
 	if collected:
 		return
 
-	var player: Node = get_node_or_null(player_path)
-	if not player or not is_instance_valid(player):
+	var player := get_node_or_null(player_path) as CharacterBody3D
+	if not player:
 		return
-
 	var sender_id: int = multiplayer.get_remote_sender_id()
 	if sender_id == 0:
-		sender_id = 1
+		sender_id = multiplayer.get_unique_id()
+	collect_for_player(player, sender_id)
+
+
+## Shared server gate for overlap RPCs and the loot service's tracked pickups.
+func collect_for_player(player: CharacterBody3D, sender_id: int) -> bool:
+	if not multiplayer.is_server() or collected or not is_instance_valid(player):
+		return false
 	if player.get_multiplayer_authority() != sender_id:
-		push_warning("Pickup rejected: sender %d doesn't own player" % sender_id)
-		return
-
+		return false
 	if owner_peer_id > 0 and sender_id != owner_peer_id:
-		push_warning("Pickup rejected: item owned by %d" % owner_peer_id)
-		return
-
+		return false
+	if player.global_position.distance_to(global_position) > LootSvc.MAX_PICKUP_DISTANCE * 1.5:
+		return false
+	if not _apply_pickup(player):
+		return false
 	collected = true
-	_on_pickup(player)
-	_sync_collected.rpc(player.get_multiplayer_authority())
+	if multiplayer.has_multiplayer_peer():
+		_sync_collected.rpc(sender_id)
+	else:
+		_sync_collected(sender_id)
+	return true
 
 
 ## Sync collection state to all clients
@@ -414,7 +468,7 @@ func _sync_collected(picker_id: int) -> void:
 	_play_sound()
 
 	# Emit pickup signal for statistics, achievements, etc.
-	var item_id: String = item_data.get("item_id", pickup_name)
+	var item_id: String = item_data.get("id", pickup_name)
 	var rarity_tier: int = 0
 	if rarity:
 		rarity_tier = rarity.tier
