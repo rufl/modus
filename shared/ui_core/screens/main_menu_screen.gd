@@ -15,7 +15,6 @@ const OPTIONS_SCREEN: String = "res://shared/ui_core/screens/options_screen.tscn
 const MULTIPLAYER_SCREEN: String = "res://shared/ui_core/screens/multiplayer_menu_screen.tscn"
 const MOD_MANAGER_SCREEN: String = "res://shared/ui_core/screens/mod_manager_screen.tscn"
 const SHOWCASE_SCENE: String = "res://game/world/maps/showcase.tscn"
-const MENU_ART: String = "res://game/art/ui/main_menu_warrior_lineup.png"
 
 var _background_viewport: SubViewportContainer = null
 var _safe_margins: MarginContainer = null
@@ -88,18 +87,6 @@ func _on_screen_enter(_params: Dictionary) -> void:
 
 
 func _setup_3d_background() -> void:
-	if ResourceLoader.exists(MENU_ART):
-		var art := TextureRect.new()
-		art.name = "HeroArt"
-		art.texture = load(MENU_ART) as Texture2D
-		art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-		art.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		add_child(art)
-		art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		move_child(art, 0)
-		return
-
 	# Create SubViewportContainer for 3D background
 	_background_viewport = SubViewportContainer.new()
 	_background_viewport.stretch = true

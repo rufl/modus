@@ -173,9 +173,7 @@ func test_main_menu_screen_exists() -> void:
 	add_child_autofree(test_screen)
 	await get_tree().process_frame
 
-	var hero := test_screen.find_child("HeroArt", true, false) as TextureRect
 	var veil := test_screen.find_child("BackdropVeil", true, false) as ColorRect
-	var art_space := test_screen.find_child("ArtSpace", true, false) as Control
 	var panel := test_screen.find_child("MenuPanel", true, false) as PanelContainer
 	var actions := test_screen.find_child("MenuActions", true, false) as VBoxContainer
 	var play := test_screen.find_child("PlayButton", true, false) as Button
@@ -185,9 +183,7 @@ func test_main_menu_screen_exists() -> void:
 	var hint := test_screen.find_child("MenuHint", true, false) as Label
 	var version := test_screen.find_child("VersionLabel", true, false) as Label
 
-	assert_not_null(hero, "Menu should expose the supplied hero artwork")
 	assert_not_null(veil, "Menu should protect text contrast with a backdrop veil")
-	assert_not_null(art_space, "Wide layouts should reserve room for the hero artwork")
 	assert_not_null(panel, "Menu actions should sit on a readable panel")
 	assert_not_null(actions, "Menu actions should use a responsive container")
 	assert_not_null(play, "Primary play action should exist")
@@ -196,14 +192,8 @@ func test_main_menu_screen_exists() -> void:
 	assert_not_null(quit, "Quit action should exist")
 	assert_not_null(hint, "Focused actions should explain their outcome")
 	assert_not_null(version, "Build version should be visible")
-	assert_not_null(hero.texture, "Hero artwork should load as a texture")
 	assert_gt(veil.size.x, 0.0, "Backdrop should fill the rendered menu instead of collapsing")
 	assert_gt(panel.size.x, 0.0, "Menu panel should participate in container layout")
-	assert_lt(
-		panel.global_position.x + panel.size.x * 0.5,
-		test_screen.global_position.x + test_screen.size.x * 0.5,
-		"Wide menu panel should leave room for hero artwork"
-	)
 	assert_gte(play.custom_minimum_size.y, 48.0, "Menu targets should be comfortably selectable")
 	assert_gte(
 		editor.custom_minimum_size.y, 48.0, "Secondary targets should be comfortably selectable"
