@@ -254,3 +254,36 @@ func test_disconnect_from_retry_notification_cancels_retry() -> void:
 		probe.attempted_hosts.is_empty(), "A listener leaving the game must cancel its retry"
 	)
 	assert_true(probe._reconnect_timer.is_stopped())
+
+
+func test_disconnect_restores_offline_inventory_and_same_port_hosting() -> void:
+	assert_not_null(_network_manager)
+	if not _network_manager:
+		return
+	var original_use_steam: bool = _network_manager._use_steam
+	_network_manager._use_steam = false
+	var error: Error = _network_manager.host_game(0, 2)
+	assert_eq(error, OK)
+	if error != OK:
+		_network_manager._use_steam = original_use_steam
+		return
+	var peer: ENetMultiplayerPeer = multiplayer.multiplayer_peer
+	var port: int = peer.get_host().get_local_port()
+
+	_network_manager.disconnect_game()
+	_network_manager.disconnect_game()
+	var inventory_manager := InventoryMgr.new()
+	add_child_autofree(inventory_manager)
+	var inventory := Inventory.new()
+	inventory_manager.register_inventory(1, inventory)
+	var item := InventoryItem.new()
+	item.id = "offline_tool"
+	inventory.slots[0] = item
+	inventory_manager.request_move_item(0, 1)
+	assert_null(inventory.slots[0], "Repeated disconnect must retain local inventory authority")
+	assert_same(inventory.slots[1], item)
+
+	assert_eq(peer.get_connection_status(), MultiplayerPeer.CONNECTION_DISCONNECTED)
+	assert_eq(_network_manager.host_game(port, 2), OK, "Disconnect must release the host port")
+	_network_manager.disconnect_game()
+	_network_manager._use_steam = original_use_steam

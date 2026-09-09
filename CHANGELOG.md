@@ -4,6 +4,10 @@
 
 ## Unreleased
 
+- Repaired the causes of CI run `34350061062`'s 21 failures: multiplayer fixtures no longer detach a shared transport they do not own, and the saved-player fixture declares the current optional status-effect component. Runtime disconnect and owned-world teardown now restore valid offline authority instead of leaving SceneMultiplayer with a null peer. Regressions cover offline inventory actions, reconnect cancellation, same-port rehosting, and externally owned session preservation.
+- Test and build jobs now share the pinned GUT 9.7.1 installer before project import. Repeated installs replace the bundle without nesting or stale files. The installer removes GUT 9.7.1's unreferenced legacy loader scene, which assigns a non-script Resource and points to an absent script; fresh export exposed this additional error.
+- CI-equivalent focused proof uses stock Godot 4.7.2 and freshly installed GUT 9.7.1, not the workstation's older GUT: 95/95 tests and 633 assertions pass in one shared process, including all previously failing cases. Cold import, actionlint, shell syntax, scoped formatting/lint, and a Linux dedicated-server resource ZIP pass; all seven notice files match and export emits no engine errors. Full hosted CI and platform executable builds were not rerun.
+
 - Fixed two real distribution-payload failures: the provenance ledger now uses Godot's keep-file importer instead of being converted into translations, and all three export presets include the MIT notice for their bundled GUT code. Removed nine stale generated ledger translations.
 - Added `tests/runners/test_export_notices.sh` and its byte-comparison checker. The actual Windows Desktop resource ZIP fails before repair with two missing notices and nine invalid ledger translations; after repair all seven required notice/ledger files match the repository exactly and no ledger translations are exported. The bounded headless runner cleans its temporary package and private runtime directories. This proves one resource payload, not platform executables, a platform matrix, or licensing clearance.
 

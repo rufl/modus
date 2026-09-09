@@ -43,6 +43,16 @@ GODOT_BIN=/path/to/patched/godot bash tests/runners/test_export_notices.sh
 
 Set `GODOT_BIN=/path/to/godot` when needed. The runners isolate Godot HOME, cache, and configuration directories under `/tmp` unless their `MODUS_GODOT_*` environment variables are overridden.
 
+CI test and build jobs use stock Godot **4.7.2** with **GUT 9.7.1**. Match that dependency before reproducing CI failures:
+
+```bash
+bash tools/scripts/install-gut.sh
+```
+
+This replaces `addons/gut`; preserve any local modifications first. The shared installer removes an unused malformed scene shipped in GUT 9.7.1 and is safe to repeat without nesting the bundle. A different local GUT version can report errors differently and is not CI-equivalent proof.
+
+September 9 focused CI repair: 95 tests/633 assertions pass in a fresh dependency-matched checkout and one shared GUT process. The cases include the 21 previously failing CI tests, transport teardown followed by offline inventory operations, real rehosting, and saved-player restoration. This does not refresh a full-suite result.
+
 The export-notice runner exercises one Windows Desktop resource ZIP by default, compares required notices with their repository bytes, rejects erroneous ledger translations, and cleans its private runtime and package. It does not run a platform matrix or establish rights clearance; an optional preset name selects another single payload.
 
 The production-readiness wrapper defaults to a 2400-second aggregate ceiling. The August 4 refresh used an explicit 3600-second bound and completed in 702.76 seconds. Set `MODUS_GODOT_SUITE_TIMEOUT_SECONDS` to another positive integer only when the evidence environment justifies a different ceiling.

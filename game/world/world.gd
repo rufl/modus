@@ -647,7 +647,7 @@ func _release_host_session() -> void:
 		if _session_multiplayer.peer_disconnected.is_connected(remove_player):
 			_session_multiplayer.peer_disconnected.disconnect(remove_player)
 		if enet_peer and _session_multiplayer.multiplayer_peer == enet_peer:
-			_session_multiplayer.multiplayer_peer = null
+			_session_multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
 	if enet_peer:
 		enet_peer.close()
 		enet_peer = null

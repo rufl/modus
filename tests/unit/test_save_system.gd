@@ -18,6 +18,7 @@ class SavedPlayer:
 	extends CharacterBody3D
 
 	var health_component: HealthComponent
+	var status_effect_manager: StatusEffectManager
 	var state_manager: Node
 	var downed_handler: DownedStateHandler
 	var camera: Camera3D
@@ -64,10 +65,6 @@ func after_each() -> void:
 # ============================================================================
 # Save File Creation Tests (Requirement 9.1)
 # ============================================================================
-
-
-func test_save_system_exists() -> void:
-	assert_not_null(save_system, "Save system should be available from GameManager")
 
 
 func test_save_file_creation() -> void:

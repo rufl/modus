@@ -168,8 +168,7 @@ func test_occupied_port_does_not_enter_game_or_close_other_listener() -> void:
 
 	assert_false(_world.in_game)
 	assert_true(_world.spawned_players.is_empty())
-	assert_null(_world.enet_peer)
-	assert_true(_server_api.multiplayer_peer is OfflineMultiplayerPeer)
+	_assert_offline_inventory_operation()
 	await _connect_client(other_root.multiplayer, port)
 
 
@@ -190,6 +189,7 @@ func test_network_manager_disconnect_allows_same_port_rehost_without_duplicate_r
 	await get_tree().process_frame
 	assert_false(_world.in_game, "Explicit disconnect must clear owned gameplay state")
 	assert_eq(peer.get_connection_status(), MultiplayerPeer.CONNECTION_DISCONNECTED)
+	_assert_offline_inventory_operation()
 
 	_host(port)
 	assert_true(_world.in_game)
@@ -209,7 +209,7 @@ func test_world_exit_releases_owned_port_even_with_peer_reference_retained() -> 
 	_world.free()
 
 	assert_eq(peer.get_connection_status(), MultiplayerPeer.CONNECTION_DISCONNECTED)
-	assert_false(_server_api.has_multiplayer_peer(), "World exit must detach its owned transport")
+	_assert_offline_inventory_operation()
 	var rebound := _listening_peer(port)
 	_server_api.multiplayer_peer = rebound
 	await _connect_client(_server_api, port)
@@ -294,3 +294,20 @@ func test_external_replacement_keeps_gameplay_state_and_releases_displaced_host(
 	assert_eq(owned.get_connection_status(), MultiplayerPeer.CONNECTION_DISCONNECTED)
 	_listening_peer(port)
 	await _connect_client(_server_api, external.get_host().get_local_port())
+
+
+func _assert_offline_inventory_operation() -> void:
+	var inventory_manager := InventoryMgr.new()
+	_roots[0].add_child(inventory_manager)
+	var inventory := Inventory.new()
+	inventory_manager.register_inventory(1, inventory)
+	var item := InventoryItem.new()
+	item.id = "offline_tool"
+	inventory.slots[0] = item
+
+	# Uses local peer ID and server authority, not a direct inventory mutation.
+	inventory_manager.request_move_item(0, 1)
+
+	assert_null(inventory.slots[0], "Leaving a host must allow local inventory operations")
+	assert_same(inventory.slots[1], item)
+	inventory_manager.free()

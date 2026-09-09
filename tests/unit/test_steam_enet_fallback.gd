@@ -16,12 +16,6 @@ func before_each() -> void:
 			network_manager = network_service.get("network_manager")
 
 
-func after_each() -> void:
-	# Clean up multiplayer peer
-	if multiplayer.has_multiplayer_peer():
-		multiplayer.multiplayer_peer = null
-
-
 ## Test: Server creation succeeds with ENet when Steam unavailable
 func test_server_creation_with_enet_when_steam_unavailable() -> void:
 	# This test verifies fallback behavior

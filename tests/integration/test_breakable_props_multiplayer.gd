@@ -5,9 +5,11 @@ extends GutTest
 var glass_scene: PackedScene
 var wood_scene: PackedScene
 var test_world: Node3D
+var _original_peer: MultiplayerPeer
 
 
 func before_each() -> void:
+	_original_peer = multiplayer.multiplayer_peer
 	# Load scenes
 	glass_scene = load("res://game/world/actors/props/glass_window.tscn")
 	wood_scene = load("res://game/world/actors/props/wood_plank.tscn")
@@ -18,10 +20,10 @@ func before_each() -> void:
 
 
 func after_each() -> void:
-	# Clean up multiplayer peer
-	if multiplayer.has_multiplayer_peer():
+	# Release only a transport installed by this fixture, preserving the shared API.
+	if multiplayer.multiplayer_peer != _original_peer:
 		multiplayer.multiplayer_peer.close()
-		multiplayer.multiplayer_peer = null
+		multiplayer.multiplayer_peer = _original_peer
 
 
 # =============================================================================

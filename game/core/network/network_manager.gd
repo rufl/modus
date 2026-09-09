@@ -382,8 +382,8 @@ func _check_rate_limit(peer_id: int, method: String) -> bool:
 
 
 func _process(delta: float) -> void:
-	# SceneMultiplayer reports an error when queried before a peer is assigned.
-	# NetworkManager is always-on, so this is a normal single-player/test state.
+	# A caller may temporarily detach a transport while replacing it.
+	# Normal single-player operation keeps an OfflineMultiplayerPeer.
 	if multiplayer.multiplayer_peer == null:
 		return
 	if not multiplayer.is_server():
@@ -1379,7 +1379,8 @@ func disconnect_game() -> void:
 	if multiplayer.multiplayer_peer:
 		# Cancellation precedes close, which may emit disconnection signals.
 		multiplayer.multiplayer_peer.close()
-		multiplayer.multiplayer_peer = null
+	# Null disables SceneMultiplayer authority/ID queries; offline is still server 1.
+	multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
 	var gm: Node = get_node_or_null("/root/GameManager")
 	if gm:
 		var logger: Variant = gm.get_core_system("logger")
