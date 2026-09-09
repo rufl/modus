@@ -18,9 +18,9 @@ Configuration is in `game/config/features/splitscreen.json5`. It currently decla
 
 ## Current proof boundary
 
-Focused configuration, manager, gameplay, feature-integration, stress, compatibility, assignment-UI, viewport, error-recovery, and 30-property tests have green results recorded in current changelog/backlog entries. Five-player layout logic now fills the display with five equal 20% regions. The retained full GUT suite is still non-green, and no current manual evidence bundle proves four-to-six physical gamepads, real viewports, disconnect/reconnect, visible layout quality, or sustained performance.
+Focused configuration, manager, gameplay, feature-integration, stress, compatibility, assignment-UI, viewport, error-recovery, and 30-property tests have dated green results recorded in the root changelog and consolidated status. Five-player layout logic now fills the display with five equal 20% regions. No current manual evidence bundle proves four-to-six physical gamepads, real viewports, disconnect/reconnect, visible layout quality, or sustained performance.
 
-The strict readiness baseline is 1299/1430 passing with 119 failures, 12 risky/pending, and 62 GUT orphans. Splitscreen should therefore be described as **substantial source plus focused contract proof**, not as a finished 4–6-player product.
+Use [Current Status](../../../../docs/CURRENT_STATUS.md) for the historical aggregate and current proof gaps rather than obsolete local reports. Splitscreen is **substantial source plus focused contract proof**, not a finished 4–6-player product.
 
 ## Required live proof
 

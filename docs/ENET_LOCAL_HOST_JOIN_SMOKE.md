@@ -1,6 +1,6 @@
 # MODUS ENet Local Host/Join Smoke
 
-> **Documentation status: maintained reference.** Project-wide readiness and test totals are defined by `docs/DOCUMENTATION_TRUTH.md` and the generated readiness reports; narrower claims in this file apply only to the named subsystem or workflow.
+> **Documentation status: maintained reference.** This page preserves the July 13 invocation boundary, not current ENet capability or fresh proof. Later focused local ENet observations are consolidated in [Current Status](CURRENT_STATUS.md); generated reports and raw logs remain local-only under the [truth contract](DOCUMENTATION_TRUTH.md).
 
 **Generated:** 2026-07-13
 **Started:** 2026-07-13T12:45:44Z
@@ -18,4 +18,4 @@ The harness starts separate Godot 4.7 server and client processes, waits for con
 | Server | 1 |
 | Client | 1 |
 
-Logs are disposable and are not retained by the repository cleanup workflow.
+Repository publication cleanup preserves existing raw logs byte-for-byte locally while removing them from Git tracking. Fresh clones do not include those logs; this dated summary is not a fresh connectivity result.

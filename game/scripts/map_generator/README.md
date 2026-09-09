@@ -1,6 +1,6 @@
 # Procedural Map Generator
 
-> **Documentation status: maintained reference.** This page describes the live source and current proof boundary. Historical task-completion reports beside the source are not current readiness evidence.
+> **Documentation status: maintained reference.** This page describes live source and bounded proof. Historical task-completion reports are local-only, absent from fresh clones, and never current readiness evidence.
 
 ## Entry point
 

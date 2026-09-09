@@ -64,8 +64,7 @@ current_files=(
 )
 
 release_docs=(
-  "docs/RELEASE_NOTES.md"
-  "docs/CHANGELOG.md"
+  "CHANGELOG.md"
 )
 
 required_files=(

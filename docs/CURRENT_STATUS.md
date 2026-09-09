@@ -1,6 +1,6 @@
 # MODUS Current Status
 
-> **Documentation status: maintained reference.** This is the consolidated current snapshot. Generated reports remain authoritative for their individual gates.
+> **Documentation status: maintained reference.** This is the consolidated published snapshot, not a fresh verification run. Generated reports and raw logs are local-only; each report describes its own invocation.
 
 **Updated:** September 9, 2026 <!-- craft-ignore: status sheet uses deliberate labels -->
 **Version:** `0.9.5-beta`  
@@ -13,6 +13,8 @@
 MODUS contains broad FPS framework code plus focused and golden-demo runtime proof, but reviewed manual gameplay evidence is absent and the release-version gate is blocked. September 9 closes six engineering repair groups with 67 focused tests/612 assertions, an eleven-step actual gameplay smoke, isolated native asset rendering, and a compiled Godot audio-shutdown patch. The August 4 strict aggregate and older category lanes are retained historical evidence, not the current-tree suite total. A bounded performance capture exists but does not establish production targets.
 
 The canonical publication rules are in [Documentation Truth](DOCUMENTATION_TRUTH.md).
+
+Publication cleanup preserves old local evidence without refreshing it. Fresh clones retain this summary, maintained guides, licenses, and curated media—not raw `logs/`, historical session/archive files, or generated reports. See [local report regeneration](DOCUMENTATION_TRUTH.md#regenerating-local-reports) for commands and prerequisites. Missing local inputs must remain missing evidence; earlier PASS results below are dated observations, not checkout guarantees.
 
 ## Readiness Snapshot
 
@@ -101,7 +103,7 @@ These results are narrower than the aggregate suite and must not be summed into 
 | Local Workshop simulation | 1/1, 13 assertions |
 | Source shape/resource/editor registry | 37/37, 172 assertions, zero GUT orphans; canonical paths and built-in actor instantiation only |
 
-The July 17 focused threaded and export lanes are clean at their stated boundary and are now covered by a green complete strict aggregate.
+The July 17 focused threaded/export results and August 4 strict aggregate are historical observations. They do not certify later changes or replace a refreshed full-suite run.
 
 ## Source-Backed Implementation Boundary
 
@@ -120,7 +122,7 @@ This source inventory is not equivalent to complete runtime or user-experience p
 ### Multiplayer
 
 - `multiplayer_demo` profile launch: **PASS** for profile/service startup.
-- Two-process ENet host/join: **BLOCKED** by sandbox localhost socket creation.
+- Historical two-process ENet host/join smoke: **BLOCKED** by sandbox localhost socket creation at that run's boundary. September 9 focused real-ENet host lifecycle, inventory, and late-join checks now pass; broader latency/reconnect/dedicated-client proof remains open.
 - Real Steam/GodotSteam: **UNPROVEN**; no current authenticated Steam API evidence exists.
 - High-latency combat quality: **UNPROVEN**; lag-compensation source exists but the maintained combat integration still has an open TODO.
 
@@ -128,7 +130,7 @@ This source inventory is not equivalent to complete runtime or user-experience p
 
 - Save/export/reload serialization contract: **PASS**.
 - Local Workshop filesystem simulation: **PASS**.
-- Main-menu/showcase/mod-manager/skill-tree presentation: **FOCUSED PASS** through 26/26 structural/accessibility tests plus fresh wide/narrow captures in `docs/media/release/`.
+- August main-menu/showcase/mod-manager/skill-tree presentation: **FOCUSED PASS** through 26/26 structural/accessibility tests plus dated wide/narrow captures in `docs/media/release/`. The menu captures predate artwork removal and are not current rendered proof.
 - Live complete editor UI workflow: **UNPROVEN**.
 - Standalone custom undo/redo commands: **OPEN TODO**.
 - Real Steam Workshop transfer: **BLOCKED** without GodotSteam/client/app/account evidence.
@@ -186,9 +188,7 @@ tools/validate_production_readiness.sh --run-godot-tests --strict
 
 ## Related Current Sources
 
-- [Production Readiness](PRODUCTION_READINESS_REPORT.md)
-- [Automated Lanes](AUTOMATED_TEST_LANES_REPORT.md)
-- [Manual Evidence](MANUAL_EVIDENCE_REPORT.md)
-- [Performance Evidence](PERFORMANCE_EVIDENCE_REPORT.md)
-- [Release Readiness](RELEASE_READINESS_REPORT.md)
+- [Report Regeneration and Evidence Prerequisites](DOCUMENTATION_TRUTH.md#regenerating-local-reports)
+- [Known-Limits Matrix](KNOWN_LIMITS_MATRIX.md)
+- [Release Evidence Bundle](RELEASE_EVIDENCE_BUNDLE.md)
 - [Active Backlog](../BACKLOG.md)

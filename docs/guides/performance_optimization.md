@@ -1,10 +1,10 @@
 # Performance Measurement and Tuning
 
-> **Documentation status: maintained reference.** No hardware tier, splitscreen FPS target, or optimization gain is certified by this guide. Current evidence is defined by `docs/PERFORMANCE_EVIDENCE_REPORT.md`.
+> **Documentation status: maintained reference.** No hardware tier, splitscreen FPS target, or optimization gain is certified by this guide. Published context is in [Performance Baseline Proof](../PERFORMANCE_BASELINE_PROOF.md); generated validation reports describe local invocations only.
 
-## Current evidence
+## Recorded evidence boundary
 
-The retained showcase capture is `logs/performance_logs/showcase_baseline_20260713.csv`:
+The July 13 showcase capture, `logs/performance_logs/showcase_baseline_20260713.csv`, is local-only and absent from a fresh clone. The maintained summary records:
 
 - 66.4 seconds;
 - 130 samples;
@@ -12,7 +12,7 @@ The retained showcase capture is `logs/performance_logs/showcase_baseline_202607
 - one 1-FPS sample and a 108.55 ms maximum frame-time sample;
 - observed extreme enemy-position warnings during the route.
 
-The strict evidence validator passes because the capture is present and structurally valid. Its 1262.31 average FPS is not a production target or a representative hardware promise.
+The strict evidence validator passed for that capture's duration and structure. Its 1262.31 average FPS is not a production target or representative hardware promise. Historical measurements do not make a fresh checkout's evidence validator pass.
 
 ## Capture a baseline
 
@@ -22,6 +22,8 @@ Use the maintained capture path:
 godot --path . --script tools/run_performance_evidence_capture.gd
 tools/validate_performance_evidence.sh --strict
 ```
+
+The capture writes local CSV evidence under `logs/performance_logs/`; the validator writes ignored local output `docs/PERFORMANCE_EVIDENCE_REPORT.md`. Missing captures remain missing evidence. Review the actual new result rather than assuming the recorded baseline still applies.
 
 For publishable evidence, record:
 

@@ -24,7 +24,7 @@ The August 2 source pass corrected the `HEIGHTMAP_STRENGTH` vertex identifier an
 
 ## Provenance Boundary
 
-The implementation was reviewed against dip000's `BloodyPool` source at commit `7a3e9bc685255d37f489e25b509fb56e185aa9fb`. The upstream MIT notice is retained at `docs/licenses/DIP000_BLOODY_POOL_MIT.txt`, and both derived files are cleared in `docs/PROVENANCE_LEDGER.csv`. Historical shader guides retain old links and claims for traceability only.
+The implementation was reviewed against dip000's `BloodyPool` source at commit `7a3e9bc685255d37f489e25b509fb56e185aa9fb`. The upstream MIT notice is retained at `docs/licenses/DIP000_BLOODY_POOL_MIT.txt`, and both derived files are cleared in `docs/PROVENANCE_LEDGER.csv`. Historical shader guides remain local-only and absent from fresh clones; their old links and claims are not required reading or current proof.
 
 ## Before Using or Shipping
 
@@ -33,4 +33,4 @@ The implementation was reviewed against dip000's `BloodyPool` source at commit `
 3. Measure performance in the actual target scene and hardware profile.
 4. Include the retained MIT notice in packaged release artifacts.
 
-Current project readiness remains defined by `docs/DOCUMENTATION_TRUTH.md` and the generated readiness reports.
+Published project readiness is consolidated in [Current Status](../../docs/CURRENT_STATUS.md). The [Documentation Truth Contract](../../docs/DOCUMENTATION_TRUTH.md) defines local-only report regeneration and historical evidence boundaries.

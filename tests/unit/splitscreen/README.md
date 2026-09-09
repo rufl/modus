@@ -11,4 +11,4 @@ godot --headless --path . -s addons/gut/gut_cmdln.gd \
   -gdir=res://tests/unit/splitscreen
 ```
 
-Focused green results exist for several files, including the 15/15 assignment-UI contract and repaired manager/configuration lanes. Read current backlog/changelog entries for exact dated results. The retained full project suite remains non-green, and unit/model tests do not prove physical gamepads or rendered viewports.
+Focused green results exist for several files, including the 15/15 assignment-UI contract and repaired manager/configuration lanes. Read [Current Status](../../../docs/CURRENT_STATUS.md) and the root changelog for exact dated results; historical aggregates do not certify the current checkout. Unit/model tests do not prove physical gamepads or rendered viewports.

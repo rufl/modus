@@ -1,29 +1,22 @@
 # MODUS Documentation Index
 
-> **Documentation status: maintained reference.** This index separates current references, generated/focused evidence, and unvalidated historical snapshots.
+> **Documentation status: maintained reference.** This index separates published references and curated evidence from local-only generated outputs and historical snapshots.
 
-**Updated:** August 4, 2026
+**Updated:** September 9, 2026
 
 ## Canonical Current Truth
 
 - [Documentation Truth Contract](DOCUMENTATION_TRUTH.md): publication policy and current headline boundary
 - [Current Status](CURRENT_STATUS.md): consolidated current snapshot
-- [Production Readiness Report](PRODUCTION_READINESS_REPORT.md): generated blocker report
 - [Ship-Readiness Estimate](SHIP_READINESS_ESTIMATE.md): explicit evidence gateboard and calendar estimate
 - [Active Backlog](../BACKLOG.md): open work and current progress
-- [Backlog Archive](../BACKLOG_ARCHIVE.md): completed/retired work and historical baselines
 - [Root Roadmap](../ROADMAP.md) and [Product Roadmap](ROADMAP.md): proof sequence and product-area gaps
 
-## Generated and Focused Evidence
+## Local Reports and Published Evidence
 
-- [Automated Test Lanes Report](AUTOMATED_TEST_LANES_REPORT.md)
-- [Main Player Path Smoke](MAIN_PLAYER_PATH_SMOKE.md)
-- [Showcase Scene Launch Smoke](SHOWCASE_LAUNCH_SMOKE.md)
-- [Golden Demo Smoke](GOLDEN_DEMO_SMOKE.md)
-- [Manual Evidence Report](MANUAL_EVIDENCE_REPORT.md)
-- [Performance Evidence Report](PERFORMANCE_EVIDENCE_REPORT.md)
+The eight generated reports are ignored local outputs, absent from a fresh clone. See [Regenerating Local Reports](DOCUMENTATION_TRUTH.md#regenerating-local-reports) for output paths, commands, and evidence prerequisites. A fresh report describes only its invocation; old local logs do not certify the current checkout.
+
 - [Performance Baseline Context](PERFORMANCE_BASELINE_PROOF.md)
-- [Release Readiness Report](RELEASE_READINESS_REPORT.md)
 - [Multiplayer Profile Smoke](MULTIPLAYER_PROFILE_SMOKE.md)
 - [ENet Local Host/Join Smoke](ENET_LOCAL_HOST_JOIN_SMOKE.md)
 - [Editor Round-Trip Proof](EDITOR_ROUNDTRIP_PROOF.md)
@@ -78,11 +71,11 @@ A PASS applies only to the scope stated in that report. Focused or simulated evi
 - [Machine-Readable Provenance Ledger](PROVENANCE_LEDGER.csv)
 - [Retained Third-Party License Records](licenses/README.md)
 - [Root Changelog](../CHANGELOG.md): maintained chronological record; old entries retain their original bounded results
-- `docs/CHANGELOG.md` and `docs/RELEASE_NOTES.md`: historical snapshots, not current release evidence
+- `docs/CHANGELOG.md` and `docs/RELEASE_NOTES.md`: local-only historical snapshots, not published release evidence
 
 ## Historical Documents
 
-Historical files are retained for traceability, but their bodies have not been revalidated against the current tree. Their paths, APIs, scores, counts, estimates, completion claims, test outcomes, and instructions may be wrong or superseded.
+Historical files remain byte-for-byte on the originating workstation but are no longer tracked or included in fresh clones. Their bodies have not been revalidated against the current tree. Paths, APIs, scores, counts, estimates, completion claims, test outcomes, and instructions may be wrong or superseded. `BACKLOG_ARCHIVE.md` and `MEMORY.md` are also local-only; public closure summaries belong in the root changelog.
 
 Historical families include:
 
@@ -97,7 +90,7 @@ Historical families include:
 - shader architecture, quick-start, integration, implementation, index, and changelog documents;
 - old runner-fix, type-safety, CI, and UI-audit reports.
 
-The historical banner is a warning, not validation of the body. Historical text never overrides live source, the truth contract, or current generated reports.
+This inventory describes historical scope without modifying local-only files. Historical text never overrides live source, the truth contract, or newly reviewed observations. Raw `logs/` and generated reports are local evidence, not published navigation targets; curated `docs/media/` captures and licensing records remain tracked.
 
 ## Verification
 

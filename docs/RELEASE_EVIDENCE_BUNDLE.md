@@ -5,6 +5,8 @@
 **Updated:** August 4, 2026
 **Status:** EVIDENCE INDEX COMPLETE — release approval remains blocked by manual evidence, provenance, packaging, and external/runtime clearance
 
+This published index preserves dated observations and curated media; it is not a fresh verification run. Raw `logs/`, generated reports, and historical session documents remain local-only and are absent from fresh clones. See [report regeneration](DOCUMENTATION_TRUTH.md#regenerating-local-reports) for commands and prerequisites. The August menu images predate the subsequent artwork removal and do not prove the current rendered menu.
+
 ## Main Menu Captures
 
 | Artifact | Resolution | SHA-256 | Boundary |
@@ -28,7 +30,7 @@
 
 ![MODUS mod manager at 800×600](media/release/mod_manager_800x600.png)
 
-The UI captures verify readable hierarchy, contrast, responsive containment, visible version truth, the player-visible Showcase entry, the supplied hero artwork, the localized gamepad-ready route/evidence panel, and the responsive mod selection/reload workflow. Focused UI proof is 26/26. They do not prove manual input feel.
+The August UI captures record readable hierarchy, contrast, responsive containment, visible version truth, the player-visible Showcase entry, the then-present hero artwork, the localized gamepad-ready route/evidence panel, and responsive mod selection/reload workflow. Focused UI proof at that boundary was 26/26. They do not prove current appearance or manual input feel.
 
 ## Automated Golden Demo
 
@@ -39,7 +41,7 @@ The UI captures verify readable hierarchy, contrast, responsive containment, vis
 
 ![MODUS golden-demo smoke](media/release/golden_demo_smoke_1280x720.png)
 
-The linked [Golden Demo Smoke](GOLDEN_DEMO_SMOKE.md) proves one controlled local pass through scene load, player spawn, movement input, weapon fire, enemy defeat, pickup collection, encrypted save/load restoration, and bundled sample-mod loading. It remains separate from manual gameplay evidence.
+The retained media records one controlled local pass through scene load, player spawn, movement input, weapon fire, enemy defeat, pickup collection, encrypted save/load restoration, and bundled sample-mod loading. It remains separate from manual gameplay evidence. Generate a new local `docs/GOLDEN_DEMO_SMOKE.md` with `tools/run_showcase_golden_demo_smoke.sh --strict`; its result describes that new invocation, not the historical capture.
 
 ## Manual Recorder UI
 
@@ -60,14 +62,14 @@ These captures prove the recorder surface renders responsively with visible focu
 | --- | --- | ---: | --- | --- |
 | Intel Arc A770 / Mesa, Godot 4.7 OpenGL compatibility on Wayland | Unthrottled showcase capture | 66.4s / 130 | Avg 1262.31 FPS; min 1; max frame 108.55ms; max memory 104.10MB | Evidence-shape PASS only; not a display-synchronized target or supported-hardware claim |
 
-Source: `docs/PERFORMANCE_BASELINE_PROOF.md` and `logs/performance_logs/showcase_baseline_20260713.csv`.
+Published context: [Performance Baseline Proof](PERFORMANCE_BASELINE_PROOF.md). Original raw input `logs/performance_logs/showcase_baseline_20260713.csv` remains local-only; the table preserves its dated observation, not an available checkout input.
 
-## Retained Evidence
+## Published Context and Local Evidence
 
-- Automated suite: `logs/full_godot_gut_latest.log.gz`.
+- Automated suite: the [current status](CURRENT_STATUS.md) and [root changelog](../CHANGELOG.md) retain the historical aggregate scope. Original `logs/full_godot_gut_latest.log.gz` is local-only; run `./tests/runners/run_all_tests_headless.sh` for new logs and a new result.
 - UI focus: `tests/unit/test_ui_system.gd`.
-- Performance baseline: `logs/performance_logs/showcase_baseline_20260713.csv` and `docs/PERFORMANCE_BASELINE_PROOF.md`.
-- Showcase route: `docs/SHOWCASE_ROUTE.md`, `docs/GOLDEN_DEMO_SMOKE.md`, and startup-only `docs/SHOWCASE_LAUNCH_SMOKE.md`.
+- Performance baseline: [published context](PERFORMANCE_BASELINE_PROOF.md); use `godot --path . --script tools/run_performance_evidence_capture.gd` and `tools/validate_performance_evidence.sh --strict` to create and validate new local CSV evidence.
+- Showcase route: [maintained checklist](SHOWCASE_ROUTE.md). Local `docs/GOLDEN_DEMO_SMOKE.md` and startup-only `docs/SHOWCASE_LAUNCH_SMOKE.md` are regenerated using the [report commands](DOCUMENTATION_TRUTH.md#regenerating-local-reports), not fetched as committed proof.
 - Provenance inventory: `docs/ATTRIBUTION.md` and `docs/PROVENANCE_LEDGER.csv`.
 - Retained notices: root `LICENSE` and `docs/licenses/`.
 - September 9 package proof: `tests/runners/test_export_notices.sh` exports the Windows Desktop resource ZIP and verifies seven required notice/ledger files byte-for-byte, rejecting obsolete ledger translations. The regression fails on the original payload and passes after repair.

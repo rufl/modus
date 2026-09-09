@@ -4,7 +4,7 @@
 
 ## Start with the evidence boundary
 
-Read `docs/CURRENT_STATUS.md` and `docs/PRODUCTION_READINESS_REPORT.md`. Some failures are known project blockers; others are environment limitations. Do not erase either category by rerunning a narrower check.
+Read [Current Status](CURRENT_STATUS.md) and [Known Limits](KNOWN_LIMITS_MATRIX.md). Generated `docs/PRODUCTION_READINESS_REPORT.md` is a local output, absent from a fresh clone; regenerate it with `tools/validate_production_readiness.sh --run-godot-tests --strict` when attempting a new readiness baseline. See [report prerequisites](DOCUMENTATION_TRUTH.md#regenerating-local-reports). Some failures are known project blockers; others are environment limitations or missing local evidence. Do not erase any category by rerunning a narrower check or copying an old PASS.
 
 ## Godot is not found
 

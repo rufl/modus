@@ -34,12 +34,14 @@ def main() -> int:
         for path in sorted(names):
             if path.startswith("docs/PROVENANCE_LEDGER.") and path.endswith(".translation"):
                 failures.append(f"Provenance data incorrectly exported as a translation: {path}")
+            if path.startswith("logs/"):
+                failures.append(f"Local development log exported: {path}")
 
     for failure in failures:
         print(f"FAIL: {failure}")
     if failures:
         return 1
-    print(f"PASS: {len(required)} exported notices match their repository bytes; no ledger translations.")
+    print(f"PASS: {len(required)} exported notices match; no ledger translations or local logs.")
     return 0
 
 

@@ -34,6 +34,8 @@ logs/manual_test_logs/<session>.csv
 
 Use `--evidence-dir` only when evidence must be staged elsewhere. Direct `ManualTestTimer` users may set `output_directory` or `MODUS_MANUAL_EVIDENCE_DIR`; otherwise the fallback remains `user://manual_test_logs`.
 
+`logs/` is ignored local evidence, not committed input or a fresh-clone fixture. Publication cleanup preserves existing CSVs byte-for-byte locally; do not delete them to make a gate pass. Publish reviewed, dated conclusions in maintained status/changelog entries. The validator below regenerates local-only `docs/MANUAL_EVIDENCE_REPORT.md`; neither that output nor an old PASS replaces a new reviewed session.
+
 Each CSV includes:
 
 - stable test IDs and pass/fail/skip/incomplete results;

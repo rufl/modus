@@ -1,6 +1,6 @@
 # MODUS Multiplayer Demo Profile Smoke
 
-> **Documentation status: maintained reference.** Project-wide readiness and test totals are defined by `docs/DOCUMENTATION_TRUTH.md` and the generated readiness reports; narrower claims in this file apply only to the named subsystem or workflow.
+> **Documentation status: maintained reference.** This page preserves the July 13 invocation boundary, not current ENet capability or fresh proof. Later focused local ENet observations are consolidated in [Current Status](CURRENT_STATUS.md); generated reports and raw logs remain local-only under the [truth contract](DOCUMENTATION_TRUTH.md).
 
 **Generated:** 2026-07-13
 **Status:** PASS (profile launch); host/join runtime proof remains blocked
@@ -20,4 +20,4 @@ The smoke launches Godot headlessly with `MODUS_FEATURE_PROFILE=multiplayer_demo
 - `standard` remains the default single-player profile and does not enable `network`.
 - `multiplayer_demo` explicitly enables `network` plus the core gameplay features required by the pitch path.
 - The profile does not prove two peers connected, Steam availability, or gameplay synchronization.
-- ENet host/join remains blocked in the current sandbox by localhost socket creation; real Steam/GodotSteam proof remains unavailable.
+- At this July 13 invocation's boundary, ENet host/join was blocked by sandbox localhost socket creation. Later focused local ENet observations are documented in [Current Status](CURRENT_STATUS.md); real Steam/GodotSteam remains unproven.

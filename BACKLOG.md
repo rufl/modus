@@ -1,10 +1,10 @@
 # MODUS Backlog
 
-> **Documentation status: maintained reference.** Project-wide readiness and test totals are defined by `docs/DOCUMENTATION_TRUTH.md` and the generated readiness reports; narrower claims in this file apply only to the named subsystem or workflow.
+> **Documentation status: maintained reference.** Published readiness and dated test boundaries are defined by `docs/DOCUMENTATION_TRUTH.md` and `docs/CURRENT_STATUS.md`; locally generated reports describe individual runs, not fresh-clone guarantees.
 
 ## Source Of Truth Policy
 
-Treat generated entries as proposals until they are promoted into the active queue, implemented, and proven. Every accepted active row and every archived row must include at least one proof tag and a short evidence note.
+Treat generated entries as proposals until they are promoted into the active queue, implemented, and proven. Every accepted active row and published closure summary must include at least one proof tag and a short evidence note.
 
 ### Proof Tags
 
@@ -21,7 +21,7 @@ Treat generated entries as proposals until they are promoted into the active que
 - Do not close feature or runtime rows with docs-only proof.
 - Do not treat scaffolding, a warning path, or a planned command as runtime proof.
 - If the full Godot suite is not available, record the narrower command that did run and keep the wider proof boundary open.
-- Move completed, retired, or disproven rows to `BACKLOG_ARCHIVE.md` with their proof tags and evidence.
+- Record completed, retired, or disproven work in root `CHANGELOG.md` with its proof tags, date, and evidence boundary before removing it from this active queue. `BACKLOG_ARCHIVE.md` is optional local-only history, not a tracked destination or required checkout input.
 
 ### Current Verification Boundaries
 
@@ -34,14 +34,16 @@ Treat generated entries as proposals until they are promoted into the active que
 - Release readiness validation: `tools/validate_release_readiness.sh --strict`
 - Runtime gameplay/manual proof: launch a normal Godot session, complete the manual checklist, and record the observed path.
 
-The six September 9 engineering repair groups are completed and recorded in [Backlog Archive](BACKLOG_ARCHIVE.md): 67 focused tests/612 assertions, eleven actual gameplay checks, native asset rendering, and the compiled engine patch. The MP3 repair requires that patched Godot runtime. The release tasks below remain open. `[truth:test]` `[truth:runtime]`
+Report paths and `logs/` are ignored local outputs. See [report regeneration and evidence prerequisites](docs/DOCUMENTATION_TRUTH.md#regenerating-local-reports); their absence on a fresh clone does not invalidate historical summaries or establish a current PASS.
+
+The six September 9 engineering repair groups are summarized in the [root changelog](CHANGELOG.md) and [current status](docs/CURRENT_STATUS.md): 67 focused tests/612 assertions, eleven actual gameplay checks, native asset rendering, and the compiled engine patch. The MP3 repair requires that patched Godot runtime. These are dated observations, not a fresh full-suite result; release tasks below remain open. `[truth:test]` `[truth:runtime]`
 
 ## Active Queue
 
 - Progress 2026-08-02 golden-demo/mod-UX slice: added a player-visible automated showcase smoke that loads the maintained scene, spawns a player, accepts movement input, fires, defeats an enemy, collects a pickup, restores an encrypted save, and loads the bundled SDK sample; fixed stale save/ammo slot APIs, disabled-mod enablement, and the broken skill-tree compatibility scene; rebuilt the mod manager as a responsive localized focusable workflow with explicit pending-reload state. The smoke passes all 8 steps, and focused UI/localization/mod/save proof passes 72/72 with 298 assertions. `[truth:runtime]` `[truth:test]` `[truth:source-audit]`
 - Progress 2026-08-02 showcase/provenance hardening slice: replaced the passive keyboard-only showcase splash with a responsive localized panel, mouse/gamepad/keyboard primary action, clear golden-demo route, and explicit evidence boundary; corrected the shared blood-pool shader identifier and missing-material failure; added root/export license packaging, retained verified Kenney CC0 and dip000 MIT records, and generated a deterministic 220-row asset ledger. Eight ledger rows are cleared; 212 still require rights review. `[truth:source-audit]` `[truth:docs]` `[truth:test]`
 - Progress 2026-08-02 shared UI accessibility/localization slice: extended 48-pixel logical targets and explicit focus mode through host, multiplayer, options, mods, pause, save/load, and procedural modal actions; added English/Spanish route labels; fixed language-change fallbacks; reserved a deterministic wide menu column so hero art is not hidden behind the panel; made shared forms shrink safely; and added a source-bounded known-limits matrix. `[truth:source-audit]` `[truth:test]`
-The August 4 current-tree aggregate is green at 1440/1440 with 20,475 assertions; preserve it while manual, provenance, packaging, and external proof remain open. `[truth:test]`
+The August 4 aggregate recorded 1440/1440 with 20,475 assertions. It is historical evidence, not the current-tree suite total; a refreshed aggregate and manual, provenance, packaging, and external proof remain open. `[truth:test]`
 
 ### Manual And Performance Evidence
 

@@ -1,12 +1,12 @@
 # MODUS Test Suite
 
-> **Documentation status: maintained reference.** Current outcomes are reported by `docs/AUTOMATED_TEST_LANES_REPORT.md` and `docs/PRODUCTION_READINESS_REPORT.md`; this page documents inventory and execution only.
+> **Documentation status: maintained reference.** Published outcomes and exclusions are consolidated in [Current Status](../docs/CURRENT_STATUS.md); generated reports are local outputs for individual invocations. This page documents inventory and execution.
 
 ## Current boundary
 
-The repository has substantial green GUT coverage. The August 4 complete filtered Godot 4.7 aggregate passes 1440/1440 tests with 20,475 assertions and no risky/pending tests or GUT orphans in 702.76 seconds under a bounded 3600-second run. The August 1 Unit lane passes 1056/1056 with 16,419 assertions and Property passes 175/175 with 2,804 assertions; July 19 Integration 200/200 is retained. Current focused proof includes UI 26/26 with 109 assertions, manual recorder/timer 2/2 with 21 assertions, localization 27/27, mod/save UI packet 72/72 with 298 assertions, and reference/shader integrity 22/22. Automated recorder tests do not replace human observations, release-version proof, or distribution clearance.
+The August 4 complete filtered Godot 4.7 aggregate recorded 1440/1440 tests with 20,475 assertions and no risky/pending tests or GUT orphans in 702.76 seconds under a bounded 3600-second run. The August 1 Unit lane recorded 1056/1056 with 16,419 assertions and Property 175/175 with 2,804 assertions; July 19 Integration recorded 200/200. These are historical boundaries, not the current-tree suite total. August focused proof included UI 26/26 with 109 assertions, manual recorder/timer 2/2 with 21 assertions, localization 27/27, mod/save UI packet 72/72 with 298 assertions, and reference/shader integrity 22/22. Automated recorder tests do not replace human observations, release-version proof, or distribution clearance.
 
-The current source inventory records:
+The retained August 4 source inventory recorded:
 
 - 71 unit test scripts;
 - 18 integration test scripts;
@@ -42,6 +42,8 @@ GODOT_BIN=/path/to/patched/godot bash tests/runners/test_export_notices.sh
 ```
 
 Set `GODOT_BIN=/path/to/godot` when needed. The runners isolate Godot HOME, cache, and configuration directories under `/tmp` unless their `MODUS_GODOT_*` environment variables are overridden.
+
+Generated reports and raw `logs/` are ignored local outputs, absent from a fresh clone. The [regeneration reference](../docs/DOCUMENTATION_TRUTH.md#regenerating-local-reports) lists the eight reports and their prerequisites. Execute the relevant runner for new results; do not copy historical PASS wording into an unexecuted lane.
 
 CI test and build jobs use stock Godot **4.7.2** with **GUT 9.7.1**. Match that dependency before reproducing CI failures:
 
@@ -84,6 +86,6 @@ The production-readiness wrapper defaults to a 2400-second aggregate ceiling. Th
 
 1. Run the narrowest relevant file or directory.
 2. Run the corresponding category when practical.
-3. Regenerate `docs/AUTOMATED_TEST_LANES_REPORT.md` for durable lane results.
+3. Regenerate local `docs/AUTOMATED_TEST_LANES_REPORT.md` with the category command above. Publish reviewed, dated conclusions in maintained status/changelog entries rather than committing the report or raw logs.
 4. Use `tools/validate_production_readiness.sh --run-godot-tests --strict` only when attempting a new full readiness baseline.
 5. Keep manual, multiplayer, Steam, editor-UI, and hardware proof separate from model/structure tests.

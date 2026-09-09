@@ -1,6 +1,6 @@
 # MODUS Test Runners
 
-> **Documentation status: maintained reference.** This page describes runner behavior. Current pass/fail totals come from the generated automated-lane and production-readiness reports.
+> **Documentation status: maintained reference.** This page describes runner behavior. Published dated outcomes are consolidated in [Current Status](../../docs/CURRENT_STATUS.md); generated reports describe individual local invocations.
 
 ## Maintained shell runners
 
@@ -29,7 +29,9 @@ Use `--include-gui-required` to include the excluded files. Inclusion does not g
 
 This runs unit, integration, and property selections separately, records incomplete summaries as blocked, and writes the generated lane report. Benchmark evidence is a separate lane and must not be inferred from unit/property timing tests.
 
-After a complete run, regenerate the report without rerunning Godot by naming the retained log directory:
+The report and raw `logs/` are ignored local outputs, not committed checkout inputs. See [report regeneration](../../docs/DOCUMENTATION_TRUTH.md#regenerating-local-reports) for the other gates and prerequisites.
+
+After a complete local run, regenerate the report without rerunning Godot by naming that run's retained local log directory. This is historical log reuse, not fresh current-tree proof; the directory is absent from a fresh clone:
 
 ```bash
 ./tests/runners/run_tests_by_category.sh \
@@ -85,4 +87,4 @@ bash tools/check_headless_runner_manifest.sh
 bash tools/check_project_truth.sh
 ```
 
-The retained aggregate suite is not green. A runner working correctly is not equivalent to the selected tests passing.
+Historical aggregate outcomes do not certify the current checkout. A runner working correctly is not equivalent to the selected tests passing.

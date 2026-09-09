@@ -13,7 +13,7 @@ Do not publish CPU, GPU, RAM, storage, player-count, resolution, or FPS requirem
 
 ## Recorded Hardware Evidence
 
-One bounded showcase capture is retained:
+The published summary preserves one bounded July 13 showcase observation; its raw CSV remains local-only and is absent from fresh clones:
 
 | Field | Recorded value |
 | --- | --- |
@@ -28,7 +28,7 @@ One bounded showcase capture is retained:
 
 The capture was unthrottled, was not a representative gameplay benchmark, and emitted extreme enemy-position warnings. Its average FPS must not be used as a hardware target or comparative benchmark.
 
-See [Performance Baseline Proof](PERFORMANCE_BASELINE_PROOF.md) and [Performance Evidence Report](PERFORMANCE_EVIDENCE_REPORT.md).
+See [Performance Baseline Proof](PERFORMANCE_BASELINE_PROOF.md) for dated context and [capture guidance](guides/performance_optimization.md) for creating new local evidence.
 
 ## Unproven Areas
 
@@ -60,6 +60,8 @@ Place PerformanceLogger CSVs under `logs/performance_logs/`, review their contex
 ```bash
 tools/validate_performance_evidence.sh --strict
 ```
+
+The validator writes ignored local output `docs/PERFORMANCE_EVIDENCE_REPORT.md`. Missing local CSVs must remain missing evidence; the historical table above is not a substitute input or a new PASS.
 
 A validator PASS confirms evidence shape and duration only. Product requirements still require reviewed, repeatable runs across the declared support matrix.
 

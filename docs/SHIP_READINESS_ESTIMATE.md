@@ -1,13 +1,13 @@
 # MODUS Ship-Readiness Estimate
 
-> **Documentation status: maintained reference.** This is an evidence-completeness estimate, not a release approval. Canonical gate status remains in `PRODUCTION_READINESS_REPORT.md`.
+> **Documentation status: maintained reference.** This is a dated evidence-completeness estimate, not release approval. Published status is consolidated in [Current Status](CURRENT_STATUS.md); regenerate local gate reports using the [truth contract](DOCUMENTATION_TRUTH.md#regenerating-local-reports).
 
 **Estimated:** 2026-08-04
 **Target:** a distributable MODUS release with green local gates, craft/slopometer zero, reviewed runtime evidence, and bounded release claims.
 
 ## Gateboard
 
-This estimate counts evidence gates, not lines of code or feature volume. A yellow gate is half-credit because retained proof exists but must be refreshed; a partial gate is quarter-credit because its inventory exists but most clearance work remains.
+This August 4 estimate counts evidence gates, not lines of code or feature volume. It is retained planning context and has not been recomputed for September repairs or publication cleanup. The gateboard reflects its original observation date, not the current checkout. A yellow gate is half-credit because dated proof existed but needed refreshing; a partial gate is quarter-credit because its inventory existed but most clearance work remained. Raw JSON/logs and generated reports remain local-only; curated screenshots/video stay published.
 
 | Gate | Status | Evidence / remaining proof |
 | --- | --- | --- |

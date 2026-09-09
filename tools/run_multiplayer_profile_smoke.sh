@@ -13,7 +13,7 @@ smoke_home="${MODUS_MULTIPLAYER_SMOKE_HOME:-/tmp/modus_multiplayer_profile_home}
 smoke_cache="${MODUS_MULTIPLAYER_SMOKE_CACHE:-/tmp/modus_multiplayer_profile_cache}"
 smoke_config="${MODUS_MULTIPLAYER_SMOKE_CONFIG:-/tmp/modus_multiplayer_profile_config}"
 log_path="${MODUS_MULTIPLAYER_SMOKE_LOG:-/tmp/modus_multiplayer_profile_smoke.log}"
-mkdir -p "$smoke_home" "$smoke_cache" "$smoke_config"
+mkdir -p "$smoke_home" "$smoke_cache" "$smoke_config" "$(dirname "$log_path")"
 
 set +e
 HOME="$smoke_home" XDG_CACHE_HOME="$smoke_cache" XDG_CONFIG_HOME="$smoke_config" \

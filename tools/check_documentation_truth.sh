@@ -35,7 +35,6 @@ historical_marker='**Documentation status: historical snapshot.**'
 current_docs=(
   README.md
   ROADMAP.md
-  MEMORY.md
   BACKLOG.md
   CHANGELOG.md
   docs/README.md
@@ -61,53 +60,12 @@ for path in "${current_docs[@]}"; do
   require_text "$path" "$maintained_marker"
 done
 
-require_file BACKLOG_ARCHIVE.md
-require_text BACKLOG_ARCHIVE.md "$historical_marker"
-
-require_text docs/DOCUMENTATION_TRUTH.md '**Overall readiness:** **NOT READY**'
-require_text docs/DOCUMENTATION_TRUTH.md '1440/1440 passing'
-require_text docs/DOCUMENTATION_TRUTH.md 'August 1 Unit 1056/1056 and Property 175/175; July 19 Integration 200/200 retained'
-require_text docs/DOCUMENTATION_TRUTH.md 'finished in 702.76 seconds'
-require_text docs/DOCUMENTATION_TRUTH.md '66.4-second, 130-sample'
-require_text docs/DOCUMENTATION_TRUTH.md '0.00 validated hours'
-require_text docs/DOCUMENTATION_TRUTH.md 'NOT READY with 2 validator-tracked blockers'
-require_text docs/CURRENT_STATUS.md '| Performance evidence | **PASS** |'
-require_text docs/CURRENT_STATUS.md '| Production readiness | **NOT READY** |'
-require_text docs/CURRENT_STATUS.md '| Latest batched Unit lane | **PASS** | August 1: 1056/1056 passing'
-require_text docs/CURRENT_STATUS.md '| Map-generator threading | 8/8, 30 assertions;'
-require_text docs/INDEX.md 'bodies have not been revalidated against the current tree'
-require_text docs/README.md 'Historical files are unvalidated snapshots'
-require_text docs/CURRENT_STATUS.md 'The two-count is the scope of `tools/validate_production_readiness.sh`'
-require_text shared/shaders/README.md 'fresh Godot 4.7 parse/render'
-require_text shared/shaders/README.md 'does **not** register `blood_effects_global.gd`'
-require_text docs/MOVEMENT_MECHANICS_STATUS.md 'not end-to-end proven'
-require_text tests/docs/PLAYER_EXPERIENCE_TESTS.md 'There is no `tests/runners/run_player_experience_tests.gd` runner'
-require_text tests/README.md 'passes 1440/1440 tests with 20,475 assertions'
-require_text tests/README.md 'August 1 Unit lane passes 1056/1056 with 16,419 assertions'
-require_text standalone/editor/README.md 'source prototype with a green focused data round-trip'
-require_text docs/technical/JSON_SCHEMAS.md 'does not enable or poll file watching'
-require_text docs/technical/README.md 'All other Markdown files in this directory are historical snapshots'
-
 for path in \
   mods/alien_blood/README.md \
   mods/harder_enemies/README.md \
   mods/more_loot/README.md \
   mods/new_weapons/README.md; do
   require_text "$path" 'enabled: false'
-done
-
-for path in README.md ROADMAP.md MEMORY.md BACKLOG.md docs/README.md docs/INDEX.md docs/CURRENT_STATUS.md docs/ROADMAP.md docs/hardware_requirements.md; do
-  reject_text "$path" '901/1417'
-  reject_text "$path" 'Readiness Blockers:** 4'
-  reject_text "$path" 'production readiness remains NOT READY with four blockers'
-  reject_text "$path" 'manual, performance, and release evidence validators refreshed and remain BLOCKED'
-  reject_text "$path" 'Legacy non-CSG showcase map'
-done
-
-for path in README.md ROADMAP.md MEMORY.md docs/CURRENT_STATUS.md docs/DOCUMENTATION_TRUTH.md docs/ROADMAP.md tests/README.md; do
-  reject_text "$path" 'Unit emitted no complete summary'
-  reject_text "$path" 'Unit did not emit a complete summary'
-  reject_text "$path" 'Integration/Property not run'
 done
 
 maintained_docs=()
@@ -122,13 +80,11 @@ while IFS= read -r path; do
   if [[ $has_maintained -eq 1 && $has_historical -eq 1 ]]; then
     fail "$path has both maintained and historical classifications"
   elif [[ $has_historical -eq 1 ]]; then
-    if ! grep -Fq -- 'not been revalidated' "$path"; then
-      fail "$path is historical but does not warn that its body was not revalidated"
-    fi
+    fail "$path is a local-only historical snapshot, not published documentation"
   elif [[ $has_maintained -eq 1 ]]; then
     maintained_docs+=("$path")
   elif grep -Fq -- '**Overall Status:**' "$path"; then
-    : # Generated evidence report.
+    fail "$path is generated evidence; keep it local-only or publish it as a CI artifact"
   else
     fail "$path has no maintained, generated, or historical truth classification"
   fi

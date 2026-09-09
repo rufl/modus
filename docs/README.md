@@ -1,6 +1,6 @@
 # MODUS Documentation
 
-> **Documentation status: maintained reference.** Start with the truth contract and generated readiness reports. Historical files are unvalidated snapshots, not fallback documentation.
+> **Documentation status: maintained reference.** Start with the published truth contract and consolidated status. Generated reports and historical files are local-only, not prerequisites for reading a fresh clone.
 
 **Version:** `0.9.5-beta`  
 **Engine:** Godot 4.7+  
@@ -10,20 +10,16 @@
 
 1. [Documentation Truth Contract](DOCUMENTATION_TRUTH.md)
 2. [Current Status](CURRENT_STATUS.md)
-3. [Production Readiness Report](PRODUCTION_READINESS_REPORT.md)
-4. [Ship-Readiness Estimate](SHIP_READINESS_ESTIMATE.md)
-5. [Active Backlog](../BACKLOG.md)
-6. [Documentation Index](INDEX.md)
+3. [Ship-Readiness Estimate](SHIP_READINESS_ESTIMATE.md)
+4. [Active Backlog](../BACKLOG.md)
+5. [Documentation Index](INDEX.md)
 
-## Current Evidence
+## Evidence and Regeneration
 
-- [Automated Test Lanes](AUTOMATED_TEST_LANES_REPORT.md)
-- [Main Player Path Smoke](MAIN_PLAYER_PATH_SMOKE.md)
-- [Showcase Scene Launch Smoke](SHOWCASE_LAUNCH_SMOKE.md)
-- [Golden Demo Smoke](GOLDEN_DEMO_SMOKE.md)
-- [Manual Evidence](MANUAL_EVIDENCE_REPORT.md)
-- [Performance Evidence](PERFORMANCE_EVIDENCE_REPORT.md)
-- [Release Readiness](RELEASE_READINESS_REPORT.md)
+Generated reports and raw logs are ignored local outputs, not committed evidence links. [Regenerating Local Reports](DOCUMENTATION_TRUTH.md#regenerating-local-reports) lists all eight report paths, commands, and prerequisites. Missing manual/performance inputs on a fresh clone remain missing evidence, not a historical PASS.
+
+Published context and curated artifacts:
+
 - [ENet Host/Join](ENET_LOCAL_HOST_JOIN_SMOKE.md)
 - [Editor Round Trip](EDITOR_ROUNDTRIP_PROOF.md)
 - [Workshop Local Simulation](WORKSHOP_LOCAL_SIMULATION_PROOF.md)
@@ -50,18 +46,18 @@
 
 ## Historical Material
 
-Historical audits, fix logs, session summaries, migration instructions, release drafts, old architecture guides, and subsystem “complete” reports are preserved only for traceability. Their bodies have not been revalidated and may contain wrong paths, APIs, counts, estimates, results, or instructions. Every file in the maintained documentation corpus must carry a maintained, generated, or historical classification.
+Historical audits, fix logs, session summaries, migration instructions, release drafts, old architecture guides, `BACKLOG_ARCHIVE.md`, and subsystem “complete” reports remain byte-for-byte on the originating workstation but are untracked and absent from fresh clones. `MEMORY.md`, agent state, and raw `logs/` are also local-only. Historical bodies are not revalidated and may contain wrong paths, APIs, counts, estimates, results, or instructions. Maintained references retain their classification; do not rewrite local-only files to add banners or repair obsolete links.
 
-If historical text conflicts with current source, the truth contract, or a current generated report, the historical text loses.
+Historical text never overrides current source or reviewed observations. Curated media, licenses, maintained status/known-limits, active backlog/roadmaps, and the root changelog remain published. See the [publication policy](DOCUMENTATION_TRUTH.md#local-only-retention) for retention and evidence boundaries.
 
 ## Contribution Rule
 
 When changing code or evidence:
 
 1. Update the narrow maintained subsystem reference.
-2. Update `docs/CURRENT_STATUS.md` only with current evidence.
-3. Refresh generated reports through their validators.
-4. Move completed/retired backlog work to `BACKLOG_ARCHIVE.md` with evidence.
+2. Update `docs/CURRENT_STATUS.md` with dated observations and explicit exclusions, not unexecuted commands or old local PASS results.
+3. Refresh generated reports through their validators; keep reports and raw evidence local. Publish reviewed conclusions in maintained docs.
+4. Record completed/retired backlog work and its proof boundary in root `CHANGELOG.md` before removing it from the active queue. An optional local `BACKLOG_ARCHIVE.md` is not the public closure record.
 5. Run the documentation, project, and runner-manifest truth checks.
 
 ```bash

@@ -1,71 +1,72 @@
 # MODUS Documentation Truth Contract
 
-> **Documentation status: maintained reference.** This file defines how present-tense claims are published. Generated reports remain authoritative for their individual gates.
+> **Documentation status: maintained reference.** This file defines publication policy. Committed summaries record dated, bounded observations; locally generated reports describe individual invocations, not checkout guarantees.
 
-**Audited:** August 4, 2026
 **Version:** `0.9.5-beta`  
 **Engine:** Godot 4.7+  
 **Overall readiness:** **NOT READY**
 
-## Canonical Current Sources
+## Canonical Published Sources
 
-Use these files in this order when documents disagree:
+Use these maintained files when documents disagree:
 
-1. `docs/PRODUCTION_READINESS_REPORT.md` for the current release boundary and blocker count.
-2. `docs/CURRENT_STATUS.md` for the consolidated implementation and evidence snapshot.
-3. `docs/AUTOMATED_TEST_LANES_REPORT.md` and `logs/full_godot_gut_latest.log.gz` for automated-test boundaries.
-4. `docs/MANUAL_EVIDENCE_REPORT.md`, `docs/PERFORMANCE_EVIDENCE_REPORT.md`, and `docs/RELEASE_READINESS_REPORT.md` for their individual gates.
-5. `BACKLOG.md` for open work and `BACKLOG_ARCHIVE.md` for completed or retired work.
+1. [Current Status](CURRENT_STATUS.md) for the consolidated implementation and dated evidence snapshot.
+2. [Known-Limits Matrix](KNOWN_LIMITS_MATRIX.md) for exclusions and unresolved runtime, manual, external, and distribution proof.
+3. [Active Backlog](../BACKLOG.md) and [Roadmap](../ROADMAP.md) for open work and acceptance boundaries.
+4. [Root Changelog](../CHANGELOG.md) for completed or retired work and its historical proof scope.
+5. [Release Evidence Bundle](RELEASE_EVIDENCE_BUNDLE.md) for curated captures, provenance, and release exclusions.
 
-Historical audits, completion notes, old fix logs, release drafts, and subsystem checkpoint reports are not current evidence.
+The August 4 aggregate (1440/1440 tests, 20,475 assertions) is a historical run, not the current suite total. September 9 focused repairs do not refresh that aggregate. Manual gameplay and the release-version gate remain blocked; the validator's two-blocker snapshot is not legal/distribution clearance. Consult the consolidated status rather than duplicating totals in new guides.
 
-## Current Verified Boundary
+## Local-Only Retention
 
-| Area | Current truth |
-| --- | --- |
-| Engine/version | Godot 4.7+, project version `0.9.5-beta` |
-| Autoloads | 2: `GameManager` and `MapGenerator` |
-| Test inventory | 71 unit files, 18 integration files, 29 property files, 2 GUI-required manifest entries |
-| Current complete full suite | PASS: 1440/1440 passing, 20,475 assertions, no risky/pending tests, zero GUT-reported orphans (August 4, 2026) |
-| Latest strict aggregate attempt | PASS/complete: the August 4 run finished in 702.76 seconds under a bounded 3600-second run and retained a full aggregate summary; six engine-exit ObjectDB leak diagnostics remain |
-| Latest batched lanes | PASS: August 1 Unit 1056/1056 and Property 175/175; July 19 Integration 200/200 retained; Benchmark is skipped |
-| Craft / Slopometer | PASS: Craft penalty 0 and MODUS 0.0/10; proof recorded in `.overzeer/proof-results.md` |
-| Launch smoke | Fresh August 2 main-menu and world-scene smokes PASS for startup scope only; they do not prove spawned-player gameplay actions |
-| Manual gameplay | BLOCKED: the 20-item F8 recorder and strict metadata/active-time validator are ready, but 0 reviewed CSV files and 0.00 validated hours exist |
-| Performance evidence | PASS for one bounded 66.4-second, 130-sample showcase capture; not a production FPS claim |
-| Release-version gate | BLOCKED while current truth remains `0.9.5-beta` |
-| Production readiness | NOT READY with 2 validator-tracked blockers: manual gameplay evidence and release-version readiness. This count is not legal/distribution clearance; 212 of 220 ledgered assets still require rights review. |
-| Multiplayer runtime | Profile launch passes; two-peer ENet host/join is blocked by sandbox socket creation; real Steam/GodotSteam is unproven |
-| Workshop | Local filesystem simulation passes; real Steam Workshop upload/download is blocked |
-| UI/editor | Main-menu/showcase/mod-manager/skill-tree structure and accessibility pass 26/26 with 109 assertions; the test-only manual recorder adds focused 2/2 proof, a compact 800×600 layout, direct CSV export, and F8 gameplay/review handoff; live complete editor UI and authoring workflow remain unproven |
-| Map generator | Focused unit/threading/export/seed/map-playability lanes pass; July 17 threading and export runs report zero GUT orphans; the aggregate suite is green, while manual/release readiness remains open |
-| Release evidence | `docs/RELEASE_EVIDENCE_BUNDLE.md` links the source-bounded known-limits matrix and 230-row provenance ledger; manual CSV evidence and clearance of 212 ledger rows remain open |
-| Ship estimate | `docs/SHIP_READINESS_ESTIMATE.md` records a bounded 69% evidence-completeness estimate and a 6–9 working-day minimum path; it is not a release approval |
+GitHub publishes source, active tests and CI, licenses, curated documentation/media, and maintained guides. Existing local files remain byte-for-byte on the originating workstation when removed from Git tracking; a fresh clone does not contain them.
+
+Local-only material includes `logs/`, `.kiro/`, `.roo/`, `.agent/`, `MEMORY.md`, `.roomodes`, `BACKLOG_ARCHIVE.md`, historical audits/fix logs/session notes/checkpoint reports, retired one-off scripts, and the generated reports below. These are neither required checkout inputs nor public navigation targets. Do not force-add them to restore an old link. Current workflows must not depend on historical instructions or workstation memory.
+
+Preserve old evidence locally without relabeling it as a fresh run. Keep concise, dated conclusions and explicit exclusions in maintained status/changelog entries. Record closure of active backlog work in the root changelog before removing it from the queue; the optional local archive is supplementary, not the published record. Local retention is not a backup guarantee: use an appropriate external backup or release-evidence store for material that must survive workstation loss.
+
+## Regenerating Local Reports
+
+Run commands from the repository root with the documented dependencies installed. Reports and raw logs are ignored local outputs, not committed links. Missing local evidence is expected on a fresh clone and must be reported as missing or blocked, never replaced with a historical PASS. Review each command's actual exit status and report before updating published summaries.
+
+| Local output | Regeneration command | Boundary |
+| --- | --- | --- |
+| `docs/AUTOMATED_TEST_LANES_REPORT.md` | `./tests/runners/run_tests_by_category.sh --report docs/AUTOMATED_TEST_LANES_REPORT.md` | Executed lanes only; skipped/incomplete lanes remain explicit |
+| `docs/MAIN_PLAYER_PATH_SMOKE.md` | `tools/run_main_player_path_smoke.sh --strict` | Main-menu startup only |
+| `docs/SHOWCASE_LAUNCH_SMOKE.md` | `tools/run_main_player_path_smoke.sh --target world --report docs/SHOWCASE_LAUNCH_SMOKE.md --strict` | World-scene startup only |
+| `docs/GOLDEN_DEMO_SMOKE.md` | `tools/run_showcase_golden_demo_smoke.sh --strict` | Controlled automated gameplay; not human feel |
+| `docs/MANUAL_EVIDENCE_REPORT.md` | `tools/validate_manual_evidence.sh --strict` | Requires reviewed local ManualTestTimer CSVs |
+| `docs/PERFORMANCE_EVIDENCE_REPORT.md` | `tools/validate_performance_evidence.sh --strict` | Requires contextualized local PerformanceLogger CSVs; validates evidence shape |
+| `docs/RELEASE_READINESS_REPORT.md` | `tools/validate_release_readiness.sh --strict` | Version gate, not release approval |
+| `docs/PRODUCTION_READINESS_REPORT.md` | `tools/validate_production_readiness.sh --run-godot-tests --strict` | Local gate aggregate, not legal/distribution clearance |
+
+The full automated runner is `./tests/runners/run_all_tests_headless.sh`; its new logs stay under `logs/`. Capture new manual evidence with `tools/run_manual_showcase_session.sh --tester NAME --input DEVICES` and follow the [manual checklist](../tests/docs/MANUAL_PLAYER_EXPERIENCE_TESTS.md). For a new performance capture, use `godot --path . --script tools/run_performance_evidence_capture.gd` and the [performance guide](guides/performance_optimization.md). Regeneration creates a new observation; it cannot recreate or certify the old run's bytes, hardware, or result.
 
 ## Documentation Classes
 
 ### Maintained Reference
 
-A maintained reference describes a live subsystem, workflow, command, or current project boundary. Its subsystem details must match source. Any project-wide readiness or test-total claim must defer to the canonical current sources above.
+Describes a live subsystem, workflow, command, or consolidated project boundary. Subsystem details must match source. Project-wide readiness and test-total claims defer to the published sources above. Relative Markdown links must resolve within the published tracked tree; local output paths belong in code spans with regeneration instructions, not links.
 
 ### Generated Evidence
 
-Generated reports describe one validator invocation. A PASS applies only to that validator's scope. For example, the performance evidence validator confirms a sufficiently long CSV capture; it does not prove stable gameplay or target hardware performance.
+Describes one validator invocation. A PASS applies only to that validator's scope. The performance evidence validator, for example, checks CSV duration and structure; it does not prove stable gameplay or target hardware performance. Generated reports remain local and do not override published status until their observations and exclusions have been reviewed.
 
 ### Historical Snapshot
 
-A historical snapshot preserves an audit, implementation checkpoint, fix session, draft release note, old instruction set, or previous test result. Its body is not revalidated during classification and may contain wrong or superseded paths, APIs, counts, estimates, outcomes, and instructions. It must carry the historical-snapshot banner and must never be used as current evidence.
+Preserves an audit, implementation checkpoint, fix session, draft release note, old instruction set, or previous result locally. Its body is not revalidated during publication cleanup and may contain superseded paths, APIs, counts, estimates, outcomes, and instructions. Do not edit a retained historical file merely to add a classification banner or repair a link; describe its historical scope in the maintained index instead. Historical material never overrides current source or newly observed evidence.
 
 ## Claim Rules
 
 - “Implemented” means a live source path exists; it does not imply runtime or UX proof.
-- “Tested” must name the test or report and its observed result.
-- “Runtime proof” must identify the launched scene/path and observed behavior.
-- “Manual proof” requires imported manual evidence and reviewed observations.
-- “Performance proof” must state hardware, renderer, duration, and exclusions.
+- “Tested” names the executed command, date, observed result, and exclusions.
+- “Runtime proof” identifies the launched scene/path and observed behavior.
+- “Manual proof” requires reviewed human observations and recorded evidence.
+- “Performance proof” states hardware, renderer, duration, and exclusions.
 - “Steam proof” requires GodotSteam, a running Steam client, an app ID, authorization, and a real API result.
-- “Production ready,” “release ready,” and “complete” are prohibited as project-wide present-tense claims while the production report is NOT READY.
-- A subsystem may be called complete only when the scope is explicit and current proof is linked.
+- “Production ready,” “release ready,” and “complete” are prohibited as project-wide present-tense claims while required gates remain blocked.
+- A subsystem completion claim needs explicit scope and published evidence context; a local-only path is not accessible proof for readers of a fresh clone.
 
 ## Verification
 
@@ -74,8 +75,8 @@ bash tools/check_documentation_truth.sh
 bash tools/check_project_truth.sh
 bash tools/check_headless_runner_manifest.sh
 tools/generate_provenance_ledger.py --check
-GODOT_BIN=/path/to/godot-4.7 \
-  bash tools/validate_production_readiness.sh
 ```
 
-Set `GODOT_BIN` to an available Godot 4.7 binary when it is not on PATH; temporary workstation paths are not repository dependencies.
+Unignored historical snapshots or generated reports fail the documentation check. Keep such outputs local rather than changing their classification to make the check pass.
+
+Set `GODOT_BIN` to an available Godot 4.7 binary when it is not on PATH; temporary workstation paths are not repository dependencies. Run the relevant runtime/evidence commands separately when refreshing an observed boundary.

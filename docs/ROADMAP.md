@@ -8,14 +8,14 @@
 
 ## Current Evidence Boundary
 
-- Current complete full suite: PASS at 1440/1440 with 20,475 assertions and no risky/pending tests or GUT orphans (August 4).
-- Latest strict aggregate attempt: complete in 702.76 seconds under a bounded 3600-second run; the full green summary is retained, with six engine-exit ObjectDB leak diagnostics still visible.
-- Latest lane report, `AUTOMATED_TEST_LANES_REPORT.md`: August 1 Unit passes 1056/1056 and Property passes 175/175; July 19 Integration 200/200 is retained; Benchmark is skipped.
-- Focused source-shape/resource/editor-registry proof passes 37/37 with 172 assertions and zero GUT orphans; four named loot-prop scene types remain explicit missing content.
+- Historical August 4 full suite: 1440/1440 with 20,475 assertions and no risky/pending tests or GUT orphans; not the current-tree suite total.
+- That aggregate completed in 702.76 seconds under a bounded 3600-second run, with six engine-exit ObjectDB leak diagnostics.
+- Historical category observations: August 1 Unit 1056/1056 and Property 175/175; July 19 Integration 200/200; Benchmark skipped. Local `docs/AUTOMATED_TEST_LANES_REPORT.md` is not committed; regenerate it with `./tests/runners/run_tests_by_category.sh --report docs/AUTOMATED_TEST_LANES_REPORT.md`.
+- Earlier source-shape/resource/editor-registry proof recorded 37/37 with 172 assertions and zero GUT orphans. September 9 focused repair observations now cover the four formerly missing loot-prop scenes; see [Current Status](CURRENT_STATUS.md).
 - Manual gameplay: 0 imported evidence files / 0.00 recorded hours.
 - Performance: one bounded 66.4-second, 130-sample showcase capture; production targets remain unproven.
 - Release: blocked at `0.9.5-beta`.
-- Production report: NOT READY with 2 validator-tracked evidence blockers: manual evidence and release version; 212 of 220 provenance-ledger rows remain a separate open release gap.
+- Published readiness remains NOT READY. The two-validator-blocker snapshot covers manual evidence and release version only; 212 of the current 230 provenance-ledger rows remain a separate open release gap. Local-only raw evidence and generated outputs do not certify a fresh clone; see [report regeneration](DOCUMENTATION_TRUTH.md#regenerating-local-reports).
 
 See [Documentation Truth](DOCUMENTATION_TRUTH.md) and [Current Status](CURRENT_STATUS.md) for details.
 
@@ -41,7 +41,7 @@ See [Documentation Truth](DOCUMENTATION_TRUTH.md) and [Current Status](CURRENT_S
 
 | Area | Source status | Required proof/hardening |
 | --- | --- | --- |
-| ENet/profile startup | Source exists; profile smoke passes | Real two-peer host/join outside restricted sandbox |
+| ENet/profile startup | Profile startup and September focused real-ENet lifecycle/inventory/late-join checks have dated proof | Reviewed end-to-end sessions, latency/reconnect behavior, and dedicated clients |
 | Authority/security | Validation, whitelist, and rate-limit code exist | Adversarial live-client and latency tests |
 | Dedicated server | Headless/config paths exist | Real client/server session evidence |
 | Lag compensation | Core system source exists; combat integration TODO remains | Connect/verify or explicitly scope out |

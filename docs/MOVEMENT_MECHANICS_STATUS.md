@@ -1,6 +1,6 @@
 # Movement Mechanics Source Status
 
-> **Documentation status: maintained reference.** This page describes source wiring, not player-visible completion. Project readiness remains defined by `docs/CURRENT_STATUS.md` and `docs/PRODUCTION_READINESS_REPORT.md`.
+> **Documentation status: maintained reference.** This page describes source wiring, not player-visible completion. Published readiness remains defined by [Current Status](CURRENT_STATUS.md) and the [Documentation Truth Contract](DOCUMENTATION_TRUTH.md), which includes local report regeneration commands.
 
 ## Current boundary
 

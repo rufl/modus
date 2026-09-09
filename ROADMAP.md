@@ -11,17 +11,17 @@
 
 Make MODUS a dependable Godot 4.7 FPS framework whose public claims are backed by live source, focused automated contracts, complete aggregate test runs, runtime observation, manual evidence, and contextualized performance captures.
 
-## Now: Preserve the Automated Baseline
+## Now: Refresh the Automated Baseline
 
-1. Preserve the green automated packet: August 1 Unit 1056/1056 and Property 175/175, plus retained July 19 Integration 200/200.
-2. Preserve the green August 4 strict aggregate at 1440/1440 with 20,475 assertions and no risky/pending tests.
+1. Retain the dated August 1 Unit 1056/1056 and Property 175/175, plus July 19 Integration 200/200, as historical context rather than current-tree totals.
+2. Refresh the full aggregate after later changes; the historical August 4 run recorded 1440/1440 with 20,475 assertions and no risky/pending tests.
 3. Preserve zero GUT orphans while reducing service-initialization and engine-exit diagnostic volume without weakening assertions.
 4. Preserve the July 17 zero-orphan focused map-generator threading/export boundary.
-5. Keep documentation truth, generated reports, backlog, and archive classification synchronized.
+5. Keep maintained status, known limits, active backlog, and root changelog synchronized. Generated reports and raw logs remain local-only; completed work belongs in the published root changelog, not a required tracked archive.
 
 The August 3 batch adds the eight-step golden-demo runtime smoke, repairs save-slot/ammo restoration and score-key normalization, fixes disabled-mod activation and skill-tree compatibility, and rebuilds the mod manager as a responsive localized workflow. The August 4 follow-up adds a responsive test-only F8 recorder for 20 bounded human observations, direct metadata-rich CSV export, and validator enforcement that excludes idle recorder overhead. Automated recorder/timer proof is 2/2 with 21 assertions; no human pass is implied.
 
-The automated baseline and manual capture workflow are complete; reviewed runtime evidence is now the release-critical path.
+The earlier automated baseline and manual capture tooling have dated proof; a refreshed aggregate and reviewed runtime evidence remain required. Publication cleanup does not rerun or strengthen that proof.
 
 ## Next: Runtime and Manual Proof
 
@@ -35,7 +35,7 @@ Completion requires reviewed evidence, not merely available harnesses.
 
 ## Then: Multiplayer and External Integrations
 
-1. Prove two-peer ENet host/join outside the restricted socket sandbox.
+1. Extend the September focused local real-ENet lifecycle/inventory/late-join proof into reviewed end-to-end multiplayer sessions; older socket-sandbox failures are historical boundaries.
 2. Exercise reconnect, authority validation, RPC rate limits, and representative combat under latency.
 3. Integrate or explicitly retire the remaining combat lag-compensation TODO.
 4. Prove real GodotSteam startup and Workshop operations with a running Steam client, app ID, and authorized account.
@@ -73,5 +73,7 @@ tools/validate_performance_evidence.sh --strict
 tools/validate_release_readiness.sh --strict
 tools/validate_production_readiness.sh --run-godot-tests --strict
 ```
+
+Generated report paths above are ignored local outputs, not checkout inputs. See [report regeneration](docs/DOCUMENTATION_TRUTH.md#regenerating-local-reports) for commands and evidence prerequisites.
 
 Temporary `GODOT_BIN` paths are workstation conveniences. The maintained requirement is Godot 4.7+, not any particular local path.

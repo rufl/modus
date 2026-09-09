@@ -42,7 +42,7 @@ Run automated tests when you need runtime contract evidence:
 ./tests/runners/run_tests_by_category.sh --report docs/AUTOMATED_TEST_LANES_REPORT.md
 ```
 
-The retained full baseline is non-green. A clean source/docs check should not be described as a green game test suite.
+Generated reports and raw `logs/` are ignored local outputs, absent from a fresh clone. See [regeneration commands and prerequisites](DOCUMENTATION_TRUTH.md#regenerating-local-reports). The published [status summary](CURRENT_STATUS.md) records dated evidence, not a fresh result; a clean source/docs check is not a green game test suite.
 
 ## Repository map
 

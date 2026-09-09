@@ -63,7 +63,7 @@ Always handle a missing optional service. Feature profiles can leave services un
 The repository contains ENet hosting/joining, rate limits, an RPC whitelist, movement validation/prediction, a dedicated-server node, Steam adapter code, and multiplayer feature modules. Current proof is narrower:
 
 - profile startup passes;
-- localhost ENet two-process proof is blocked by the current sandbox's socket policy;
+- September focused local real-ENet lifecycle/inventory/late-join observations supersede older sandbox socket failures for that narrow scope; latency/reconnect/dedicated-client proof remains open;
 - real Steam/GodotSteam has no current runtime evidence;
 - source-level authority and validation code is not a security certification.
 
@@ -77,7 +77,7 @@ The sample mod and package validator provide bounded SDK evidence. They do not e
 
 ## Verification boundary
 
-The architecture is exercised by focused tests and source guards, but the retained full suite is non-green. Use:
+The architecture is exercised by focused tests and source guards. [Current Status](CURRENT_STATUS.md) consolidates dated evidence; historical aggregate results do not certify the current checkout. Use:
 
 ```bash
 bash tools/check_project_truth.sh

@@ -1,6 +1,6 @@
 # MODUS Framework
 
-> **Documentation status: maintained reference.** Project-wide readiness and test totals are defined by `docs/DOCUMENTATION_TRUTH.md` and the generated readiness reports; narrower claims in this file apply only to the named subsystem or workflow.
+> **Documentation status: maintained reference.** Published readiness is consolidated in `docs/DOCUMENTATION_TRUTH.md` and `docs/CURRENT_STATUS.md`. Generated reports are local invocation records; narrower claims in this file apply only to the named subsystem or workflow.
 
 MODUS is an experimental Godot 4.7 multiplayer FPS framework and template. The repository contains substantial gameplay, networking, editor, modding, data/configuration, splitscreen, and procedural-map code, but it is not a production-ready game or SDK.
 
@@ -12,7 +12,7 @@ MODUS is an experimental Godot 4.7 multiplayer FPS framework and template. The r
 
 **Manual evidence:** 0 imported sessions / 0.00 recorded hours
 
-Read [Documentation Truth](docs/DOCUMENTATION_TRUTH.md), [Current Status](docs/CURRENT_STATUS.md), and [Production Readiness](docs/PRODUCTION_READINESS_REPORT.md) before using project-wide claims. See the [Ship-Readiness Estimate](docs/SHIP_READINESS_ESTIMATE.md) for the explicit gateboard and calendar estimate.
+Read [Documentation Truth](docs/DOCUMENTATION_TRUTH.md) and [Current Status](docs/CURRENT_STATUS.md) before using project-wide claims. Generate the local `docs/PRODUCTION_READINESS_REPORT.md` with `tools/validate_production_readiness.sh`; it is an output, not a required checkout file. See the [Ship-Readiness Estimate](docs/SHIP_READINESS_ESTIMATE.md) for the explicit gateboard and calendar estimate.
 
 ## Start Here
 
@@ -30,7 +30,7 @@ The main menu exposes **Showcase**, which opens the maintained `game/world/maps/
 
 ![MODUS automated golden-demo result](docs/media/release/golden_demo_smoke_1280x720.png)
 
-- [Golden Demo Smoke](docs/GOLDEN_DEMO_SMOKE.md)
+- Golden demo report: `docs/GOLDEN_DEMO_SMOKE.md`, generated locally by `tools/run_showcase_golden_demo_smoke.sh`
 - [Short automated runtime video](docs/media/release/golden_demo_smoke_1280x720.mp4)
 - [Release Evidence Bundle](docs/RELEASE_EVIDENCE_BUNDLE.md)
 
@@ -165,9 +165,17 @@ shared/            shared editor and UI infrastructure
 standalone/        standalone editor and dedicated-server entry points
 mods/              repository sample mods
 tests/             GUT unit, integration, property, benchmark, and manual helpers
-tools/             validators, smoke harnesses, migration, and maintenance tooling
-docs/              maintained references, generated evidence, and labeled history
+tools/             reusable validators, smoke harnesses, and maintenance tooling
+docs/              maintained references, licenses, provenance, and curated evidence media
 ```
+
+## Repository Hygiene
+
+Git tracks source, tests, CI, shared project configuration, licenses, the provenance ledger, maintained guides, and curated documentation media. Godot `.uid` and asset `.import` sidecars remain tracked because they encode resource identity and import behavior.
+
+Raw `logs/`, IDE/agent state, `MEMORY.md`, `BACKLOG_ARCHIVE.md`, generated readiness reports, historical implementation notes, and completed one-off migration scripts are local-only. Existing copies remain in their original locations, ignored by Git; fresh clones regenerate outputs with the commands above. Missing evidence is not a passing readiness result. Locally retained logs are also excluded from exports.
+
+Record lasting changes in `CHANGELOG.md` and maintained guides rather than adding session transcripts or generated reports. Untracking changes the published tree without deleting local files or rewriting Git history; older commits still contain their original files.
 
 ## Documentation
 

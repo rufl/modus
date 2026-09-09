@@ -1,6 +1,6 @@
 # MODUS SDK Sample Mod
 
-> **Documentation status: maintained reference.** Project-wide readiness and test totals are defined by `docs/DOCUMENTATION_TRUTH.md` and the generated readiness reports; narrower claims in this file apply only to the named subsystem or workflow.
+> **Documentation status: maintained reference.** Published readiness is consolidated in [Current Status](../../docs/CURRENT_STATUS.md); narrower claims here apply only to the sample-mod workflow. Generated reports and historical evidence remain local-only under the [truth contract](../../docs/DOCUMENTATION_TRUTH.md).
 
 This reference mod demonstrates the supported sample boundary:
 
