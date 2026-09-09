@@ -88,7 +88,7 @@ while IFS= read -r path; do
   else
     fail "$path has no maintained, generated, or historical truth classification"
   fi
-done < <(rg --files -g '*.md' -g '!addons/**' -g '!assets/**' -g '!game/art/**' | sort)
+done < <(git ls-files -- '*.md' ':!:addons/**' ':!:assets/**' ':!:game/art/**' | sort)
 
 stale_maintained_phrases=(
   '**Version:** 1.0.0'
@@ -123,8 +123,8 @@ for path in "${maintained_docs[@]}"; do
       ''|http://*|https://*|mailto:*|user://*|res://*) continue ;;
     esac
     resolved="$(dirname "$path")/$target"
-    if [[ ! -e "$resolved" ]]; then
-      fail "$path contains a broken local Markdown link: $target"
+    if [[ ! -e "$resolved" ]] || ! git ls-files --error-unmatch -- "$resolved" >/dev/null 2>&1; then
+      fail "$path links outside the published tracked tree: $target"
     fi
   done < <(grep -oE '\[[^][]+\]\([^)]+\)' "$path" || true)
 done

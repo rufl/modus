@@ -77,6 +77,6 @@ bash tools/check_headless_runner_manifest.sh
 tools/generate_provenance_ledger.py --check
 ```
 
-Unignored historical snapshots or generated reports fail the documentation check. Keep such outputs local rather than changing their classification to make the check pass.
+The documentation check validates Git-tracked Markdown, including staged additions. Tracked historical snapshots and generated reports fail even if force-added through ignore rules. Retained local files cannot satisfy published Markdown links. Keep local outputs out of the index rather than changing their classification to make the check pass.
 
 Set `GODOT_BIN` to an available Godot 4.7 binary when it is not on PATH; temporary workstation paths are not repository dependencies. Run the relevant runtime/evidence commands separately when refreshing an observed boundary.
