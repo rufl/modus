@@ -167,7 +167,7 @@ func test_healing_consumes_one_and_persists_before_notification() -> void:
 
 func test_unsupported_invalid_and_ineffective_items_are_preserved() -> void:
 	for item: InventoryItem in [
-		_item("buff_speed"),
+		_item("unknown_effect"),
 		_item("heal", 0),
 		_item("heal", -5),
 		_item("armor", NAN),
@@ -295,3 +295,28 @@ func test_enet_consumption_and_clear_update_owner_before_events() -> void:
 	assert_true(await _wait_for_network(cleared))
 	assert_eq(replica.to_dict(), _inventory.to_dict())
 	_assert_persisted(owner_id, _inventory)
+
+
+func test_consumable_buffs_apply_before_removal_and_preserve_dead_players_items() -> void:
+	var effects := StatusEffectManager.new()
+	effects.name = "StatusEffectManager"
+	_player.add_child(effects)
+	_inventory.slots[0] = _item("buff_speed", 2.0)
+	_inventory.slots[1] = _item("buff_damage", 3.0)
+	_manager.use_consumable(0)
+	_manager.use_consumable(1)
+	effects.set_process(false)
+	assert_eq(effects.get_movement_modifier(), 1.5)
+	assert_eq(effects.get_damage_modifier(), 1.25)
+	assert_eq(_inventory.slots[0].current_stack, 2)
+	assert_eq(_inventory.slots[1].current_stack, 2)
+	assert_eq(_consumed, [1, 1])
+	_assert_persisted(1, _inventory)
+	effects._process(2.0)
+	assert_eq(effects.get_movement_modifier(), 1.0)
+	assert_eq(effects.get_damage_modifier(), 1.25)
+	_player.health_component.die(-1)
+	_manager.use_consumable(0)
+	assert_eq(_inventory.slots[0].current_stack, 2)
+	assert_eq(effects.get_damage_modifier(), 1.0)
+	assert_eq(_consumed, [1, 1])

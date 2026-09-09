@@ -1,0 +1,20 @@
+diff --git a/servers/audio/audio_server.cpp b/servers/audio/audio_server.cpp
+index 98bb2cebd94299cd2d87bc1ca5fd4d5c73ab1807..4f1f8b884b5b0531078f60d0b6b54488ae59b82c 100644
+--- a/servers/audio/audio_server.cpp
++++ b/servers/audio/audio_server.cpp
+@@ -1655,6 +1655,15 @@ void AudioServer::finish() {
+ 		AudioDriverManager::get_driver(i)->finish();
+ 	}
+ 
++	// No driver can access playback_list after finish(). Retire all remaining
++	// playbacks, including stops whose fade-out never reached another mix step.
++	for (AudioStreamPlaybackListNode *playback : playback_list) {
++		_delete_stream_playback_list_node(playback);
++	}
++	// Run the deferred destructors on the main thread while the singleton and
++	// buses still exist. SafeList only cleans up nodes that have been erased.
++	playback_list.maybe_cleanup();
++
+ 	for (int i = 0; i < buses.size(); i++) {
+ 		memdelete(buses[i]);
+ 	}

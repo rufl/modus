@@ -179,6 +179,8 @@ func _simple_movement(input: RefCounted) -> void:
 	var speed := 5.0  # Default
 	if "move_speed" in player:
 		speed = player.move_speed
+	if player.has_method("get_movement_modifier"):
+		speed *= player.get_movement_modifier()
 
 	if input.sprint and "sprint_multiplier" in player:
 		speed *= player.sprint_multiplier

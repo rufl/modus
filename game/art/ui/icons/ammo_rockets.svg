@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>Rocket ammunition</title>
+  <desc>Original MODUS artwork, authored with OpenAI assistance, 2026. SPDX-License-Identifier: MIT. A diagonal finned rocket with a pointed warhead and striped motor casing.</desc>
+  <path fill="#edf5ff" d="m34 12 23-6-6 23-17 17-5 13-8-8-8 5-5-5 5-8-8-8 13-5z"/>
+  <path fill="#e28b66" d="m38 15 13-3-3 13-5 5-10-10z"/>
+  <path fill="#b7cbdc" d="m30 23 10 10-16 16-10-10z"/>
+  <path fill="#33475b" d="m27 26 3-3 10 10-3 3zM18 35l3-3 10 10-3 3z"/>
+  <path fill="#fff3ca" d="m26 30 3-3 4 4-3 3z"/>
+  <path fill="#92aac1" d="m13 37 5-2-3 7zM29 47l3-3-4 8z"/>
+</svg>

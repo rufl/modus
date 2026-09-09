@@ -157,6 +157,10 @@ func apply_air_movement(
 		# Allow higher speeds during rocket jumps
 		if "is_rocket_jumping" in rocket_jump_system and rocket_jump_system.is_rocket_jumping:
 			speed_cap_mod = 2.0
+	var movement_modifier: float = (
+		player.get_movement_modifier() if player.has_method("get_movement_modifier") else 1.0
+	)
+	speed_cap_mod *= movement_modifier
 
 	# Calculate current horizontal speed
 	var horizontal_vel := Vector2(velocity.x, velocity.z)
@@ -164,7 +168,7 @@ func apply_air_movement(
 
 	# Air strafing - gain speed by angling jumps
 	if input_dir.length() > 0.1:
-		var wish_speed := air_strafe_speed
+		var wish_speed := air_strafe_speed * movement_modifier
 
 		# Calculate acceleration direction
 		var accel_dir := wish_dir

@@ -83,6 +83,15 @@ func _load_config(_file_path: String = "") -> void:
 	fall_damage_enabled = cfg.get_value("fall_death.show_warning_ui", true)
 
 
+func get_effective_move_speed() -> float:
+	var modifier: float = (
+		player.get_movement_modifier()
+		if player and player.has_method("get_movement_modifier")
+		else 1.0
+	)
+	return move_speed * modifier
+
+
 func process_physics(delta: float) -> void:
 	if not player or not input_component:
 		return
@@ -289,7 +298,7 @@ func _handle_fall_damage() -> void:
 
 func _ground_move(wish_dir: Vector3, delta: float, speed_mod: float = 1.0) -> void:
 	var speed := Vector2(player.velocity.x, player.velocity.z).length()
-	var final_speed: float = move_speed * speed_mod
+	var final_speed: float = get_effective_move_speed() * speed_mod
 
 	# Friction
 	if speed > 0:
@@ -305,7 +314,10 @@ func _air_move(wish_dir: Vector3, delta: float) -> void:
 	var accel: float = air_acceleration
 	if rocket_jump_system and rocket_jump_system.has_method("get_air_control_modifier"):
 		accel *= rocket_jump_system.get_air_control_modifier()
-	_accelerate(wish_dir, air_speed_cap, accel, delta)
+	var modifier: float = (
+		player.get_movement_modifier() if player.has_method("get_movement_modifier") else 1.0
+	)
+	_accelerate(wish_dir, air_speed_cap * modifier, accel, delta)
 
 
 func _fly_move(wish_dir: Vector3, delta: float, speed_mod: float = 1.0) -> void:
@@ -314,6 +326,8 @@ func _fly_move(wish_dir: Vector3, delta: float, speed_mod: float = 1.0) -> void:
 	const FLY_FRICTION: float = 3.0
 
 	var fly_speed: float = FLY_SPEED * speed_mod
+	if player.has_method("get_movement_modifier"):
+		fly_speed *= player.get_movement_modifier()
 
 	var vertical_dir: float = 0.0
 	if input_component.wish_jump:

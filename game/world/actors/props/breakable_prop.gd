@@ -38,7 +38,8 @@ func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
 
-	sync_health = max_health
+	if not multiplayer.has_multiplayer_peer() or multiplayer.is_server():
+		sync_health = max_health
 
 	# Setup multiplayer synchronizer
 	_setup_multiplayer_sync()
@@ -52,6 +53,9 @@ func _ready() -> void:
 	add_to_group("breakable_props")
 	add_to_group("damageable")
 	add_to_group("props")
+	if is_destroyed:
+		mesh_instance.visible = false
+		collision_shape.disabled = true
 
 
 func _setup_multiplayer_sync() -> void:

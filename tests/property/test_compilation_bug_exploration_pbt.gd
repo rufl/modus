@@ -174,7 +174,6 @@ func test_bug_condition_class_level_gamemanager_causes_compilation_failures() ->
 			"category": "test_files"
 		},
 		{"file": "res://tests/unit/test_autoloads.gd", "line": 18, "category": "test_files"},
-		{"file": "res://tests/unit/test_combat_service.gd", "line": 19, "category": "test_files"},
 		{"file": "res://tests/unit/test_config_manager.gd", "line": 19, "category": "test_files"},
 		{"file": "res://tests/unit/test_effects.gd", "line": 51, "category": "test_files"},
 		{"file": "res://tests/unit/test_enemy_ai.gd", "line": 18, "category": "test_files"},

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>Health potion</title>
+  <desc>Original MODUS artwork, authored with OpenAI assistance, 2026. SPDX-License-Identifier: MIT. A compact round medical vial with a bright cross.</desc>
+  <path fill="#edf5ff" d="M23 5h18v10h-3v6c10 3 16 10 16 19 0 12-9 19-22 19S10 52 10 40c0-9 6-16 16-19v-6h-3z"/>
+  <path fill="#33475b" d="M27 9h10v5H27zM29 17h6v7h-6z"/>
+  <path fill="#d84361" d="M17 34h30c2 2 3 5 3 8 0 8-7 13-18 13s-18-5-18-13c0-3 1-6 3-8z"/>
+  <path fill="#fff" d="M29 36h6v6h6v6h-6v6h-6v-6h-6v-6h6z"/>
+  <path fill="#b9ddf3" d="M20 29c2-2 5-4 8-4v4c-3 0-5 1-7 3z"/>
+</svg>

@@ -39,7 +39,7 @@ Historical audits, completion notes, old fix logs, release drafts, and subsystem
 | Workshop | Local filesystem simulation passes; real Steam Workshop upload/download is blocked |
 | UI/editor | Main-menu/showcase/mod-manager/skill-tree structure and accessibility pass 26/26 with 109 assertions; the test-only manual recorder adds focused 2/2 proof, a compact 800×600 layout, direct CSV export, and F8 gameplay/review handoff; live complete editor UI and authoring workflow remain unproven |
 | Map generator | Focused unit/threading/export/seed/map-playability lanes pass; July 17 threading and export runs report zero GUT orphans; the aggregate suite is green, while manual/release readiness remains open |
-| Release evidence | `docs/RELEASE_EVIDENCE_BUNDLE.md` links the source-bounded known-limits matrix and 220-row provenance ledger; gameplay screenshots/video, manual CSV evidence, and clearance of 212 ledger rows remain open |
+| Release evidence | `docs/RELEASE_EVIDENCE_BUNDLE.md` links the source-bounded known-limits matrix and 230-row provenance ledger; manual CSV evidence and clearance of 212 ledger rows remain open |
 | Ship estimate | `docs/SHIP_READINESS_ESTIMATE.md` records a bounded 69% evidence-completeness estimate and a 6–9 working-day minimum path; it is not a release approval |
 
 ## Documentation Classes

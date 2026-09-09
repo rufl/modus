@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>Pistol ammunition</title>
+  <desc>Original MODUS artwork, authored with OpenAI assistance, 2026. SPDX-License-Identifier: MIT. Three slim rounded cartridges, staggered to show their brass cases.</desc>
+  <path fill="#edf5ff" d="M7 28c0-7 3-12 7-15 4 3 7 8 7 15v26h2v5H5v-5h2zM25 20c0-7 3-12 7-15 4 3 7 8 7 15v34h2v5H23v-5h2zM43 28c0-7 3-12 7-15 4 3 7 8 7 15v26h2v5H41v-5h2z"/>
+  <path fill="#e6b465" d="M10 31h8v22h-8zM28 23h8v30h-8zM46 31h8v22h-8z"/>
+  <path fill="#33475b" d="M7 27h14v4H7zM25 19h14v4H25zM43 27h14v4H43z"/>
+  <path fill="#fff3ca" d="M10 34h3v15h-3zM28 26h3v23h-3zM46 34h3v15h-3z"/>
+</svg>

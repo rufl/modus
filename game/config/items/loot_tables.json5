@@ -18,6 +18,28 @@
 // =============================================================================
 
 {
+  "vase": {
+    "rolls": 1,
+    "entries": [
+      { "item_id": "health_small", "weight": 60.0, "rarity": "common" },
+      { "item_id": "ammo_clip", "weight": 40.0, "rarity": "common" }
+    ]
+  },
+  "corpse_pile": {
+    "rolls": 1,
+    "entries": [
+      { "item_id": "ammo_clip", "weight": 60.0, "rarity": "common" },
+      { "item_id": "health_small", "weight": 40.0, "rarity": "common" }
+    ]
+  },
+  "hidden_stash": {
+    "rolls": 2,
+    "entries": [
+      { "item_id": "health_medium", "weight": 50.0, "rarity": "uncommon" },
+      { "item_id": "ammo_box", "weight": 50.0, "rarity": "uncommon" }
+    ]
+  },
+
   // ===========================
   // BASIC LOOT - Swarmlings
   // ===========================

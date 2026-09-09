@@ -98,12 +98,16 @@ func _get_player_node(peer_id: int) -> Node3D:
 	var entities: Node = GameManager.get_core_system("entities")
 	if entities:
 		var player := entities.get_player(peer_id) as Node3D
-		if player:
+		if player and player.multiplayer == multiplayer:
 			return player
 
 	# Fallback
 	for node in get_tree().get_nodes_in_group("player"):
-		if node is Node3D and node.get_multiplayer_authority() == peer_id:
+		if (
+			node is Node3D
+			and node.multiplayer == multiplayer
+			and node.get_multiplayer_authority() == peer_id
+		):
 			return node
 	return null
 
@@ -225,7 +229,7 @@ func _request_drop_for_player(target_peer_id: int, from_slot: int, drop_position
 	# Rate	# Validate
 	var ns := GameManager.get_core_system("network") as NetworkSvc
 	if ns and ns.network_manager:
-		if not ns.network_manager.validate_rpc(from_peer_id, "drop_item", []):
+		if not ns.network_manager.validate_rpc(from_peer_id, "request_drop", []):
 			return
 
 	_process_drop_for_player(from_peer_id, target_peer_id, from_slot, drop_position)
@@ -234,42 +238,36 @@ func _request_drop_for_player(target_peer_id: int, from_slot: int, drop_position
 func _process_drop_for_player(
 	from_peer_id: int, target_peer_id: int, from_slot: int, drop_position: Vector3
 ) -> void:
+	if not multiplayer.is_server():
+		return
 	var from_inv: Inventory = _inventories.get(from_peer_id)
-	if not from_inv:
+	var from_player: Node3D = _get_player_node(from_peer_id)
+	if not from_inv or not from_player:
+		_send_transfer_failed(from_peer_id, "Cannot find dropping player")
+		return
+	if not _inventories.has(target_peer_id) or not _get_player_node(target_peer_id):
+		_send_transfer_failed(from_peer_id, "Target player not found")
+		return
+	if (
+		not drop_position.is_finite()
+		or from_player.global_position.distance_to(drop_position) > TRADE_DISTANCE
+	):
+		_send_transfer_failed(from_peer_id, "Invalid drop position")
+		return
+	var item: InventoryItem = from_inv.get_item_at(from_slot)
+	if not item or item.current_stack <= 0:
+		_send_transfer_failed(from_peer_id, "No item in that slot")
 		return
 
-	var item: InventoryItem = from_inv.remove_item_at(from_slot)
-	if not item:
+	var loot := LootSvc.get_instance()
+	if not loot or not loot.spawn_inventory_item(item, drop_position, target_peer_id):
+		_send_transfer_failed(from_peer_id, "Could not spawn dropped item")
 		return
-
-	# Spawn pickup in world with owner restriction
-	_spawn_owned_pickup.rpc(item.to_dict(), drop_position, target_peer_id)
-
-
-@rpc("authority", "call_local", "reliable")
-func _spawn_owned_pickup(item_data: Dictionary, position: Vector3, owner_peer_id: int) -> void:
-	call_deferred("_finish_spawn_owned_pickup", item_data, position, owner_peer_id)
-
-
-func _finish_spawn_owned_pickup(
-	item_data: Dictionary, position: Vector3, owner_peer_id: int
-) -> void:
-	# Create pickup that only target player can collect
-	var pickup_scene: Resource = load("res://game/scenes/items/pickups/pickup_base.tscn")
-	if not pickup_scene:
-		return
-
-	var pickup: Node3D = pickup_scene.instantiate()
-	pickup.owner_peer_id = owner_peer_id
-	pickup.pickup_name = item_data.get("display_name", "Item")
-	pickup.description = item_data.get("description", "")
-
-	get_tree().current_scene.add_child(pickup)
-	pickup.global_position = position
-
-	# Pass item data to pickup so it can be restored
-	if "item_data" in pickup:
-		pickup.item_data = item_data
+	# The authoritative scene is ready before the stack leaves the inventory.
+	# MultiplayerSpawner replicates it once, including its complete spawn data.
+	from_inv.remove_item_at(from_slot)
+	_sync_inventory_owner(from_peer_id, from_inv)
+	_save_inventory(from_peer_id, from_inv)
 
 
 func _on_peer_disconnected(peer_id: int) -> void:
@@ -362,6 +360,10 @@ func _process_use_consumable(peer_id: int, from_slot: int) -> void:
 				if previous < maximum:
 					player.armor = minf(previous + item.effect_value, maximum)
 					effect_applied = player.armor > previous
+		"buff_speed", "buff_damage":
+			var effects := player.get_node_or_null("StatusEffectManager") as StatusEffectManager
+			if effects:
+				effect_applied = effects.apply_consumable_buff(item.effect_type, item.effect_value)
 
 	if not effect_applied:
 		_send_transfer_failed(peer_id, "Could not apply consumable effect")

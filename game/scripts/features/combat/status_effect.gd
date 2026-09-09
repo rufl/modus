@@ -1,7 +1,7 @@
 class_name StatusEffect
 extends Resource
 
-enum EffectType { POISON, BURN, SLOW, STUN, FREEZE, BLEED, DROWNING, CUSTOM }
+enum EffectType {POISON, BURN, SLOW, STUN, FREEZE, BLEED, DROWNING, CUSTOM, SPEED_BUFF, DAMAGE_BUFF}
 
 @export var effect_type: EffectType = EffectType.POISON
 @export var effect_name: String = "Poison"
@@ -9,6 +9,7 @@ enum EffectType { POISON, BURN, SLOW, STUN, FREEZE, BLEED, DROWNING, CUSTOM }
 @export var tick_interval: float = 1.0
 @export var damage_per_tick: float = 5.0
 @export var movement_speed_modifier: float = 1.0
+@export var outgoing_damage_modifier: float = 1.0
 @export var can_act: bool = true
 @export var stacks: bool = false
 @export var max_stacks: int = 1
@@ -31,9 +32,6 @@ func apply_to_target(target: Node3D, from_source_id: int = -1) -> void:
 		push_error("[StatusEffect] Invalid target")
 		return
 
-	remaining_duration = duration
-	time_since_last_tick = 0.0
-	source_id = from_source_id
 	remaining_duration = duration
 	time_since_last_tick = 0.0
 	source_id = from_source_id
@@ -60,10 +58,9 @@ func _process_tick(target: Node3D) -> void:
 	if not is_instance_valid(target) or damage_per_tick <= 0.0:
 		return
 
-	# Only apply damage on authority
-	if target.has_method("is_multiplayer_authority"):
-		if not target.is_multiplayer_authority():
-			return
+	# Player node ownership does not confer damage authority.
+	if target.multiplayer.has_multiplayer_peer() and not target.multiplayer.is_server():
+		return
 
 	var damage_info := DamageInfo.new()
 	damage_info.base_amount = damage_per_tick * current_stacks
@@ -112,6 +109,7 @@ func create_copy() -> StatusEffect:
 	copy.tick_interval = tick_interval
 	copy.damage_per_tick = damage_per_tick
 	copy.movement_speed_modifier = movement_speed_modifier
+	copy.outgoing_damage_modifier = outgoing_damage_modifier
 	copy.can_act = can_act
 	copy.stacks = stacks
 	copy.max_stacks = max_stacks
@@ -130,6 +128,7 @@ func to_dict() -> Dictionary:
 		"tick_interval": tick_interval,
 		"damage": damage_per_tick,
 		"speed_mod": movement_speed_modifier,
+		"damage_mod": outgoing_damage_modifier,
 		"can_act": can_act,
 		"stacks": current_stacks,
 		"source_id": source_id
@@ -145,6 +144,7 @@ static func from_dict(data: Dictionary) -> StatusEffect:
 	effect.tick_interval = data.get("tick_interval", 1.0)
 	effect.damage_per_tick = data.get("damage", 0.0)
 	effect.movement_speed_modifier = data.get("speed_mod", 1.0)
+	effect.outgoing_damage_modifier = data.get("damage_mod", 1.0)
 	effect.can_act = data.get("can_act", true)
 	effect.current_stacks = data.get("stacks", 1)
 	effect.source_id = data.get("source_id", -1)

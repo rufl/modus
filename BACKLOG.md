@@ -34,6 +34,8 @@ Treat generated entries as proposals until they are promoted into the active que
 - Release readiness validation: `tools/validate_release_readiness.sh --strict`
 - Runtime gameplay/manual proof: launch a normal Godot session, complete the manual checklist, and record the observed path.
 
+The six September 9 engineering repair groups are completed and recorded in [Backlog Archive](BACKLOG_ARCHIVE.md): 67 focused tests/612 assertions, eleven actual gameplay checks, native asset rendering, and the compiled engine patch. The MP3 repair requires that patched Godot runtime. The release tasks below remain open. `[truth:test]` `[truth:runtime]`
+
 ## Active Queue
 
 - Progress 2026-08-02 golden-demo/mod-UX slice: added a player-visible automated showcase smoke that loads the maintained scene, spawns a player, accepts movement input, fires, defeats an enemy, collects a pickup, restores an encrypted save, and loads the bundled SDK sample; fixed stale save/ammo slot APIs, disabled-mod enablement, and the broken skill-tree compatibility scene; rebuilt the mod manager as a responsive localized focusable workflow with explicit pending-reload state. The smoke passes all 8 steps, and focused UI/localization/mod/save proof passes 72/72 with 298 assertions. `[truth:runtime]` `[truth:test]` `[truth:source-audit]`

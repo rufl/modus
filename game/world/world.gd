@@ -175,6 +175,8 @@ func _ready() -> void:
 	spawner.add_spawnable_scene("res://game/scenes/items/pickups/pickup_base.tscn")
 	spawner.add_spawnable_scene("res://game/scenes/items/pickups/double_jump_powerup.tscn")
 	spawner.add_spawnable_scene("res://game/scenes/items/pickups/dodge_powerup.tscn")
+	for prop_scene: String in LootPropSpawner.PROP_SCENES.values():
+		spawner.add_spawnable_scene(prop_scene)
 
 	if not multiplayer.has_multiplayer_peer() or multiplayer.is_server():
 		call_deferred("_bake_nav_mesh")

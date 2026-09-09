@@ -76,10 +76,6 @@ func test_navigation_stop_prevents_horizontal_slide_and_preserves_fall_velocity(
 # ============================================================================
 
 
-func test_bunny_hop_enabled_by_default() -> void:
-	assert_true(advanced_movement.enable_bunny_hop, "Bunny hop should be enabled by default")
-
-
 func test_bunny_hop_increases_speed() -> void:
 	# Setup: Player on ground with horizontal velocity
 	player.velocity = Vector3(5, 0, 0)

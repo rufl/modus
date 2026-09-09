@@ -79,6 +79,8 @@ static func setup_state_manager(player: Node) -> void:
 	player.state_manager = StateMgrScript.new()
 	player.state_manager.name = "StateManager"
 	player.add_child(player.state_manager)
+	_setup_health(player)
+	_setup_status_effects(player)
 	player.state_manager.setup(player, player.health_component, player.match_service)
 
 
@@ -90,11 +92,6 @@ static func setup_remote(player: Node) -> void:
 	player.weapon_manager.name = "WeaponManager"
 	player.add_child(player.weapon_manager)
 	player.weapon_manager.setup(player, player.camera, player.weapon_holder, player.gunshot_sound)
-
-	# Status Effect Manager (for visual sync)
-	player.status_effect_manager = StatusEffectManager.new()
-	player.status_effect_manager.name = "StatusEffectManager"
-	player.add_child(player.status_effect_manager)
 
 	# Skeletal Visuals
 	if player.visuals:
@@ -134,8 +131,6 @@ static func setup_local(player: Node) -> void:
 	## Setup all components for local (authority) player.
 	_setup_weapon_manager(player)
 	_setup_visuals(player)
-	_setup_health(player)
-	_setup_status_effects(player)
 	_setup_movement_systems(player)
 	_setup_hud(player)
 	_setup_animation(player)
@@ -217,6 +212,7 @@ static func _setup_visuals(player: Node) -> void:
 
 static func _setup_health(player: Node) -> void:
 	player.health_component = HealthComponent.new()
+	player.health_component.name = "HealthComponent"
 	player.health_component.max_health = float(player.max_health)
 	player.health_component.max_armor = float(player.max_armor)
 	player.health_component.current_health = float(player.max_health)

@@ -558,14 +558,18 @@ func _process_hit(hit: Dictionary, weapon: WeaponData) -> void:
 		_apply_affix_effects(enemy, hit_pos, final_damage, effects)
 
 	elif collider is CharacterBody3D:
-		# Player PVP
-		var hit_player: CharacterBody3D = collider as CharacterBody3D
-		if hit_player.has_method("receive_damage"):
-			hit_player.receive_damage.rpc_id(
-				hit_player.get_multiplayer_authority(),
+		var combat_service := CombatSvc.get_instance()
+		if combat_service:
+			combat_service.apply_damage(
+				collider,
 				final_damage,
-				multiplayer.get_unique_id(),
-				player.global_position
+				player,
+				weapon.damage_type,
+				weapon,
+				is_crit,
+				player.get_multiplayer_authority(),
+				hit_pos,
+				hit_normal
 			)
 
 	else:
@@ -628,7 +632,10 @@ func _apply_chain_damage(
 			closest_enemy = enemy
 
 	if closest_enemy and closest_enemy.has_method("take_damage"):
-		closest_enemy.call_deferred("take_damage", chain_damage, player.name.to_int())
+		if gs and gs.combat:
+			gs.combat.apply_damage(
+				closest_enemy, chain_damage, player, DamageInfo.DamageType.ENERGY
+			)
 
 		# Spawn chain VFX
 		if vfx and vfx.has_method("spawn_chain_effect"):
@@ -673,7 +680,10 @@ func _apply_splash_damage(
 			var falloff: float = 1.0 - (dist / radius)
 			var splash_dmg: int = int(damage * falloff)
 			if splash_dmg > 0 and enemy.has_method("take_damage"):
-				enemy.call_deferred("take_damage", splash_dmg, player.name.to_int())
+				if gs and gs.combat:
+					gs.combat.apply_damage(
+						enemy, splash_dmg, player, DamageInfo.DamageType.EXPLOSIVE
+					)
 
 
 func _spawn_projectile_server(weapon: WeaponData, origin: Vector3, direction: Vector3) -> void:

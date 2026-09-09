@@ -348,6 +348,10 @@ func _serialize_items() -> Array:
 				"position": _vec3_to_array(node.global_position),
 				"rotation": _vec3_to_array(node.global_rotation)
 			}
+			if node is PickupBase:
+				item_data["item_data"] = node.item_data.duplicate(true)
+				item_data["owner_peer_id"] = node.owner_peer_id
+				item_data["rarity_tier"] = node.rarity_tier
 			# Only save if it has a scene file (instantiable)
 			if not item_data["scene_path"].is_empty():
 				items_data.append(item_data)
@@ -380,13 +384,27 @@ func _deserialize_items(data: Array) -> void:
 		var scene: Resource = load(scene_path)
 		if scene:
 			var item: Node3D = scene.instantiate()
-			get_tree().current_scene.add_child(item)
-
-			item.global_position = _array_to_vec3(item_data.get("position", [0, 0, 0]))
-			item.global_rotation = _array_to_vec3(item_data.get("rotation", [0, 0, 0]))
-
+			var world: Node = get_tree().current_scene
+			var world_transform := Transform3D(
+				Basis.from_euler(_array_to_vec3(item_data.get("rotation", [0, 0, 0]))),
+				_array_to_vec3(item_data.get("position", [0, 0, 0]))
+			)
+			item.transform = (
+				(world as Node3D).global_transform.affine_inverse() * world_transform
+				if world is Node3D
+				else world_transform
+			)
 			if "pickup_name" in item and item_data.has("name"):
 				item.pickup_name = item_data["name"]
+			if item is PickupBase:
+				item.item_data = item_data.get("item_data", {}).duplicate(true)
+				item.owner_peer_id = int(item_data.get("owner_peer_id", 0))
+				item.rarity_tier = int(item_data.get("rarity_tier", -1))
+			# Restore all spawn fields before the existing world spawner observes the item.
+			world.add_child(item, true)
+			var loot := LootSvc.get_instance()
+			if loot and item is PickupBase:
+				loot._track_pickup(item, item.owner_peer_id, item.rarity_tier)
 
 
 func _serialize_environment() -> Dictionary:

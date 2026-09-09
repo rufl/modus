@@ -2,12 +2,12 @@
 
 > **Documentation status: maintained reference.** This is a repository-local provenance audit, not legal advice. A retained license clears only the named material; `review_required` ledger rows remain distribution blockers.
 
-**Audited:** August 2, 2026
+**Updated:** September 9, 2026; retained third-party audit from August 2
 **Machine-readable inventory:** [PROVENANCE_LEDGER.csv](PROVENANCE_LEDGER.csv)
 
 ## Current Ledger Boundary
 
-`tools/generate_provenance_ledger.py` inventories the asset/resource extensions distributed from `game/`, `shared/`, `standalone/`, and `mods/`, plus the derived blood-pool script. The current ledger contains **220 assets: 8 cleared, 12 identified but requiring rights evidence, and 200 unverified**.
+`tools/generate_provenance_ledger.py` inventories the asset/resource extensions distributed from `game/`, `shared/`, `standalone/`, and `mods/`, plus the derived blood-pool script. The current ledger contains **230 assets: 18 cleared, 12 identified but requiring rights evidence, and 200 unverified**.
 
 Run `tools/generate_provenance_ledger.py --check` after asset changes. `--strict` intentionally fails until every distributed row is cleared or removed.
 
@@ -21,6 +21,7 @@ Run `tools/generate_provenance_ledger.py --check` after asset changes. `--strict
 | Kenney Prototype Textures | Three retained PNGs under `game/art/textures/kenney_prototype_textures/` | Pixel-identical to their corresponding files in Kenney's official Prototype Textures ZIP. The official page states CC0; legal text is retained at `docs/licenses/KENNEY_CC0-1.0.txt`. |
 | Kenney Particle Pack | Two retained PNGs under `game/art/textures/kenney_particle_pack/` | Pixel-identical to the official transparent PNGs. The official page states CC0; the same local CC0 text applies. |
 | Blood-pool implementation | `shared/shaders/blood_pool.gd` and `game/art/shaders/blood_pool.gdshader` | Reviewed against dip000's `BloodyPool` source at commit `7a3e9bc685255d37f489e25b509fb56e185aa9fb`. Upstream is MIT; the notice is retained at `docs/licenses/DIP000_BLOODY_POOL_MIT.txt`. |
+| Ten sample-item SVG icons | Original editable geometry under `game/art/ui/icons/`, authored with OpenAI assistance on September 9; each source embeds authorship and `SPDX-License-Identifier: MIT`, with hashes pinned by the ledger generator | Covers health, shield, speed/damage stims, materials, and ammunition icons only; no external artwork, fonts, or embedded images used. |
 
 The Kenney files are pixel-equivalent rather than byte-identical because their PNG encoding differs from the current official ZIP. Their repository hashes and source URLs are pinned in the ledger.
 

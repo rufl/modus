@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>Shotgun shells</title>
+  <desc>Original MODUS artwork, authored with OpenAI assistance, 2026. SPDX-License-Identifier: MIT. Two wide flat-topped red shells with distinct brass bases.</desc>
+  <path fill="#edf5ff" d="m8 17 4-4h14l4 4v34h2v8H6v-8h2zM34 9l4-4h14l4 4v42h2v8H32v-8h2z"/>
+  <path fill="#c95564" d="M12 20h14v24H12zM38 12h14v32H38z"/>
+  <path fill="#ffb1af" d="M15 23h3v17h-3zM41 15h3v25h-3z"/>
+  <path fill="#edc17c" d="M10 47h18v8H10zM36 47h18v8H36z"/>
+  <path fill="#33475b" d="M12 17h14v3H12zM38 9h14v3H38zM12 44h14v3H12zM38 44h14v3H38z"/>
+</svg>

@@ -70,6 +70,14 @@ func _ready() -> void:
 func _apply_pickup(player: CharacterBody3D) -> bool:
 	if "inventory" in player and player.inventory is Inventory:
 		return _add_to_inventory(player)
+	if item_data.get("effect_type", "") in ["buff_speed", "buff_damage"]:
+		var effects := player.get_node_or_null("StatusEffectManager") as StatusEffectManager
+		return (
+			effects != null
+			and effects.apply_consumable_buff(
+				item_data.effect_type, float(item_data.get("effect_value", 0.0))
+			)
+		)
 	return super._apply_pickup(player)
 
 
@@ -92,23 +100,6 @@ func _on_pickup(player: CharacterBody3D) -> void:
 			elif "armor" in player:
 				var max_armor: int = player.max_armor if "max_armor" in player else 100
 				player.armor = mini(int(player.armor + effect_value), max_armor)
-		"buff_speed":
-			if "speed_multiplier" in player:
-				player.speed_multiplier = 1.5
-				# Reset after duration
-				get_tree().create_timer(effect_value).timeout.connect(
-					func() -> void:
-						if is_instance_valid(player):
-							player.speed_multiplier = 1.0
-				)
-		"buff_damage":
-			if "damage_multiplier" in player:
-				player.damage_multiplier = 1.25
-				get_tree().create_timer(effect_value).timeout.connect(
-					func() -> void:
-						if is_instance_valid(player):
-							player.damage_multiplier = 1.0
-				)
 
 	print(
 		"[ConsumablePickup] Applied %s effect: %s (%.1f)" % [pickup_name, effect_type, effect_value]

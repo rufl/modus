@@ -197,7 +197,7 @@ func request_damage(
 		return
 	var ns := gm_net.get_core_system("network") as NetworkSvc
 	var mgr: Node = ns.network_manager if ns else null
-	if mgr and not mgr.validate_rpc(sender_id, "request_damage", [amount]):
+	if mgr and not mgr.validate_rpc(sender_id, "request_damage", [25.0, sender_id, _source_pos]):
 		return
 
 	# Validate sender state (Spectators/Dead players can't deal damage)
@@ -221,7 +221,20 @@ func request_damage(
 
 	# Find entities
 	var target_node: Node = instance_from_id(target_id)
-	var source_node: Node = instance_from_id(source_id)
+	var source_node: Node = _find_player_by_id(sender_id)
+	if (
+		not is_instance_valid(source_node)
+		or source_node.get_multiplayer_authority() != sender_id
+		or damage_type != DamageInfo.DamageType.MELEE
+	):
+		return
+	# This endpoint serves the unarmed melee input, never client-authored damage.
+	amount = 25.0
+	if (
+		target_node is not Node3D
+		or source_node.global_position.distance_to(target_node.global_position) > 3.5
+	):
+		return
 
 	if not is_instance_valid(target_node):
 		var gm_target: Node = get_node_or_null("/root/GameManager")
@@ -264,6 +277,11 @@ func apply_damage(
 	# Server authority (in singleplayer, we ARE the server)
 	if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
 		return
+	if not is_instance_valid(target) or not is_finite(amount) or amount <= 0.0:
+		return
+	# Evaluate only server-owned status state, once, before dispatch to any target type.
+	if is_instance_valid(source) and source.has_method("get_outgoing_damage_modifier"):
+		amount *= source.get_outgoing_damage_modifier()
 
 	# Create damage info
 	var damage_info := DamageInfo.new()
@@ -301,7 +319,10 @@ func apply_damage(
 					"[Combat] Applying damage to %s via take_damage: %.1f" % [target.name, amount],
 					"Combat"
 				)
-		target.take_damage(damage_info)
+		if target is StaticBody3D:
+			target.take_damage(amount, DamageInfo.DamageType.keys()[damage_type].to_lower(), source)
+		else:
+			target.take_damage(damage_info)
 
 		# Emit damage_dealt event for stats tracking
 		if gm_dmg:
@@ -376,7 +397,7 @@ func apply_damage(
 ## Client -> Server: Request melee hit (Anti-cheat validated)
 
 @rpc("any_peer", "call_remote", "reliable")
-func request_melee_hit(target_name: String, damage: float) -> void:
+func request_melee_hit(target_name: String) -> void:
 	var sender_id: int = multiplayer.get_remote_sender_id()
 	if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
 		return
@@ -384,20 +405,24 @@ func request_melee_hit(target_name: String, damage: float) -> void:
 	# Rate Limit via NetworkManager
 	var gm_rate: Node = get_node_or_null("/root/GameManager")
 	var ns := gm_rate.get_core_system("network") as NetworkSvc if gm_rate else null
+
+	var player: Node = _find_player_by_id(sender_id)
+	if not is_instance_valid(player) or _is_player_in_special_mode(sender_id):
+		return
+	var damage: float = 35.0
+	var weapons: WeaponManager = player.get_node_or_null("WeaponManager") as WeaponManager
+	if not weapons or not weapons.inventory:
+		return
+	var knife_index: int = weapons.inventory.find_knife_index()
+	if knife_index != -1:
+		damage = weapons.inventory.weapons[knife_index].damage
 	if (
 		ns
 		and ns.network_manager
-		and not ns.network_manager.validate_rpc(sender_id, "request_damage", [damage])
+		and not ns.network_manager.validate_rpc(
+			sender_id, "request_damage", [damage, sender_id, player.global_position]
+		)
 	):
-		return
-
-	# Find sender player
-	var player: Node = instance_from_id(sender_id)
-	if not is_instance_valid(player):
-		# Fallback: try finding by name
-		player = _find_player_by_id(sender_id)
-
-	if not is_instance_valid(player):
 		return
 
 	# Find target (Search in current scene)
@@ -444,10 +469,9 @@ func request_melee_hit(target_name: String, damage: float) -> void:
 
 
 func _find_player_by_id(peer_id: int) -> Node:
-	var tree := get_tree()
-	var scene_root: Node = tree.current_scene if tree else null
-	if scene_root:
-		return scene_root.get_node_or_null(str(peer_id))
+	for player: Node in get_tree().get_nodes_in_group("player"):
+		if player.get_multiplayer_authority() == peer_id:
+			return player
 	return null
 
 
@@ -479,17 +503,7 @@ func request_fire(origin: Vector3, direction: Vector3, weapon_index: int) -> voi
 			)
 		return
 
-	var player: Node = instance_from_id(sender_id)
-	# Won't work if ID doesn't match instance ID directly.
-	# Player nodes are usually reliable named by ID in MP.
-	if not player:
-		var tree := get_tree()
-		var scene_root: Node = tree.current_scene if tree else null
-		if not scene_root and tree:
-			scene_root = tree.root
-
-		if scene_root:
-			player = scene_root.get_node_or_null(str(sender_id))
+	var player: Node = _find_player_by_id(sender_id)
 
 	if not player:
 		var logger: Node = GameManager.get_core_system("logger")

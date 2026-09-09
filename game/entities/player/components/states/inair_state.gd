@@ -59,7 +59,7 @@ func _apply_air_control(move_vector: Vector2) -> void:
 
 	# Calculate desired velocity
 	var desired_velocity: Vector3 = (forward * move_vector.y + right * move_vector.x).normalized()
-	desired_velocity *= movement_component.move_speed
+	desired_velocity *= movement_component.get_effective_move_speed()
 
 	# Apply air acceleration (simplified)
 	var air_accel: float = movement_component.air_acceleration

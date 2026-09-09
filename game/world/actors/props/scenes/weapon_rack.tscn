@@ -1,0 +1,139 @@
+[gd_scene load_steps=14 format=3]
+
+[ext_resource type="Script" path="res://game/world/actors/props/weapon_rack.gd" id="1"]
+
+[sub_resource type="StandardMaterial3D" id="Steel"]
+albedo_color = Color(0.18, 0.23, 0.28, 1)
+metallic = 0.8
+roughness = 0.45
+
+[sub_resource type="StandardMaterial3D" id="Wood"]
+albedo_color = Color(0.31, 0.17, 0.085, 1)
+roughness = 0.8
+
+[sub_resource type="StandardMaterial3D" id="Weapon"]
+albedo_color = Color(0.48, 0.55, 0.59, 1)
+metallic = 0.85
+roughness = 0.25
+
+[sub_resource type="BoxMesh" id="Post"]
+size = Vector3(0.12, 1.65, 0.16)
+
+[sub_resource type="BoxMesh" id="Rail"]
+size = Vector3(1.4, 0.16, 0.18)
+
+[sub_resource type="BoxMesh" id="Foot"]
+size = Vector3(0.28, 0.12, 0.8)
+
+[sub_resource type="BoxMesh" id="Receiver"]
+size = Vector3(0.52, 0.16, 0.14)
+
+[sub_resource type="CylinderMesh" id="Barrel"]
+top_radius = 0.045
+bottom_radius = 0.045
+height = 0.4
+
+[sub_resource type="BoxMesh" id="Grip"]
+size = Vector3(0.13, 0.26, 0.12)
+
+[sub_resource type="BoxShape3D" id="RackCollision"]
+size = Vector3(1.6, 1.7, 0.7)
+
+[sub_resource type="SphereShape3D" id="TakeRange"]
+radius = 2.2
+
+[sub_resource type="SceneReplicationConfig" id="Replication"]
+properties/0/path = NodePath(".:transform")
+properties/0/spawn = true
+properties/0/replication_mode = 0
+properties/1/path = NodePath(".:weapon_type")
+properties/1/spawn = true
+properties/1/replication_mode = 0
+properties/2/path = NodePath(".:respawn_enabled")
+properties/2/spawn = true
+properties/2/replication_mode = 0
+properties/3/path = NodePath(".:has_weapon")
+properties/3/spawn = true
+properties/3/replication_mode = 1
+
+[node name="WeaponRack" type="StaticBody3D"]
+collision_layer = 1
+collision_mask = 1
+script = ExtResource("1")
+
+[node name="LeftPost" type="MeshInstance3D" parent="."]
+position = Vector3(-0.7, 0.85, 0)
+mesh = SubResource("Post")
+material_override = SubResource("Steel")
+
+[node name="RightPost" type="MeshInstance3D" parent="."]
+position = Vector3(0.7, 0.85, 0)
+mesh = SubResource("Post")
+material_override = SubResource("Steel")
+
+[node name="UpperRail" type="MeshInstance3D" parent="."]
+position = Vector3(0, 1.52, 0)
+mesh = SubResource("Rail")
+material_override = SubResource("Wood")
+
+[node name="LowerRail" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.65, 0)
+mesh = SubResource("Rail")
+material_override = SubResource("Wood")
+
+[node name="LeftFoot" type="MeshInstance3D" parent="."]
+position = Vector3(-0.7, 0.06, 0)
+mesh = SubResource("Foot")
+material_override = SubResource("Steel")
+
+[node name="RightFoot" type="MeshInstance3D" parent="."]
+position = Vector3(0.7, 0.06, 0)
+mesh = SubResource("Foot")
+material_override = SubResource("Steel")
+
+[node name="WeaponDisplay" type="Node3D" parent="."]
+position = Vector3(0, 1.13, -0.18)
+
+[node name="Receiver" type="MeshInstance3D" parent="WeaponDisplay"]
+mesh = SubResource("Receiver")
+material_override = SubResource("Weapon")
+
+[node name="Barrel" type="MeshInstance3D" parent="WeaponDisplay"]
+position = Vector3(0.43, 0.02, 0)
+rotation = Vector3(0, 0, 1.5708)
+mesh = SubResource("Barrel")
+material_override = SubResource("Steel")
+
+[node name="Grip" type="MeshInstance3D" parent="WeaponDisplay"]
+position = Vector3(-0.13, -0.18, 0)
+rotation = Vector3(0, 0, -0.2)
+mesh = SubResource("Grip")
+material_override = SubResource("Wood")
+
+[node name="GlowLight" type="OmniLight3D" parent="."]
+position = Vector3(0, 1.3, -0.45)
+light_color = Color(0.5, 0.8, 1, 1)
+light_energy = 0.8
+omni_range = 1.5
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0.85, 0)
+shape = SubResource("RackCollision")
+
+[node name="InteractionArea" type="Area3D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="InteractionArea"]
+shape = SubResource("TakeRange")
+
+[node name="InteractionLabel" type="Label3D" parent="."]
+position = Vector3(0, 2.0, 0)
+billboard = 1
+text = "Press E to take"
+font_size = 32
+pixel_size = 0.006
+visible = false
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("Replication")

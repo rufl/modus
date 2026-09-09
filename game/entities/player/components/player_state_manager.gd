@@ -98,6 +98,8 @@ func _sync_restored_alive() -> void:
 
 
 func _restore_alive() -> void:
+	if _player.status_effect_manager:
+		_player.status_effect_manager.remove_all_effects()
 	_cancel_pending_respawn()
 	if _health_component:
 		_health_component.reset_death_state()

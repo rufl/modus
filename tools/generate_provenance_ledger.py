@@ -47,6 +47,28 @@ KENNEY = {
     "game/art/textures/kenney_prototype_textures/orange/texture_09.png":
         "6fb33751454dcfeb0181041e2e70d438bd3847be1fc8c72123a9477d22dc5c34",
 }
+ORIGINAL_ICONS = {
+    "game/art/ui/icons/potion_health.svg":
+        "ffb68a31efcc9ea6a2ab481a3dbbddc36377e4c7966fee515fe8af65c3f22f5b",
+    "game/art/ui/icons/potion_health_large.svg":
+        "2a07bdd3da77dca9c3920022a98c5aee90d6b824ed96221aa769bcc03a81afd5",
+    "game/art/ui/icons/shield_boost.svg":
+        "eed09cf9078b44ae30c1b276224fa552452892c60b102d311d2c1ea05d387627",
+    "game/art/ui/icons/stim_speed.svg":
+        "82bb500083df28c817688957d7dd264aada6f8b3e36f0159056a1d2241d85c78",
+    "game/art/ui/icons/stim_damage.svg":
+        "c68f57b7dc0105aeb224b095a8cd59800e69f3aad0b9190687dc9295bdc17f4f",
+    "game/art/ui/icons/material_scrap.svg":
+        "685fbd94e0b6f742c11c7c72923a397225f677f28aa6926d31c50ebb6bdbe375",
+    "game/art/ui/icons/material_energy.svg":
+        "a3cb626d7aca83f81d7fde518edbc4d144a7fb53d69748b30de37b5f6da4c42b",
+    "game/art/ui/icons/ammo_pistol.svg":
+        "97ee8f258fa8eacb236e441183d26de2bd47b5054c694d4139f9ad503c169b9c",
+    "game/art/ui/icons/ammo_shells.svg":
+        "a9e47cb2132ad30302be7de787b600cce216c14193bd4400c831db99b2bc1e87",
+    "game/art/ui/icons/ammo_rockets.svg":
+        "f96dd0d2dfabca50a929737e8269ea81f79b0c353c07ed46db01b8c89955a2c4",
+}
 BLOOD_POOL_PATHS = {
     "game/art/shaders/blood_pool.gdshader",
     "shared/shaders/blood_pool.gd",
@@ -102,6 +124,19 @@ def classify(path: Path, digest: str) -> dict[str, str]:
         "local_notice": "",
         "notes": "No repository-local provenance record currently clears this distributed asset.",
     }
+
+    if relative in ORIGINAL_ICONS:
+        if digest != ORIGINAL_ICONS[relative]:
+            base["notes"] = "Icon changed after the original-artwork provenance record."
+            return base
+        return {
+            "status": "cleared",
+            "author": "LichForge / OpenAI-assisted original artwork",
+            "source": "Original editable SVG geometry authored for MODUS, 2026-09-09",
+            "license": "MIT",
+            "local_notice": "LICENSE",
+            "notes": "Authorship and SPDX license embedded in the hash-pinned SVG source.",
+        }
 
     if relative in KENNEY:
         if digest != KENNEY[relative]:

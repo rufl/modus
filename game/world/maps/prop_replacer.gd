@@ -3,11 +3,11 @@ extends Node
 const PROP_MAPPINGS: Dictionary = {
 	"crate": "res://game/world/actors/props/scenes/breakable_crate.tscn",
 	"barrel": "res://game/world/actors/props/scenes/breakable_barrel.tscn",
-	# TODO(v1.1, @props-team): Create vase scene (4 hours)
-	# "vase": "", # TODO: add a canonical vase scene before enabling replacement.
+	"vase": "res://game/world/actors/props/scenes/breakable_vase.tscn",
 	"chest": "res://game/world/actors/props/scenes/treasure_chest.tscn",
-	# TODO(v1.1, @props-team): Create weapon rack scene (6 hours)
-	# "weapon_rack": "", # TODO: add a canonical weapon-rack scene before enabling replacement.
+	"corpse_pile": "res://game/world/actors/props/scenes/corpse_pile.tscn",
+	"hidden_stash": "res://game/world/actors/props/scenes/hidden_stash.tscn",
+	"weapon_rack": "res://game/world/actors/props/scenes/weapon_rack.tscn",
 }
 
 var _nodes_to_replace: Array[Dictionary] = []
@@ -92,7 +92,7 @@ func _replace_props() -> void:
 		var new_node: Node3D = scene.instantiate()
 
 		# Copy transform from old node
-		new_node.global_transform = old_node.global_transform
+		new_node.transform = old_node.transform
 		new_node.name = old_node.name + "_interactive"
 
 		# Add to tree BEFORE removing old node to maintain hierarchy

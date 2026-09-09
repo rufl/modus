@@ -1,0 +1,99 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://game/world/actors/props/hidden_stash.gd" id="1"]
+
+[sub_resource type="StandardMaterial3D" id="Stone"]
+resource_local_to_scene = true
+albedo_color = Color(0.32, 0.36, 0.33, 1)
+roughness = 0.95
+
+[sub_resource type="StandardMaterial3D" id="Rune"]
+albedo_color = Color(0.54, 0.84, 0.65, 1)
+emission_enabled = true
+emission = Color(0.15, 0.45, 0.26, 1)
+emission_energy_multiplier = 0.7
+
+[sub_resource type="CylinderMesh" id="Slab"]
+top_radius = 0.6
+bottom_radius = 0.68
+height = 0.22
+radial_segments = 6
+
+[sub_resource type="TorusMesh" id="Inscription"]
+inner_radius = 0.32
+outer_radius = 0.34
+rings = 24
+ring_segments = 6
+
+[sub_resource type="BoxMesh" id="Glyph"]
+size = Vector3(0.045, 0.018, 0.31)
+
+[sub_resource type="CylinderMesh" id="StoneChip"]
+top_radius = 0.09
+bottom_radius = 0.15
+height = 0.12
+radial_segments = 5
+
+[sub_resource type="SphereShape3D" id="DiscoveryRange"]
+radius = 1.5
+
+[sub_resource type="SceneReplicationConfig" id="Replication"]
+properties/0/path = NodePath(".:transform")
+properties/0/spawn = true
+properties/0/replication_mode = 0
+properties/1/path = NodePath(".:loot_table_id")
+properties/1/spawn = true
+properties/1/replication_mode = 0
+properties/2/path = NodePath(".:reveal_trigger")
+properties/2/spawn = true
+properties/2/replication_mode = 0
+properties/3/path = NodePath(".:proximity_radius")
+properties/3/spawn = true
+properties/3/replication_mode = 0
+properties/4/path = NodePath(".:require_line_of_sight")
+properties/4/spawn = true
+properties/4/replication_mode = 0
+properties/5/path = NodePath(".:is_revealed")
+properties/5/spawn = true
+properties/5/replication_mode = 1
+properties/6/path = NodePath(".:is_looted")
+properties/6/spawn = true
+properties/6/replication_mode = 1
+
+[node name="HiddenStash" type="Area3D"]
+collision_layer = 1
+collision_mask = 2
+script = ExtResource("1")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.11, 0)
+mesh = SubResource("Slab")
+material_override = SubResource("Stone")
+
+[node name="Inscription" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.23, 0)
+mesh = SubResource("Inscription")
+material_override = SubResource("Rune")
+
+[node name="GlyphLeft" type="MeshInstance3D" parent="."]
+position = Vector3(-0.075, 0.231, 0)
+rotation = Vector3(0, -0.5, 0)
+mesh = SubResource("Glyph")
+material_override = SubResource("Rune")
+
+[node name="GlyphRight" type="MeshInstance3D" parent="."]
+position = Vector3(0.075, 0.231, 0)
+rotation = Vector3(0, 0.5, 0)
+mesh = SubResource("Glyph")
+material_override = SubResource("Rune")
+
+[node name="StoneChip" type="MeshInstance3D" parent="."]
+position = Vector3(0.58, 0.06, -0.42)
+mesh = SubResource("StoneChip")
+material_override = SubResource("Stone")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("DiscoveryRange")
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("Replication")

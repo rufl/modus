@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>Speed stim</title>
+  <desc>Original MODUS artwork, authored with OpenAI assistance, 2026. SPDX-License-Identifier: MIT. A diagonal injector with forward motion chevrons.</desc>
+  <g transform="rotate(40 35 29)">
+    <path fill="#edf5ff" d="M26 3h18v6h-6v6h5v26l-5 6v9h-4v-9l-5-6V15h5V9h-8z"/>
+    <path fill="#42d9b0" d="M33 20h6v18h-6z"/>
+    <path fill="#253c57" d="M33 24h4v3h-4zM33 31h4v3h-4z"/>
+  </g>
+  <path fill="#72f0cd" d="m6 30 8 7-8 7h7l8-7-8-7zM15 43l8 7-8 7h7l8-7-8-7z"/>
+</svg>

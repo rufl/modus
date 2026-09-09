@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>Large health potion</title>
+  <desc>Original MODUS artwork, authored with OpenAI assistance, 2026. SPDX-License-Identifier: MIT. A broad reinforced medical canister, distinct from the small round vial.</desc>
+  <path fill="#edf5ff" d="M20 5h24v9h-4v4h8l9 10v24l-6 7H13l-6-7V28l9-10h8v-4h-4z"/>
+  <path fill="#33475b" d="M24 9h16v4H24zM27 16h10v5H27z"/>
+  <path fill="#d84361" d="M19 25h26l6 6v19l-4 4H17l-4-4V31z"/>
+  <path fill="#fff" d="M28 28h8v8h8v8h-8v8h-8v-8h-8v-8h8z"/>
+  <path fill="#b9ddf3" d="M7 33h6v13H7zM51 33h6v13h-6z"/>
+</svg>

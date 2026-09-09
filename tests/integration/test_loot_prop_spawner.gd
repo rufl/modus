@@ -26,6 +26,7 @@ func after_each() -> void:
 	_roots.clear()
 	_apis.clear()
 	_peers.clear()
+	await get_tree().process_frame
 
 
 func _network_root() -> Node3D:
@@ -51,7 +52,7 @@ func _marker(parent: Node, automatic: bool = false) -> LootPropSpawner:
 func _props(parent: Node) -> Array[Node3D]:
 	var result: Array[Node3D] = []
 	for child: Node in parent.get_children():
-		if child is BreakableProp or child is TreasureChest:
+		if child is CollisionObject3D:
 			result.append(child)
 	return result
 
@@ -64,14 +65,18 @@ func test_canonical_props_have_configured_world_transform_at_readiness() -> void
 	var observed: Array[Transform3D] = []
 	parent.child_entered_tree.connect(
 		func(child: Node) -> void:
-			if child is BreakableProp or child is TreasureChest:
+			if child is CollisionObject3D:
 				child.ready.connect(func() -> void: observed.append(child.global_transform))
 	)
 	var marker := _marker(parent)
 	for kind in [
 		LootPropSpawner.PropType.CRATE,
 		LootPropSpawner.PropType.BARREL,
-		LootPropSpawner.PropType.CHEST
+		LootPropSpawner.PropType.VASE,
+		LootPropSpawner.PropType.CHEST,
+		LootPropSpawner.PropType.CORPSE_PILE,
+		LootPropSpawner.PropType.HIDDEN_STASH,
+		LootPropSpawner.PropType.WEAPON_RACK
 	]:
 		marker.prop_type = kind
 		marker.health_multiplier = 2.0

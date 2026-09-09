@@ -7,7 +7,11 @@ enum PropType { CRATE, BARREL, VASE, CHEST, CORPSE_PILE, HIDDEN_STASH, WEAPON_RA
 const PROP_SCENES: Dictionary = {
 	PropType.CRATE: "res://game/world/actors/props/scenes/breakable_crate.tscn",
 	PropType.BARREL: "res://game/world/actors/props/scenes/breakable_barrel.tscn",
+	PropType.VASE: "res://game/world/actors/props/scenes/breakable_vase.tscn",
 	PropType.CHEST: "res://game/world/actors/props/scenes/treasure_chest.tscn",
+	PropType.CORPSE_PILE: "res://game/world/actors/props/scenes/corpse_pile.tscn",
+	PropType.HIDDEN_STASH: "res://game/world/actors/props/scenes/hidden_stash.tscn",
+	PropType.WEAPON_RACK: "res://game/world/actors/props/scenes/weapon_rack.tscn",
 }
 
 @export_group("Spawn Settings")
@@ -103,7 +107,8 @@ func spawn_prop() -> Node3D:
 
 	if random_rotation:
 		spawn_transform.basis = Basis(Vector3.UP, randf() * TAU) * spawn_transform.basis
-	var parent_3d: Node3D = get_parent_node_3d()
+	var spawn_parent := _get_spawn_parent(scene_path)
+	var parent_3d := spawn_parent as Node3D
 	prop.transform = (
 		parent_3d.global_transform.affine_inverse() * spawn_transform
 		if parent_3d
@@ -114,15 +119,31 @@ func spawn_prop() -> Node3D:
 	spawned_prop = prop
 	prop.tree_exiting.connect(_on_spawned_prop_tree_exiting.bind(prop), CONNECT_ONE_SHOT)
 	visible = false
-	get_parent().add_child(prop)
+	spawn_parent.add_child(prop, true)
 
 	return spawned_prop
+
+
+func _get_spawn_parent(scene_path: String) -> Node:
+	# Existing world replication observes only direct children of spawn_path.
+	# Find that root for nested authored markers instead of creating a second spawner.
+	var ancestor := get_parent()
+	while ancestor:
+		for child: Node in ancestor.get_children():
+			if child is MultiplayerSpawner:
+				for index: int in range(child.get_spawnable_scene_count()):
+					if child.get_spawnable_scene(index) == scene_path:
+						var spawn_root := child.get_node_or_null(child.spawn_path)
+						if spawn_root:
+							return spawn_root
+		ancestor = ancestor.get_parent()
+	return get_parent()
 
 
 func _get_scene_path() -> String:
 	if prop_type == PropType.RANDOM:
 		# Pick only from breakable types with canonical scenes.
-		var breakable_types: Array = [PropType.CRATE, PropType.BARREL]
+		var breakable_types: Array = [PropType.CRATE, PropType.BARREL, PropType.VASE]
 		var random_type: PropType = breakable_types.pick_random()
 		return PROP_SCENES.get(random_type, "")
 

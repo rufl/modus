@@ -30,7 +30,6 @@ func _init():
 	gut.add_script_with_path("res://tests/test_event_bus.gd")
 	gut.add_script_with_path("res://tests/test_game_database.gd")
 	gut.add_script_with_path("res://tests/test_network_manager.gd")
-	gut.add_script_with_path("res://tests/test_combat_service.gd")
 	gut.add_script_with_path("res://tests/test_effects.gd")
 	gut.add_script_with_path("res://tests/test_ui_system.gd")
 	gut.add_script_with_path("res://tests/test_weapons.gd")

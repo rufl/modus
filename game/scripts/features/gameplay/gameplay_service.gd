@@ -58,6 +58,8 @@ func _ready() -> void:
 func _init_subsystems() -> void:
 	# 1. Instantiate Subsystems
 	# These are now child nodes instead of global autoloads
+	var gm := _get_game_manager()
+	entity_registry = gm.get_core_system("entities") if gm else null
 
 	# DifficultyMgr
 	difficulty = _load_and_add(

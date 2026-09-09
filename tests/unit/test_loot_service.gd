@@ -157,3 +157,34 @@ func test_custom_consumable_scene_preserves_resource_and_inventory_transfer() ->
 	assert_eq(received.id, "custom_tonic")
 	assert_eq(received.item_type, InventoryItem.ItemType.CONSUMABLE)
 	assert_eq(received.rarity, ItemRarity.Tier.EPIC)
+
+
+func test_configured_table_weights_produce_collectible_health_with_selected_tier() -> void:
+	var table := (
+		_loot_svc
+		. _create_loot_table_from_data(
+			{
+				"rolls": 2,
+				"entries":
+				[
+					{"item_id": "health_large", "weight": 0.0, "rarity": "common"},
+					{"item_id": "health_small", "weight": 1.0, "rarity": "rare"},
+				],
+			}
+		)
+	)
+	var rolled := table.roll_loot()
+	assert_eq(rolled.size(), 2)
+	for item: ItemData in rolled:
+		var pickup := _loot_svc._spawn_pickup(item, _player.global_position, 1) as HealthPickup
+		assert_not_null(pickup)
+		if not pickup:
+			return
+		assert_eq(pickup.tier, HealthPickup.HealthTier.SMALL)
+		assert_eq(pickup.rarity.tier, ItemRarity.Tier.RARE)
+		assert_true(pickup.collect_for_player(_player, 1))
+	assert_eq(_player.health, 70)
+	var empty_table := _loot_svc._create_loot_table_from_data(
+		{"rolls": 2, "entries": [{"is_empty": true, "weight": 1.0}]}
+	)
+	assert_eq(empty_table.roll_loot().size(), 0)

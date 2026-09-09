@@ -7,6 +7,7 @@ extends Resource
 @export var no_drop_chance: float = 0.0  ## 0.0 to 1.0
 @export_group("Loot Pool")
 @export var possible_items: Array[ItemData] = []
+@export var item_weights: Array[float] = []
 
 
 func roll_loot() -> Array[ItemData]:
@@ -23,12 +24,16 @@ func roll_loot() -> Array[ItemData]:
 	var total_weight: float = 0.0
 	var weights: Array[float] = []
 
-	for item: ItemData in possible_items:
-		var w: float = 100.0  # Default
-		if item.rarity:
-			w = item.rarity.drop_chance_weight
+	for index in possible_items.size():
+		var item: ItemData = possible_items[index]
+		var w: float = item.rarity.drop_chance_weight if item and item.rarity else 100.0
+		if index < item_weights.size():
+			w = item_weights[index]
+		w = maxf(w, 0.0) if is_finite(w) else 0.0
 		weights.append(w)
 		total_weight += w
+	if total_weight <= 0:
+		return result
 
 	# Pick items
 	for _unused: int in range(item_count):
@@ -36,8 +41,9 @@ func roll_loot() -> Array[ItemData]:
 		var current_w: float = 0.0
 		for j in range(possible_items.size()):
 			current_w += weights[j]
-			if pick <= current_w:
-				result.append(possible_items[j])
+			if pick < current_w:
+				if possible_items[j]:
+					result.append(possible_items[j])
 				break
 
 	return result

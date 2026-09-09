@@ -8,6 +8,7 @@ signal effect_stacked(effect_name: String, new_stacks: int)
 var active_effects: Array[StatusEffect] = []
 
 var _parent: Node3D = null
+var _health: HealthComponent = null
 
 
 func _ready() -> void:
@@ -15,6 +16,12 @@ func _ready() -> void:
 	_parent = get_parent() as Node3D
 	if not _parent:
 		push_warning("[StatusEffectManager] Parent is not Node3D")
+		return
+	_health = _parent.get_node_or_null("HealthComponent") as HealthComponent
+	if _health:
+		safe_connect(_health.died, _on_parent_died)
+	if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
+		_request_effect_snapshot.call_deferred()
 
 
 func _process(delta: float) -> void:
@@ -22,10 +29,13 @@ func _process(delta: float) -> void:
 		set_process(false)  # Disable when no effects active
 		return
 
-	# Only process on authority
-	if _parent and _parent.has_method("is_multiplayer_authority"):
-		if not _parent.is_multiplayer_authority():
-			return
+	if not _is_server():
+		_update_player_screen_effects()
+		return
+
+	if _health and (_health.is_dead or _health.current_health <= 0.0):
+		remove_all_effects()
+		return
 
 	var effects_to_remove: Array[StatusEffect] = []
 
@@ -84,17 +94,64 @@ func _update_player_screen_effects() -> void:
 	hud_bridge.update_screen_effects(effects_data)
 
 
+func _is_server() -> bool:
+	return not multiplayer.has_multiplayer_peer() or multiplayer.is_server()
+
+
+func _on_parent_died(_source_id: int) -> void:
+	remove_all_effects()
+
+
+func apply_consumable_buff(effect_type: String, duration: float) -> bool:
+	if not _is_server() or not is_finite(duration) or duration <= 0.0:
+		return false
+	if (
+		not _parent
+		or not _parent.is_in_group("player")
+		or not _health
+		or _health.is_dead
+		or _health.current_health <= 0.0
+		or ("is_downed" in _parent and _parent.is_downed)
+	):
+		return false
+	var effect := StatusEffect.new()
+	effect.duration = duration
+	effect.tick_interval = 0.0
+	effect.damage_per_tick = 0.0
+	match effect_type:
+		"buff_speed":
+			effect.effect_type = StatusEffect.EffectType.SPEED_BUFF
+			effect.effect_name = "Speed"
+			effect.movement_speed_modifier = 1.5
+			effect.effect_color = Color.YELLOW
+		"buff_damage":
+			effect.effect_type = StatusEffect.EffectType.DAMAGE_BUFF
+			effect.effect_name = "Damage"
+			effect.outgoing_damage_modifier = 1.25
+			effect.effect_color = Color.ORANGE_RED
+		_:
+			return false
+	apply_effect(effect)
+	return true
+
+
 func apply_effect(effect: StatusEffect) -> void:
+	if not _is_server() or not effect:
+		return
 	# Check for existing effect of same type
 	for existing: StatusEffect in active_effects:
 		if existing.effect_type == effect.effect_type:
 			if effect.stacks:
 				existing.add_stack()
 				effect_stacked.emit(existing.effect_name, existing.current_stacks)
-				_sync_effect_stack.rpc(existing.effect_name, existing.current_stacks)
+				if multiplayer.has_multiplayer_peer():
+					_sync_effect_stack.rpc(existing.effect_name, existing.current_stacks)
 			else:
 				# Refresh duration
 				existing.remaining_duration = effect.duration
+				existing.duration = effect.duration
+			if multiplayer.has_multiplayer_peer():
+				_sync_effect_applied.rpc(existing.to_dict())
 			return
 
 	# Add new effect
@@ -107,10 +164,13 @@ func apply_effect(effect: StatusEffect) -> void:
 	_spawn_effect_visual(new_effect)
 
 	# Sync to other clients
-	_sync_effect_applied.rpc(new_effect.to_dict())
+	if multiplayer.has_multiplayer_peer():
+		_sync_effect_applied.rpc(new_effect.to_dict())
 
 
 func remove_effect(effect_type: StatusEffect.EffectType) -> void:
+	if not _is_server():
+		return
 	var to_remove: Array[StatusEffect] = []
 
 	for effect: StatusEffect in active_effects:
@@ -122,10 +182,20 @@ func remove_effect(effect_type: StatusEffect.EffectType) -> void:
 
 
 func remove_all_effects() -> void:
-	for effect: StatusEffect in active_effects:
-		effect_removed.emit(effect.effect_name)
+	if not _is_server():
+		return
+	_clear_effects()
+	if multiplayer.has_multiplayer_peer():
+		_sync_effects_cleared.rpc()
+
+
+func _clear_effects() -> void:
+	var removed_effects := active_effects.duplicate()
 	active_effects.clear()
-	_sync_effects_cleared.rpc()
+	set_process(false)
+	for effect: StatusEffect in removed_effects:
+		effect_removed.emit(effect.effect_name)
+	_update_player_screen_effects()
 
 
 func has_effect(effect_type: StatusEffect.EffectType) -> bool:
@@ -139,6 +209,13 @@ func get_movement_modifier() -> float:
 	var modifier: float = 1.0
 	for effect: StatusEffect in active_effects:
 		modifier *= effect.movement_speed_modifier
+	return modifier
+
+
+func get_damage_modifier() -> float:
+	var modifier: float = 1.0
+	for effect: StatusEffect in active_effects:
+		modifier *= effect.outgoing_damage_modifier
 	return modifier
 
 
@@ -159,7 +236,8 @@ func get_active_effect_names() -> Array[String]:
 func _remove_effect_internal(effect: StatusEffect) -> void:
 	active_effects.erase(effect)
 	effect_removed.emit(effect.effect_name)
-	_sync_effect_removed.rpc(effect.effect_name)
+	if multiplayer.has_multiplayer_peer():
+		_sync_effect_removed.rpc(effect.effect_name)
 
 
 func _spawn_effect_visual(effect: StatusEffect) -> void:
@@ -419,22 +497,50 @@ func _configure_default_particles(mat: ParticleProcessMaterial, color: Color) ->
 # Network Sync
 # ============================================================================
 
-@rpc("authority", "call_remote", "reliable")
-func _sync_effect_applied(effect_data: Dictionary) -> void:
-	var effect := StatusEffect.from_dict(effect_data)
 
-	# Don't re-apply, just add for visual tracking
-	for existing: StatusEffect in active_effects:
-		if existing.effect_type == effect.effect_type:
+func _request_effect_snapshot() -> void:
+	if (
+		multiplayer.has_multiplayer_peer()
+		and not multiplayer.is_server()
+		and (
+			multiplayer.multiplayer_peer.get_connection_status()
+			== MultiplayerPeer.CONNECTION_CONNECTED
+		)
+	):
+		_request_effects.rpc_id(1)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _request_effects() -> void:
+	if not _is_server():
+		return
+	var sender_id := multiplayer.get_remote_sender_id()
+	if sender_id <= 1:
+		return
+	for effect: StatusEffect in active_effects:
+		_sync_effect_applied.rpc_id(sender_id, effect.to_dict())
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _sync_effect_applied(effect_data: Dictionary) -> void:
+	if multiplayer.get_remote_sender_id() != 1:
+		return
+	var effect := StatusEffect.from_dict(effect_data)
+	for index: int in range(active_effects.size()):
+		if active_effects[index].effect_type == effect.effect_type:
+			active_effects[index] = effect
 			return
 
 	active_effects.append(effect)
+	set_process(true)
 	effect_applied.emit(effect)
 	_spawn_effect_visual(effect)
 
 
-@rpc("authority", "call_remote", "reliable")
+@rpc("any_peer", "call_remote", "reliable")
 func _sync_effect_removed(effect_name: String) -> void:
+	if multiplayer.get_remote_sender_id() != 1:
+		return
 	for effect: StatusEffect in active_effects:
 		if effect.effect_name == effect_name:
 			active_effects.erase(effect)
@@ -442,8 +548,10 @@ func _sync_effect_removed(effect_name: String) -> void:
 			return
 
 
-@rpc("authority", "call_remote", "reliable")
+@rpc("any_peer", "call_remote", "reliable")
 func _sync_effect_stack(effect_name: String, stacks: int) -> void:
+	if multiplayer.get_remote_sender_id() != 1:
+		return
 	for effect: StatusEffect in active_effects:
 		if effect.effect_name == effect_name:
 			effect.current_stacks = stacks
@@ -451,8 +559,8 @@ func _sync_effect_stack(effect_name: String, stacks: int) -> void:
 			return
 
 
-@rpc("authority", "call_remote", "reliable")
+@rpc("any_peer", "call_remote", "reliable")
 func _sync_effects_cleared() -> void:
-	for effect: StatusEffect in active_effects:
-		effect_removed.emit(effect.effect_name)
-	active_effects.clear()
+	if multiplayer.get_remote_sender_id() != 1:
+		return
+	_clear_effects()

@@ -63,19 +63,10 @@ func receive_damage(
 	if not _player:
 		return
 
-	# Validate RPC sender (security check)
+	# Client-owned Player nodes still accept damage only from the server.
 	var sender_id: int = _player.multiplayer.get_remote_sender_id()
-	if sender_id != 0:  # 0 means local call
-		# Only server or the attacker can send damage
-		if not _player.multiplayer.is_server():
-			if sender_id != attacker_id:
-				push_error(
-					(
-						"[Security] Damage RPC from peer %d claiming to be attacker %d - REJECTED"
-						% [sender_id, attacker_id]
-					)
-				)
-				return
+	if sender_id != 0 and sender_id != 1:
+		return
 
 	# Godmode check via service
 	if (

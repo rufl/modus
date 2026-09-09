@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>Scrap metal</title>
+  <desc>Original MODUS artwork, authored with OpenAI assistance, 2026. SPDX-License-Identifier: MIT. Overlapping broken metal plates with a hexagonal fastener and folded edge.</desc>
+  <path fill="#b7cbdc" d="m8 11 27-6 10 9-5 7 8 12-32 12-6-14 5-8-7-4z"/>
+  <path fill="#546e87" d="m14 14 20-4 5 5-5 7 6 9-21 8-4-9 5-9-6-4z"/>
+  <path fill="#edf5ff" d="m8 40 19-15 28 6 5 17-9 12-28-4-4-9-8 1z"/>
+  <path fill="#92aac1" d="m27 31 23 5 4 11-6 7-21-3-5-8-6 1z"/>
+  <path fill="#33475b" d="m35 35 9 3 2 9-7 6-9-3-2-9z"/>
+  <path fill="#edf5ff" d="m35 40 5-1 3 5-4 4-5-3z"/>
+  <path fill="none" stroke="#edf5ff" stroke-width="3" d="m17 16 11-2M48 38l3 8"/>
+</svg>

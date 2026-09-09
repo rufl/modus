@@ -5,7 +5,6 @@ class_name HiddenStash
 signal stash_discovered(position: Vector3, discoverer: Node3D)
 signal stash_revealed(position: Vector3)
 
-# Player walks near, shoots it, presses interact, or external trigger
 enum RevealTrigger { PROXIMITY, DAMAGE, INTERACT, CUSTOM }
 
 @export_group("Stash Settings")
@@ -17,209 +16,166 @@ enum RevealTrigger { PROXIMITY, DAMAGE, INTERACT, CUSTOM }
 @export var require_line_of_sight: bool = true
 @export var reveal_damage_threshold: float = 10.0
 @export var reveal_delay: float = 0.5
+@export var interaction_key: String = "interact"
 @export_group("Visual")
-@export var hidden_alpha: float = 0.0
+@export var hidden_alpha: float = 0.25
 @export var revealed_alpha: float = 1.0
 @export var reveal_duration: float = 0.5
-@export var reveal_particle_color: Color = Color(1.0, 0.8, 0.3)
 
-var is_revealed: bool = false
+var is_revealed: bool = false:
+	set(value):
+		var changed := is_revealed != value
+		is_revealed = value
+		if changed and is_node_ready():
+			_animate_reveal()
 var is_looted: bool = false
+var _damage_accumulated: float = 0.0
+var _reveal_timer: Timer
 
 @onready var mesh_instance: MeshInstance3D = $MeshInstance3D
 @onready var collision_shape: CollisionShape3D = $CollisionShape3D
 
-var _damage_accumulated: float = 0.0
-
 
 func _ready() -> void:
-	_setup_multiplayer_sync()
-
-	# Start hidden
-	if mesh_instance:
-		var material: Material = mesh_instance.get_active_material(0)
-		if material is StandardMaterial3D:
-			material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-			material.albedo_color.a = hidden_alpha
-
-	# Connect signals based on trigger type
-	if reveal_trigger == RevealTrigger.PROXIMITY:
-		body_entered.connect(_on_body_entered)
-
+	if Engine.is_editor_hint():
+		return
+	var material := mesh_instance.get_active_material(0) as StandardMaterial3D
+	if material:
+		material = material.duplicate()
+		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		material.albedo_color.a = revealed_alpha if is_revealed else hidden_alpha
+		mesh_instance.material_override = material
+	var shape := SphereShape3D.new()
+	shape.radius = maxf(0.1, proximity_radius)
+	collision_shape.shape = shape
+	_reveal_timer = Timer.new()
+	_reveal_timer.one_shot = true
+	add_child(_reveal_timer)
 	add_to_group("hidden_stashes")
 	add_to_group("secrets")
+	add_to_group("interactable")
+	add_to_group("damageable")
+	add_to_group("props")
 
 
-func _setup_multiplayer_sync() -> void:
-	if has_node("MultiplayerSynchronizer"):
+func _exit_tree() -> void:
+	if is_instance_valid(_reveal_timer):
+		_reveal_timer.stop()
+
+
+func _physics_process(_delta: float) -> void:
+	if Engine.is_editor_hint() or is_revealed:
 		return
-
-	var synchronizer: MultiplayerSynchronizer = MultiplayerSynchronizer.new()
-	synchronizer.name = "MultiplayerSynchronizer"
-
-	var config: SceneReplicationConfig = SceneReplicationConfig.new()
-	config.add_property(":is_revealed")
-	config.add_property(":is_looted")
-	synchronizer.replication_config = config
-
-	add_child(synchronizer)
-
-
-func _on_revealed_changed() -> void:
-	if is_revealed:
-		_animate_reveal()
+	for body: Node3D in get_overlapping_bodies():
+		if not body.is_in_group("player"):
+			continue
+		if reveal_trigger == RevealTrigger.PROXIMITY:
+			if not multiplayer.has_multiplayer_peer() or multiplayer.is_server():
+				if _can_discover(body):
+					_reveal_stash(body)
+		elif reveal_trigger == RevealTrigger.INTERACT and body.is_multiplayer_authority():
+			if Input.is_action_just_pressed(interaction_key):
+				interact(body)
 
 
-func _on_body_entered(body: Node3D) -> void:
-	if reveal_trigger != RevealTrigger.PROXIMITY:
-		return
-	if not body.is_in_group("player"):
-		return
-	if is_revealed:
-		return
-
-	# Request reveal from server
-	if multiplayer.is_server():
-		_reveal_stash(body)
-	else:
-		_request_reveal.rpc_id(1)
+func _can_discover(player: Node3D) -> bool:
+	if (
+		not is_instance_valid(player)
+		or not player.is_inside_tree()
+		or not player.is_in_group("player")
+	):
+		return false
+	if player.global_position.distance_to(global_position) > proximity_radius + 0.5:
+		return false
+	if require_line_of_sight:
+		var ray := PhysicsRayQueryParameters3D.create(
+			global_position + Vector3.UP * 0.4, player.global_position + Vector3.UP * 0.4, 1
+		)
+		if player is CollisionObject3D:
+			ray.exclude = [player.get_rid()]
+		if not get_world_3d().direct_space_state.intersect_ray(ray).is_empty():
+			return false
+	return true
 
 
 func take_damage(amount: float, _damage_type: String = "generic", source: Node3D = null) -> void:
-	if reveal_trigger != RevealTrigger.DAMAGE or is_revealed:
+	if Engine.is_editor_hint() or reveal_trigger != RevealTrigger.DAMAGE or is_revealed:
 		return
-
-	_damage_accumulated += amount
-
+	# Damage comes from the authoritative combat simulation, not client reveal requests.
+	if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
+		return
+	_damage_accumulated += maxf(0.0, amount)
 	if _damage_accumulated >= reveal_damage_threshold:
-		if multiplayer.is_server():
-			_reveal_stash(source)
-		else:
-			_request_reveal.rpc_id(1)
+		_reveal_stash(source)
 
 
 func interact(player: Node3D) -> void:
-	if reveal_trigger != RevealTrigger.INTERACT or is_revealed:
+	if Engine.is_editor_hint() or reveal_trigger != RevealTrigger.INTERACT or is_revealed:
 		return
-
-	if multiplayer.is_server():
+	if not _can_discover(player):
+		return
+	if not multiplayer.has_multiplayer_peer() or multiplayer.is_server():
 		_reveal_stash(player)
-	else:
+	elif player.is_multiplayer_authority():
 		_request_reveal.rpc_id(1)
 
 
 func trigger_reveal(triggerer: Node3D = null) -> void:
-	## External trigger for CUSTOM reveal type
-	if is_revealed:
-		return
-
-	if multiplayer.is_server():
+	if reveal_trigger == RevealTrigger.CUSTOM:
 		_reveal_stash(triggerer)
-	else:
-		_request_reveal.rpc_id(1)
 
 
 @rpc("any_peer", "reliable")
 func _request_reveal() -> void:
-	if not multiplayer.is_server():
+	if not multiplayer.is_server() or reveal_trigger != RevealTrigger.INTERACT:
 		return
-
-	var peer_id: int = multiplayer.get_remote_sender_id()
 	var gs := GameManager.get_core_system("gameplay") as GameplaySvc
-	var player: Node3D = null
-	if gs and gs.entity_registry:
-		player = gs.entity_registry.get_player(peer_id)
-
-	_reveal_stash(player)
+	var peer_id := multiplayer.get_remote_sender_id()
+	var player: Node3D = (
+		gs.entity_registry.get_player(peer_id) if gs and gs.entity_registry else null
+	)
+	if _can_discover(player):
+		_reveal_stash(player)
 
 
 func _reveal_stash(discoverer: Node3D) -> void:
-	if is_revealed:
+	if Engine.is_editor_hint() or not is_inside_tree() or is_queued_for_deletion() or is_revealed:
 		return
-
+	if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
+		return
 	is_revealed = true
-
-	# Play reveal on all clients
-	_play_reveal.rpc()
-
-	# Emit discovery event
-	if GameManager:
-		GameManager.emit_event(
-			"stash_discovered",
-			{"stash": self, "position": global_position, "discoverer": discoverer}
-		)
-
+	var owner_peer := (
+		discoverer.get_multiplayer_authority() if is_instance_valid(discoverer) else -1
+	)
 	stash_discovered.emit(global_position, discoverer)
+	GameManager.emit_event(
+		"stash_discovered", {"stash": self, "position": global_position, "discoverer": discoverer}
+	)
+	if reveal_delay <= 0.0:
+		_spawn_loot(owner_peer)
+	else:
+		_reveal_timer.timeout.connect(_spawn_loot.bind(owner_peer), CONNECT_ONE_SHOT)
+		_reveal_timer.start(reveal_delay)
 
-	# Spawn loot after reveal delay
-	await get_tree().create_timer(reveal_delay).timeout
-	_spawn_loot(discoverer)
 
-
-func _spawn_loot(discoverer: Node3D) -> void:
-	if is_looted or loot_table_id == "":
+func _spawn_loot(owner_peer: int) -> void:
+	if not is_inside_tree() or is_queued_for_deletion() or is_looted or loot_table_id.is_empty():
 		return
-
+	if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
+		return
+	var loot := LootSvc.get_instance()
+	if not loot:
+		return
 	is_looted = true
-
-	var owner_peer: int = -1
-	if discoverer and "get_multiplayer_authority" in discoverer:
-		owner_peer = discoverer.get_multiplayer_authority()
-
-	var gs := GameManager.get_core_system("gameplay") as GameplaySvc
-	if gs and gs.loot:
-		gs.loot.spawn_loot_from_table(
-			global_position + Vector3(0, 0.3, 0), loot_table_id, get_path(), owner_peer
-		)
-
-
-@rpc("authority", "call_local", "reliable")
-func _play_reveal() -> void:
-	is_revealed = true
-	stash_revealed.emit(global_position)
-	_animate_reveal()
-	_spawn_reveal_particles()
+	loot.spawn_loot_from_table(
+		global_position + Vector3(0, 0.3, 0), loot_table_id, get_path(), owner_peer
+	)
 
 
 func _animate_reveal() -> void:
-	if not mesh_instance:
+	if not is_revealed:
 		return
-
-	var material: Material = mesh_instance.get_active_material(0)
-	if material is StandardMaterial3D:
-		var tween: Tween = create_tween()
-		tween.tween_property(material, "albedo_color:a", revealed_alpha, reveal_duration)
-
-
-func _spawn_reveal_particles() -> void:
-	var particles: GPUParticles3D = GPUParticles3D.new()
-	particles.global_position = global_position
-	particles.emitting = true
-	particles.one_shot = true
-	particles.amount = 30
-	particles.lifetime = 1.0
-	particles.explosiveness = 1.0
-
-	var material: ParticleProcessMaterial = ParticleProcessMaterial.new()
-	material.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
-	material.emission_sphere_radius = 0.3
-	material.direction = Vector3(0, 1, 0)
-	material.spread = 180.0
-	material.initial_velocity_min = 1.0
-	material.initial_velocity_max = 3.0
-	material.gravity = Vector3(0, -2.0, 0)
-
-	var gradient: Gradient = Gradient.new()
-	gradient.add_point(0.0, reveal_particle_color)
-	gradient.add_point(
-		1.0, Color(reveal_particle_color.r, reveal_particle_color.g, reveal_particle_color.b, 0.0)
-	)
-
-	var gradient_tex: GradientTexture1D = GradientTexture1D.new()
-	gradient_tex.gradient = gradient
-	material.color_ramp = gradient_tex
-
-	particles.process_material = material
-
-	get_tree().current_scene.add_child(particles)
-	get_tree().create_timer(2.0).timeout.connect(particles.queue_free)
+	stash_revealed.emit(global_position)
+	var material := mesh_instance.get_active_material(0) as StandardMaterial3D
+	if material:
+		create_tween().tween_property(material, "albedo_color:a", revealed_alpha, reveal_duration)

@@ -81,27 +81,21 @@ func quick_melee() -> void:
 func _handle_hit_melee(collider: Node, hit_pos: Vector3, dir: Vector3, dmg: float) -> void:
 	var gs := GameManager.get_core_system("gameplay") as GameplaySvc
 
-	# Apply damage
-	if collider.has_method("take_damage"):
-		var info: DamageInfo = DamageInfo.new()
-		info.base_amount = dmg
-		info.damage_type = DamageInfo.DamageType.MELEE
-		info.source_id = player.name.to_int()
-		info.source = player
-		info.hit_position = hit_pos
-
-		# Check if this is a BreakableProp or similar that expects a float
-		if collider is StaticBody3D:
-			# BreakableProp and similar objects expect just the damage amount
-			collider.take_damage(dmg)
-		else:
-			# Enemies and players expect DamageInfo
-			collider.take_damage(info)
-
-		# Server sync
+	if collider.has_method("take_damage") and gs and gs.combat:
 		if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
-			if gs and gs.combat:
-				gs.combat.request_melee_hit.rpc_id(1, collider.name, dmg)
+			gs.combat.request_melee_hit.rpc_id(1, collider.name)
+		else:
+			gs.combat.apply_damage(
+				collider,
+				dmg,
+				player,
+				DamageInfo.DamageType.MELEE,
+				"Melee",
+				false,
+				player.get_multiplayer_authority(),
+				hit_pos,
+				-dir
+			)
 
 	# Blood effects
 	if gs and gs.effects:

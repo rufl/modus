@@ -1,7 +1,6 @@
-[gd_scene load_steps=37 format=3 uid="uid://b2qhxdrnviyqf"]
+[gd_scene load_steps=36 format=3 uid="uid://b2qhxdrnviyqf"]
 
 [ext_resource type="Script" path="res://game/entities/player/player.gd" id="1_8tdgl"]
-[ext_resource type="Script" path="res://game/scripts/components/status_effect_manager.gd" id="1_status_mgr"]
 [ext_resource type="Script" path="res://game/ui/hud/movement_hud.gd" id="1_movement_hud"]
 [ext_resource type="Script" path="res://game/ui/hud/level_up_notification.gd" id="1_levelup"]
 [ext_resource type="PackedScene" path="res://game/art/models/pistol.glb" id="2_0s6en"]
@@ -265,9 +264,6 @@ playback_default_blend_time = 0.05
 
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
 replication_config = SubResource("SceneReplicationConfig_m36li")
-
-[node name="StatusEffectManager" type="Node" parent="."]
-script = ExtResource("1_status_mgr")
 
 [node name="MovementPolishSystem" type="Node" parent="."]
 script = ExtResource("20_polish")

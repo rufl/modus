@@ -502,6 +502,8 @@ func _validate_movement(_delta: float) -> void:
 		if "is_sprinting" in player and player.is_sprinting:
 			if "sprint_multiplier" in player:
 				multiplier = player.sprint_multiplier
+		if player.has_method("get_movement_modifier"):
+			multiplier *= player.get_movement_modifier()
 
 		var allowed: float = max_speed * multiplier * config.max_speed_tolerance
 

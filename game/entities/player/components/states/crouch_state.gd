@@ -70,7 +70,9 @@ func _apply_crouch_movement(move_vector: Vector2) -> void:
 
 	# Calculate desired velocity
 	var desired_velocity: Vector3 = (forward * move_vector.y + right * move_vector.x).normalized()
-	desired_velocity *= movement_component.move_speed * movement_component.crouch_multiplier
+	desired_velocity *= (
+		movement_component.get_effective_move_speed() * movement_component.crouch_multiplier
+	)
 
 	# Apply movement (simplified - actual physics handled by MovementComponent)
 	player.velocity.x = desired_velocity.x

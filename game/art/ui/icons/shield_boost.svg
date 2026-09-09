@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>Shield booster</title>
+  <desc>Original MODUS artwork, authored with OpenAI assistance, 2026. SPDX-License-Identifier: MIT. An armored shield with a raised central plate and luminous protective rim.</desc>
+  <path fill="#edf5ff" d="M32 4 56 14v19c0 12-10 22-24 28C18 55 8 45 8 33V14z"/>
+  <path fill="#42bce5" d="m32 10 18 8v15c0 9-7 17-18 22-11-5-18-13-18-22V18z"/>
+  <path fill="#253c57" d="m32 16 12 5v12c0 7-5 13-12 17-7-4-12-10-12-17V21z"/>
+  <path fill="#edf5ff" d="m32 20 8 4v9c0 4-3 9-8 12z"/>
+  <path fill="#a4edff" d="M24 25h4v9h-4z"/>
+</svg>

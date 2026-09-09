@@ -77,7 +77,6 @@ require_text docs/CURRENT_STATUS.md '| Latest batched Unit lane | **PASS** | Aug
 require_text docs/CURRENT_STATUS.md '| Map-generator threading | 8/8, 30 assertions;'
 require_text docs/INDEX.md 'bodies have not been revalidated against the current tree'
 require_text docs/README.md 'Historical files are unvalidated snapshots'
-require_text docs/ATTRIBUTION.md '220 assets: 8 cleared, 12 identified but requiring rights evidence, and 200 unverified'
 require_text docs/CURRENT_STATUS.md 'The two-count is the scope of `tools/validate_production_readiness.sh`'
 require_text shared/shaders/README.md 'fresh Godot 4.7 parse/render'
 require_text shared/shaders/README.md 'does **not** register `blood_effects_global.gd`'

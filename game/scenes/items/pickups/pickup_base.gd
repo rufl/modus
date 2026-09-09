@@ -387,8 +387,9 @@ func _add_to_inventory(player: CharacterBody3D) -> bool:
 	var item := InventoryItem.from_dict(item_data)
 	if not inventory.add_item(item):
 		return false
-	if manager and multiplayer.has_multiplayer_peer() and peer_id != multiplayer.get_unique_id():
-		manager._sync_full_inventory.rpc_id(peer_id, inventory.to_dict())
+	if manager:
+		manager._sync_inventory_owner(peer_id, inventory)
+		manager._save_inventory(peer_id, inventory)
 	return true
 
 

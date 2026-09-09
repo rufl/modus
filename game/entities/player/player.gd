@@ -162,6 +162,20 @@ var _last_weapon_index: int = 0
 var _pending_look_delta: Vector2 = Vector2.ZERO
 
 
+func get_movement_modifier() -> float:
+	return (
+		speed_multiplier
+		* (status_effect_manager.get_movement_modifier() if status_effect_manager else 1.0)
+	)
+
+
+func get_outgoing_damage_modifier() -> float:
+	return (
+		damage_multiplier
+		* (status_effect_manager.get_damage_modifier() if status_effect_manager else 1.0)
+	)
+
+
 func _enter_tree() -> void:
 	var peer_id: int = str(name).to_int()
 	if peer_id != 0:
@@ -269,6 +283,9 @@ func _ready() -> void:
 	else:
 		inventory.owner_peer_id = inventory_peer_id
 
+	# Health and effects exist on every peer before dependent components are wired.
+	PlayerComponentFactory.setup_state_manager(self)
+
 	# Setup components based on player type
 	if not is_local_player:
 		# Remote player: setup visual sync components only
@@ -279,9 +296,6 @@ func _ready() -> void:
 		var listener: AudioListener3D = camera.get_node_or_null("AudioListener3D")
 		if listener:
 			listener.make_current()
-
-	# Setup state manager (required for all players)
-	PlayerComponentFactory.setup_state_manager(self)
 
 	# Setup local components (input, movement, etc.) for local player only
 	if is_local_player:
@@ -555,6 +569,8 @@ func _physics_process(delta: float) -> void:
 
 
 func on_died(_source_id: int) -> void:
+	if status_effect_manager:
+		status_effect_manager.remove_all_effects()
 	if state_manager:
 		state_manager.enter_downed()
 

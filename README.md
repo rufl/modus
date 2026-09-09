@@ -188,4 +188,4 @@ docs/              maintained references, generated evidence, and labeled histor
 
 ## License and Provenance
 
-The project MIT text is retained at `LICENSE` and `docs/LICENSE`; vendored GUT carries its MIT notice under `addons/gut/LICENSE.md`. Kenney and dip000 blood-pool material now have pinned local license evidence, while the generated 220-row ledger still contains 212 rows requiring rights review. See [Licensing and Provenance Inventory](docs/ATTRIBUTION.md) before redistributing the project.
+The project MIT text is retained at `LICENSE` and `docs/LICENSE`; vendored GUT carries its MIT notice under `addons/gut/LICENSE.md`. Kenney, dip000 blood-pool material, and ten original sample-item icons have pinned local license evidence. The generated 230-row ledger clears 18 assets and retains 212 requiring rights review. See [Licensing and Provenance Inventory](docs/ATTRIBUTION.md) before redistributing the project.

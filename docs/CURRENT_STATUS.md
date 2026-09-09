@@ -2,7 +2,7 @@
 
 > **Documentation status: maintained reference.** This is the consolidated current snapshot. Generated reports remain authoritative for their individual gates.
 
-**Updated:** August 4, 2026 <!-- craft-ignore: status sheet uses deliberate labels -->
+**Updated:** September 9, 2026 <!-- craft-ignore: status sheet uses deliberate labels -->
 **Version:** `0.9.5-beta`  
 **Engine:** Godot 4.7+  
 **Project status:** Alpha-quality codebase with a pre-alpha evidence boundary  
@@ -10,7 +10,7 @@
 
 ## Summary
 
-MODUS contains broad FPS framework code plus green focused, golden-demo runtime, and strict aggregate proof, but reviewed manual gameplay evidence is absent and the release-version gate is blocked. The test-only manual recorder now provides a responsive 20-item F8/Gamepad Back workflow and direct metadata-rich CSV export without fabricating observations. The latest strict aggregate defines the current-tree automated boundary; category-lane summaries remain retained from August 1 and July 19. A bounded performance capture exists, but it is not sufficient for production targets.
+MODUS contains broad FPS framework code plus focused and golden-demo runtime proof, but reviewed manual gameplay evidence is absent and the release-version gate is blocked. September 9 closes six engineering repair groups with 67 focused tests/612 assertions, an eleven-step actual gameplay smoke, isolated native asset rendering, and a compiled Godot audio-shutdown patch. The August 4 strict aggregate and older category lanes are retained historical evidence, not the current-tree suite total. A bounded performance capture exists but does not establish production targets.
 
 The canonical publication rules are in [Documentation Truth](DOCUMENTATION_TRUTH.md).
 
@@ -23,7 +23,8 @@ The canonical publication rules are in [Documentation Truth](DOCUMENTATION_TRUTH
 | Main player-path smoke | **PASS** | Fresh August 2 main-menu startup only |
 | Showcase scene launch smoke | **PASS** | Fresh August 2 world-scene load/initialization only |
 | Golden demo runtime smoke | **PASS** | August 4: all 8 controlled framework-loop steps; automated scope, not manual feel |
-| Current complete Godot/GUT suite | **PASS** | August 4: 1440/1440 passing, 20,475 assertions, no risky/pending tests or GUT-reported orphans |
+| September engineering repairs | **PASS** | 67 focused tests/612 assertions; eleven-step real-player smoke; native four-prop/ten-icon render; explicit patched Godot required for the MP3 fix |
+| Retained complete Godot/GUT suite | **PASS** | Historical August 4: 1440/1440 passing, 20,475 assertions, no risky/pending tests or GUT-reported orphans |
 | Latest strict aggregate attempt | **PASS/complete** | August 4: full summary completed in 702.76 seconds under a bounded 3600-second run; Godot emitted six engine-exit ObjectDB leak diagnostics |
 | Latest batched Unit lane | **PASS** | August 1: 1056/1056 passing, 16,419 assertions, 0 failing, pending, or GUT-reported orphans |
 | Latest batched Integration lane | **PASS** | July 19: 200/200 passing; 2 GUI-required files skipped |
@@ -146,13 +147,13 @@ This source inventory is not equivalent to complete runtime or user-experience p
 1. No reviewed ManualTestTimer CSV evidence has been imported; the recorder and validator are ready, but recorded manual gameplay remains 0.00 validated hours.
 2. The project is still explicitly `0.9.5-beta`, so the 1.0 release-version gate is blocked.
 
-The two-count is the scope of `tools/validate_production_readiness.sh`, not an exhaustive release or legal clearance. `docs/ATTRIBUTION.md` and `docs/PROVENANCE_LEDGER.csv` now clear the five verified Kenney files, the generated menu artwork, and both dip000-derived blood-pool files. Twelve music tracks are identified but still require commercial-rights evidence, and 200 additional distributed assets remain unverified. Distribution clearance remains open even if the automated gates later pass.
+The two-count is the scope of `tools/validate_production_readiness.sh`, not exhaustive release or legal clearance. The current 230-row provenance ledger clears 18 assets, including ten new original SVG icons. Twelve music tracks still require commercial-rights evidence, and 200 additional distributed assets remain unverified. Distribution clearance remains open even if automated gates pass.
 
-Additional open proof: real two-peer networking, real Steam/GodotSteam, live complete editor UI, real Workshop publication, display-synchronized performance, aggregate test diagnostic/runtime reduction, and resolution of all 212 non-cleared provenance rows. Vase, corpse-pile, hidden-stash, and weapon-rack loot scenes are also explicit missing content if those enum types remain in product scope.
+Additional open proof: network latency and automatic reconnect, real Steam/GodotSteam, live complete editor UI, real Workshop publication, display-synchronized performance, a refreshed full aggregate, and resolution of all 212 non-cleared provenance rows. Local real-ENet behavior and all four formerly missing props now have focused proof; stock Godot still requires the explicit audio patch described in [Known Limits](KNOWN_LIMITS_MATRIX.md).
 
 ## Project Inventory
 
-| Metric | Current source-audited value |
+| Metric | Retained August 4 inventory |
 | --- | ---: |
 | Project autoloads | 2 |
 | Unit test files | 71 |

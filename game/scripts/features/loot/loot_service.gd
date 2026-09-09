@@ -193,6 +193,33 @@ func spawn_item(position: Vector3, item_data_path: String, owner_peer: int = -1)
 	_spawn_pickup(item_data, position, owner_peer)
 
 
+## Spawn a complete inventory stack without converting away item metadata.
+func spawn_inventory_item(item: InventoryItem, position: Vector3, owner_peer: int) -> PickupBase:
+	if (
+		not multiplayer.is_server()
+		or not item
+		or item.current_stack <= 0
+		or not position.is_finite()
+	):
+		return null
+	var world: Node = get_tree().current_scene
+	if not world or world.is_queued_for_deletion():
+		return null
+	var scene := load(PICKUP_SCENE_PATH) as PackedScene
+	if not scene:
+		return null
+	var pickup := scene.instantiate() as PickupBase
+	pickup.item_data = item.to_dict()
+	pickup.owner_peer_id = owner_peer
+	pickup.pickup_name = item.display_name
+	pickup.description = item.description
+	pickup.set_rarity(ItemRarity.from_tier(item.rarity))
+	if not _add_pickup_to_world(pickup, position):
+		return null
+	_track_pickup(pickup, owner_peer, item.rarity)
+	return pickup
+
+
 ## Request to pick up an item (client -> server)
 
 @rpc("any_peer", "reliable")
@@ -243,22 +270,28 @@ func _spawn_pickup(item_data: ItemData, position: Vector3, owner_peer: int) -> N
 	pickup.pickup_name = item_data.display_name
 	pickup.description = item_data.description
 	pickup.set_rarity(item_data.rarity)
+	if pickup is HealthPickup and HEALTH_TIER_MAP.has(item_data.item_id):
+		pickup.tier = HEALTH_TIER_MAP[item_data.item_id]
 	var spread := Vector3(randf_range(-0.5, 0.5), 0.3, randf_range(-0.5, 0.5))
 	if not _add_pickup_to_world(pickup, position + spread):
 		return null
 
+	_track_pickup(pickup, owner_peer, item_data.rarity.tier if item_data.rarity else 0)
+
+	if spawn_beacons and item_data.rarity and item_data.rarity.tier >= beacon_min_rarity:
+		_spawn_loot_beacon(position + spread, item_data.rarity.tier)
+	return pickup
+
+
+func _track_pickup(pickup: PickupBase, owner_peer: int, rarity_tier: int) -> void:
 	_pickup_counter += 1
 	var pickup_path: NodePath = pickup.get_path()
 	_active_pickups[pickup_path] = {
 		"owner_peer": owner_peer,
 		"spawn_time": Time.get_ticks_msec(),
-		"rarity": item_data.rarity.tier if item_data.rarity else 0,
+		"rarity": rarity_tier,
 	}
 	pickup.tree_exited.connect(_untrack_pickup.bind(pickup_path), CONNECT_ONE_SHOT)
-
-	if spawn_beacons and item_data.rarity and item_data.rarity.tier >= beacon_min_rarity:
-		_spawn_loot_beacon(position + spread, item_data.rarity.tier)
-	return pickup
 
 
 func _untrack_pickup(pickup_path: NodePath) -> void:
@@ -340,6 +373,36 @@ func _create_loot_table_from_data(data: Dictionary) -> LegacyLootTable:
 	if "rolls" in data:
 		table.min_items = data.rolls
 		table.max_items = data.rolls
+	table.no_drop_chance = float(data.get("no_drop_chance", 0.0))
+	for entry: Dictionary in data.get("entries", []):
+		var weight: float = float(entry.get("weight", 100.0))
+		if not is_finite(weight) or weight <= 0:
+			continue
+		if entry.get("is_empty", false):
+			table.possible_items.append(null)
+			table.item_weights.append(weight)
+			continue
+		var item_id: String = entry.get("item_id", "")
+		var scene_path: String = ITEM_SCENE_MAP.get(item_id, "")
+		if scene_path.is_empty():
+			push_warning("[LootService] Unknown configured loot item: %s" % item_id)
+			continue
+		var item := ItemData.new(item_id, item_id.capitalize())
+		item.world_scene = load(scene_path)
+		if item_id.begins_with("weapon_"):
+			item.item_type = ItemData.ItemType.WEAPON
+		elif HEALTH_TIER_MAP.has(item_id):
+			item.item_type = ItemData.ItemType.CONSUMABLE
+		elif AMMO_TIER_MAP.has(item_id):
+			item.item_type = ItemData.ItemType.AMMO
+		else:
+			item.item_type = ItemData.ItemType.ARMOR
+		var tier: int = ItemRarity.Tier.get(
+			str(entry.get("rarity", "common")).to_upper(), ItemRarity.Tier.COMMON
+		)
+		item.rarity = ItemRarity.from_tier(tier)
+		table.possible_items.append(item)
+		table.item_weights.append(weight)
 
 	return table
 
