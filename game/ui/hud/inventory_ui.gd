@@ -154,8 +154,8 @@ func _create_equipment_slots(slot_scene: PackedScene) -> void:
 	if not equipment_container:
 		return
 
-	var types: Array[String] = ["weapon_primary", "weapon_secondary", "head", "chest", "accessory"]
-	var labels: Array[String] = ["Primary", "Secondary", "Head", "Chest", "Accessory"]
+	var types: Array[String] = ["weapon_primary", "weapon_secondary", "head", "chest"]
+	var labels: Array[String] = ["Primary", "Secondary", "Head", "Chest"]
 
 	for i in types.size():
 		var label: Label = Label.new()
@@ -176,6 +176,8 @@ func _create_equipment_slots(slot_scene: PackedScene) -> void:
 		slot.slot_clicked.connect(_on_slot_clicked)
 		slot.slot_hovered.connect(_on_slot_hovered)
 		slot.slot_unhovered.connect(_on_slot_unhovered)
+		slot.item_dropped.connect(_on_item_dropped)
+		slot.item_dropped_split.connect(_on_item_dropped_split)
 
 		if equipment_container:
 			equipment_container.add_child(slot)
@@ -255,108 +257,39 @@ func _on_item_dropped(from_index: int, to_index: int) -> void:
 		_handle_equipment_transfer(from_index, to_index)
 		return
 
-	inventory.move_item(from_index, to_index)
-	_refresh_all_slots()
-
-	# Sync with server (Client only)
-	if is_inside_tree() and multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
-		var gs := GameManager.get_core_system("gameplay") as GameplaySvc
-		if gs and gs.inventory:
-			gs.inventory.request_move_item(from_index, to_index)
+	var manager := InventoryMgr.get_instance()
+	if manager:
+		manager.request_move_item(from_index, to_index)
 
 
 func _on_item_dropped_split(from_index: int, to_index: int) -> void:
 	if not inventory:
 		return
-
-	# Only support split map slots for now
 	if from_index >= 100 or to_index >= 100:
-		_on_item_dropped(from_index, to_index)  # Fallback
+		_handle_equipment_transfer(from_index, to_index)
 		return
-
-	var from_item: InventoryItem = inventory.get_item_at(from_index)
-	if not from_item or from_item.current_stack <= 1:
+	var item: InventoryItem = inventory.get_item_at(from_index)
+	if not item or item.current_stack <= 1:
 		return
-
-	var to_item: InventoryItem = inventory.get_item_at(to_index)
-	var split_amount: int = int(from_item.current_stack * 0.5)
-	var did_split: bool = false
-
-	if to_item:
-		# Target occupied, try stack or swap?
-		if to_item.can_stack_with(from_item):
-			# Add half to stack
-			var moved: InventoryItem = inventory.remove_item_at(from_index, split_amount)
-			if moved:
-				var overflow: int = to_item.add_to_stack(moved.current_stack)
-				if overflow > 0:
-					moved.current_stack = overflow
-					inventory.add_item(moved)  # Put back anywhere?
-				did_split = true
-		else:
-			# Swap (no split possible)
-			inventory.move_item(from_index, to_index)
-			# Sync Move
-			if _should_sync():
-				var gs := GameManager.get_core_system("gameplay") as GameplaySvc
-				if gs and gs.inventory:
-					gs.inventory.request_move_item(from_index, to_index)
-	else:
-		# Target empty, split into it
-		var moved_item: InventoryItem = inventory.remove_item_at(from_index, split_amount)
-		if moved_item:
-			inventory.slots[to_index] = moved_item
-			inventory.inventory_changed.emit()
-			did_split = true
-
-	_refresh_all_slots()
-
-	# Sync Split
-	if did_split and _should_sync():
-		var gs := GameManager.get_core_system("gameplay") as GameplaySvc
-		if gs and gs.inventory:
-			gs.inventory.request_split_stack(from_index, to_index, split_amount)
+	var manager := InventoryMgr.get_instance()
+	if manager:
+		manager.request_split_stack(from_index, to_index, int(item.current_stack / 2.0))
 
 
 func _handle_equipment_transfer(from_index: int, to_index: int) -> void:
-	var sync_equip: bool = false
-	var sync_unequip: bool = false
-	var target_slot_name: String = ""
-
-	if from_index >= 100:
-		var slot_name: String = _get_equipment_slot_name(from_index)
-		var item: InventoryItem = inventory.unequip_item(slot_name)
-		if item and to_index < TOTAL_SLOTS:
-			inventory.slots[to_index] = item
-			sync_unequip = true
-			target_slot_name = slot_name
-
-	elif to_index >= 100:
-		var slot_name: String = _get_equipment_slot_name(to_index)
-		var item: InventoryItem = inventory.get_item_at(from_index)
-		if item:
-			var old_item: InventoryItem = inventory.equip_item(item, slot_name)
-			inventory.slots[from_index] = old_item
-			sync_equip = true
-			target_slot_name = slot_name
-
-	_refresh_all_slots()
-
-	# Sync
-	if _should_sync():
-		var gs := GameManager.get_core_system("gameplay") as GameplaySvc
-		if gs and gs.inventory:
-			if sync_unequip:
-				gs.inventory.request_unequip_item(target_slot_name, to_index)
-			elif sync_equip:
-				gs.inventory.request_equip_item(from_index, target_slot_name)
+	var manager := InventoryMgr.get_instance()
+	if not manager:
+		return
+	if from_index >= 100 and to_index >= 0 and to_index < TOTAL_SLOTS:
+		manager.request_unequip_item(_get_equipment_slot_name(from_index), to_index)
+	elif to_index >= 100 and from_index >= 0 and from_index < TOTAL_SLOTS:
+		manager.request_equip_item(from_index, _get_equipment_slot_name(to_index))
 
 
 func _get_equipment_slot_name(index: int) -> String:
-	var types: Array[String] = ["weapon_primary", "weapon_secondary", "head", "chest", "accessory"]
-	var offset: int = index - 100
-	if offset >= 0 and offset < types.size():
-		return types[offset]
+	for slot_name: String in equipment_slots:
+		if equipment_slots[slot_name].slot_index == index:
+			return slot_name
 	return ""
 
 
@@ -448,13 +381,10 @@ func _split_stack(slot_index: int) -> void:
 	if not item or item.current_stack < 2:
 		return
 
-	var empty_slot: int = inventory.get_first_empty_slot()
-	if empty_slot >= 0:
-		var split_amount: int = int(item.current_stack / 2.0)
-		var split_item: InventoryItem = item.duplicate_with_stack(split_amount)
-		item.remove_from_stack(split_amount)
-		inventory.slots[empty_slot] = split_item
-		_refresh_all_slots()
+	var empty_slot: int = inventory.slots.find(null)
+	var manager := InventoryMgr.get_instance()
+	if empty_slot >= 0 and manager:
+		manager.request_split_stack(slot_index, empty_slot, int(item.current_stack / 2.0))
 
 
 # Handling Drag & Drop to World (Dropping item by dragging outside slots)
@@ -518,7 +448,3 @@ func _give_item_to_player(slot_index: int, peer_id: int) -> void:
 	var gs := GameManager.get_core_system("gameplay") as GameplaySvc
 	if gs and gs.inventory:
 		gs.inventory.give_item(peer_id, slot_index)
-
-
-func _should_sync() -> bool:
-	return is_inside_tree() and multiplayer.has_multiplayer_peer() and not multiplayer.is_server()

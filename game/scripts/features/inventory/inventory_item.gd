@@ -12,7 +12,7 @@ enum ItemType { WEAPON, ARMOR, CONSUMABLE, MATERIAL, KEY_ITEM, AMMO }
 @export var max_stack: int = 1
 @export var current_stack: int = 1
 @export var value: int = 0
-@export var equip_slot: String = ""  # "weapon", "head", "chest", "accessory"
+@export var equip_slot: String = ""  # Empty or a name from Inventory.EQUIPMENT_SLOTS.
 @export var weapon_scene: String = ""  # Path to weapon scene for weapons
 @export var effect_type: String = ""  # "heal", "buff", "damage"
 @export var effect_value: float = 0.0

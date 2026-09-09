@@ -31,28 +31,48 @@ func _init() -> void:
 
 
 func add_item(item: InventoryItem) -> bool:
-	if not item:
+	if not item or item.current_stack <= 0 or item.max_stack <= 0:
 		return false
 
-	# Try to stack first
+	# Check the entire transfer before mutating either inventory or incoming stack.
+	var required: int = item.current_stack
+	for slot in slots:
+		if not slot:
+			required -= mini(required, item.max_stack)
+		elif item.max_stack > 1 and slot.can_stack_with(item):
+			required -= mini(required, slot.max_stack - slot.current_stack)
+		if required == 0:
+			break
+	if required > 0:
+		return false
+
+	var remaining: int = item.current_stack
 	if item.max_stack > 1:
-		for i in slots.size():
-			if slots[i] and slots[i].can_stack_with(item):
-				var overflow: int = slots[i].add_to_stack(item.current_stack)
-				if overflow == 0:
+		for slot in slots:
+			if slot and slot.can_stack_with(item):
+				remaining = slot.add_to_stack(remaining)
+				if remaining == 0:
 					inventory_changed.emit()
 					return true
-				item.current_stack = overflow
 
-	# Find empty slot
 	for i in slots.size():
-		if slots[i] == null:
-			slots[i] = item
-			item_added.emit(item, i)
-			inventory_changed.emit()
-			return true
+		if slots[i] != null:
+			continue
+		var amount: int = mini(remaining, item.max_stack)
+		# Reuse the incoming resource for the final stack, including single-slot adds.
+		var added: InventoryItem = item
+		if remaining > amount:
+			added = item.duplicate_with_stack(amount)
+		else:
+			added.current_stack = amount
+		slots[i] = added
+		remaining -= amount
+		item_added.emit(added, i)
+		if remaining == 0:
+			break
 
-	return false  # Inventory full
+	inventory_changed.emit()
+	return true
 
 
 ## Remove item from specific slot
@@ -236,8 +256,9 @@ func from_dict(data: Dictionary) -> void:
 
 	# Load slots
 	var slots_data: Array = data.get("slots", [])
-	for i in mini(slots_data.size(), MAX_SLOTS):
-		if slots_data[i]:
+	slots.resize(MAX_SLOTS)
+	for i in MAX_SLOTS:
+		if i < slots_data.size() and slots_data[i]:
 			slots[i] = InventoryItem.from_dict(slots_data[i])
 		else:
 			slots[i] = null

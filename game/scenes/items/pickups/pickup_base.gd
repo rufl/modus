@@ -385,16 +385,7 @@ func _add_to_inventory(player: CharacterBody3D) -> bool:
 	if not inventory:
 		return false
 	var item := InventoryItem.from_dict(item_data)
-	# add_item may merge stacks before reporting full; reject before any mutation.
-	var capacity: int = 0
-	for slot: InventoryItem in inventory.slots:
-		if not slot:
-			capacity += maxi(item.max_stack, 1)
-		elif slot.can_stack_with(item):
-			capacity += slot.max_stack - slot.current_stack
-		if capacity >= item.current_stack:
-			break
-	if capacity < item.current_stack or not inventory.add_item(item):
+	if not inventory.add_item(item):
 		return false
 	if manager and multiplayer.has_multiplayer_peer() and peer_id != multiplayer.get_unique_id():
 		manager._sync_full_inventory.rpc_id(peer_id, inventory.to_dict())

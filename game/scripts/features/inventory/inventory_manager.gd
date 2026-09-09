@@ -497,6 +497,14 @@ func _sync_full_inventory(data: Dictionary) -> void:
 		inv.from_dict(data)
 
 
+func _sync_inventory_owner(peer_id: int, inv: Inventory) -> void:
+	if not multiplayer.has_multiplayer_peer() or not multiplayer.is_server():
+		return
+	if peer_id == multiplayer.get_unique_id() or not multiplayer.get_peers().has(peer_id):
+		return
+	_sync_full_inventory.rpc_id(peer_id, inv.to_dict())
+
+
 # ------------------------------------------------------------------------------
 # Item Movement (Drag & Drop)
 # ------------------------------------------------------------------------------
@@ -508,13 +516,14 @@ func request_move_item(from_slot: int, to_slot: int) -> void:
 	if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
 		_request_move_item.rpc_id(1, from_slot, to_slot)
 	else:
-		if multiplayer.is_server():
-			var my_id: int = multiplayer.get_unique_id()
-			_process_move_item(my_id, from_slot, to_slot)
+		_process_move_item(multiplayer.get_unique_id(), from_slot, to_slot)
 
 
 @rpc("any_peer", "reliable")
 func _request_move_item(from_slot: int, to_slot: int) -> void:
+	if not multiplayer.is_server():
+		return
+
 	var sender_id: int = multiplayer.get_remote_sender_id()
 
 	# Rate Limit
@@ -527,16 +536,15 @@ func _request_move_item(from_slot: int, to_slot: int) -> void:
 
 
 func _process_move_item(peer_id: int, from_slot: int, to_slot: int) -> void:
+	if not multiplayer.is_server():
+		return
 	var inv: Inventory = get_inventory(peer_id)
 	if not inv:
 		return
 
-	# Perform the move on server authority
-	if inv.move_item(from_slot, to_slot):
-		pass
-	else:
-		# Failed (e.g. invalid index). Revert client.
-		_sync_full_inventory.rpc_id(peer_id, inv.to_dict())
+	# Inventory validates both indices before performing its legal slot swap.
+	inv.move_item(from_slot, to_slot)
+	_sync_inventory_owner(peer_id, inv)
 
 
 # ------------------------------------------------------------------------------
@@ -548,47 +556,59 @@ func request_split_stack(from_slot: int, to_slot: int, amount: int) -> void:
 	if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
 		_request_split_stack.rpc_id(1, from_slot, to_slot, amount)
 	else:
-		if multiplayer.is_server():
-			_process_split_stack(multiplayer.get_unique_id(), from_slot, to_slot, amount)
+		_process_split_stack(multiplayer.get_unique_id(), from_slot, to_slot, amount)
 
 
 @rpc("any_peer", "reliable")
 func _request_split_stack(from_slot: int, to_slot: int, amount: int) -> void:
+	if not multiplayer.is_server():
+		return
+
 	var sender_id: int = multiplayer.get_remote_sender_id()
 	_process_split_stack(sender_id, from_slot, to_slot, amount)
 
 
 func _process_split_stack(peer_id: int, from_slot: int, to_slot: int, amount: int) -> void:
+	if not multiplayer.is_server():
+		return
 	var inv: Inventory = get_inventory(peer_id)
 	if not inv:
 		return
 
+	if (
+		from_slot < 0
+		or from_slot >= inv.slots.size()
+		or to_slot < 0
+		or to_slot >= inv.slots.size()
+		or from_slot == to_slot
+		or amount <= 0
+	):
+		_sync_inventory_owner(peer_id, inv)
+		return
+
 	var from_item: InventoryItem = inv.get_item_at(from_slot)
-	if not from_item or from_item.current_stack <= 1 or amount >= from_item.current_stack:
-		_sync_full_inventory.rpc_id(peer_id, inv.to_dict())
+	if not from_item or amount >= from_item.current_stack:
+		_sync_inventory_owner(peer_id, inv)
 		return
 
 	var to_item: InventoryItem = inv.get_item_at(to_slot)
 	if to_item:
-		if to_item.can_stack_with(from_item):
-			var moved: InventoryItem = inv.remove_item_at(from_slot, amount)
-			if moved:
-				var overflow: int = to_item.add_to_stack(moved.current_stack)
-				if overflow > 0:
-					moved.current_stack = overflow
-					inv.add_item(moved)
+		if to_item.id == from_item.id and to_item.max_stack > 1:
+			# Leave excess in the source instead of removing and reinserting it.
+			var moved: int = mini(amount, to_item.max_stack - to_item.current_stack)
+			if moved > 0:
+				from_item.current_stack -= moved
+				to_item.current_stack += moved
+				inv.inventory_changed.emit()
 		else:
-			# Fallback to simple move/swap if target occupied and not stackable
-			# effectively cancelling split but moving item
+			# Preserve the existing whole-item swap for incompatible destinations.
 			inv.move_item(from_slot, to_slot)
-	else:
-		var moved_item: InventoryItem = inv.remove_item_at(from_slot, amount)
-		if moved_item:
-			inv.slots[to_slot] = moved_item
-			inv.inventory_changed.emit()
+	elif amount <= from_item.max_stack:
+		inv.slots[to_slot] = from_item.duplicate_with_stack(amount)
+		from_item.current_stack -= amount
+		inv.inventory_changed.emit()
 
-	# Sync always to be safe
-	_sync_full_inventory.rpc_id(peer_id, inv.to_dict())
+	_sync_inventory_owner(peer_id, inv)
 
 
 # ------------------------------------------------------------------------------
@@ -600,59 +620,77 @@ func request_equip_item(inv_slot: int, equip_slot_name: String) -> void:
 	if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
 		_request_equip_item.rpc_id(1, inv_slot, equip_slot_name)
 	else:
-		if multiplayer.is_server():
-			_process_equip_item(multiplayer.get_unique_id(), inv_slot, equip_slot_name)
+		_process_equip_item(multiplayer.get_unique_id(), inv_slot, equip_slot_name)
 
 
 @rpc("any_peer", "reliable")
 func _request_equip_item(inv_slot: int, equip_slot_name: String) -> void:
+	if not multiplayer.is_server():
+		return
+
 	var sender_id: int = multiplayer.get_remote_sender_id()
 	_process_equip_item(sender_id, inv_slot, equip_slot_name)
 
 
 func _process_equip_item(peer_id: int, inv_slot: int, equip_slot_name: String) -> void:
+	if not multiplayer.is_server():
+		return
 	var inv: Inventory = get_inventory(peer_id)
 	if not inv:
 		return
 
 	var item: InventoryItem = inv.get_item_at(inv_slot)
-	if item:
-		var old_item: InventoryItem = inv.equip_item(item, equip_slot_name)
-		inv.slots[inv_slot] = old_item  # Swap with unequipped
-		# equip_item returns the previously equipped item but doesn't clear source
-		# so we update the source slot with the swapped item (or null)
+	if (
+		item
+		and equip_slot_name in Inventory.EQUIPMENT_SLOTS
+		and (item.equip_slot == "" or item.equip_slot == equip_slot_name)
+	):
+		# Prevalidate: equip_item's null return also means a rejected operation.
+		# Update the bag first so equipment signals observe the completed swap.
+		inv.slots[inv_slot] = inv.get_equipped(equip_slot_name)
+		inv.equip_item(item, equip_slot_name)
 
-	_sync_full_inventory.rpc_id(peer_id, inv.to_dict())
+	_sync_inventory_owner(peer_id, inv)
 
 
 func request_unequip_item(equip_slot_name: String, to_inv_slot: int) -> void:
 	if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
 		_request_unequip_item.rpc_id(1, equip_slot_name, to_inv_slot)
 	else:
-		if multiplayer.is_server():
-			_process_unequip_item(multiplayer.get_unique_id(), equip_slot_name, to_inv_slot)
+		_process_unequip_item(multiplayer.get_unique_id(), equip_slot_name, to_inv_slot)
 
 
 @rpc("any_peer", "reliable")
 func _request_unequip_item(equip_slot_name: String, to_inv_slot: int) -> void:
+	if not multiplayer.is_server():
+		return
+
 	var sender_id: int = multiplayer.get_remote_sender_id()
 	_process_unequip_item(sender_id, equip_slot_name, to_inv_slot)
 
 
 func _process_unequip_item(peer_id: int, equip_slot_name: String, to_inv_slot: int) -> void:
+	if not multiplayer.is_server():
+		return
 	var inv: Inventory = get_inventory(peer_id)
 	if not inv:
 		return
 
-	var item: InventoryItem = inv.unequip_item(equip_slot_name)
-	if item:
-		# If target slot occupied, swap?
-		if inv.slots[to_inv_slot] != null:
-			var swapped: InventoryItem = inv.slots[to_inv_slot]
-			inv.slots[to_inv_slot] = item
-			# Equip swapped item?
+	if (
+		equip_slot_name not in Inventory.EQUIPMENT_SLOTS
+		or to_inv_slot < 0
+		or to_inv_slot >= inv.slots.size()
+	):
+		_sync_inventory_owner(peer_id, inv)
+		return
+
+	var item: InventoryItem = inv.get_equipped(equip_slot_name)
+	var swapped: InventoryItem = inv.get_item_at(to_inv_slot)
+	if item and (not swapped or swapped.equip_slot == "" or swapped.equip_slot == equip_slot_name):
+		inv.slots[to_inv_slot] = item
+		if swapped:
 			inv.equip_item(swapped, equip_slot_name)
 		else:
-			inv.slots[to_inv_slot] = item
+			inv.unequip_item(equip_slot_name)
 
-	_sync_full_inventory.rpc_id(peer_id, inv.to_dict())
+	_sync_inventory_owner(peer_id, inv)
