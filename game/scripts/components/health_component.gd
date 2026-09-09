@@ -266,8 +266,11 @@ func heal(amount: float) -> void:
 	_sync_health_state.rpc(current_health, current_armor)
 
 
-@rpc("authority", "call_local", "reliable")
+@rpc("any_peer", "call_local", "reliable")
 func _sync_heal_visual(pos: Vector3, amount: float) -> void:
+	var sender_id: int = multiplayer.get_remote_sender_id()
+	if sender_id != 1 and (sender_id != 0 or not multiplayer.is_server()):
+		return
 	var gm: Node = get_node_or_null("/root/GameManager")
 	var gs: Node = gm.get_core_system("gameplay") if gm else null
 	if gs and gs.effects and gs.effects.has_method("spawn_heal_effect"):

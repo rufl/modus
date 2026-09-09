@@ -163,15 +163,8 @@ func _process_give_item(from_peer_id: int, to_peer_id: int, from_slot: int, amou
 	_sync_inventory_owner(from_peer_id, from_inv)
 	_sync_inventory_owner(to_peer_id, to_inv)
 
-	# Save the canonical committed inventories using PlayerSvc's persistent dictionaries.
-	var gs := GameManager.get_core_system("gameplay") as GameplaySvc
-	if gs and gs.player:
-		var from_data: Dictionary = gs.player.get_player_data(from_peer_id)
-		var to_data: Dictionary = gs.player.get_player_data(to_peer_id)
-		from_data["inventory"] = from_inv.to_dict()
-		to_data["inventory"] = to_inv.to_dict()
-		gs.player.save_player_data(from_peer_id)
-		gs.player.save_player_data(to_peer_id)
+	_save_inventory(from_peer_id, from_inv)
+	_save_inventory(to_peer_id, to_inv)
 
 	# Insertion can change the incoming stack; the event describes the requested transfer.
 	if multiplayer.has_multiplayer_peer():
@@ -308,10 +301,10 @@ func _request_use_consumable(from_slot: int) -> void:
 
 	var peer_id: int = multiplayer.get_remote_sender_id()
 
-	# Rate	# Validate
+	# Apply the existing item-use whitelist and rate limit.
 	var ns := GameManager.get_core_system("network") as NetworkSvc
 	if ns and ns.network_manager:
-		if not ns.network_manager.validate_rpc(peer_id, "use_item", []):
+		if not ns.network_manager.validate_rpc(peer_id, "request_use_item", []):
 			return
 
 	_process_use_consumable(peer_id, from_slot)
@@ -321,80 +314,74 @@ func _request_use_consumable(from_slot: int) -> void:
 
 
 func _process_use_consumable(peer_id: int, from_slot: int) -> void:
+	if not multiplayer.is_server():
+		return
 	var inv: Inventory = _inventories.get(peer_id)
 	if not inv:
-		_notify_transfer_failed.rpc_id(peer_id, "Inventory not found")
+		_send_transfer_failed(peer_id, "Inventory not found")
 		return
 
 	var item: InventoryItem = inv.get_item_at(from_slot)
-	if not item:
-		_notify_transfer_failed.rpc_id(peer_id, "No item in that slot")
+	if not item or item.current_stack <= 0:
+		_send_transfer_failed(peer_id, "No item in that slot")
 		return
-
-	# Check if it's a consumable
 	if item.item_type != InventoryItem.ItemType.CONSUMABLE:
-		_notify_transfer_failed.rpc_id(peer_id, "Item is not consumable")
+		_send_transfer_failed(peer_id, "Item is not consumable")
+		return
+	if not is_finite(item.effect_value) or item.effect_value <= 0:
+		_send_transfer_failed(peer_id, "Invalid consumable effect")
 		return
 
-	# Find the player node
 	var player: Node3D = _get_player_node(peer_id)
 	if not player:
-		_notify_transfer_failed.rpc_id(peer_id, "Player node not found")
+		_send_transfer_failed(peer_id, "Player node not found")
 		return
-
-	# Apply the consumable effect
+	var health: HealthComponent = player.health_component if "health_component" in player else null
 	var effect_applied: bool = false
-
 	match item.effect_type:
 		"heal":
-			if "health_component" in player and player.health_component:
-				player.health_component.heal(item.effect_value)
-				effect_applied = true
+			if health:
+				var previous: float = health.current_health
+				health.heal(item.effect_value)
+				effect_applied = health.current_health > previous
 			elif "health" in player:
-				var max_hp: int = player.max_health if "max_health" in player else 100
-				player.health = mini(player.health + int(item.effect_value), max_hp)
-				effect_applied = true
+				var previous: float = player.health
+				var maximum: float = player.max_health if "max_health" in player else 100.0
+				if previous > 0 and previous < maximum:
+					player.health = minf(previous + item.effect_value, maximum)
+					effect_applied = player.health > previous
 		"armor":
-			if "health_component" in player and player.health_component:
-				player.health_component.add_armor(item.effect_value)
-				effect_applied = true
-			elif "armor" in player:
-				var max_armor: int = player.max_armor if "max_armor" in player else 100
-				player.armor = mini(player.armor + int(item.effect_value), max_armor)
-				effect_applied = true
-		_:
-			# Generic consumable - just consume it
-			effect_applied = true
+			if health:
+				var previous: float = health.current_armor
+				if previous < health.max_armor:
+					health.add_armor(item.effect_value)
+					effect_applied = health.current_armor > previous
+			elif "armor" in player and (not "health" in player or player.health > 0):
+				var previous: float = player.armor
+				var maximum: float = player.max_armor if "max_armor" in player else 100.0
+				if previous < maximum:
+					player.armor = minf(previous + item.effect_value, maximum)
+					effect_applied = player.armor > previous
 
 	if not effect_applied:
-		_notify_transfer_failed.rpc_id(peer_id, "Could not apply effect")
+		_send_transfer_failed(peer_id, "Could not apply consumable effect")
 		return
 
-	# Remove one from stack
-	var removed: InventoryItem = inv.remove_item_at(from_slot, 1)
-	if removed:
-		if multiplayer.has_multiplayer_peer():
-			_sync_item_consumed.rpc_id(peer_id, from_slot, item.to_dict())
-		else:
-			_sync_item_consumed(from_slot, item.to_dict())
-
-		GameManager.get_core_system("logger").info(
-			"[InventoryManager] Player %d used %s" % [peer_id, item.display_name], "Inventory"
-		)
+	var consumed: InventoryItem = inv.remove_item_at(from_slot, 1)
+	_sync_inventory_owner(peer_id, inv)
+	_save_inventory(peer_id, inv)
+	if not multiplayer.has_multiplayer_peer() or peer_id == multiplayer.get_unique_id():
+		_sync_item_consumed(consumed.to_dict())
+	elif multiplayer.get_peers().has(peer_id):
+		_sync_item_consumed.rpc_id(peer_id, consumed.to_dict())
 
 
 ## Sync item consumption to client
 
 @rpc("authority", "reliable")
-func _sync_item_consumed(_slot: int, item_data: Dictionary) -> void:
+func _sync_item_consumed(item_data: Dictionary) -> void:
 	var item: InventoryItem = InventoryItem.from_dict(item_data)
 	item_consumed.emit(multiplayer.get_unique_id(), item)
-
-	# Trigger local inventory refresh
-	var my_inv: Inventory = _inventories.get(multiplayer.get_unique_id())
-	if my_inv:
-		my_inv.inventory_changed.emit()
-
 	GameManager.get_core_system("logger").info("[Inventory] Used: " + item.display_name, "Core")
 
 
@@ -408,24 +395,8 @@ func clear_inventory(peer_id: int) -> void:
 	var inv: Inventory = _inventories.get(peer_id)
 	if inv:
 		inv.clear()
-		_sync_clear_inventory.rpc_id(peer_id)
-
-		# Persist empty state
-		var gs := GameManager.get_core_system("gameplay") as GameplaySvc
-		if gs and gs.player:
-			gs.player.update_inventory(peer_id, inv)
-			gs.player.save_player(peer_id)
-
-
-@rpc("authority", "call_local", "reliable")
-func _sync_clear_inventory() -> void:
-	var my_id: int = multiplayer.get_unique_id()
-	var inv: Inventory = _inventories.get(my_id)
-	if inv:
-		inv.clear()
-		GameManager.get_core_system("logger").info(
-			"[Inventory] Inventory cleared by server command.", "Core"
-		)
+		_sync_inventory_owner(peer_id, inv)
+		_save_inventory(peer_id, inv)
 
 
 # ============================================================================
@@ -516,6 +487,14 @@ func _sync_inventory_owner(peer_id: int, inv: Inventory) -> void:
 	if peer_id == multiplayer.get_unique_id() or not multiplayer.get_peers().has(peer_id):
 		return
 	_sync_full_inventory.rpc_id(peer_id, inv.to_dict())
+
+
+func _save_inventory(peer_id: int, inv: Inventory) -> void:
+	var gs := GameManager.get_core_system("gameplay") as GameplaySvc
+	if gs and gs.player:
+		var data: Dictionary = gs.player.get_player_data(peer_id)
+		data["inventory"] = inv.to_dict()
+		gs.player.save_player_data(peer_id)
 
 
 # ------------------------------------------------------------------------------
