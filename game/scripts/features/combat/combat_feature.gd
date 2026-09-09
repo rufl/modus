@@ -1,8 +1,7 @@
 ## CombatFeature - Feature module for combat system
 ##
-## Manages combat-related functionality including damage calculation,
-## hit validation, and knockback. Replaces the old CombatService with
-## a modular, configuration-driven approach.
+## Manages damage calculation, hit validation, and knockback while borrowing
+## the canonical CombatSvc-owned lag compensation system.
 ##
 ## Requirements: 2.3
 class_name CombatFeature
@@ -40,8 +39,8 @@ func initialize() -> void:
 
 	# Load configuration values
 	max_damage = get_config_value("max_damage", 1000.0)
-	lag_compensation_enabled = get_config_value("lag_compensation.enabled", true)
-	hit_validation_enabled = get_config_value("hit_validation.enabled", true)
+	lag_compensation_enabled = config.get("lag_compensation", {}).get("enabled", true)
+	hit_validation_enabled = config.get("hit_validation", {}).get("enabled", true)
 
 	# Initialize subsystems
 	damage_calculator = DamageCalculatorClass.new(config.get("damage_types", {}), config)
@@ -88,13 +87,21 @@ func shutdown() -> void:
 ## Apply damage to a target entity
 ## This is the main public API for dealing damage
 func apply_damage(target: Node, damage_info: DamageInfo) -> void:
+	if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
+		return
+	if not damage_info:
+		return
 	if not target or not is_instance_valid(target):
 		push_warning("CombatFeature: Invalid target for damage")
 		return
 
-	# Validate hit if enabled
-	if hit_validation_enabled and not hit_validator.validate(damage_info):
-		return
+	# Resolve again in case GameplaySvc initialized after this feature.
+	if hit_validation_enabled:
+		hit_validator.initialize(
+			_get_lag_compensation_system() if lag_compensation_enabled else null
+		)
+		if not hit_validator.validate(damage_info, target):
+			return
 
 	# Calculate final damage
 	var final_damage: float = damage_calculator.calculate(damage_info)
@@ -142,29 +149,9 @@ func _on_hit_detected(_data: Dictionary) -> void:
 	pass
 
 
-## Get lag compensation system from NetworkService
+## Borrow the canonical system; its lifecycle belongs to CombatSvc.
 func _get_lag_compensation_system() -> Node:
-	# TODO(v1.1, @network-team): Implement lag compensation system
-	#
-	# IMPACT: Without lag compensation, hit registration in high-latency scenarios
-	# (>100ms) will feel inaccurate. Players will see hits that the server rejects.
-	#
-	# Implementation plan:
-	# 1. Implement server-side rewind system (store player positions per tick)
-	# 2. Add client timestamp to hit RPCs
-	# 3. Rewind server state to client's timestamp
-	# 4. Validate hit at rewound position
-	# 5. Apply damage if valid
-	# 6. Add client-side prediction validation
-	# 7. Implement anti-cheat checks (max rewind time, position validation)
-	# 8. Add configuration for rewind buffer size and max latency
-	#
-	# Estimated effort: 40-60 hours
-	# Priority: HIGH for competitive multiplayer, MEDIUM for co-op
-	#
-	# WORKAROUND: Current hit detection uses immediate server position.
-	# Works acceptably for LAN (<50ms) and low-latency (<100ms) connections.
-	# For high-latency games, recommend host-side hit detection or accept
-	# the limitation.
-
-	return null  # Not implemented - returns null
+	var gameplay: GameplaySvc = GameplaySvc.get_service()
+	if gameplay and is_instance_valid(gameplay.combat):
+		return gameplay.combat.lag_compensation
+	return null

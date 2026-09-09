@@ -479,14 +479,15 @@ func _fire_hitscan_server(weapon: WeaponData, origin: Vector3, direction: Vector
 	if gs and gs.combat and "lag_compensation" in gs.combat:
 		lag_comp = gs.combat.lag_compensation
 
+	var owns_compensation: bool = false
 	if lag_comp and lag_comp.has_method("start_compensation"):
-		lag_comp.start_compensation(player.name.to_int())
+		owns_compensation = lag_comp.start_compensation(player.get_multiplayer_authority())
 
 	# Perform raycasts
 	hits = hit_detector.fire_hitscan(weapon, origin, direction)
 
 	# End Lag Compensation
-	if lag_comp and lag_comp.has_method("end_compensation"):
+	if owns_compensation:
 		lag_comp.end_compensation()
 
 	for hit in hits:

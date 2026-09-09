@@ -82,9 +82,9 @@ The advanced-movement contract now passes 36/36 with 51 assertions in focused sc
 ### Multiplayer and Steam
 
 - The `multiplayer_demo` profile launches without profile/service lookup errors.
-- The latest two-process ENet host/join attempt is blocked by sandbox localhost socket creation.
+- Focused real-ENet lifecycle, inventory, and late-join checks have dated passing evidence; broader latency and dedicated-client sessions remain unproven.
 - Real Steam/GodotSteam behavior has not been proven with a running client, app ID, authorized account, and real API result.
-- Server-side rewind code exists, but the maintained combat feature still contains an integration TODO; high-latency hit-registration quality is unproven.
+- Server-authoritative hitscan now uses the shared, RTT-bounded player/enemy rewind system. Focused physics and weapon tests pass; client-view/interpolation calibration and representative high-latency sessions remain unproven.
 
 See [Multiplayer Authority](docs/MULTIPLAYER_AUTHORITY_MODEL.md), [Profile Smoke](docs/MULTIPLAYER_PROFILE_SMOKE.md), [ENet Smoke](docs/ENET_LOCAL_HOST_JOIN_SMOKE.md), and [Steam Integration](docs/technical/STEAM_INTEGRATION.md).
 

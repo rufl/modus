@@ -44,7 +44,7 @@ See [Documentation Truth](DOCUMENTATION_TRUTH.md) and [Current Status](CURRENT_S
 | ENet/profile startup | Profile startup and September focused real-ENet lifecycle/inventory/late-join checks have dated proof | Reviewed end-to-end sessions, latency/reconnect behavior, and dedicated clients |
 | Authority/security | Validation, whitelist, and rate-limit code exist | Adversarial live-client and latency tests |
 | Dedicated server | Headless/config paths exist | Real client/server session evidence |
-| Lag compensation | Core system source exists; combat integration TODO remains | Connect/verify or explicitly scope out |
+| Lag compensation | Shared RTT-bounded player/enemy rewind and combat integration; focused physics/weapon proof passes | Client-view/interpolation calibration and representative high-latency sessions |
 | Steam/GodotSteam | Conditional structures exist | Authenticated client/app/API proof |
 
 ## Editor, Mods, and Workshop

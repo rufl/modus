@@ -43,6 +43,7 @@ These results are narrower than the aggregate suite and must not be summed into 
 
 | Contract | Result |
 | --- | --- |
+| Server rewind / combat / adjacent weapons | September 9: 119/119, 255 assertions; eight runtime checks pass after six baseline failures; controlled latency and real physics, not WAN/manual proof |
 | Save service | 8/8; current encrypted slot existence/list/delete contract and score-key restoration |
 | Network manager | 9/9 |
 | RPC whitelist | 9/9 |
@@ -124,7 +125,8 @@ This source inventory is not equivalent to complete runtime or user-experience p
 - `multiplayer_demo` profile launch: **PASS** for profile/service startup.
 - Historical two-process ENet host/join smoke: **BLOCKED** by sandbox localhost socket creation at that run's boundary. September 9 focused real-ENet host lifecycle, inventory, and late-join checks now pass; broader latency/reconnect/dedicated-client proof remains open.
 - Real Steam/GodotSteam: **UNPROVEN**; no current authenticated Steam API evidence exists.
-- High-latency combat quality: **UNPROVEN**; lag-compensation source exists but the maintained combat integration still has an open TODO.
+- Server rewind and combat integration: **FOCUSED PASS** on September 9. One CombatSvc-owned system captures player/enemy history, uses bounded server-measured RTT/2, rejects invalid/out-of-window requests, and restores query state. Temporary static query bodies handle Jolt's deferred kinematic transforms without changing live body modes or velocities. Feature and multi-pellet weapon flows share the service; projectile/melee and nonplayer validation remain current-state.
+- High-latency combat quality: **UNPROVEN**. Client-view/interpolation calibration and representative end-to-end latency sessions remain outside the focused physics/weapon proof.
 
 ### Editor and Workshop
 

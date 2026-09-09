@@ -2,7 +2,7 @@
 
 > **Documentation status: maintained reference.** This roadmap prioritizes proof and hardening. Current status is defined by `docs/DOCUMENTATION_TRUTH.md` and `docs/CURRENT_STATUS.md`.
 
-**Updated:** August 4, 2026
+**Updated:** September 9, 2026
 **Current version:** `0.9.5-beta`  
 **Engine:** Godot 4.7+  
 **Readiness:** NOT READY
@@ -37,7 +37,7 @@ Completion requires reviewed evidence, not merely available harnesses.
 
 1. Extend the September focused local real-ENet lifecycle/inventory/late-join proof into reviewed end-to-end multiplayer sessions; older socket-sandbox failures are historical boundaries.
 2. Exercise reconnect, authority validation, RPC rate limits, and representative combat under latency.
-3. Integrate or explicitly retire the remaining combat lag-compensation TODO.
+3. Validate the integrated RTT-bounded hitscan rewind against client-view/interpolation timing and representative high-latency sessions; focused server physics and weapon proof now passes.
 4. Prove real GodotSteam startup and Workshop operations with a running Steam client, app ID, and authorized account.
 5. Test the dedicated-server path with real clients and recorded configuration.
 
