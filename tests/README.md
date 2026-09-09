@@ -36,9 +36,14 @@ tools/run_manual_showcase_session.sh --tester NAME --input DEVICES
 
 # Deterministic validator semantics (metadata, overhead, strict exits)
 tests/runners/test_manual_evidence_validator.sh
+
+# Real resource-package notice regression; no platform export templates required
+GODOT_BIN=/path/to/patched/godot bash tests/runners/test_export_notices.sh
 ```
 
 Set `GODOT_BIN=/path/to/godot` when needed. The runners isolate Godot HOME, cache, and configuration directories under `/tmp` unless their `MODUS_GODOT_*` environment variables are overridden.
+
+The export-notice runner exercises one Windows Desktop resource ZIP by default, compares required notices with their repository bytes, rejects erroneous ledger translations, and cleans its private runtime and package. It does not run a platform matrix or establish rights clearance; an optional preset name selects another single payload.
 
 The production-readiness wrapper defaults to a 2400-second aggregate ceiling. The August 4 refresh used an explicit 3600-second bound and completed in 702.76 seconds. Set `MODUS_GODOT_SUITE_TIMEOUT_SECONDS` to another positive integer only when the evidence environment justifies a different ceiling.
 

@@ -70,6 +70,7 @@ Source: `docs/PERFORMANCE_BASELINE_PROOF.md` and `logs/performance_logs/showcase
 - Showcase route: `docs/SHOWCASE_ROUTE.md`, `docs/GOLDEN_DEMO_SMOKE.md`, and startup-only `docs/SHOWCASE_LAUNCH_SMOKE.md`.
 - Provenance inventory: `docs/ATTRIBUTION.md` and `docs/PROVENANCE_LEDGER.csv`.
 - Retained notices: root `LICENSE` and `docs/licenses/`.
+- September 9 package proof: `tests/runners/test_export_notices.sh` exports the Windows Desktop resource ZIP and verifies seven required notice/ledger files byte-for-byte, rejecting obsolete ledger translations. The regression fails on the original payload and passes after repair.
 
 ## Missing Before Release
 
@@ -78,4 +79,4 @@ Source: `docs/PERFORMANCE_BASELINE_PROOF.md` and `logs/performance_logs/showcase
 - Additional display-synchronized benchmark rows covering declared hardware and modes.
 - ~~A known-limits matrix for networking, Steam, editor, performance, and content scope.~~ See [Known-Limits Matrix](KNOWN_LIMITS_MATRIX.md); it is source/evidence-bounded and does not replace runtime proof.
 - Clearance, exclusion, or replacement of the 212 non-cleared provenance rows.
-- Packaged-build inspection proving all required notices are included.
+- Executable/installer and other-platform notice inspection; the Windows Desktop resource ZIP now has direct byte-level proof, but is not a runnable release build.

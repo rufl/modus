@@ -40,7 +40,17 @@ The current repository snapshot and its only retained base commit contain no `Je
 
 ## Export Notice Boundary
 
-All export presets use `all_resources`. They must also include the root project license, this inventory, the generated ledger, and `docs/licenses/*.txt` as non-resource notice files. A packaged-build inspection is still required to prove those files are present in actual release artifacts.
+All export presets use `all_resources` and explicitly include the root/project licenses, this inventory, the generated ledger, retained third-party notices, and the GUT MIT notice. The ledger's committed `.csv.import` uses `importer="keep"` so Godot exports its original bytes rather than treating asset metadata as translations.
+
+September 9 proof: a real Windows Desktop resource ZIP contains all seven required notice/ledger files byte-for-byte and no generated ledger translations. The original export omitted both the CSV and GUT notice. This does not establish executable/installer contents, other platform payloads, or rights clearance.
+
+```bash
+GODOT_BIN=/path/to/patched/godot bash tests/runners/test_export_notices.sh
+# Inspect an already-exported Godot resource ZIP:
+python3 tests/runners/test_export_notices.py /path/to/export.zip
+```
+
+The checker also rejects stale `docs/PROVENANCE_LEDGER.*.translation` outputs left by the old importer; remove those generated files from older working copies before exporting.
 
 ## Release Rule
 
