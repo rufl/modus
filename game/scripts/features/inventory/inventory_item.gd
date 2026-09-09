@@ -27,6 +27,8 @@ static func from_dict(data: Dictionary) -> InventoryItem:
 	item.display_name = data.get("display_name", "Item")
 	item.description = data.get("description", "")
 	item.icon_path = data.get("icon_path", "")
+	if not item.icon_path.is_empty() and ResourceLoader.exists(item.icon_path, "Texture2D"):
+		item.icon = load(item.icon_path) as Texture2D
 	item.item_type = data.get("item_type", ItemType.MATERIAL)
 	item.rarity = data.get("rarity", ItemRarity.Tier.COMMON)
 	item.max_stack = data.get("max_stack", 1)
@@ -103,7 +105,9 @@ func is_empty() -> bool:
 
 
 func duplicate_with_stack(new_stack: int) -> InventoryItem:
-	var copy: InventoryItem = InventoryItem.from_dict(to_dict())
+	var copy: InventoryItem = duplicate() as InventoryItem
+	copy.icon = icon
+	copy.item_id = item_id
 	copy.current_stack = new_stack
 	return copy
 

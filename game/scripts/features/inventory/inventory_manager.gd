@@ -95,12 +95,15 @@ func _request_give_item(to_peer_id: int, from_slot: int, amount: int) -> void:
 
 
 func _get_player_node(peer_id: int) -> Node3D:
-	if GameManager.get_core_system("entities"):
-		return GameManager.get_core_system("entities").get_player(peer_id)
+	var entities: Node = GameManager.get_core_system("entities")
+	if entities:
+		var player := entities.get_player(peer_id) as Node3D
+		if player:
+			return player
 
 	# Fallback
 	for node in get_tree().get_nodes_in_group("player"):
-		if node.get_multiplayer_authority() == peer_id:
+		if node is Node3D and node.get_multiplayer_authority() == peer_id:
 			return node
 	return null
 
@@ -109,69 +112,72 @@ func _get_player_node(peer_id: int) -> Node3D:
 
 
 func _process_give_item(from_peer_id: int, to_peer_id: int, from_slot: int, amount: int) -> void:
-	# Validate sender inventory
+	if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
+		return
+	if from_peer_id == to_peer_id:
+		_send_transfer_failed(from_peer_id, "Cannot give items to yourself")
+		return
+	if amount != -1 and amount <= 0:
+		_send_transfer_failed(from_peer_id, "Invalid transfer amount")
+		return
+
 	var from_inv: Inventory = _inventories.get(from_peer_id)
 	if not from_inv:
-		_notify_transfer_failed.rpc_id(from_peer_id, "Your inventory not found")
+		_send_transfer_failed(from_peer_id, "Your inventory not found")
 		return
-
-	# Validate receiver inventory
 	var to_inv: Inventory = _inventories.get(to_peer_id)
 	if not to_inv:
-		_notify_transfer_failed.rpc_id(from_peer_id, "Target player not found")
+		_send_transfer_failed(from_peer_id, "Target player not found")
 		return
 
-	# Proximity check - players must be nearby
 	var from_player: Node3D = _get_player_node(from_peer_id)
 	var to_player: Node3D = _get_player_node(to_peer_id)
-
-	if from_player and to_player:
-		var distance: float = from_player.global_position.distance_to(to_player.global_position)
-		if distance > TRADE_DISTANCE:
-			_notify_transfer_failed.rpc_id(from_peer_id, "Player too far away")
-			return
-	else:
-		_notify_transfer_failed.rpc_id(from_peer_id, "Cannot find players")
+	if not from_player or not to_player:
+		_send_transfer_failed(from_peer_id, "Cannot find players")
+		return
+	if from_player.global_position.distance_to(to_player.global_position) > TRADE_DISTANCE:
+		_send_transfer_failed(from_peer_id, "Player too far away")
 		return
 
-	# Get item from sender
 	var item: InventoryItem = from_inv.get_item_at(from_slot)
 	if not item:
-		_notify_transfer_failed.rpc_id(from_peer_id, "No item in that slot")
+		_send_transfer_failed(from_peer_id, "No item in that slot")
+		return
+	var transfer_amount: int = item.current_stack if amount == -1 else amount
+	if transfer_amount <= 0 or transfer_amount > item.current_stack:
+		_send_transfer_failed(from_peer_id, "Invalid transfer amount")
 		return
 
-	# Check receiver has space
-	if not to_inv.has_space():
-		_notify_transfer_failed.rpc_id(from_peer_id, "Target inventory full")
-		return
-
-	# Remove from sender
-	var transferred_item: InventoryItem = from_inv.remove_item_at(from_slot, amount)
-	if not transferred_item:
-		_notify_transfer_failed.rpc_id(from_peer_id, "Failed to remove item")
-		return
-
-	# Add to receiver
+	# Atomic insertion checks merge capacity too, without disturbing the source on failure.
+	var transferred_item: InventoryItem = item.duplicate_with_stack(transfer_amount)
+	var transfer_data: Dictionary = transferred_item.to_dict()
 	if not to_inv.add_item(transferred_item):
-		# Rollback - give back to sender
-		from_inv.add_item(transferred_item)
-		_notify_transfer_failed.rpc_id(from_peer_id, "Failed to give item")
+		_send_transfer_failed(from_peer_id, "Target inventory full")
 		return
-
-	# Sync to all clients
-	if multiplayer.has_multiplayer_peer():
-		_sync_item_given.rpc(from_peer_id, to_peer_id, transferred_item.to_dict())
+	if transfer_amount == item.current_stack:
+		from_inv.remove_item_at(from_slot)
 	else:
-		# Offline: just emit locally since we are both server and client
-		_sync_item_given(from_peer_id, to_peer_id, transferred_item.to_dict())
+		item.remove_from_stack(transfer_amount)
+		from_inv.inventory_changed.emit()
 
-	# Save both players
+	_sync_inventory_owner(from_peer_id, from_inv)
+	_sync_inventory_owner(to_peer_id, to_inv)
+
+	# Save the canonical committed inventories using PlayerSvc's persistent dictionaries.
 	var gs := GameManager.get_core_system("gameplay") as GameplaySvc
 	if gs and gs.player:
-		gs.player.update_inventory(from_peer_id, from_inv)
-		gs.player.update_inventory(to_peer_id, to_inv)
-		gs.player.save_player(from_peer_id)
-		gs.player.save_player(to_peer_id)
+		var from_data: Dictionary = gs.player.get_player_data(from_peer_id)
+		var to_data: Dictionary = gs.player.get_player_data(to_peer_id)
+		from_data["inventory"] = from_inv.to_dict()
+		to_data["inventory"] = to_inv.to_dict()
+		gs.player.save_player_data(from_peer_id)
+		gs.player.save_player_data(to_peer_id)
+
+	# Insertion can change the incoming stack; the event describes the requested transfer.
+	if multiplayer.has_multiplayer_peer():
+		_sync_item_given.rpc(from_peer_id, to_peer_id, transfer_data)
+	else:
+		_sync_item_given(from_peer_id, to_peer_id, transfer_data)
 
 
 ## Sync item given to all clients
@@ -187,6 +193,13 @@ func _sync_item_given(from_peer: int, to_peer: int, item_data: Dictionary) -> vo
 		GameManager.get_core_system("logger").info(
 			"[Inventory] Received item from player %d: %s" % [from_peer, item.display_name], "Core"
 		)
+
+
+func _send_transfer_failed(peer_id: int, reason: String) -> void:
+	if not multiplayer.has_multiplayer_peer() or peer_id == multiplayer.get_unique_id():
+		_notify_transfer_failed(reason)
+	else:
+		_notify_transfer_failed.rpc_id(peer_id, reason)
 
 
 ## Notify client of transfer failure

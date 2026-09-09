@@ -3,11 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://da02u4rqleqlc"
-valid=false
+path="res://.godot/imported/rocket_launcher.png-670d6bc4382cd7c01ccbff7f30a9f4d8.ctex"
+metadata={
+"vram_texture": false
+}
 
 [deps]
 
 source_file="res://game/ui/icons/weapons/rocket_launcher.png"
+dest_files=["res://.godot/imported/rocket_launcher.png-670d6bc4382cd7c01ccbff7f30a9f4d8.ctex"]
 
 [params]
 

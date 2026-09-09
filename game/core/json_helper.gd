@@ -28,43 +28,8 @@ static func safe_stringify(data: Variant, indent: String = "") -> String:
 		# Force replace with a safe fallback
 		clean_data = {"error": "Data contained NaN values and was sanitized"}
 
-	# Additional safety check - if JSON.stringify still encounters NaN,
-	# we'll catch it and provide more debugging info
-	var result: String
-
-	# Wrap JSON.stringify in a try-catch equivalent by checking the result
-	result = JSON.stringify(clean_data, indent)
-
-	# Check if Godot replaced NaN with null (the result will contain "null")
-	if result.contains("null"):
-		push_warning("[JSONHelper] JSON.stringify encountered NaN values despite sanitization!")
-		push_warning("[JSONHelper] Original data type: %s" % typeof(data))
-		push_warning("[JSONHelper] Sanitized data type: %s" % typeof(clean_data))
-
-		if OS.is_debug_build():
-			print("[JSONHelper] Original data: " + " " + str(data))
-			print("[JSONHelper] Sanitized data: " + " " + str(clean_data))
-			print("[JSONHelper] JSON result: " + " " + str(result))
-
-			# Try to identify which part contains null
-			if clean_data is Dictionary:
-				for key: Variant in clean_data:
-					var value_json: String = JSON.stringify(clean_data[key])
-					if value_json.contains("null"):
-						print("[JSONHelper] Key '%s' contains null: %s" % [key, value_json])
-
-	# If the result contains "null" where we might have had NaN, log it
-	if result.contains("null") and _contains_suspicious_nulls(data):
-		push_warning(
-			"[JSONHelper] Potential NaN values detected and replaced with null in JSON output"
-		)
-		# Optionally log the original data structure for debugging
-		if OS.is_debug_build():
-			print("[JSONHelper] Original data type: " + " " + str(typeof(data)))
-			if data is Dictionary and data.size() < 10:  # Only log small dictionaries
-				print("[JSONHelper] Data keys: " + " " + str(data.keys()))
-
-	return result
+	# JSON null is valid data, including empty inventory slots, not evidence of NaN.
+	return JSON.stringify(clean_data, indent)
 
 
 static func _sanitize_data(data: Variant) -> Variant:
@@ -167,37 +132,6 @@ static func _fix_float(val: float) -> float:
 	if is_nan(val) or is_inf(val):
 		return 0.0
 	return val
-
-
-static func _contains_suspicious_nulls(data: Variant) -> bool:
-	# Quick heuristic to detect if we might have had NaN values
-	# This is not perfect but helps with debugging
-	match typeof(data):
-		TYPE_DICTIONARY:
-			for key: Variant in data:
-				if _contains_suspicious_nulls(data[key]):
-					return true
-		TYPE_ARRAY:
-			for item: Variant in data:
-				if _contains_suspicious_nulls(item):
-					return true
-		TYPE_FLOAT:
-			return is_nan(data) or is_inf(data)
-		TYPE_VECTOR2, TYPE_VECTOR3, TYPE_VECTOR4:
-			# Check if any component is NaN
-			var components: Array = []
-			if data is Vector2:
-				components = [data.x, data.y]
-			elif data is Vector3:
-				components = [data.x, data.y, data.z]
-			elif data is Vector4:
-				components = [data.x, data.y, data.z, data.w]
-
-			for comp: float in components:
-				if is_nan(comp) or is_inf(comp):
-					return true
-
-	return false
 
 
 static func _deep_contains_nan(data: Variant) -> bool:

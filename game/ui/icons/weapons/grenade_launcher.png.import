@@ -3,11 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b04omjbtrsba5"
-valid=false
+path="res://.godot/imported/grenade_launcher.png-6ce5ca5a8726c5d9407c42bbfdc09fc9.ctex"
+metadata={
+"vram_texture": false
+}
 
 [deps]
 
 source_file="res://game/ui/icons/weapons/grenade_launcher.png"
+dest_files=["res://.godot/imported/grenade_launcher.png-6ce5ca5a8726c5d9407c42bbfdc09fc9.ctex"]
 
 [params]
 

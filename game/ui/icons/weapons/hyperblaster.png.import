@@ -3,11 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bskrug0xq6y1"
-valid=false
+path="res://.godot/imported/hyperblaster.png-a8168dc49e62bb5d72ade96718201bba.ctex"
+metadata={
+"vram_texture": false
+}
 
 [deps]
 
 source_file="res://game/ui/icons/weapons/hyperblaster.png"
+dest_files=["res://.godot/imported/hyperblaster.png-a8168dc49e62bb5d72ade96718201bba.ctex"]
 
 [params]
 
