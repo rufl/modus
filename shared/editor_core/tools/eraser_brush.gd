@@ -104,21 +104,21 @@ func _erase_node(node: Node) -> void:
 	if not node:
 		return
 
-	# Use undo/redo
-	var undo := EditorInterface.get_editor_undo_redo()
+	# Use the editor manager when embedded, with the runtime fallback for standalone mode.
+	var undo: UndoRedo = EditorGlobals.get_undo_redo()
 	undo.create_action("Erase Object")
 
 	var parent := node.get_parent()
-	undo.add_do_method(parent, "remove_child", node)
-	undo.add_do_method(node, "queue_free")
-	undo.add_undo_method(parent, "add_child", node)
+	undo.add_do_method(Callable(parent, "remove_child").bind(node))
+	undo.add_do_method(Callable(node, "queue_free"))
+	undo.add_undo_method(Callable(parent, "add_child").bind(node))
 	undo.add_undo_reference(node)
 
 	# Free grid cells if applicable
 	if grid_system:
 		var cell: Vector3i = grid_system.world_to_cell(node.global_position)
-		undo.add_do_method(grid_system, "free_cell", cell)
-		undo.add_undo_method(grid_system, "occupy_cell", cell, node)
+		undo.add_do_method(Callable(grid_system, "free_cell").bind(cell))
+		undo.add_undo_method(Callable(grid_system, "occupy_cell").bind(cell, node))
 
 	undo.commit_action()
 
@@ -142,19 +142,19 @@ func _erase_in_box(start: Vector3, end: Vector3) -> Array[Node]:
 
 	# Erase all in single undo action
 	if nodes_to_erase.size() > 0:
-		var undo := EditorInterface.get_editor_undo_redo()
+		var undo: UndoRedo = EditorGlobals.get_undo_redo()
 		undo.create_action("Erase %d Objects" % nodes_to_erase.size())
 
 		for node in nodes_to_erase:
 			var parent := node.get_parent()
-			undo.add_do_method(parent, "remove_child", node)
-			undo.add_do_method(node, "queue_free")
-			undo.add_undo_method(parent, "add_child", node)
+			undo.add_do_method(Callable(parent, "remove_child").bind(node))
+			undo.add_do_method(Callable(node, "queue_free"))
+			undo.add_undo_method(Callable(parent, "add_child").bind(node))
 			undo.add_undo_reference(node)
 
 			var cell: Vector3i = grid_system.world_to_cell(node.global_position)
-			undo.add_do_method(grid_system, "free_cell", cell)
-			undo.add_undo_method(grid_system, "occupy_cell", cell, node)
+			undo.add_do_method(Callable(grid_system, "free_cell").bind(cell))
+			undo.add_undo_method(Callable(grid_system, "occupy_cell").bind(cell, node))
 
 			erased_nodes.append(node)
 
