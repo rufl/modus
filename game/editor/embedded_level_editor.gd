@@ -282,31 +282,49 @@ func toggle() -> void:
 
 
 func save_level(path: String) -> void:
-	if level_root:
-		var packed := PackedScene.new()
-		packed.pack(level_root)
-		ResourceSaver.save(packed, path)
-		level_saved.emit(path)
+	if not level_root:
+		push_error("EmbeddedLevelEditor: Cannot save without a level root")
+		return
+
+	var packed := PackedScene.new()
+	var pack_error := packed.pack(level_root)
+	if pack_error != OK:
+		push_error("EmbeddedLevelEditor: Failed to pack level: %s" % pack_error)
+		return
+
+	var save_error := ResourceSaver.save(packed, path)
+	if save_error != OK:
+		push_error("EmbeddedLevelEditor: Failed to save level '%s': %s" % [path, save_error])
+		return
+
+	level_saved.emit(path)
 
 
 ## Load a level
 
 
 func load_level(path: String) -> void:
-	if ResourceLoader.exists(path):
-		var scene: PackedScene = load(path)
-		if scene:
-			# Clear existing
-			for child: Node in level_root.get_children():
-				child.queue_free()
+	if not level_root:
+		push_error("EmbeddedLevelEditor: Cannot load without a level root")
+		return
+	if not ResourceLoader.exists(path):
+		push_warning("EmbeddedLevelEditor: Level does not exist: %s" % path)
+		return
 
-			# Instantiate loaded level
-			var instance: Node = scene.instantiate()
-			for child: Node in instance.get_children():
-				child.reparent(level_root)
-			instance.queue_free()
+	var scene: PackedScene = load(path)
+	if not scene:
+		push_error("EmbeddedLevelEditor: Failed to load level: %s" % path)
+		return
 
-			level_loaded.emit(path)
+	for child: Node in level_root.get_children():
+		child.free()
+
+	var instance := scene.instantiate()
+	for child: Node in instance.get_children():
+		child.reparent(level_root)
+	instance.free()
+
+	level_loaded.emit(path)
 
 
 func _on_environment_toggled(active: bool) -> void:

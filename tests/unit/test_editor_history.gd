@@ -12,6 +12,7 @@ const LevelSaveSystemScript := preload("res://shared/editor_core/data/level_save
 const VisualScriptEditorScript := preload(
 	"res://shared/editor_core/scripting/visual_script_editor.gd"
 )
+const EmbeddedLevelEditorScript := preload("res://game/editor/embedded_level_editor.gd")
 
 
 func before_each() -> void:
@@ -349,3 +350,25 @@ func test_editor_state_escape_clears_tool_and_emits_change() -> void:
 
 	assert_eq(state.current_tool, EditorStateScript.ToolType.NONE)
 	assert_eq(emitted.back(), EditorStateScript.ToolType.NONE)
+
+
+func test_embedded_editor_save_load_round_trip() -> void:
+	var editor: Node = EmbeddedLevelEditorScript.new()
+	var level_root := Node3D.new()
+	editor.level_root = level_root
+	add_child_autofree(level_root)
+
+	var saved: Array[String] = []
+	var loaded: Array[String] = []
+	editor.level_saved.connect(func(path: String) -> void: saved.append(path))
+	editor.level_loaded.connect(func(path: String) -> void: loaded.append(path))
+
+	var path := "user://embedded_editor_lifecycle_test.tscn"
+	editor.save_level(path)
+	assert_eq(saved, [path])
+	level_root.add_child(Node3D.new())
+	editor.load_level(path)
+	assert_eq(loaded, [path])
+	assert_eq(level_root.get_child_count(), 0)
+	editor.free()
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
