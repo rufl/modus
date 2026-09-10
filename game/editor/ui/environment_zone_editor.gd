@@ -430,10 +430,14 @@ func _update_parameter_ui() -> void:
 	if not _selected_zone or not _parameter_panel:
 		return
 
-	var container: VBoxContainer = _parameter_panel.get_node("VBoxContainer")
-	var weather_select: OptionButton = container.get_node("WeatherSelect")
-	var gravity_slider: HSlider = container.get_node("GravitySlider")
-	var fog_slider: HSlider = container.get_node("FogSlider")
+	var container := _parameter_panel.get_node_or_null("VBoxContainer") as VBoxContainer
+	if not container:
+		return
+	var weather_select := container.get_node_or_null("WeatherSelect") as OptionButton
+	var gravity_slider := container.get_node_or_null("GravitySlider") as HSlider
+	var fog_slider := container.get_node_or_null("FogSlider") as HSlider
+	if not weather_select or not gravity_slider or not fog_slider:
+		return
 
 	if "weather_override" in _selected_zone:
 		weather_select.selected = int(_selected_zone.weather_override) + 1

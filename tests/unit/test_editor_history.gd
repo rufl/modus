@@ -408,3 +408,13 @@ func test_environment_editor_ignores_preset_actions_without_optional_panel() -> 
 	editor._on_apply_preset_pressed()
 	editor._on_delete_preset_pressed()
 	editor.free()
+
+func test_environment_editor_ignores_incomplete_parameter_panel() -> void:
+	var editor: Node = EnvironmentZoneEditorScript.new()
+	var zone := EnvironmentVolume.new()
+	editor._selected_zone = zone
+	editor._parameter_panel = PanelContainer.new()
+	editor._update_parameter_ui()
+	editor._parameter_panel.free()
+	zone.free()
+	editor.free()
