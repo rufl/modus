@@ -18,6 +18,7 @@ const HotbarScript := preload("res://shared/editor_core/ui/hotbar.gd")
 const EditorFeaturesScript := preload("res://shared/editor_core/core/editor_features.gd")
 const EnvironmentZoneEditorScript := preload("res://game/editor/ui/environment_zone_editor.gd")
 const StandaloneEditorScript := preload("res://standalone/editor/standalone_main.gd")
+const AdvancedBrushScript := preload("res://game/editor/advanced_brush_tool.gd")
 
 
 
@@ -481,3 +482,32 @@ func test_standalone_editor_exports_current_level_package() -> void:
 	embedded.level_root.free()
 	embedded.free()
 	main.free()
+
+func test_advanced_brush_generates_specialized_meshes() -> void:
+	var brush: Node = AdvancedBrushScript.new()
+	for brush_type in [
+		AdvancedBrushScript.BrushType.STAIRCASE,
+		AdvancedBrushScript.BrushType.ARCH,
+		AdvancedBrushScript.BrushType.TORUS,
+		AdvancedBrushScript.BrushType.CAPSULE,
+	]:
+		var shape: Node3D = brush._create_brush_shape(brush_type)
+		var mesh: ArrayMesh = shape.mesh
+		assert_not_null(mesh)
+		assert_gt(mesh.get_surface_count(), 0)
+		shape.free()
+	brush.free()
+
+
+func test_advanced_brush_fill_uses_density_and_detached_clear_is_safe() -> void:
+	var brush: Node = AdvancedBrushScript.new()
+	brush.brush_size = Vector3(2, 2, 2)
+	brush.grid_size = 1.0
+	brush.brush_density = 1.0
+	assert_true(brush._fill_area_with_brush(Vector3.ZERO))
+	assert_eq(brush.get_child_count(), 27)
+	assert_false(brush._clear_area(Vector3.ZERO))
+	assert_false(brush._remove_brush_object(Vector3.ZERO))
+	for child: Node in brush.get_children():
+		child.free()
+	brush.free()

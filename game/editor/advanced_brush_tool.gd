@@ -387,6 +387,18 @@ func _create_brush_shape(brush_type: BrushType) -> Node3D:
 			shape = _create_pyramid_shape(brush_size)
 		BrushType.WEDGE:
 			shape = _create_wedge_shape(brush_size)
+		BrushType.STAIRCASE, BrushType.ARCH, BrushType.TORUS, BrushType.CAPSULE:
+			var mesh_instance := MeshInstance3D.new()
+			match brush_type:
+				BrushType.STAIRCASE:
+					mesh_instance.mesh = _create_staircase_mesh(brush_size)
+				BrushType.ARCH:
+					mesh_instance.mesh = _create_arch_mesh(brush_size)
+				BrushType.TORUS:
+					mesh_instance.mesh = _create_torus_mesh(brush_size)
+				BrushType.CAPSULE:
+					mesh_instance.mesh = _create_capsule_mesh(brush_size)
+			shape = mesh_instance
 		_:
 			var box = CSGBox3D.new()
 			box.size = brush_size
@@ -432,27 +444,156 @@ func _create_wedge_shape(size: Vector3) -> CSGPolygon3D:
 	return wedge
 
 
-func _create_staircase_mesh(_size: Vector3) -> ArrayMesh:
+func _create_staircase_mesh(size: Vector3) -> ArrayMesh:
+	var vertices := PackedVector3Array()
+	var indices := PackedInt32Array()
+	var steps: int = maxi(2, ceili(size.y))
+	var step_height := size.y / steps
+	for step in range(steps):
+		var height := step_height * (step + 1)
+		var center_z := -size.z * 0.5 + size.z * (step + 0.5) / steps
+		_append_box(
+			vertices,
+			indices,
+			Vector3(-size.x * 0.5, 0, center_z - size.z / (2.0 * steps)),
+			Vector3(size.x * 0.5, height, center_z + size.z / (2.0 * steps))
+		)
+	return _build_mesh(vertices, indices)
+
+
+func _create_arch_mesh(size: Vector3) -> ArrayMesh:
+	var vertices := PackedVector3Array()
+	var indices := PackedInt32Array()
+	var segments: int = 16
+	var outer_radius := minf(size.x, size.y) * 0.5
+	var inner_radius := maxf(outer_radius - minf(size.x, size.y) * 0.22, outer_radius * 0.35)
+	var depth := size.z * 0.5
+	for i in range(segments):
+		var a0 := PI * float(i) / segments
+		var a1 := PI * float(i + 1) / segments
+		var points := [
+			Vector3(cos(a0) * outer_radius, sin(a0) * outer_radius, -depth),
+			Vector3(cos(a1) * outer_radius, sin(a1) * outer_radius, -depth),
+			Vector3(cos(a1) * inner_radius, sin(a1) * inner_radius, -depth),
+			Vector3(cos(a0) * inner_radius, sin(a0) * inner_radius, -depth),
+		]
+		var back_points := points.duplicate()
+		for point in back_points:
+			point.z = depth
+		_append_quad(vertices, indices, points[0], points[1], points[2], points[3])
+		_append_quad(vertices, indices, back_points[3], back_points[2], back_points[1], back_points[0])
+		_append_quad(vertices, indices, points[0], back_points[0], back_points[1], points[1])
+		_append_quad(vertices, indices, points[3], points[2], back_points[2], back_points[3])
+		_append_quad(vertices, indices, points[1], back_points[1], back_points[2], points[2])
+		_append_quad(vertices, indices, points[0], points[3], back_points[3], back_points[0])
+	# Pillars close the arch at the ground.
+	_append_box(vertices, indices, Vector3(-outer_radius, -size.y * 0.5, -depth), Vector3(-inner_radius, 0, depth))
+	_append_box(vertices, indices, Vector3(inner_radius, -size.y * 0.5, -depth), Vector3(outer_radius, 0, depth))
+	return _build_mesh(vertices, indices)
+
+
+func _create_torus_mesh(size: Vector3) -> ArrayMesh:
+	var vertices := PackedVector3Array()
+	var indices := PackedInt32Array()
+	var major_radius := maxf(size.x, size.z) * 0.25
+	var tube_radius := minf(size.x, size.y) * 0.18
+	var major_segments := 24
+	var tube_segments := 10
+	for i in range(major_segments):
+		for j in range(tube_segments):
+			var u0 := TAU * float(i) / major_segments
+			var u1 := TAU * float(i + 1) / major_segments
+			var v0 := TAU * float(j) / tube_segments
+			var v1 := TAU * float(j + 1) / tube_segments
+			var points := [
+				_torus_point(major_radius, tube_radius, u0, v0),
+				_torus_point(major_radius, tube_radius, u1, v0),
+				_torus_point(major_radius, tube_radius, u1, v1),
+				_torus_point(major_radius, tube_radius, u0, v1),
+			]
+			_append_quad(vertices, indices, points[0], points[1], points[2], points[3])
+	return _build_mesh(vertices, indices)
+
+
+func _create_capsule_mesh(size: Vector3) -> ArrayMesh:
+	var vertices := PackedVector3Array()
+	var indices := PackedInt32Array()
+	var rings := 12
+	var sides := 16
+	var radius := minf(size.x, size.z) * 0.5
+	var half_cylinder := maxf(0.0, size.y * 0.5 - radius)
+	for ring in range(rings + 1):
+		var t := float(ring) / rings
+		var latitude := -PI * 0.5 + PI * t
+		var y := sin(latitude) * radius
+		if y > 0:
+			y += half_cylinder
+		elif y < 0:
+			y -= half_cylinder
+		var ring_radius := cos(latitude) * radius
+		for side in range(sides):
+			var angle := TAU * float(side) / sides
+			vertices.append(Vector3(cos(angle) * ring_radius, y, sin(angle) * ring_radius))
+	for ring in range(rings):
+		for side in range(sides):
+			var next_side := (side + 1) % sides
+			var a := ring * sides + side
+			var b := ring * sides + next_side
+			var c := (ring + 1) * sides + next_side
+			var d := (ring + 1) * sides + side
+			indices.append_array([a, b, c, a, c, d])
+	return _build_mesh(vertices, indices)
+
+
+func _torus_point(major_radius: float, tube_radius: float, u: float, v: float) -> Vector3:
+	var ring := major_radius + tube_radius * cos(v)
+	return Vector3(ring * cos(u), tube_radius * sin(v), ring * sin(u))
+
+
+func _append_quad(
+	vertices: PackedVector3Array,
+	indices: PackedInt32Array,
+	a: Vector3,
+	b: Vector3,
+	c: Vector3,
+	d: Vector3
+) -> void:
+	var base := vertices.size()
+	vertices.append_array([a, b, c, d])
+	indices.append_array([base, base + 1, base + 2, base, base + 2, base + 3])
+
+
+func _append_box(
+	vertices: PackedVector3Array,
+	indices: PackedInt32Array,
+	min_corner: Vector3,
+	max_corner: Vector3
+) -> void:
+	var corners := [
+		Vector3(min_corner.x, min_corner.y, min_corner.z),
+		Vector3(max_corner.x, min_corner.y, min_corner.z),
+		Vector3(max_corner.x, max_corner.y, min_corner.z),
+		Vector3(min_corner.x, max_corner.y, min_corner.z),
+		Vector3(min_corner.x, min_corner.y, max_corner.z),
+		Vector3(max_corner.x, min_corner.y, max_corner.z),
+		Vector3(max_corner.x, max_corner.y, max_corner.z),
+		Vector3(min_corner.x, max_corner.y, max_corner.z),
+	]
+	_append_quad(vertices, indices, corners[0], corners[1], corners[2], corners[3])
+	_append_quad(vertices, indices, corners[5], corners[4], corners[7], corners[6])
+	_append_quad(vertices, indices, corners[4], corners[0], corners[3], corners[7])
+	_append_quad(vertices, indices, corners[1], corners[5], corners[6], corners[2])
+	_append_quad(vertices, indices, corners[3], corners[2], corners[6], corners[7])
+	_append_quad(vertices, indices, corners[4], corners[5], corners[1], corners[0])
+
+
+func _build_mesh(vertices: PackedVector3Array, indices: PackedInt32Array) -> ArrayMesh:
+	var arrays: Array = []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = vertices
+	arrays[Mesh.ARRAY_INDEX] = indices
 	var mesh := ArrayMesh.new()
-	# Simplified staircase implementation
-	return mesh
-
-
-func _create_arch_mesh(_size: Vector3) -> ArrayMesh:
-	var mesh := ArrayMesh.new()
-	# Simplified arch implementation
-	return mesh
-
-
-func _create_torus_mesh(_size: Vector3) -> ArrayMesh:
-	var mesh := ArrayMesh.new()
-	# Simplified torus implementation
-	return mesh
-
-
-func _create_capsule_mesh(_size: Vector3) -> ArrayMesh:
-	var mesh := ArrayMesh.new()
-	# Simplified capsule implementation
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	return mesh
 
 
@@ -515,47 +656,41 @@ func _find_active_camera() -> Camera3D:
 
 ## Get level parent for placing objects
 func _get_level_parent() -> Node3D:
-	var current_scene = get_tree().current_scene
+	if not is_inside_tree():
+		return self
+	var current_scene := get_tree().current_scene
 	if current_scene:
-		# Look for a designated level root or editor root
-		var level_root = current_scene.get_node_or_null("LevelRoot")
-		if level_root:
-			return level_root as Node3D
-
-		# Fallback to current scene
+		var level_root := current_scene.get_node_or_null("LevelRoot")
+		if level_root is Node3D:
+			return level_root
 		return current_scene as Node3D
-
 	return self
 
 
 ## Load default brush presets
 func _load_default_presets() -> void:
-	# Cube preset
-	var cube_preset = BrushPreset.new()
+	var cube_preset := BrushPreset.new()
 	cube_preset.name = "Basic Cube"
 	cube_preset.brush_type = BrushType.CUBE
 	cube_preset.size = Vector3.ONE
 	cube_preset.operation_mode = OperationMode.ADD
 	_brush_presets.append(cube_preset)
 
-	# Sphere preset
-	var sphere_preset = BrushPreset.new()
+	var sphere_preset := BrushPreset.new()
 	sphere_preset.name = "Basic Sphere"
 	sphere_preset.brush_type = BrushType.SPHERE
 	sphere_preset.size = Vector3.ONE
 	sphere_preset.operation_mode = OperationMode.ADD
 	_brush_presets.append(sphere_preset)
 
-	# Wall preset
-	var wall_preset = BrushPreset.new()
+	var wall_preset := BrushPreset.new()
 	wall_preset.name = "Wall Segment"
 	wall_preset.brush_type = BrushType.CUBE
 	wall_preset.size = Vector3(2, 2, 0.5)
 	wall_preset.operation_mode = OperationMode.ADD
 	_brush_presets.append(wall_preset)
 
-	# Floor preset
-	var floor_preset = BrushPreset.new()
+	var floor_preset := BrushPreset.new()
 	floor_preset.name = "Floor Tile"
 	floor_preset.brush_type = BrushType.CUBE
 	floor_preset.size = Vector3(2, 0.2, 2)
@@ -567,7 +702,6 @@ func _load_default_presets() -> void:
 func apply_preset(preset_index: int) -> void:
 	if preset_index < 0 or preset_index >= _brush_presets.size():
 		return
-
 	var preset: BrushPreset = _brush_presets[preset_index]
 	brush_type = preset.brush_type
 	brush_size = preset.size
@@ -586,32 +720,20 @@ func batch_place(objects_data: Array[Dictionary]) -> bool:
 		return _batch_place_chunked(objects_data)
 
 	brush_operation_started.emit("batch_place")
-
-	var success_count: int = 0
+	var success_count := 0
 	for data: Dictionary in objects_data:
-		var pos: Vector3 = data.get("position", Vector3.ZERO)
-		var type: BrushType = data.get("type", BrushType.CUBE)
-		var size: Vector3 = data.get("size", Vector3.ONE)
-		var material: Material = data.get("material", null)
-
-		# Temporarily change settings
-		var old_type = brush_type
-		var old_size = brush_size
-		var old_material = brush_material
-
-		brush_type = type
-		brush_size = size
-		brush_material = material
-
-		if _place_brush_object(pos):
+		var old_type := brush_type
+		var old_size := brush_size
+		var old_material := brush_material
+		brush_type = data.get("type", BrushType.CUBE)
+		brush_size = data.get("size", Vector3.ONE)
+		brush_material = data.get("material", null)
+		if _place_brush_object(data.get("position", Vector3.ZERO)):
 			success_count += 1
-
-		# Restore settings
 		brush_type = old_type
 		brush_size = old_size
 		brush_material = old_material
-
-	var success: bool = success_count == objects_data.size()
+	var success := success_count == objects_data.size()
 	brush_operation_completed.emit("batch_place", success)
 	return success
 
@@ -651,58 +773,61 @@ func _batch_place_single_chunk(chunk: Array[Dictionary]) -> bool:
 
 ## Fill area with brush objects
 func _fill_area_with_brush(start_pos: Vector3) -> bool:
-	# This would implement area filling based on brush density
-	# For now, just place one object at the start position
-	return _place_brush_object(start_pos)
+	var spacing := maxf(grid_size, 0.25)
+	var half_size := brush_size * 0.5
+	var placed := 0
+	var max_count := mini(max_batch_size, 1000)
+	for x in range(ceili(-half_size.x / spacing), ceili(half_size.x / spacing) + 1):
+		for y in range(ceili(-half_size.y / spacing), ceili(half_size.y / spacing) + 1):
+			for z in range(ceili(-half_size.z / spacing), ceili(half_size.z / spacing) + 1):
+				if placed >= max_count:
+					break
+				var hash_value := float(absi(x * 73856093 + y * 19349663 + z * 83492791) % 1000) / 1000.0
+				if hash_value > clampf(brush_density, 0.0, 1.0):
+					continue
+				if _place_brush_object(start_pos + Vector3(x, y, z) * spacing):
+					placed += 1
+	brush_applied.emit("FILL", placed)
+	return placed > 0
 
 
 ## Clear area around position
 func _clear_area(center_pos: Vector3) -> bool:
-	# Raycast to find objects in a radius and remove them
-	var radius: float = max(brush_size.x, max(brush_size.y, brush_size.z))
-	var space_state: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
-
+	if not is_inside_tree() or not get_world_3d():
+		brush_applied.emit("CLEAR", 0)
+		return false
+	var radius := maxf(brush_size.x, maxf(brush_size.y, brush_size.z))
 	var shape := SphereShape3D.new()
 	shape.radius = radius
-
 	var query := PhysicsShapeQueryParameters3D.new()
 	query.shape = shape
 	query.transform = Transform3D(Basis.IDENTITY, center_pos)
-
-	var results: Array[Dictionary] = space_state.intersect_shape(query, 32)
-
-	var removed_count: int = 0
-	for result: Dictionary in results:
+	var removed_count := 0
+	for result: Dictionary in get_world_3d().direct_space_state.intersect_shape(query, 32):
 		var obj: Node3D = result.get("collider", null)
 		if obj and obj.has_meta("editor_placed"):
 			obj.queue_free()
 			removed_count += 1
-
 	brush_applied.emit("CLEAR", removed_count)
 	return removed_count > 0
 
 
 ## Remove brush object at position
 func _remove_brush_object(position: Vector3) -> bool:
-	# Find and remove object at position
-	var space_state: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
-
+	if not is_inside_tree() or not get_world_3d():
+		return false
 	var shape := SphereShape3D.new()
-	shape.radius = 0.5  # Small radius to find nearby objects
-
+	shape.radius = 0.5
 	var query := PhysicsShapeQueryParameters3D.new()
 	query.shape = shape
 	query.transform = Transform3D(Basis.IDENTITY, position)
-
-	var results: Array[Dictionary] = space_state.intersect_shape(query, 1)
-
+	var results := get_world_3d().direct_space_state.intersect_shape(query, 1)
 	if results.size() > 0:
 		var obj: Node3D = results[0].get("collider", null)
 		if obj and obj.has_meta("editor_placed"):
 			obj.queue_free()
 			brush_applied.emit("REMOVE", 1)
 			return true
-
 	return false
 
 

@@ -83,6 +83,7 @@ Source wiring does not prove live feel, controller behavior, network correction,
 - Focused proof: `docs/EDITOR_ROUNDTRIP_PROOF.md`
 
 - The standalone entry now routes Undo/Redo through the shared runtime history manager and exports the current level through `LevelPackager` as `.mdsl`; focused proof covers both dispatch and packaging. Native exported-app startup and full graphical workflow evidence remain open.
+- Advanced brush source: `game/editor/advanced_brush_tool.gd`; staircase, arch, torus, capsule, density-aware fill, and detached operation guards have focused proof.
 
 ## Map generation and showcase
 
