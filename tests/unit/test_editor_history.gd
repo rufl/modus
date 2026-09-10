@@ -402,8 +402,9 @@ func test_editor_workshop_browser_uses_panel_container_base() -> void:
 	assert_true(features.workshop_browser is PanelContainer)
 	assert_eq(features.workshop_browser.name, "WorkshopBrowserPanel")
 
-func test_environment_editor_ignores_preset_action_without_optional_panel() -> void:
+func test_environment_editor_ignores_preset_actions_without_optional_panel() -> void:
 	var editor: Node = EnvironmentZoneEditorScript.new()
 	editor.show_preset_manager = false
 	editor._on_apply_preset_pressed()
+	editor._on_delete_preset_pressed()
 	editor.free()

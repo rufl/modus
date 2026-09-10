@@ -3,7 +3,7 @@
 > **Documentation status: maintained reference.** Published readiness is consolidated in `docs/DOCUMENTATION_TRUTH.md` and `docs/CURRENT_STATUS.md`. Generated reports are local invocation records; narrower claims below apply only to the named subsystem or workflow.
 
 ## Unreleased
-- 2026-09-10 `[editor]` `[truth:test]`: guarded environment preset application when the optional preset panel is disabled or unavailable; focused editor construction proof passes 20/20 tests with 94 assertions.
+- 2026-09-10 `[editor]` `[truth:test]`: extended optional environment preset safety to load and delete actions; focused editor quick-win proof passes 20/20 tests with 94 assertions.
 - 2026-09-10 `[editor]` `[truth:test]`: fixed workshop browser construction to instantiate its required `PanelContainer` base; focused editor UI proof passes 19/19 tests with 93 assertions.
 - 2026-09-10 `[editor]` `[truth:test]`: hardened embedded editor save/load to validate level roots, packing, resource-save errors, missing assets, and load failures; loading now synchronously clears stale nodes before reparenting. Focused editor history proof passes 17/17 tests with 84 assertions.
 - 2026-09-10 `[editor]` `[truth:test]`: guarded `LevelSaveSystem` quick-load, explicit level-load, and thumbnail capture paths behind the Godot editor boundary; runtime saves remain usable while editor-only APIs now return safely. Focused editor proof passes 10/10 tests with 56 assertions.
