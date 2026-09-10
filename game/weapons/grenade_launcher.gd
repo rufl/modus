@@ -131,5 +131,12 @@ func _finish_spawn_grenade(from: Vector3, direction: Vector3) -> void:
 func _request_grenade_spawn(from: Vector3, direction: Vector3) -> void:
 	if not multiplayer.is_server():
 		return
-	_spawn_grenade(from, direction)
+	var sender_id: int = multiplayer.get_remote_sender_id()
+	if sender_id != 0 and (not _player or sender_id != _player.get_multiplayer_authority()):
+		return
+	if not from.is_finite() or not direction.is_finite() or direction.length_squared() <= 0.0001:
+		return
+	if _player and from.distance_to(_player.global_position) > 3.0:
+		return
+	_spawn_grenade(from, direction.normalized())
 	# No manual sync needed - MultiplayerSpawner handles it

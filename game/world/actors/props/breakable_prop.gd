@@ -109,22 +109,27 @@ func take_damage(amount: float, damage_type: String = "generic", source: Node3D 
 func _request_damage(amount: float, damage_type: String) -> void:
 	# In single-player (no peer), we ARE the server
 	var is_server_or_sp: bool = not multiplayer.has_multiplayer_peer() or multiplayer.is_server()
-
 	if not is_server_or_sp:
+		return
+	if not amount is float and not amount is int:
+		return
+	var damage: float = float(amount)
+	if not is_finite(damage) or damage <= 0.0 or damage > max_health * 4.0:
+		return
+	if not damage_type is String or damage_type.length() > 32 or damage_type.contains("\n") or damage_type.contains("\r"):
 		return
 
 	var peer_id: int = multiplayer.get_remote_sender_id()
-
 	# Validate through NetworkService.network_manager if available
 	var gm: Node = get_node_or_null("/root/GameManager")
 	if gm:
 		var ns: Node = gm.get_core_system("network")
 		var network_manager: Node = ns.network_manager if ns else null
 		if network_manager and network_manager.has_method("validate_rpc"):
-			if not network_manager.validate_rpc(peer_id, "_request_damage", [amount]):
+			if not network_manager.validate_rpc(peer_id, "_request_damage", [damage]):
 				return
 
-	_apply_damage(amount, damage_type, null)
+	_apply_damage(damage, damage_type, null)
 
 
 func _apply_damage(amount: float, _damage_type: String, source: Node3D) -> bool:

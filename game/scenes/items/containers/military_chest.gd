@@ -64,9 +64,10 @@ func interact(player: Node) -> void:
 
 @rpc("any_peer", "reliable")
 func _request_open(opener_id: int) -> void:
-	if not multiplayer.is_server():
+	if not multiplayer.is_server() or opened or not opener_id is int:
 		return
-	if opened:
+	var sender_id: int = multiplayer.get_remote_sender_id()
+	if sender_id != 0 and sender_id != opener_id:
 		return
 	_open_chest(opener_id)
 
