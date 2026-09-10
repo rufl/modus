@@ -13,6 +13,9 @@ const VisualScriptEditorScript := preload(
 	"res://shared/editor_core/scripting/visual_script_editor.gd"
 )
 const EmbeddedLevelEditorScript := preload("res://game/editor/embedded_level_editor.gd")
+const ToolbarDockScript := preload("res://shared/editor_core/ui/toolbar_dock.gd")
+const HotbarScript := preload("res://shared/editor_core/ui/hotbar.gd")
+
 
 
 func before_each() -> void:
@@ -372,3 +375,18 @@ func test_embedded_editor_save_load_round_trip() -> void:
 	assert_eq(level_root.get_child_count(), 0)
 	editor.free()
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+func test_editor_toolbar_and_hotbar_build_runtime_controls() -> void:
+	var toolbar: HBoxContainer = ToolbarDockScript.new()
+	toolbar._create_toolbar()
+	assert_eq(toolbar.tool_buttons.size(), 7)
+	assert_not_null(toolbar.get_node_or_null("GridSizeLabel"))
+	toolbar.free()
+
+	var hotbar: HBoxContainer = HotbarScript.new()
+	hotbar._init_slots()
+	hotbar._create_ui()
+	assert_eq(hotbar.primary_buttons.size(), HotbarScript.MAX_SLOTS)
+	assert_eq(hotbar.secondary_buttons.size(), HotbarScript.MAX_SLOTS)
+	assert_eq(hotbar.primary_buttons[0].name, "Button")
+	hotbar.free()

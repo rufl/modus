@@ -91,7 +91,7 @@ func _create_ui() -> void:
 	for i: int in range(MAX_SLOTS):
 		var slot := _create_slot_button(i, Bar.SECONDARY)
 		secondary_container.add_child(slot)
-		secondary_buttons.append(slot.get_node("Button"))
+		secondary_buttons.append(slot.get_child(0).get_child(0) as Button)
 
 	# Primary bar (bottom, active by default)
 	primary_container = HBoxContainer.new()
@@ -102,7 +102,7 @@ func _create_ui() -> void:
 	for i: int in range(MAX_SLOTS):
 		var slot := _create_slot_button(i, Bar.PRIMARY)
 		primary_container.add_child(slot)
-		primary_buttons.append(slot.get_node("Button"))
+		primary_buttons.append(slot.get_child(0).get_child(0) as Button)
 
 	# Right: Bar indicator
 	var indicator_panel := PanelContainer.new()
