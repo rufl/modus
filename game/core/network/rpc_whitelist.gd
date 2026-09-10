@@ -130,7 +130,12 @@ const ALLOWED_RPCS: Dictionary = {
 		"description": "Update player status (health, state)"
 	},
 	"register_kill":
-	{"calls_per_second": 5.0, "requires_validation": false, "description": "Register kill event"},
+	{
+		"calls_per_second": 5.0,
+		"requires_validation": true,
+		"validator_method": "_validate_kill_registration",
+		"description": "Register kill event"
+	},
 	"request_respawn":
 	{
 		"calls_per_second": 1.0,
@@ -411,8 +416,9 @@ const ALLOWED_RPCS: Dictionary = {
 	"verify_steam_ticket":
 	{
 		"calls_per_second": 0.5,
-		"requires_validation": false,
-		"description": "Verify Steam auth ticket"
+		"requires_validation": true,
+		"validator_method": "_validate_steam_ticket",
+		"description": "Verify Steam authentication ticket"
 	},
 	"sync_state_to_client":
 	{

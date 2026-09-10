@@ -238,6 +238,18 @@ func test_semantic_validation_rejects_forged_status_and_chat_payloads() -> void:
 		_network_manager.validate_rpc(7, "send_chat_message", ["x".repeat(257)]),
 		"Chat payloads cannot exceed the protocol limit"
 	)
+	assert_false(
+		_network_manager.validate_rpc(7, "register_kill", [8, 9, "rifle"]),
+		"Kill reports must involve the sending peer"
+	)
+	assert_false(
+		_network_manager.validate_rpc(10, "verify_steam_ticket", [{"id": 123, "buffer": []}]),
+		"Steam tickets require a non-empty bounded buffer"
+	)
+	assert_true(
+		_network_manager.validate_rpc(11, "register_kill", [11, 12, "rifle"]),
+		"Valid kill reports should pass semantic validation"
+	)
 
 
 func _create_reconnect_probe() -> ReconnectProbe:

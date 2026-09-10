@@ -354,6 +354,10 @@ func validate_rpc(peer_id: int, method: String, args: Array = []) -> bool:
 				return _validate_player_status_update(peer_id, args)
 			"_validate_chat_message":
 				return _validate_chat_message(args)
+			"_validate_kill_registration":
+				return _validate_kill_registration(peer_id, args)
+			"_validate_steam_ticket":
+				return _validate_steam_ticket(args)
 			_:
 				push_error("[Security] Unknown validator: %s" % validator)
 				return false  # Fail secure
@@ -774,6 +778,36 @@ func _validate_chat_message(args: Array) -> bool:
 		and not message.contains("\r")
 	)
 
+func _validate_kill_registration(peer_id: int, args: Array) -> bool:
+	if args.size() < 2 or args.size() > 3:
+		return false
+	if not args[0] is int or not args[1] is int:
+		return false
+	var killer_id: int = args[0]
+	var victim_id: int = args[1]
+	if killer_id <= 0 or victim_id <= 0 or peer_id != killer_id and peer_id != victim_id:
+		return false
+	if args.size() == 3:
+		if not args[2] is String:
+			return false
+		var damage_source: String = args[2]
+		if damage_source.length() > 64 or damage_source.contains("\n") or damage_source.contains("\r"):
+			return false
+	return true
+
+
+func _validate_steam_ticket(args: Array) -> bool:
+	if args.size() != 1 or not args[0] is Dictionary:
+		return false
+	var ticket_bundle: Dictionary = args[0]
+	var steam_id: Variant = ticket_bundle.get("id", 0)
+	var ticket_buffer: Variant = ticket_bundle.get("buffer", [])
+	if not steam_id is int or int(steam_id) <= 0:
+		return false
+	if not ticket_buffer is Array or ticket_buffer.is_empty() or ticket_buffer.size() > 4096:
+		return false
+	return true
+
 
 ## Validate pickup request
 
@@ -1119,10 +1153,6 @@ func _on_peer_connected(id: int) -> void:
 			logger.info("[Network] Peer connected: %d" % id, "Network")
 	peer_connected.emit(id)
 
-	# Create state snapshot for potential reconnection
-	if multiplayer.is_server():
-		create_state_snapshot(id)
-
 	# If we sent a connection request, this confirms success
 	if id == 1 and not multiplayer.is_server():
 		if _is_reconnecting:
@@ -1153,6 +1183,12 @@ func verify_steam_ticket(ticket_bundle: Dictionary) -> void:
 		return
 
 	var peer_id: int = multiplayer.get_remote_sender_id()
+	var ticket_gm: Node = get_node_or_null("/root/GameManager")
+	var network_mgr: Node = ticket_gm.get_core_system("network") if ticket_gm else null
+	if network_mgr and network_mgr.has_method("validate_rpc"):
+		if not network_mgr.validate_rpc(peer_id, "verify_steam_ticket", [ticket_bundle]):
+			push_warning("[Network] Invalid Steam ticket payload from peer %d" % peer_id)
+			return
 	var steam_id: int = int(ticket_bundle.get("id", 0))
 	var ticket_buffer: Array = ticket_bundle.get("buffer", [])
 

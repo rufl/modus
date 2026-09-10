@@ -75,7 +75,7 @@ Published context: [Performance Baseline Proof](PERFORMANCE_BASELINE_PROOF.md). 
 - September 10 package proof: `tests/runners/test_export_notices.sh` passes for Windows Desktop, Dedicated Server (Linux), and Standalone Editor resource exports; each contains the six required notice/ledger files byte-for-byte with no generated ledger translations or local logs. With installed Godot 4.7.2 templates, Windows client, Windows standalone editor, and Linux dedicated-server executables export successfully; target-platform runtime inspection remains open.
 - September 10 security proof: NetworkEditor accepts only server-side finite, bounded, safe-path payloads; entity and transform RPCs are explicitly whitelisted and rate-limited. Focused proof passes 5/5 NetworkEditor integration tests and 9/9 RPC-whitelist tests.
 - September 10 trusted-peer proof: Steam-authenticated peers remain subject to RPC whitelist/rate limits and server movement validation; NetworkManager focused proof passes 14/14 with 54 assertions.
-- September 10 semantic RPC proof: client-originated player-status updates are bound to the sending peer and constrained to finite health/state ranges; chat messages reject empty, oversized, and line-control payloads. NetworkManager focused proof passes 15/15 with 59 assertions, and RPC whitelist proof passes 9/9 with 119 assertions.
+- September 10 RPC payload proof: kill reports require sender participation and bounded source text; Steam ticket RPCs require positive IDs and bounded non-empty buffers. NetworkManager focused proof passes 15/15 with 62 assertions; RPC whitelist proof passes 9/9 with 119 assertions.
 
 ## Missing Before Release
 
