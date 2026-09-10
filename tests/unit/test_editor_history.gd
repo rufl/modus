@@ -7,6 +7,7 @@ const TransformInspectorScript := preload(
 )
 
 const SelectionManagerScript := preload("res://shared/editor_core/core/selection_manager.gd")
+const EditorStateScript := preload("res://shared/editor_core/core/editor_state.gd")
 
 
 func before_each() -> void:
@@ -192,3 +193,22 @@ func test_standalone_duplicate_uses_offset_and_history() -> void:
 	manager.clear_selection()
 	await get_tree().process_frame
 	assert_eq(source_root.get_child_count(), 2, "Undo should remove duplicated nodes")
+
+
+func test_editor_state_block_placement_uses_runtime_history() -> void:
+	var scene_root := Node3D.new()
+	add_child_autofree(scene_root)
+	EditorGlobalsScript.set_runtime_root(scene_root)
+	var state: Node = EditorStateScript.new()
+	add_child_autofree(state)
+	state.selected_asset = {"id": "block"}
+	state.hover_position = Vector3(3, 0, 0)
+
+	assert_eq(state._apply_block_brush(), 1)
+	await get_tree().process_frame
+	assert_eq(scene_root.get_child_count(), 1, "EditorState should place one block")
+
+	var undo: UndoRedo = EditorGlobalsScript.get_undo_redo()
+	undo.undo()
+	assert_eq(scene_root.get_child_count(), 0, "Undo should remove the EditorState block")
+	EditorGlobalsScript.set_runtime_root(null)

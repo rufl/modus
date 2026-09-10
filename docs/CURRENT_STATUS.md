@@ -135,7 +135,7 @@ This source inventory is not equivalent to complete runtime or user-experience p
 - August main-menu/showcase/mod-manager/skill-tree presentation: **FOCUSED PASS** through 26/26 structural/accessibility tests plus dated wide/narrow captures in `docs/media/release/`. The menu captures predate artwork removal and are not current rendered proof.
 - Standalone block, erase, paint, transform, selection, paste, and duplicate history: **FOCUSED PASS**; runtime-safe fallback, centroid-preserving paste, offset duplication, and live node-tree/material/transform round trips are covered. Full editor UI and manual authoring workflow remain open.
 - Live complete editor UI workflow: **UNPROVEN**.
-- Standalone custom undo/redo commands: **PARTIALLY OPEN**; manual authoring paths still require user-visible exercise.
+- Standalone custom undo/redo commands: **FOCUSED PASS** for block, erase, paint, transform, selection, paste, duplicate, and `EditorState` block placement; full editor UI and manual authoring workflow remain open.
 - Real Steam Workshop transfer: **BLOCKED** without GodotSteam/client/app/account evidence.
 
 ### Showcase and Performance

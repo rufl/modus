@@ -3,6 +3,7 @@
 > **Documentation status: maintained reference.** Published readiness is consolidated in `docs/DOCUMENTATION_TRUTH.md` and `docs/CURRENT_STATUS.md`. Generated reports are local invocation records; narrower claims below apply only to the named subsystem or workflow.
 
 ## Unreleased
+- 2026-09-10 `[editor]` `[truth:test]`: migrated `EditorState` placement, spawn, static-scene, and erase history actions to Godot 4.7 `Callable` undo APIs, guarded edited-scene ownership in runtime fallback, and added focused block-placement undo coverage.
 
 - 2026-09-09 `[truth:runtime]` `[truth:test]`: integrated CombatFeature with the canonical CombatSvc-owned lag compensator and balanced multi-pellet rewind ownership. Server ticks capture bounded player/enemy history across transport changes; rewind uses measured RTT/2, zero local/unknown latency, finite/bracketed time checks, shortest-arc interpolation, and exact restoration. Hitscan validation checks the intended victim and range; projectile/melee and nonplayer attacks retain ordinary geometry.
 - Jolt defers kinematic body movement, so scene-transform rewinds alone failed three real-character integration cases. Temporary static query bodies now share actual shapes and target identity without changing live body modes or velocities; cleanup restores collision layers, removes historical query geometry, and returns live-body RIDs.
