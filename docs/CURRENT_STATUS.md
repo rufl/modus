@@ -133,9 +133,9 @@ This source inventory is not equivalent to complete runtime or user-experience p
 - Save/export/reload serialization contract: **PASS**.
 - Local Workshop filesystem simulation: **PASS**.
 - August main-menu/showcase/mod-manager/skill-tree presentation: **FOCUSED PASS** through 26/26 structural/accessibility tests plus dated wide/narrow captures in `docs/media/release/`. The menu captures predate artwork removal and are not current rendered proof.
-- Standalone block, erase, paint, transform, and selection history: **FOCUSED PASS**; runtime-safe fallback and live node-tree/material/transform selection round trips are covered. Full editor UI and manual authoring workflow remain open.
+- Standalone block, erase, paint, transform, selection, and paste history: **FOCUSED PASS**; runtime-safe fallback, centroid-preserving paste, and live node-tree/material/transform round trips are covered. Full editor UI and manual authoring workflow remain open.
 - Live complete editor UI workflow: **UNPROVEN**.
-- Standalone custom undo/redo commands: **PARTIALLY OPEN**; paste/duplicate and manual authoring paths still require user-visible exercise.
+- Standalone custom undo/redo commands: **PARTIALLY OPEN**; duplicate and manual authoring paths still require user-visible exercise.
 - Real Steam Workshop transfer: **BLOCKED** without GodotSteam/client/app/account evidence.
 
 ### Showcase and Performance

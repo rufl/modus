@@ -205,13 +205,16 @@ func paste(position: Vector3, parent: Node) -> Array[Node3D]:
 	for data in clipboard:
 		var node := _create_node_from_data(data)
 		if node:
-			# Position relative to paste point
+			# Apply transforms after the node enters the tree; global setters are invalid beforehand.
 			var offset: Vector3 = data.position - centroid
-			node.global_position = position + offset
-			node.global_rotation = data.rotation
-			node.scale = data.scale
-
+			var pasted_position: Vector3 = position + offset
 			undo.add_do_method(Callable(parent, "add_child").bind(node))
+			undo.add_do_method(
+				Callable(self, "_apply_pasted_transform").bind(
+					node, pasted_position, data.rotation, data.scale
+				)
+			)
+
 			var edited_root: Node = EditorGlobals.get_edited_scene_root()
 			if edited_root:
 				undo.add_do_property(node, "owner", edited_root)
@@ -227,6 +230,16 @@ func paste(position: Vector3, parent: Node) -> Array[Node3D]:
 
 	_log(str("[SelectionManager] Pasted %d items" % pasted.size()), "Log")
 	return pasted
+
+
+func _apply_pasted_transform(
+	node: Node3D, position: Vector3, rotation: Vector3, scale: Vector3
+) -> void:
+	if not is_instance_valid(node):
+		return
+	node.global_position = position
+	node.global_rotation = rotation
+	node.scale = scale
 
 
 ## Duplicate selected nodes

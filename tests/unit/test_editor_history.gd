@@ -136,3 +136,31 @@ func test_standalone_selection_move_and_delete_support_history() -> void:
 	assert_eq(level_root.get_child_count(), 0, "Delete should remove the selected node")
 	undo.undo()
 	assert_eq(level_root.get_child_count(), 1, "Undo should restore the deleted node")
+
+
+func test_standalone_paste_uses_clipboard_centroid_and_history() -> void:
+	var source_root := Node3D.new()
+	add_child_autofree(source_root)
+	var first := CSGBox3D.new()
+	first.position = Vector3(10, 0, 0)
+	source_root.add_child(first)
+	var second := CSGBox3D.new()
+	second.position = Vector3(20, 0, 0)
+	source_root.add_child(second)
+	var manager: Node = SelectionManagerScript.new()
+	add_child_autofree(manager)
+
+	var selected: Array[Node3D] = [first, second]
+	manager.select_multiple(selected)
+	manager.copy()
+	var pasted: Array[Node3D] = manager.paste(Vector3(100, 0, 0), source_root)
+	await get_tree().process_frame
+	assert_true(pasted[0].global_position.is_equal_approx(Vector3(95, 0, 0)))
+	assert_true(pasted[1].global_position.is_equal_approx(Vector3(105, 0, 0)))
+
+	var undo: UndoRedo = EditorGlobalsScript.get_undo_redo()
+	assert_true(undo.has_undo(), "Paste should create an undo action")
+	undo.undo()
+	assert_eq(source_root.get_child_count(), 2, "Undo should remove all pasted nodes")
+	manager.clear_selection()
+	await get_tree().process_frame
