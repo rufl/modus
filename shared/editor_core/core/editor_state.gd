@@ -67,6 +67,7 @@ func select_tool(tool_type: ToolType) -> void:
 func next_tool() -> void:
 	var next_idx := (current_tool + 1) % ToolType.size()
 	current_tool = next_idx as ToolType
+	tool_changed.emit(current_tool)
 
 
 ## Previous tool
@@ -77,6 +78,7 @@ func previous_tool() -> void:
 	if prev_idx < 0:
 		prev_idx = ToolType.size() - 1
 	current_tool = prev_idx as ToolType
+	tool_changed.emit(current_tool)
 
 
 ## Request environment change (Networked)
@@ -147,11 +149,19 @@ func handle_3d_input(camera: Camera3D, event: InputEvent, grid_system: Node) -> 
 				_rotate_preview(1)
 				return LocalEditorGlobals.AFTER_GUI_INPUT_STOP
 			KEY_BRACKETLEFT:
-				brush_size = brush_size - Vector3i.ONE
+				brush_size = Vector3i(
+					max(1, brush_size.x - 1),
+					max(1, brush_size.y - 1),
+					max(1, brush_size.z - 1)
+				)
 				brush_size_changed.emit(brush_size)
 				return LocalEditorGlobals.AFTER_GUI_INPUT_STOP
 			KEY_BRACKETRIGHT:
-				brush_size = brush_size + Vector3i.ONE
+				brush_size = Vector3i(
+					brush_size.x + 1,
+					brush_size.y + 1,
+					brush_size.z + 1
+				)
 				brush_size_changed.emit(brush_size)
 				return LocalEditorGlobals.AFTER_GUI_INPUT_STOP
 			KEY_ESCAPE:

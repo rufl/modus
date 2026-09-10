@@ -289,3 +289,44 @@ func test_editor_state_spawn_point_history_and_invalid_type() -> void:
 	assert_eq(state._apply_spawn_point(), 0)
 	assert_eq(scene_root.get_child_count(), 0)
 	EditorGlobalsScript.set_runtime_root(null)
+
+
+func test_editor_state_tool_navigation_emits_changes() -> void:
+	var state: Node = EditorStateScript.new()
+	add_child_autofree(state)
+	var emitted: Array[int] = []
+	state.tool_changed.connect(
+		func(tool_type: EditorStateScript.ToolType) -> void: emitted.append(tool_type)
+	)
+
+	state.select_tool(EditorStateScript.ToolType.BLOCK_BRUSH)
+	state.next_tool()
+	state.previous_tool()
+
+	assert_eq(
+		emitted,
+		[
+			EditorStateScript.ToolType.BLOCK_BRUSH,
+			EditorStateScript.ToolType.PAINT_BRUSH,
+			EditorStateScript.ToolType.BLOCK_BRUSH
+		]
+	)
+
+
+func test_editor_state_brush_size_shortcut_stays_positive() -> void:
+	var state: Node = EditorStateScript.new()
+	add_child_autofree(state)
+	state.select_tool(EditorStateScript.ToolType.BLOCK_BRUSH)
+	state.set_editing_mode(true)
+
+	var decrease := InputEventKey.new()
+	decrease.pressed = true
+	decrease.keycode = KEY_BRACKETLEFT
+	state.handle_3d_input(null, decrease, null)
+	assert_eq(state.brush_size, Vector3i.ONE)
+
+	var increase := InputEventKey.new()
+	increase.pressed = true
+	increase.keycode = KEY_BRACKETRIGHT
+	state.handle_3d_input(null, increase, null)
+	assert_eq(state.brush_size, Vector3i(2, 2, 2))
