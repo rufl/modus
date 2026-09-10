@@ -81,3 +81,32 @@ func test_standalone_transform_preset_supports_undo_and_redo() -> void:
 	assert_eq(target.rotation_degrees, Vector3.ZERO, "Undo should restore the original rotation")
 	undo.redo()
 	assert_eq(target.rotation_degrees.y, 90.0, "Redo should restore the preset rotation")
+
+
+func test_standalone_scale_flip_and_reset_support_history() -> void:
+	var target := Node3D.new()
+	add_child_autofree(target)
+
+	TransformInspectorScript._on_scale_preset(target, 2.0)
+	assert_eq(target.scale, Vector3.ONE * 2.0)
+	var undo: UndoRedo = EditorGlobalsScript.get_undo_redo()
+	undo.undo()
+	assert_eq(target.scale, Vector3.ONE)
+	undo.redo()
+	assert_eq(target.scale, Vector3.ONE * 2.0)
+
+	TransformInspectorScript._on_flip(target, Vector3(-1, 1, 1))
+	assert_eq(target.scale, Vector3(-2, 2, 2))
+	undo.undo()
+	assert_eq(target.scale, Vector3.ONE * 2.0)
+
+	target.rotation_degrees = Vector3(10, 20, 30)
+	TransformInspectorScript._on_reset_transform(target)
+	assert_eq(target.rotation_degrees, Vector3.ZERO)
+	assert_eq(target.scale, Vector3.ONE)
+	undo.undo()
+	assert_true(
+		target.rotation_degrees.is_equal_approx(Vector3(10, 20, 30)),
+		"Undo should restore the prior rotation"
+	)
+	assert_eq(target.scale, Vector3.ONE * 2.0)

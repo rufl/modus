@@ -164,7 +164,7 @@ func _on_rotate(node: Node3D, delta: int) -> void:
 	undo.commit_action()
 
 
-func _on_scale_preset(node: Node3D, scale_value: float) -> void:
+static func _on_scale_preset(node: Node3D, scale_value: float) -> void:
 	var undo: UndoRedo = EditorGlobals.get_undo_redo()
 	undo.create_action("Set Scale")
 	undo.add_do_property(node, "scale", Vector3.ONE * scale_value)
@@ -186,7 +186,7 @@ func _on_scale_slider(value: float, node: Node3D) -> void:
 			label.text = "%.1f" % value
 
 
-func _on_flip(node: Node3D, axis: Vector3) -> void:
+static func _on_flip(node: Node3D, axis: Vector3) -> void:
 	var undo: UndoRedo = EditorGlobals.get_undo_redo()
 	undo.create_action("Flip")
 	undo.add_do_property(node, "scale", node.scale * axis)
@@ -194,7 +194,7 @@ func _on_flip(node: Node3D, axis: Vector3) -> void:
 	undo.commit_action()
 
 
-func _on_reset_transform(node: Node3D) -> void:
+static func _on_reset_transform(node: Node3D) -> void:
 	var undo: UndoRedo = EditorGlobals.get_undo_redo()
 	undo.create_action("Reset Transform")
 	undo.add_do_property(node, "rotation_degrees", Vector3.ZERO)
