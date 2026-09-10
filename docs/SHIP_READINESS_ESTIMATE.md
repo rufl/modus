@@ -21,7 +21,7 @@ This August 4 estimate counts evidence gates, not lines of code or feature volum
 | Golden demo runtime path | PASS | All 8 controlled automated steps pass with retained JSON/log/screenshot/video; manual feel remains separate |
 | Manual gameplay evidence | BLOCKED / TOOLING READY | 20-item F8/Gamepad Back recorder and strict active-time validation pass; `0.00` reviewed hours remain against the 40-hour threshold |
 | Release version | BLOCKED | Project truth is still `0.9.5-beta`, not `1.0.0` |
-| Distribution provenance | PARTIAL | Deterministic 220-row ledger exists; 8 rows are cleared with retained Kenney CC0 and dip000 MIT evidence, while 12 identified and 200 unverified rows remain open |
+| Distribution provenance | PARTIAL | Current 218-row ledger has 149 cleared Quaternius/Kenney/original/known-source assets and 69 unverified rows; private Suno music was removed from the repository |
 | External/runtime clearance | OPEN | Real ENet peers, Steam/GodotSteam, live editor UX, Workshop, packaging, and long-session performance remain unproven |
 
 ## Estimate
@@ -40,5 +40,5 @@ Do not call MODUS shipped or approved until all rows are green, the current work
 ## Next Smallest Actions
 
 1. Run `tools/run_manual_showcase_session.sh --tester NAME --input DEVICES` and review its direct CSV output under `logs/manual_test_logs/`.
-2. Clear, exclude, or replace the 212 non-cleared provenance rows and inspect packaged notices.
+2. Clear, exclude, or replace the remaining 69 unverified provenance rows and inspect packaged notices.
 3. Complete real ENet/editor/packaging checks, then promote the version only when every required lane agrees.

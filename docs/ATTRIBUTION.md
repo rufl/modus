@@ -2,12 +2,12 @@
 
 > **Documentation status: maintained reference.** This is a repository-local provenance audit, not legal advice. A retained license clears only the named material; `review_required` ledger rows remain distribution blockers.
 
-**Updated:** September 9, 2026; retained third-party audit from August 2
+**Updated:** September 10, 2026; retained third-party audit from August 2
 **Machine-readable inventory:** [PROVENANCE_LEDGER.csv](PROVENANCE_LEDGER.csv)
 
 ## Current Ledger Boundary
 
-`tools/generate_provenance_ledger.py` inventories the asset/resource extensions distributed from `game/`, `shared/`, `standalone/`, and `mods/`, plus the derived blood-pool script. The current ledger contains **230 assets: 18 cleared, 12 identified but requiring rights evidence, and 200 unverified**.
+`tools/generate_provenance_ledger.py` inventories the asset/resource extensions distributed from `game/`, `shared/`, `standalone/`, and `mods/`, plus the derived blood-pool script. The current ledger contains **218 assets: 149 cleared and 69 unverified**. The twelve private Suno tracks were removed from the repository and are no longer distributed.
 
 Run `tools/generate_provenance_ledger.py --check` after asset changes. `--strict` intentionally fails until every distributed row is cleared or removed.
 
@@ -20,7 +20,7 @@ Run `tools/generate_provenance_ledger.py --check` after asset changes. `--strict
 | Main-menu warrior artwork | `game/art/ui/main_menu_warrior_lineup.png`, SHA-256 `361c74c50546ecdcf97b76c706ab7b1f805c0ede9feba6321754664c6e30128f` | User-directed generated artwork from the local OpenAI Codex image workflow on August 1, 2026; treated as project-owned. |
 | Kenney Prototype Textures | Three retained PNGs under `game/art/textures/kenney_prototype_textures/` | Pixel-identical to their corresponding files in Kenney's official Prototype Textures ZIP. The official page states CC0; legal text is retained at `docs/licenses/KENNEY_CC0-1.0.txt`. |
 | Kenney Particle Pack | Two retained PNGs under `game/art/textures/kenney_particle_pack/` | Pixel-identical to the official transparent PNGs. The official page states CC0; the same local CC0 text applies. |
-| Blood-pool implementation | `shared/shaders/blood_pool.gd` and `game/art/shaders/blood_pool.gdshader` | Reviewed against dip000's `BloodyPool` source at commit `7a3e9bc685255d37f489e25b509fb56e185aa9fb`. Upstream is MIT; the notice is retained at `docs/licenses/DIP000_BLOODY_POOL_MIT.txt`. |
+| Quaternius Universal Animation Library | `game/art/anims/`, `game/art/models/mannequin_mesh.glb`, `game/art/models/mannequin_mesh_Mannequin.res`, and `game/art/models/pistol.glb` | Official pack page identifies the library as CC0 and free for commercial use; local notice is retained at `docs/licenses/QUATERNIUS_CC0-1.0.txt`. Godot `.res` files are derived resources. |
 | Ten sample-item SVG icons | Original editable geometry under `game/art/ui/icons/`, authored with OpenAI assistance on September 9; each source embeds authorship and `SPDX-License-Identifier: MIT`, with hashes pinned by the ledger generator | Covers health, shield, speed/damage stims, materials, and ammunition icons only; no external artwork, fonts, or embedded images used. |
 
 The Kenney files are pixel-equivalent rather than byte-identical because their PNG encoding differs from the current official ZIP. Their repository hashes and source URLs are pinned in the ledger.
@@ -29,9 +29,6 @@ The Kenney files are pixel-equivalent rather than byte-identical because their P
 
 | Material | Evidence | Required action |
 | --- | --- | --- |
-| Twelve music tracks under `game/art/audio/music/` | Embedded metadata names `rafael_dina`, says “made with suno,” and includes a unique creation ID for every track | Retain the applicable Suno account/plan commercial-use grant and generation records, or replace the tracks. Metadata identifies origin but is not a redistribution license. |
-| Animation library and extracted `.res` clips | `AnimationLibrary_Godot.glb` contains the full animation set, but its glTF metadata identifies only Blender's exporter | Establish the animation source and license or replace the library and derived clips. |
-| Mannequin/pistol/procedural models | glTF metadata identifies only the exporting application | Establish authorship/source/license or replace. |
 | Remaining textures, decals, weapon icons, shaders, materials, and resources | Present in the generated ledger with hashes | Promote each row only after author, canonical source, license, and required notice are retained. |
 
 ## Historical Jeh3no Attribution

@@ -15,7 +15,7 @@
 - Manual gameplay: 0 imported evidence files / 0.00 recorded hours.
 - Performance: one bounded 66.4-second, 130-sample showcase capture; production targets remain unproven.
 - Release: blocked at `0.9.5-beta`.
-- Published readiness remains NOT READY. The two-validator-blocker snapshot covers manual evidence and release version only; 212 of the current 230 provenance-ledger rows remain a separate open release gap. Local-only raw evidence and generated outputs do not certify a fresh clone; see [report regeneration](DOCUMENTATION_TRUTH.md#regenerating-local-reports).
+Published readiness remains NOT READY. The two-validator-blocker snapshot covers manual evidence and release version only; 69 of the current 218 provenance-ledger rows remain unverified. Local-only raw evidence and generated outputs do not certify a fresh clone; see [report regeneration](DOCUMENTATION_TRUTH.md#local-only-retention).
 
 See [Documentation Truth](DOCUMENTATION_TRUTH.md) and [Current Status](CURRENT_STATUS.md) for details.
 
@@ -75,7 +75,7 @@ Historical “all tasks complete” map-generator notes are implementation snaps
 3. Test at least one lower-end target and one long session.
 4. Review spikes, memory, gameplay anomalies, and teardown leaks—not only average FPS.
 5. Build/package supported targets and produce a known-limits matrix.
-6. Clear, exclude, or replace all 212 non-cleared provenance rows and inspect packaged notices.
+6. Clear, exclude, or replace all remaining unverified provenance rows and inspect packaged notices.
 7. Promote release wording only after all readiness validators and distribution-clearance checks agree.
 
 ## Exit Criteria for a 1.0 Candidate

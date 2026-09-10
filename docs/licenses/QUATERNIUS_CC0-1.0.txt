@@ -1,0 +1,7 @@
+Quaternius Universal Animation Library
+
+Source: https://quaternius.com/packs/universalanimationlibrary.html
+License: CC0 1.0 Universal
+License text: https://creativecommons.org/publicdomain/zero/1.0/
+
+The official pack page identifies the Universal Animation Library as CC0 and states that it is free to use in personal, educational, and commercial projects. MODUS includes the library's Godot export and derived Godot resources under this license.

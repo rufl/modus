@@ -73,6 +73,14 @@ BLOOD_POOL_PATHS = {
     "game/art/shaders/blood_pool.gdshader",
     "shared/shaders/blood_pool.gd",
 }
+QUATERNIUS_ANIMATION_PREFIX = "game/art/anims/"
+QUATERNIUS_MODEL_PATHS = {
+    "game/art/models/mannequin_mesh.glb",
+    "game/art/models/mannequin_mesh_Mannequin.res",
+    "game/art/models/pistol.glb",
+}
+QUATERNIUS_SOURCE = "https://quaternius.com/packs/universalanimationlibrary.html"
+QUATERNIUS_NOTICE = "docs/licenses/QUATERNIUS_CC0-1.0.txt"
 HERO_PATH = "game/art/ui/main_menu_warrior_lineup.png"
 SUNO_ID = re.compile(rb"id=([0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12})")
 
@@ -168,6 +176,19 @@ def classify(path: Path, digest: str) -> dict[str, str]:
             "local_notice": "docs/licenses/DIP000_BLOODY_POOL_MIT.txt",
             "notes": (
                 "Derived implementation reviewed against the pinned upstream BloodyPool source."
+            ),
+        }
+
+    if relative.startswith(QUATERNIUS_ANIMATION_PREFIX) or relative in QUATERNIUS_MODEL_PATHS:
+        return {
+            "status": "cleared",
+            "author": "Quaternius",
+            "source": QUATERNIUS_SOURCE,
+            "license": "CC0-1.0",
+            "local_notice": QUATERNIUS_NOTICE,
+            "notes": (
+                "Universal Animation Library asset or Godot-derived resource; "
+                "the official pack page states CC0 and commercial use."
             ),
         }
 

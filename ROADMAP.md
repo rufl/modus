@@ -48,7 +48,7 @@ ENet fallback, local filesystem simulation, and Steam-unavailable handling are s
 - Standalone Undo/Redo now routes through the shared runtime history manager, and the standalone File/Edit/Help menus provide selection actions, maintained local guidance, stateful view toggles, and `.mdsl` export through the existing LevelPackager. Native exported-app and full graphical proof remain required.
 - Focused mod packaging and local Workshop behavior are now documented as a `.mdsl` distribution workflow; real Steam publication remains blocked.
 - Advanced brush geometry and density-aware fill are now implemented and focused-tested; native visual/editor workflow proof remains separate.
-- Clear, exclude, or replace the 212 non-cleared rows in the generated provenance ledger; verified Kenney CC0 and dip000 MIT notices are already retained.
+- Clear, exclude, or replace the remaining 69 unverified rows in the generated provenance ledger; verified Quaternius, Kenney, and dip000 notices are retained.
 - Add contextualized benchmark tables for supported hardware/build profiles.
 - Review the completed evidence index and replace automated-only media with approved manual marketing captures where required.
 - Promote version/release wording only after automated, manual, performance, packaging, and distribution-clearance gates agree.
