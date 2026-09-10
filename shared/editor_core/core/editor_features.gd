@@ -300,7 +300,7 @@ func _init_workshop_system() -> void:
 	add_child(workshop_manager)
 
 	# 2. Workshop Browser
-	workshop_browser = Control.new()
+	workshop_browser = PanelContainer.new()
 	workshop_browser.set_script(WorkshopBrowserScript)
 	workshop_browser.name = "WorkshopBrowserPanel"
 	workshop_browser.visible = false

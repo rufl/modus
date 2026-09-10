@@ -15,6 +15,8 @@ const VisualScriptEditorScript := preload(
 const EmbeddedLevelEditorScript := preload("res://game/editor/embedded_level_editor.gd")
 const ToolbarDockScript := preload("res://shared/editor_core/ui/toolbar_dock.gd")
 const HotbarScript := preload("res://shared/editor_core/ui/hotbar.gd")
+const EditorFeaturesScript := preload("res://shared/editor_core/core/editor_features.gd")
+
 
 
 
@@ -390,3 +392,10 @@ func test_editor_toolbar_and_hotbar_build_runtime_controls() -> void:
 	assert_eq(hotbar.secondary_buttons.size(), HotbarScript.MAX_SLOTS)
 	assert_eq(hotbar.primary_buttons[0].name, "Button")
 	hotbar.free()
+
+func test_editor_workshop_browser_uses_panel_container_base() -> void:
+	var features: Node = EditorFeaturesScript.new()
+	add_child_autofree(features)
+	features._init_workshop_system()
+	assert_true(features.workshop_browser is PanelContainer)
+	assert_eq(features.workshop_browser.name, "WorkshopBrowserPanel")
