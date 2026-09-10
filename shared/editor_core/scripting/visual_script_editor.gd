@@ -1,6 +1,7 @@
 @tool
 extends Control
 
+
 # Helper function to safely log messages
 func _log(message: String, category: String = "Game") -> void:
 	var logger = GameManager.get_core_system("logger")
@@ -10,7 +11,6 @@ func _log(message: String, category: String = "Game") -> void:
 		print("[%s] %s" % [category, message])
 
 
-
 signal connection_selected(connection: Dictionary)
 signal connection_created(source: Node, target: Node, channel: String)
 
@@ -18,10 +18,10 @@ var channel_system: Node = null
 var level_root: Node = null
 var current_filter: String = ""  # Empty = all channels
 
-@onready var connection_list: ItemList = $VBox/ConnectionList
-@onready var channel_filter: OptionButton = $VBox/Header/ChannelFilter
-@onready var add_btn: Button = $VBox/Header/AddBtn
-@onready var delete_btn: Button = $VBox/Header/DeleteBtn
+var connection_list: ItemList = null
+var channel_filter: OptionButton = null
+var add_btn: Button = null
+var delete_btn: Button = null
 
 
 func _ready() -> void:
@@ -195,7 +195,7 @@ func _on_connection_selected(index: int) -> void:
 	var meta: Dictionary = connection_list.get_item_metadata(index)
 	connection_selected.emit(meta)
 
-	# Select nodes in editor
-	if meta.has("source") and is_instance_valid(meta.source):
+	# Select nodes in the Godot editor only; runtime callers still receive the signal.
+	if Engine.is_editor_hint() and meta.has("source") and is_instance_valid(meta.source):
 		EditorInterface.get_selection().clear()
 		EditorInterface.get_selection().add_node(meta.source)

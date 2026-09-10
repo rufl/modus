@@ -9,6 +9,9 @@ const TransformInspectorScript := preload(
 const SelectionManagerScript := preload("res://shared/editor_core/core/selection_manager.gd")
 const EditorStateScript := preload("res://shared/editor_core/core/editor_state.gd")
 const LevelSaveSystemScript := preload("res://shared/editor_core/data/level_save_system.gd")
+const VisualScriptEditorScript := preload(
+	"res://shared/editor_core/scripting/visual_script_editor.gd"
+)
 
 
 func before_each() -> void:
@@ -224,3 +227,20 @@ func test_level_save_load_requires_editor_interface_in_runtime() -> void:
 	assert_false(save_system.quick_load(), "Runtime mode must not call EditorInterface")
 	assert_false(save_system.load_level(LevelSaveSystemScript.QUICKSAVE_PATH))
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(LevelSaveSystemScript.QUICKSAVE_PATH))
+
+
+func test_visual_script_selection_is_runtime_safe() -> void:
+	var editor: Control = VisualScriptEditorScript.new()
+	add_child_autofree(editor)
+	await get_tree().process_frame
+	var source := Node.new()
+	add_child_autofree(source)
+	editor.connection_list.add_item("runtime")
+	editor.connection_list.set_item_metadata(0, {"source": source, "channel": "test"})
+
+	var selected: Array[Dictionary] = []
+	editor.connection_selected.connect(func(meta: Dictionary) -> void: selected.append(meta))
+	editor._on_connection_selected(0)
+
+	assert_eq(selected.size(), 1)
+	assert_eq(selected[0].source, source)
