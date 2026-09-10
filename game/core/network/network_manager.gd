@@ -308,9 +308,7 @@ func validate_rpc(peer_id: int, method: String, args: Array = []) -> bool:
 	if peer_id == 1:
 		return true
 
-	# Check if peer is in trusted list
-	if peer_id in _trusted_peers:
-		return true
+	# Steam-authenticated peers are identified, not exempt from RPC controls.
 
 	# CRITICAL: Check whitelist FIRST (deny by default)
 	if not RPC_WHITELIST.is_allowed(method):
@@ -467,8 +465,7 @@ func _validate_movement(_delta: float) -> void:
 		if not player.name.is_valid_int():
 			continue
 		var peer_id: int = int(player.name)
-		if peer_id in _trusted_peers:
-			continue
+		# Steam-authenticated peers still receive movement validation.
 
 		# Safe position access
 		if not "global_position" in player:

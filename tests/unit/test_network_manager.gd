@@ -101,6 +101,26 @@ func test_add_trusted_peer():
 		assert_true(true, "Trusted peer management should work without errors")
 
 
+func test_trusted_peer_still_obeys_rpc_rate_limits() -> void:
+	if not _network_manager:
+		var ns := NetworkSvc.get_service()
+		if ns:
+			_network_manager = ns.network_manager
+
+	assert_not_null(_network_manager, "NetworkManager should be available")
+	if not _network_manager:
+		return
+
+	var peer_id := 999
+	_network_manager.add_trusted_peer(peer_id)
+	var first: bool = _network_manager.validate_rpc(peer_id, "send_chat_message", [])
+	var second: bool = _network_manager.validate_rpc(peer_id, "send_chat_message", [])
+	_network_manager.remove_trusted_peer(peer_id)
+
+	assert_true(first, "Authenticated peer's first RPC should pass")
+	assert_false(second, "Authenticated peer's immediate RPC should be rate limited")
+
+
 func test_get_network_stats():
 	if not _network_manager:
 		var ns := NetworkSvc.get_service()

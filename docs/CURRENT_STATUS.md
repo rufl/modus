@@ -45,7 +45,7 @@ These results are narrower than the aggregate suite and must not be summed into 
 | --- | --- |
 | Server rewind / combat / adjacent weapons | September 9: 119/119, 255 assertions; eight runtime checks pass after six baseline failures; controlled latency and real physics, not WAN/manual proof |
 | Save service | 8/8; current encrypted slot existence/list/delete contract and score-key restoration |
-| Network manager | 9/9 |
+| Network manager | 14/14; trusted Steam-authenticated peers remain subject to whitelist, rate limits, and movement validation |
 | Reconnect | 2/2; focused token preservation and reconnect cancellation proof |
 | Combat latency | 10/10; controlled 100 ms rewind/reconciliation proof; representative WAN sessions remain open |
 | Network rate validation | 13/13 focused network-manager proof; real abusive-client soak remains open |
