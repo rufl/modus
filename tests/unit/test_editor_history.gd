@@ -8,6 +8,7 @@ const TransformInspectorScript := preload(
 
 const SelectionManagerScript := preload("res://shared/editor_core/core/selection_manager.gd")
 const EditorStateScript := preload("res://shared/editor_core/core/editor_state.gd")
+const LevelSaveSystemScript := preload("res://shared/editor_core/data/level_save_system.gd")
 
 
 func before_each() -> void:
@@ -212,3 +213,14 @@ func test_editor_state_block_placement_uses_runtime_history() -> void:
 	undo.undo()
 	assert_eq(scene_root.get_child_count(), 0, "Undo should remove the EditorState block")
 	EditorGlobalsScript.set_runtime_root(null)
+
+
+func test_level_save_load_requires_editor_interface_in_runtime() -> void:
+	var scene_root := Node3D.new()
+	add_child_autofree(scene_root)
+	var save_system: RefCounted = LevelSaveSystemScript.new()
+	save_system.setup(scene_root)
+	assert_true(save_system.save_level(LevelSaveSystemScript.QUICKSAVE_PATH, false))
+	assert_false(save_system.quick_load(), "Runtime mode must not call EditorInterface")
+	assert_false(save_system.load_level(LevelSaveSystemScript.QUICKSAVE_PATH))
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(LevelSaveSystemScript.QUICKSAVE_PATH))

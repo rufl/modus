@@ -2,6 +2,7 @@
 class_name LevelSaveSystem
 extends RefCounted
 
+
 # Helper function to safely log messages
 func _log(message: String, category: String = "Game") -> void:
 	var logger = GameManager.get_core_system("logger")
@@ -9,7 +10,6 @@ func _log(message: String, category: String = "Game") -> void:
 		logger.info(message, category)
 	else:
 		print("[%s] %s" % [category, message])
-
 
 
 signal save_completed(path: String)
@@ -67,8 +67,10 @@ func quick_load() -> bool:
 	if not ResourceLoader.exists(QUICKSAVE_PATH):
 		push_warning("LevelSaveSystem: No quick save found")
 		return false
+	if not Engine.is_editor_hint():
+		push_warning("LevelSaveSystem: Quick load requires the Godot editor")
+		return false
 
-	# Use EditorInterface to open the scene
 	EditorInterface.open_scene_from_path(QUICKSAVE_PATH)
 
 	_log(str("[LevelSaveSystem] Quick load completed: %s" % QUICKSAVE_PATH), "Log")
@@ -122,6 +124,9 @@ func load_level(path: String) -> bool:
 	if not ResourceLoader.exists(path):
 		push_error("LevelSaveSystem: File not found: %s" % path)
 		return false
+	if not Engine.is_editor_hint():
+		push_warning("LevelSaveSystem: Loading a level requires the Godot editor")
+		return false
 
 	EditorInterface.open_scene_from_path(path)
 
@@ -174,10 +179,12 @@ func stop_autosave() -> void:
 
 
 func _generate_thumbnail(path: String) -> bool:
+	if not Engine.is_editor_hint():
+		push_warning("LevelSaveSystem: Thumbnail capture requires the Godot editor")
+		return false
+
 	# Get editor viewport
 	var viewport := EditorInterface.get_editor_viewport_3d(0)
-	if not viewport:
-		return false
 
 	# Wait for frame to render
 	await viewport.get_tree().process_frame
