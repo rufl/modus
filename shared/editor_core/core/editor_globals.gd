@@ -1,6 +1,7 @@
 class_name EditorGlobals
 extends RefCounted
 
+
 # Helper function to safely log messages (static version)
 static func _log(message: String, category: String = "Game") -> void:
 	if GameManager.has_method("get_core_system"):
@@ -9,7 +10,6 @@ static func _log(message: String, category: String = "Game") -> void:
 			logger.info(message, category)
 			return
 	print("[%s] %s" % [category, message])
-
 
 
 const AFTER_GUI_INPUT_PASS = 0
@@ -21,7 +21,7 @@ static var _runtime_camera: Camera3D = null
 
 
 static func is_in_editor() -> bool:
-	return OS.has_feature("editor")
+	return Engine.is_editor_hint()
 
 
 ## Get EditorInterface singleton safely

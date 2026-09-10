@@ -4,7 +4,7 @@ extends RefCounted
 
 signal block_placed(block: CSGShape3D)
 
-enum BlockType { BOX, CYLINDER, RAMP, STAIRS, WEDGE, ARCH, SPHERE }  ## Stepped staircase  ## Angled wedge/slope  ## Curved arch segment  ## Spherical shape
+enum BlockType { BOX, CYLINDER, RAMP, STAIRS, WEDGE, ARCH, SPHERE }
 
 var grid_system: Node = null
 var editor_state: Node = null
@@ -196,20 +196,22 @@ func _create_block_at(position: Vector3, size: Vector3, level_root: Node3D) -> C
 	# Mark as editor-placed
 	block.set_meta("level_editor_placed", true)
 
-	# Use undo/redo
-	var undo := EditorInterface.get_editor_undo_redo()
+	# Use the editor manager when embedded, with the runtime fallback for standalone mode.
+	var undo: UndoRedo = EditorGlobals.get_undo_redo()
 	undo.create_action("Place Block")
 
-	undo.add_do_method(level_root, "add_child", block)
-	undo.add_do_property(block, "owner", level_root.get_tree().edited_scene_root)
-	undo.add_undo_method(level_root, "remove_child", block)
-	undo.add_undo_method(block, "queue_free")
+	undo.add_do_method(Callable(level_root, "add_child").bind(block))
+	var edited_root: Node = EditorGlobals.get_edited_scene_root()
+	if edited_root:
+		undo.add_do_property(block, "owner", edited_root)
+	undo.add_undo_method(Callable(level_root, "remove_child").bind(block))
+	undo.add_undo_method(Callable(block, "queue_free"))
 
 	# Track grid occupancy
 	if grid_system:
 		var cell: Vector3i = grid_system.world_to_cell(position)
-		undo.add_do_method(grid_system, "occupy_cell", cell, block)
-		undo.add_undo_method(grid_system, "free_cell", cell)
+		undo.add_do_method(Callable(grid_system, "occupy_cell").bind(cell, block))
+		undo.add_undo_method(Callable(grid_system, "free_cell").bind(cell))
 
 	undo.commit_action()
 
