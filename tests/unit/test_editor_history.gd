@@ -2,6 +2,9 @@ extends ModusGutTestBase
 
 const EditorGlobalsScript := preload("res://shared/editor_core/core/editor_globals.gd")
 const PaintBrushScript := preload("res://shared/editor_core/tools/paint_brush.gd")
+const TransformInspectorScript := preload(
+	"res://shared/editor_core/gizmos/entity_transform_inspector.gd"
+)
 
 
 func before_each() -> void:
@@ -65,3 +68,16 @@ func test_standalone_paint_supports_undo_and_redo() -> void:
 	assert_null(target.material, "Undo should restore the original material")
 	undo.redo()
 	assert_not_null(target.material, "Redo should restore the painted material")
+
+
+func test_standalone_transform_preset_supports_undo_and_redo() -> void:
+	var target := Node3D.new()
+	add_child_autofree(target)
+	TransformInspectorScript._on_rotation_preset(target, 90)
+	assert_eq(target.rotation_degrees.y, 90.0, "Transform preset should apply rotation")
+	var undo: UndoRedo = EditorGlobalsScript.get_undo_redo()
+	assert_true(undo.has_undo(), "Transform preset should create an undo action")
+	undo.undo()
+	assert_eq(target.rotation_degrees, Vector3.ZERO, "Undo should restore the original rotation")
+	undo.redo()
+	assert_eq(target.rotation_degrees.y, 90.0, "Redo should restore the preset rotation")

@@ -147,8 +147,8 @@ func _create_transform_control(node: Node3D) -> Control:
 	return container
 
 
-func _on_rotation_preset(node: Node3D, angle: int) -> void:
-	var undo := EditorInterface.get_editor_undo_redo()
+static func _on_rotation_preset(node: Node3D, angle: int) -> void:
+	var undo: UndoRedo = EditorGlobals.get_undo_redo()
 	undo.create_action("Set Rotation")
 	undo.add_do_property(node, "rotation_degrees", Vector3(0, angle, 0))
 	undo.add_undo_property(node, "rotation_degrees", node.rotation_degrees)
@@ -156,7 +156,7 @@ func _on_rotation_preset(node: Node3D, angle: int) -> void:
 
 
 func _on_rotate(node: Node3D, delta: int) -> void:
-	var undo := EditorInterface.get_editor_undo_redo()
+	var undo: UndoRedo = EditorGlobals.get_undo_redo()
 	var new_rot := node.rotation_degrees + Vector3(0, delta, 0)
 	undo.create_action("Rotate")
 	undo.add_do_property(node, "rotation_degrees", new_rot)
@@ -165,7 +165,7 @@ func _on_rotate(node: Node3D, delta: int) -> void:
 
 
 func _on_scale_preset(node: Node3D, scale_value: float) -> void:
-	var undo := EditorInterface.get_editor_undo_redo()
+	var undo: UndoRedo = EditorGlobals.get_undo_redo()
 	undo.create_action("Set Scale")
 	undo.add_do_property(node, "scale", Vector3.ONE * scale_value)
 	undo.add_undo_property(node, "scale", node.scale)
@@ -173,7 +173,7 @@ func _on_scale_preset(node: Node3D, scale_value: float) -> void:
 
 
 func _on_scale_slider(value: float, node: Node3D) -> void:
-	var undo := EditorInterface.get_editor_undo_redo()
+	var undo: UndoRedo = EditorGlobals.get_undo_redo()
 	undo.create_action("Scale")
 	undo.add_do_property(node, "scale", Vector3.ONE * value)
 	undo.add_undo_property(node, "scale", node.scale)
@@ -187,7 +187,7 @@ func _on_scale_slider(value: float, node: Node3D) -> void:
 
 
 func _on_flip(node: Node3D, axis: Vector3) -> void:
-	var undo := EditorInterface.get_editor_undo_redo()
+	var undo: UndoRedo = EditorGlobals.get_undo_redo()
 	undo.create_action("Flip")
 	undo.add_do_property(node, "scale", node.scale * axis)
 	undo.add_undo_property(node, "scale", node.scale)
@@ -195,7 +195,7 @@ func _on_flip(node: Node3D, axis: Vector3) -> void:
 
 
 func _on_reset_transform(node: Node3D) -> void:
-	var undo := EditorInterface.get_editor_undo_redo()
+	var undo: UndoRedo = EditorGlobals.get_undo_redo()
 	undo.create_action("Reset Transform")
 	undo.add_do_property(node, "rotation_degrees", Vector3.ZERO)
 	undo.add_do_property(node, "scale", Vector3.ONE)

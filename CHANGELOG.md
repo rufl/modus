@@ -11,6 +11,8 @@
 - 2026-09-10 `[truth:runtime]` `[truth:test]`: repaired standalone block placement history. The tool now uses the shared `EditorGlobals` undo manager, converts Godot 4.7 undo callbacks to `Callable` actions, avoids null editor-scene ownership in runtime mode, and passes a live place/undo/redo node-tree round trip. Focused editor proof passes 20/20 tests with 343 assertions; remaining standalone authoring commands and manual editor workflow remain open.
 - 2026-09-10 `[truth:runtime]` `[truth:test]`: extended standalone editor history repair to `EraserBrush`. Single-node erase now uses the runtime-safe undo manager, Godot 4.7 `Callable` actions, and retained undo references; live erase/undo proof passes alongside block placement. Remaining paint, selection, gizmo, and manual editor paths remain open.
 - 2026-09-10 `[truth:runtime]` `[truth:test]`: extended standalone editor history repair to `PaintBrush`. Material painting now uses the runtime-safe undo manager and `Callable` surface updates; live paint/undo/redo proof passes with block and erase history. Remaining selection, gizmo, and manual editor paths remain open.
+- 2026-09-10 `[truth:runtime]` `[truth:test]`: extended standalone editor history repair to the transform inspector. Rotation presets now use the runtime-safe undo manager; live rotation preset/undo/redo proof passes. Remaining scale/flip/reset UI, selection, and manual editor paths remain open.
+
 
 
 
