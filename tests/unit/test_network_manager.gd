@@ -112,9 +112,8 @@ func test_trusted_peer_still_obeys_rpc_rate_limits() -> void:
 		return
 
 	var peer_id := 999
-	_network_manager.add_trusted_peer(peer_id)
-	var first: bool = _network_manager.validate_rpc(peer_id, "send_chat_message", [])
-	var second: bool = _network_manager.validate_rpc(peer_id, "send_chat_message", [])
+	var first: bool = _network_manager.validate_rpc(peer_id, "send_chat_message", ["hello"])
+	var second: bool = _network_manager.validate_rpc(peer_id, "send_chat_message", ["hello"])
 	_network_manager.remove_trusted_peer(peer_id)
 
 	assert_true(first, "Authenticated peer's first RPC should pass")
@@ -153,18 +152,18 @@ func test_rpc_rate_limiting():
 		var method: String = "send_chat_message"
 
 		# First call should succeed
-		var result1: bool = _network_manager.validate_rpc(peer_id, method, [])
+		var result1: bool = _network_manager.validate_rpc(peer_id, method, ["hello"])
 		assert_true(result1, "First RPC call should succeed")
 
 		# Immediate second call should fail (rate limited)
-		var result2: bool = _network_manager.validate_rpc(peer_id, method, [])
+		var result2: bool = _network_manager.validate_rpc(peer_id, method, ["hello"])
 		assert_false(result2, "Immediate second RPC call should be rate limited")
 
 		# Wait for rate limit to expire (chat is 3 calls/sec = 0.33s interval)
 		await get_tree().create_timer(0.4).timeout
 
 		# Third call should succeed after waiting
-		var result3: bool = _network_manager.validate_rpc(peer_id, method, [])
+		var result3: bool = _network_manager.validate_rpc(peer_id, method, ["hello"])
 		assert_true(result3, "RPC call after rate limit cooldown should succeed")
 
 
@@ -197,7 +196,6 @@ func test_rpc_rate_limiting_editor():
 			_network_manager = ns.network_manager
 
 	assert_not_null(_network_manager, "NetworkManager should be available")
-
 	if _network_manager:
 		# Test rate limiting for editor RPCs
 		var peer_id: int = 4
@@ -217,6 +215,29 @@ func test_rpc_rate_limiting_editor():
 		# Third call should succeed
 		var result3: bool = _network_manager.validate_rpc(peer_id, method, [{}])
 		assert_true(result3, "place_block call after cooldown should succeed")
+
+func test_semantic_validation_rejects_forged_status_and_chat_payloads() -> void:
+	if not _network_manager:
+		var ns := NetworkSvc.get_service()
+		if ns:
+			_network_manager = ns.network_manager
+
+	assert_not_null(_network_manager, "NetworkManager should be available")
+	if not _network_manager:
+		return
+
+	assert_false(
+		_network_manager.validate_rpc(7, "update_player_status", [8, 500, 1]),
+		"Status updates cannot target another peer"
+	)
+	assert_false(
+		_network_manager.validate_rpc(7, "update_player_status", [7, -1, 1]),
+		"Status health cannot be negative"
+	)
+	assert_false(
+		_network_manager.validate_rpc(7, "send_chat_message", ["x".repeat(257)]),
+		"Chat payloads cannot exceed the protocol limit"
+	)
 
 
 func _create_reconnect_probe() -> ReconnectProbe:

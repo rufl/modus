@@ -350,6 +350,10 @@ func validate_rpc(peer_id: int, method: String, args: Array = []) -> bool:
 				return _validate_pickup_request(peer_id, args)
 			"_validate_revive_request":
 				return _validate_revive_request(peer_id, args)
+			"_validate_player_status_update":
+				return _validate_player_status_update(peer_id, args)
+			"_validate_chat_message":
+				return _validate_chat_message(args)
 			_:
 				push_error("[Security] Unknown validator: %s" % validator)
 				return false  # Fail secure
@@ -745,6 +749,30 @@ func _validate_damage_request(args: Array) -> bool:
 			return false
 
 	return true
+
+
+func _validate_player_status_update(peer_id: int, args: Array) -> bool:
+	if args.size() < 3:
+		return false
+	if not args[0] is int or int(args[0]) != peer_id:
+		return false
+	if not args[1] is int or int(args[1]) < 0 or int(args[1]) > 10000:
+		return false
+	if not args[2] is int or int(args[2]) < 0 or int(args[2]) > 5:
+		return false
+	return true
+
+
+func _validate_chat_message(args: Array) -> bool:
+	if args.size() != 1 or not args[0] is String:
+		return false
+	var message: String = args[0]
+	return (
+		not message.strip_edges().is_empty()
+		and message.length() <= 256
+		and not message.contains("\n")
+		and not message.contains("\r")
+	)
 
 
 ## Validate pickup request

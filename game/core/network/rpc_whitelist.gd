@@ -125,7 +125,8 @@ const ALLOWED_RPCS: Dictionary = {
 	"update_player_status":
 	{
 		"calls_per_second": 10.0,
-		"requires_validation": false,
+		"requires_validation": true,
+		"validator_method": "_validate_player_status_update",
 		"description": "Update player status (health, state)"
 	},
 	"register_kill":
@@ -139,13 +140,15 @@ const ALLOWED_RPCS: Dictionary = {
 	"send_message":
 	{
 		"calls_per_second": 3.0,
-		"requires_validation": false,
+		"requires_validation": true,
+		"validator_method": "_validate_chat_message",
 		"description": "Send chat message (anti-spam)"
 	},
 	"send_chat_message":
 	{
 		"calls_per_second": 3.0,
-		"requires_validation": false,
+		"requires_validation": true,
+		"validator_method": "_validate_chat_message",
 		"description": "Send chat message via ChatService"
 	},
 	# ========================================================================
