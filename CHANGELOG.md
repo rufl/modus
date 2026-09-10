@@ -3,7 +3,7 @@
 > **Documentation status: maintained reference.** Published readiness is consolidated in `docs/DOCUMENTATION_TRUTH.md` and `docs/CURRENT_STATUS.md`. Generated reports are local invocation records; narrower claims below apply only to the named subsystem or workflow.
 
 ## Unreleased
-- 2026-09-10 `[editor]` `[truth:test]`: fixed standalone `EditorState` tool cycling to emit `tool_changed` consistently and clamped bracket brush-size shortcuts to a positive minimum. Focused editor history proof passes 15/15 tests with 77 assertions.
+- 2026-09-10 `[editor]` `[truth:test]`: made Escape tool cancellation emit `tool_changed(NONE)` so toolbar state stays synchronized with keyboard cancellation. Focused editor history proof passes 16/16 tests with 80 assertions.
 - 2026-09-10 `[editor]` `[truth:test]`: guarded `LevelSaveSystem` quick-load, explicit level-load, and thumbnail capture paths behind the Godot editor boundary; runtime saves remain usable while editor-only APIs now return safely. Focused editor proof passes 10/10 tests with 56 assertions.
 - 2026-09-10 `[editor]` `[truth:test]`: made visual-script selection runtime-safe by keeping editor node selection behind `Engine.is_editor_hint()` and removing fragile `@onready` scene-path lookups from dynamically built controls. Focused editor proof passes 11/11 tests with 59 assertions.
 - 2026-09-10 `[editor]` `[truth:test]`: completed focused `EditorState` placement coverage for static entity assets and player/enemy/item spawn points, rejected unknown spawn types without creating history, and verified the structural editor lane. Combined editor history and level-editor proof now passes 26/26 tests with 156 assertions.

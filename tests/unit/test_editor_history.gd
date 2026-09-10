@@ -330,3 +330,22 @@ func test_editor_state_brush_size_shortcut_stays_positive() -> void:
 	increase.keycode = KEY_BRACKETRIGHT
 	state.handle_3d_input(null, increase, null)
 	assert_eq(state.brush_size, Vector3i(2, 2, 2))
+
+
+func test_editor_state_escape_clears_tool_and_emits_change() -> void:
+	var state: Node = EditorStateScript.new()
+	add_child_autofree(state)
+	var emitted: Array[int] = []
+	state.tool_changed.connect(
+		func(tool_type: EditorStateScript.ToolType) -> void: emitted.append(tool_type)
+	)
+	state.select_tool(EditorStateScript.ToolType.BLOCK_BRUSH)
+	state.set_editing_mode(true)
+
+	var escape := InputEventKey.new()
+	escape.pressed = true
+	escape.keycode = KEY_ESCAPE
+	state.handle_3d_input(null, escape, null)
+
+	assert_eq(state.current_tool, EditorStateScript.ToolType.NONE)
+	assert_eq(emitted.back(), EditorStateScript.ToolType.NONE)

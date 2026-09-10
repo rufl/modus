@@ -166,6 +166,7 @@ func handle_3d_input(camera: Camera3D, event: InputEvent, grid_system: Node) -> 
 				return LocalEditorGlobals.AFTER_GUI_INPUT_STOP
 			KEY_ESCAPE:
 				current_tool = ToolType.NONE
+				tool_changed.emit(current_tool)
 				return LocalEditorGlobals.AFTER_GUI_INPUT_STOP
 
 	return LocalEditorGlobals.AFTER_GUI_INPUT_PASS
