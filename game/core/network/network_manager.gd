@@ -729,13 +729,19 @@ func _validate_damage_request(args: Array) -> bool:
 	if not multiplayer.is_server():
 		return false
 
-	# Validate Arguments
+	# Validate Arguments and reject malformed/non-finite payloads.
 	if args.size() < 3:
-		return false  # amount, attacker_id, attacker_pos
+		return false
+	if (
+		not args[0] is float
+		and not args[0] is int
+	) or not args[1] is int or not args[2] is Vector3:
+		return false
+	if not args[2].is_finite():
+		return false
 
-	var amount: float = args[0]
+	var amount: float = float(args[0])
 	var attacker_id: int = args[1]
-
 	# 1. Damage Cap Check
 	if amount < 0 or amount > MAX_DAMAGE_AMOUNT:  # Hard cap
 		push_warning("[Network] Damage validation failed: Invalid amount %.2f" % amount)

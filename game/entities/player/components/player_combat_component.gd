@@ -56,7 +56,7 @@ func _exit_tree() -> void:
 
 # --- Damage reception (RPC) ---
 
-@rpc("any_peer", "call_local", "reliable")
+@rpc("authority", "call_local", "reliable")
 func receive_damage(
 	damage: int = 1, attacker_id: int = 0, attacker_pos: Vector3 = Vector3.ZERO
 ) -> void:
