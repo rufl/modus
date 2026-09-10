@@ -15,6 +15,8 @@
 - 2026-09-10 `[truth:runtime]` `[truth:test]`: completed runtime-safe transform inspector history for scale presets, flips, and reset, alongside rotation presets. Focused editor history proof passes 24/24 tests with 367 assertions; selection history, full editor UI, and manual authoring evidence remain open.
 - 2026-09-10 `[truth:runtime]` `[truth:test]`: repaired standalone selection move and delete history. SelectionManager now uses the runtime-safe undo manager, Godot 4.7 `Callable` actions, retained deleted-node references, and guarded scene ownership. Focused editor history proof passes 25/25 tests with 373 assertions; paste/duplicate and manual editor paths remain open.
 - 2026-09-10 `[truth:runtime]` `[truth:test]`: repaired standalone SelectionManager paste. Clipboard centroids are now computed after accumulation, pasted global transforms apply only after nodes enter the tree, and paste undo removes all created nodes cleanly. Focused editor proof passes 26/26 tests with 378 assertions and zero GUT orphans; duplicate and manual editor paths remain open.
+- 2026-09-10 `[truth:runtime]` `[truth:test]`: added duplicate-selection proof on the repaired paste path. Duplicates preserve centroid-relative offsets and undo as one action; focused editor history now passes 27/27 tests with 384 assertions and zero GUT orphans. Full manual editor workflow remains open.
+
 
 
 

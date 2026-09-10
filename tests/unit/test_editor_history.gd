@@ -164,3 +164,31 @@ func test_standalone_paste_uses_clipboard_centroid_and_history() -> void:
 	assert_eq(source_root.get_child_count(), 2, "Undo should remove all pasted nodes")
 	manager.clear_selection()
 	await get_tree().process_frame
+
+
+func test_standalone_duplicate_uses_offset_and_history() -> void:
+	var source_root := Node3D.new()
+	add_child_autofree(source_root)
+	var first := CSGBox3D.new()
+	first.position = Vector3(10, 0, 0)
+	source_root.add_child(first)
+	var second := CSGBox3D.new()
+	second.position = Vector3(20, 0, 0)
+	source_root.add_child(second)
+	var manager: Node = SelectionManagerScript.new()
+	add_child_autofree(manager)
+	var selected: Array[Node3D] = [first, second]
+	manager.select_multiple(selected)
+
+	var duplicated: Array[Node3D] = manager.duplicate_selection(Vector3(1, 0, 1))
+	await get_tree().process_frame
+	assert_eq(duplicated.size(), 2, "Duplicate should create both selected nodes")
+	assert_true(duplicated[0].global_position.is_equal_approx(Vector3(11, 0, 1)))
+	assert_true(duplicated[1].global_position.is_equal_approx(Vector3(21, 0, 1)))
+	assert_eq(source_root.get_child_count(), 4)
+
+	var undo: UndoRedo = EditorGlobalsScript.get_undo_redo()
+	undo.undo()
+	manager.clear_selection()
+	await get_tree().process_frame
+	assert_eq(source_root.get_child_count(), 2, "Undo should remove duplicated nodes")
