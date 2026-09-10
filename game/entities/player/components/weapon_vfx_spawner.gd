@@ -22,7 +22,7 @@ func setup(camera: Camera3D) -> void:
 # BLOOD EFFECTS
 # =============================================================================
 
-@rpc("any_peer", "call_local", "unreliable")
+@rpc("authority", "call_local", "unreliable")
 func spawn_enemy_blood(
 	hit_pos: Vector3, hit_normal: Vector3, is_high_velocity: bool = false
 ) -> void:
@@ -90,7 +90,7 @@ func _finish_spawn_enemy_blood(
 	get_tree().create_timer(1.0).timeout.connect(particles.queue_free, CONNECT_ONE_SHOT)
 
 
-@rpc("any_peer", "call_local", "reliable")
+@rpc("authority", "call_local", "reliable")
 func spawn_blood_splat(
 	hit_pos: Vector3, hit_normal: Vector3, is_high_velocity: bool = false
 ) -> void:
@@ -158,7 +158,7 @@ func _spawn_blood_decal_local(
 # BULLET HOLES & DEBRIS
 # =============================================================================
 
-@rpc("any_peer", "call_local", "reliable")
+@rpc("authority", "call_local", "reliable")
 func spawn_bullet_hole(hit_pos: Vector3, hit_normal: Vector3) -> void:
 	call_deferred("_finish_spawn_bullet_hole", hit_pos, hit_normal)
 
@@ -232,9 +232,9 @@ func _create_bullet_hole_texture() -> Texture2D:
 	return ImageTexture.create_from_image(img)
 
 
-@rpc("any_peer", "call_local", "reliable")
+@rpc("authority", "call_local", "reliable")
 func spawn_explosion_mark(hit_pos: Vector3, hit_normal: Vector3, radius: float = 1.5) -> void:
-	## Spawn large explosion mark decal (for rockets, grenades, etc.)
+	## Spawn large explosion mark decal for rockets, grenades, etc.
 	call_deferred("_finish_spawn_explosion_mark", hit_pos, hit_normal, radius)
 
 
@@ -334,7 +334,7 @@ func _create_explosion_mark_texture() -> Texture2D:
 	return ImageTexture.create_from_image(img)
 
 
-@rpc("any_peer", "call_local", "unreliable")
+@rpc("authority", "call_local", "unreliable")
 func spawn_wall_debris(hit_pos: Vector3, hit_normal: Vector3) -> void:
 	## Spawn debris particles on wall impact (retro FPS style - SQUARE particles)
 	var particles := GPUParticles3D.new()
@@ -404,7 +404,7 @@ func spawn_wall_debris(hit_pos: Vector3, hit_normal: Vector3) -> void:
 
 const RETRO_TRACER_SHADER = preload("res://game/art/shaders/retro_tracer.gdshader")
 
-@rpc("any_peer", "call_local", "unreliable")
+@rpc("authority", "call_local", "unreliable")
 func spawn_muzzle_flash(muzzle_pos: Vector3 = Vector3.ZERO) -> void:
 	## Spawn retro-style muzzle flash (light + particles)
 
@@ -502,7 +502,7 @@ func spawn_muzzle_flash(muzzle_pos: Vector3 = Vector3.ZERO) -> void:
 	get_tree().create_timer(0.3).timeout.connect(particles.queue_free, CONNECT_ONE_SHOT)
 
 
-@rpc("any_peer", "call_local", "unreliable")
+@rpc("authority", "call_local", "unreliable")
 func spawn_bullet_tracer(
 	from_pos: Vector3,
 	to_pos: Vector3,
@@ -696,7 +696,7 @@ func _finish_spawn_chain_effect(from_pos: Vector3, to_pos: Vector3) -> void:
 # CARTRIDGE EJECTION
 # =============================================================================
 
-@rpc("any_peer", "call_local", "unreliable")
+@rpc("authority", "call_local", "unreliable")
 func spawn_cartridge(
 	start_pos: Vector3, direction: Vector3, scale: float = 1.0, scene_path: String = ""
 ) -> void:
