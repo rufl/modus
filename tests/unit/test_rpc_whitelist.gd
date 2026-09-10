@@ -114,6 +114,8 @@ func test_critical_issue_12_rpcs_present() -> void:
 	assert_true(RPCWhitelist.is_allowed("place_block"), "place_block should be allowed")
 	assert_true(RPCWhitelist.is_allowed("delete_node"), "delete_node should be allowed")
 	assert_true(RPCWhitelist.is_allowed("paint_block"), "paint_block should be allowed")
+	assert_true(RPCWhitelist.is_allowed("place_entity"), "place_entity should be allowed")
+	assert_true(RPCWhitelist.is_allowed("transform_node"), "transform_node should be allowed")
 
 	# Chat Service RPC
 	assert_true(RPCWhitelist.is_allowed("send_message"), "send_message should be allowed")

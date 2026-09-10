@@ -52,6 +52,7 @@ These results are narrower than the aggregate suite and must not be summed into 
 | ENet host/join | PASS; separate Godot server/client process, client connected over localhost; server is intentionally terminated by harness after client success |
 | Package notices | 6/6 required notices match for Windows Desktop, Dedicated Server (Linux), and Standalone Editor resource exports; Windows client, Windows editor, and Linux server executables export successfully with installed Godot 4.7.2 templates |
 | RPC whitelist | 9/9 |
+| Network editor RPC boundary | 5/5 focused integration proof; server-only handlers, finite/bounded payloads, safe relative paths, resource checks, and entity/transform rate limits |
 | Mod-loading integration | 12/12 |
 | Enemy AI | 13/13 |
 | Enemy AI system | 126/126 |

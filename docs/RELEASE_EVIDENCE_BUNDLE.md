@@ -73,6 +73,7 @@ Published context: [Performance Baseline Proof](PERFORMANCE_BASELINE_PROOF.md). 
 - Provenance inventory: `docs/ATTRIBUTION.md` and `docs/PROVENANCE_LEDGER.csv`.
 - Retained notices: root `LICENSE` and `docs/licenses/`.
 - September 10 package proof: `tests/runners/test_export_notices.sh` passes for Windows Desktop, Dedicated Server (Linux), and Standalone Editor resource exports; each contains the six required notice/ledger files byte-for-byte with no generated ledger translations or local logs. With installed Godot 4.7.2 templates, Windows client, Windows standalone editor, and Linux dedicated-server executables export successfully; target-platform runtime inspection remains open.
+- September 10 security proof: NetworkEditor accepts only server-side finite, bounded, safe-path payloads; entity and transform RPCs are explicitly whitelisted and rate-limited. Focused proof passes 5/5 NetworkEditor integration tests and 9/9 RPC-whitelist tests.
 
 ## Missing Before Release
 
