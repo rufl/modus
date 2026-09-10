@@ -123,7 +123,7 @@ This source inventory is not equivalent to complete runtime or user-experience p
 ### Multiplayer
 
 - `multiplayer_demo` profile launch: **PASS** for profile/service startup.
-- Historical two-process ENet host/join smoke: **BLOCKED** by sandbox localhost socket creation at that run's boundary. September 9 focused real-ENet host lifecycle, inventory, and late-join checks now pass; broader latency/reconnect/dedicated-client proof remains open.
+- Historical two-process ENet host/join smoke: **BLOCKED** by sandbox localhost socket creation at that run's boundary. September 9 focused real-ENet host lifecycle, inventory, and late-join checks now pass; the client transport reconnect path now preserves and submits the PlayerSvc session token after a successful network reconnect. Broader latency/reconnect/dedicated-client proof remains open.
 - Real Steam/GodotSteam: **UNPROVEN**; no current authenticated Steam API evidence exists.
 - Server rewind and combat integration: **FOCUSED PASS** on September 9. One CombatSvc-owned system captures player/enemy history, uses bounded server-measured RTT/2, rejects invalid/out-of-window requests, and restores query state. Temporary static query bodies handle Jolt's deferred kinematic transforms without changing live body modes or velocities. Feature and multi-pellet weapon flows share the service; projectile/melee and nonplayer validation remain current-state.
 - High-latency combat quality: **UNPROVEN**. Client-view/interpolation calibration and representative end-to-end latency sessions remain outside the focused physics/weapon proof.

@@ -17,6 +17,8 @@ const JSONHelperClass = preload("res://game/core/json_helper.gd")
 var _player_data: Dictionary = {}
 var _pending_sessions: Dictionary = {}
 var _active_tokens: Dictionary = {}
+var _pending_reconnect_token: String = ""
+var _network_manager: Node = null
 var _cleanup_timer: float = 0.0
 
 
@@ -59,6 +61,8 @@ func _ready() -> void:
 func _exit_tree() -> void:
 	# === SIGNAL HYGIENE: Disconnect all signals to prevent memory leaks ===
 
+	_unbind_network_reconnect_signals()
+
 	# 1. Multiplayer signals
 	if multiplayer:
 		if multiplayer.peer_connected.is_connected(_on_peer_connected):
@@ -82,12 +86,54 @@ func get_dependencies() -> Array[String]:
 
 func initialize() -> void:
 	await _wait_for_dependencies()
+	_bind_network_reconnect_signals()
 
 	# Subscribe to game events
 	subscribe_event("match_ended", _on_match_ended)
 
 	_mark_initialized()
 	_log_info("[PlayerService] Initialized")
+
+
+func _bind_network_reconnect_signals() -> void:
+	var gm: Node = get_node_or_null("/root/GameManager")
+	if not gm:
+		return
+	var network_service: Variant = gm.get_core_system("network")
+	if not network_service:
+		return
+	_network_manager = network_service.network_manager
+	if not _network_manager:
+		return
+	if not _network_manager.connection_lost.is_connected(_on_network_connection_lost):
+		_network_manager.connection_lost.connect(_on_network_connection_lost)
+	if not _network_manager.reconnection_success.is_connected(_on_network_reconnection_success):
+		_network_manager.reconnection_success.connect(_on_network_reconnection_success)
+
+
+func _unbind_network_reconnect_signals() -> void:
+	if not is_instance_valid(_network_manager):
+		_network_manager = null
+		return
+	if _network_manager.connection_lost.is_connected(_on_network_connection_lost):
+		_network_manager.connection_lost.disconnect(_on_network_connection_lost)
+	if _network_manager.reconnection_success.is_connected(_on_network_reconnection_success):
+		_network_manager.reconnection_success.disconnect(_on_network_reconnection_success)
+	_network_manager = null
+
+
+func _on_network_connection_lost() -> void:
+	var peer_id: int = multiplayer.get_unique_id()
+	if _active_tokens.has(peer_id):
+		_pending_reconnect_token = _active_tokens[peer_id]
+
+
+func _on_network_reconnection_success() -> void:
+	if _pending_reconnect_token.is_empty():
+		return
+	var token: String = _pending_reconnect_token
+	_pending_reconnect_token = ""
+	request_reconnect(token)
 
 
 func _process(delta: float) -> void:
