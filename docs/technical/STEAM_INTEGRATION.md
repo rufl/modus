@@ -1,6 +1,6 @@
 # Steam Integration Boundary
 
-> **Documentation status: maintained reference.** Steam support code is present, but GodotSteam and SteamMultiplayerPeer are not bundled or proven in this checkout.
+> **Documentation status: maintained reference.** Steam support code is present; GodotSteam 4.22.1 was locally installed and authenticated API initialization was observed on September 10, 2026. This does not establish multi-account, Workshop, relay, or production-server proof.
 
 ## Current Proof Boundary
 
@@ -8,10 +8,10 @@
 | --- | --- | --- |
 | ENet fallback source | Present | Network code can select ENet when Steam is unavailable. |
 | Multiplayer profile startup | PASS | `multiplayer_demo` reaches startup without proving peers connect. |
-| Two-process ENet host/join | BLOCKED here | Sandbox policy prevents localhost socket creation. |
-| Local Workshop simulation | PASS | Filesystem upload/download/cache/subscription model only. |
-| Real Steam/GodotSteam client | BLOCKED | Extension, client, app ID, account, and runtime evidence are absent. |
-| Real Steam Workshop | BLOCKED | No service upload/download evidence. |
+| Two-process ENet host/join | PASS | Separate Godot server/client smoke connected over localhost; server is terminated after client success |
+| Local Workshop simulation | PASS | Filesystem upload/download/cache/subscription model only |
+| Real Steam/GodotSteam client | FOCUSED PASS | GodotSteam 4.22.1 / Godot 4.7.2 Linux runtime initialized through the authenticated Steam client; Steam ID and persona were returned; integration suite passes 8/8 |
+| Real Steam Workshop | BLOCKED | No configured app-owned Workshop item or two-account service evidence |
 
 ## Live source
 
@@ -34,7 +34,7 @@ The adapter contains guarded code for:
 - optional `SteamMultiplayerPeer` host/client creation;
 - ENet fallback selection.
 
-Source presence does not establish API compatibility with a particular GodotSteam release. The integration must be tested against the exact extension version selected for the product.
+Source presence and one-account initialization do not establish API compatibility or production behavior across the full matrix. The tested local combination is Godot 4.7.2 with GodotSteam 4.22.1.
 
 ## External prerequisites
 
@@ -67,4 +67,4 @@ Run the focused filesystem model through the GUT test documented in `docs/WORKSH
 
 ## Claim rule
 
-Until the matrix above is recorded, the truthful statement is: **MODUS contains optional Steam integration code and a guarded fallback, while real Steam/GodotSteam and Workshop behavior remain unverified**.
+Until the matrix above is recorded, the truthful statement is: **MODUS has one authenticated GodotSteam client/API initialization proof and a guarded ENet fallback; multi-account Steam, Workshop, relay, and production dedicated-server behavior remain unverified**.

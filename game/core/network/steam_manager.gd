@@ -63,10 +63,17 @@ func _initialize_steam_client() -> void:
 		return
 
 	var steam: Object = Engine.get_singleton("Steam")
-
-	var init_result: Dictionary = steam.steamInit(false)
-	if init_result["status"] != 1:
-		push_error("[SteamManager] Steam init failed: %s" % init_result["verbal"])
+	var init_result: Variant = steam.steamInit(false)
+	var init_success := false
+	var init_verbal := "unknown result"
+	if init_result is Dictionary:
+		init_success = int(init_result.get("status", 0)) == 1
+		init_verbal = str(init_result.get("verbal", init_verbal))
+	elif init_result is bool:
+		init_success = init_result
+		init_verbal = "Steam API returned false"
+	if not init_success:
+		push_error("[SteamManager] Steam init failed: %s" % init_verbal)
 		_steam_available = false
 		return
 

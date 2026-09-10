@@ -72,7 +72,7 @@ Published context: [Performance Baseline Proof](PERFORMANCE_BASELINE_PROOF.md). 
 - Showcase route: [maintained checklist](SHOWCASE_ROUTE.md). Local `docs/GOLDEN_DEMO_SMOKE.md` and startup-only `docs/SHOWCASE_LAUNCH_SMOKE.md` are regenerated using the [report commands](DOCUMENTATION_TRUTH.md#regenerating-local-reports), not fetched as committed proof.
 - Provenance inventory: `docs/ATTRIBUTION.md` and `docs/PROVENANCE_LEDGER.csv`.
 - Retained notices: root `LICENSE` and `docs/licenses/`.
-- September 10 package proof: `tests/runners/test_export_notices.sh` passes for Windows Desktop, Dedicated Server (Linux), and Standalone Editor resource exports; each contains the six required notice/ledger files byte-for-byte with no generated ledger translations or local logs. Runnable executable export remains blocked because the pinned environment has no Linux/Windows Godot export templates.
+- September 10 package proof: `tests/runners/test_export_notices.sh` passes for Windows Desktop, Dedicated Server (Linux), and Standalone Editor resource exports; each contains the six required notice/ledger files byte-for-byte with no generated ledger translations or local logs. With installed Godot 4.7.2 templates, Windows client, Windows standalone editor, and Linux dedicated-server executables export successfully; target-platform runtime inspection remains open.
 
 ## Missing Before Release
 
@@ -81,4 +81,4 @@ Published context: [Performance Baseline Proof](PERFORMANCE_BASELINE_PROOF.md). 
 - Additional display-synchronized benchmark rows covering declared hardware and modes.
 - ~~A known-limits matrix for networking, Steam, editor, performance, and content scope.~~ See [Known-Limits Matrix](KNOWN_LIMITS_MATRIX.md); it is source/evidence-bounded and does not replace runtime proof.
 - Clearance, exclusion, or replacement of the 212 non-cleared provenance rows.
-- Executable/installer inspection remains blocked: Linux/Windows export templates are absent and the repository contains no installer definition/toolchain. Resource-export notice proof is complete for all three configured presets; this is not a runnable release build.
+- Installer inspection remains blocked: the repository contains no installer definition/toolchain. Executable export and resource notice proof are complete for all three configured presets; Windows runtime, Steam/Workshop service proof, manual evidence, and provenance clearance remain open.

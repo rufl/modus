@@ -35,7 +35,7 @@ Publication cleanup preserves old local evidence without refreshing it. Fresh cl
 | Performance evidence | **PASS** | One bounded 66.4-second/130-sample showcase capture; not a production FPS claim |
 | Release-version evidence | **BLOCKED** | Project remains `0.9.5-beta` |
 | Production readiness | **NOT READY** | 2 validator-tracked blockers: manual evidence and release version; provenance clearance is outside that count |
-| Release evidence bundle | **INDEX COMPLETE / RELEASE BLOCKED** | Hashed menu/welcome/mod/golden-demo captures, short automated video, bounded benchmark table, known-limits matrix, provenance ledger, fresh three-preset notice checks, and local ENet/reconnect/latency/rate-limit proof are retained; manual marketing review, executable templates, installer, Steam, and rights clearance remain open |
+| Release evidence bundle | **INDEX COMPLETE / RELEASE BLOCKED** | Hashed menu/welcome/mod/golden-demo captures, short automated video, bounded benchmark table, known-limits matrix, provenance ledger, fresh three-preset notice checks, executable exports, local ENet/reconnect/latency/rate-limit proof, and authenticated Steam API initialization are retained; manual marketing review, installer, two-account Steam/Workshop, target-Windows runtime, and rights clearance remain open |
 
 ## Current Focused Automated Proof
 
@@ -50,7 +50,7 @@ These results are narrower than the aggregate suite and must not be summed into 
 | Combat latency | 10/10; controlled 100 ms rewind/reconciliation proof; representative WAN sessions remain open |
 | Network rate validation | 13/13 focused network-manager proof; real abusive-client soak remains open |
 | ENet host/join | PASS; separate Godot server/client process, client connected over localhost; server is intentionally terminated by harness after client success |
-| Package notices | 6/6 required notices match for Windows Desktop, Dedicated Server (Linux), and Standalone Editor resource exports; executable export blocked by missing Linux/Windows templates |
+| Package notices | 6/6 required notices match for Windows Desktop, Dedicated Server (Linux), and Standalone Editor resource exports; Windows client, Windows editor, and Linux server executables export successfully with installed Godot 4.7.2 templates |
 | RPC whitelist | 9/9 |
 | Mod-loading integration | 12/12 |
 | Enemy AI | 13/13 |
@@ -128,8 +128,8 @@ This source inventory is not equivalent to complete runtime or user-experience p
 ### Multiplayer
 
 - `multiplayer_demo` profile launch: **PASS** for profile/service startup.
-- Historical two-process ENet host/join smoke: **BLOCKED** by sandbox localhost socket creation at that run's boundary. September 9 focused real-ENet host lifecycle, inventory, and late-join checks now pass; the client transport reconnect path now preserves and submits the PlayerSvc session token after a successful network reconnect. Broader latency/reconnect/dedicated-client proof remains open.
-- Real Steam/GodotSteam: **UNPROVEN**; no current authenticated Steam API evidence exists.
+- Local separate-process ENet host/join smoke: **PASS**; the client connected to the server over localhost and the harness terminated the server after client success. Focused reconnect token/cancellation, 100 ms rewind, and network/rate suites pass; exported Linux dedicated server and Windows client/editor executables now build with installed Godot 4.7.2 templates.
+- Real Steam/GodotSteam: **FOCUSED PASS** on September 10. GodotSteam 4.22.1's Godot 4.7.2 Linux runtime initialized through the authenticated Steam client and logged in as Steam ID `76561199814411086`; the Steam integration suite passes 8/8. This is one authenticated local account/API initialization, not two-account lobby, Workshop, relay, or production server proof.
 - Server rewind and combat integration: **FOCUSED PASS** on September 9. One CombatSvc-owned system captures player/enemy history, uses bounded server-measured RTT/2, rejects invalid/out-of-window requests, and restores query state. Temporary static query bodies handle Jolt's deferred kinematic transforms without changing live body modes or velocities. Feature and multi-pellet weapon flows share the service; projectile/melee and nonplayer validation remain current-state.
 - High-latency combat quality: **UNPROVEN**. Client-view/interpolation calibration and representative end-to-end latency sessions remain outside the focused physics/weapon proof.
 
@@ -141,7 +141,7 @@ This source inventory is not equivalent to complete runtime or user-experience p
 - Standalone block, erase, paint, transform, selection, paste, and duplicate history: **FOCUSED PASS**; runtime-safe fallback, centroid-preserving paste, offset duplication, and live node-tree/material/transform round trips are covered. Full editor UI and manual authoring workflow remain open.
 - Live complete editor UI workflow: **UNPROVEN**.
 - Standalone custom undo/redo commands, advanced brush operations, and concrete implementation-debt fixes: **FOCUSED PASS** for block, erase, paint, transform, selection, paste, duplicate, `EditorState` block/entity/spawn placement, runtime-safe level-save boundaries, runtime-safe visual-script selection, tool-cycle signaling, Escape cancellation signaling, positive brush-size shortcuts, embedded editor save/load round trips, toolbar/hotbar runtime construction, workshop browser construction, optional environment preset apply/load/delete/parameter handling, zone selection safety, preset-list refresh safety, detached zone creation/deletion, stale preset-selection safety, standalone Undo/Redo plus `.mdsl` export menu dispatch, staircase/arch/torus/capsule geometry, density-aware fill, detached clear/remove safety, editor-console keep occupancy checks, configurable package authors, visual action sound/variable/teleport execution, collapsable-floor audio, armor reduction formulas, per-file rule hot reload, SteamID profile mapping, milestone popups, threat-aware AI retaliation, and configurable minimum monster counts; native exported-app and full graphical editor workflow remain unproven.
-- Real Steam Workshop transfer: **BLOCKED** without GodotSteam/client/app/account evidence.
+- Real Steam Workshop transfer: **BLOCKED** without a configured app-owned Workshop item, two-account authorization, and service upload/download evidence.
 
 ### Showcase and Performance
 
