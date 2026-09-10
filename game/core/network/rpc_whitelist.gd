@@ -443,6 +443,20 @@ const ALLOWED_RPCS: Dictionary = {
 		"validator_method": "_validate_revive_request",
 		"description": "Start revive process"
 	},
+	"_request_pickup_object":
+	{
+		"calls_per_second": 5.0,
+		"requires_validation": true,
+		"validator_method": "_validate_interaction_pickup",
+		"description": "Request physics-object pickup"
+	},
+	"_request_throw_object":
+	{
+		"calls_per_second": 5.0,
+		"requires_validation": true,
+		"validator_method": "_validate_interaction_throw",
+		"description": "Request held-object throw"
+	},
 	"request_revive_stop":
 	{
 		"calls_per_second": 5.0,

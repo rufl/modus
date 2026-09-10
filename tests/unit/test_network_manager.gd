@@ -250,6 +250,16 @@ func test_semantic_validation_rejects_forged_status_and_chat_payloads() -> void:
 		_network_manager.validate_rpc(11, "register_kill", [11, 12, "rifle"]),
 		"Valid kill reports should pass semantic validation"
 	)
+	assert_false(
+		_network_manager.validate_rpc(13, "_request_throw_object", [Vector3.INF]),
+		"Throw requests must reject non-finite directions"
+	)
+	assert_false(
+		_network_manager.validate_rpc(
+			13, "_request_pickup_object", [NodePath("/root/UnknownObject")]
+		),
+		"Pickup requests must reject unknown objects"
+	)
 
 
 func _create_reconnect_probe() -> ReconnectProbe:

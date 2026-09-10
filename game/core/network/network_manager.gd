@@ -360,6 +360,10 @@ func validate_rpc(peer_id: int, method: String, args: Array = []) -> bool:
 				return _validate_steam_ticket(args)
 			"_validate_target_player_rpc":
 				return _validate_target_player_rpc(peer_id, args)
+			"_validate_interaction_pickup":
+				return _validate_interaction_pickup(peer_id, args)
+			"_validate_interaction_throw":
+				return _validate_interaction_throw(args)
 			_:
 				push_error("[Security] Unknown validator: %s" % validator)
 				return false  # Fail secure
@@ -822,6 +826,26 @@ func _validate_target_player_rpc(peer_id: int, args: Array) -> bool:
 		and player != null
 		and target_component.get_parent() == player
 	)
+
+
+func _validate_interaction_pickup(peer_id: int, args: Array) -> bool:
+	if args.size() != 1 or not args[0] is NodePath:
+		return false
+	var player: Node = _get_player_by_peer_id(peer_id)
+	var obj: Node = get_node_or_null(args[0])
+	if not player or not obj or not obj is RigidBody3D:
+		return false
+	return player.global_position.distance_to(obj.global_position) <= MAX_PICKUP_DISTANCE
+
+
+func _validate_interaction_throw(args: Array) -> bool:
+	if args.size() != 1 or not args[0] is Vector3:
+		return false
+	var direction: Vector3 = args[0]
+	var magnitude: float = direction.length()
+	return direction.is_finite() and magnitude > 0.1 and magnitude <= 1.1
+
+
 ## Validate pickup request
 
 

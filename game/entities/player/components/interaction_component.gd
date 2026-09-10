@@ -139,11 +139,27 @@ func _update_held_object_position() -> void:
 	held_object.global_rotation = _camera.global_rotation
 
 
-# Networking
+func _validate_client_rpc(method: String, args: Array) -> bool:
+	var sender_id: int = multiplayer.get_remote_sender_id()
+	if sender_id == 0:
+		return true
+	if not _player or _player.get_multiplayer_authority() != sender_id:
+		return false
+	var network_svc: Node = GameManager.get_core_system("network")
+	return (
+		network_svc
+		and network_svc.network_manager
+		and network_svc.network_manager.validate_rpc(sender_id, method, args)
+	)
+
+
+## Networking
 
 @rpc("any_peer", "call_local", "reliable")
 func _request_pickup_object(object_path: NodePath) -> void:
-	if not multiplayer.is_server():
+	if not multiplayer.is_server() or not _validate_client_rpc(
+		"_request_pickup_object", [object_path]
+	):
 		return
 	var obj: Node = get_node_or_null(object_path)
 	if obj and obj is RigidBody3D:
@@ -167,7 +183,7 @@ func _sync_held_object(object_path: NodePath) -> void:
 
 @rpc("any_peer", "call_local", "reliable")
 func _request_throw_object(dir: Vector3) -> void:
-	if not multiplayer.is_server():
+	if not multiplayer.is_server() or not _validate_client_rpc("_request_throw_object", [dir]):
 		return
 	_perform_throw(dir)
 
