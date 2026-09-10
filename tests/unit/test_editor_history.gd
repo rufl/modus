@@ -423,3 +423,11 @@ func test_environment_editor_ignores_zone_selection_without_zone_list() -> void:
 	var editor: Node = EnvironmentZoneEditorScript.new()
 	editor._on_zone_selected()
 	editor.free()
+
+func test_environment_editor_ignores_preset_refresh_without_preset_list() -> void:
+	var editor: Node = EnvironmentZoneEditorScript.new()
+	var preset_manager := PanelContainer.new()
+	editor._preset_manager = preset_manager
+	editor._update_preset_list()
+	preset_manager.free()
+	editor.free()

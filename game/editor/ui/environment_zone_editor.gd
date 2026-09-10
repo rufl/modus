@@ -388,7 +388,7 @@ func _update_preset_list() -> void:
 	if not _preset_manager:
 		return
 
-	var list: ItemList = _preset_manager.get_node("VBoxContainer/PresetList")
+	var list: ItemList = _preset_manager.get_node_or_null("VBoxContainer/PresetList") as ItemList
 	if list:
 		list.clear()
 		for preset_name: String in _presets.keys():
