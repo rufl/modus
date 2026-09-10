@@ -431,3 +431,18 @@ func test_environment_editor_ignores_preset_refresh_without_preset_list() -> voi
 	editor._update_preset_list()
 	preset_manager.free()
 	editor.free()
+
+func test_environment_editor_creates_zone_without_optional_zone_list() -> void:
+	var editor: Node = EnvironmentZoneEditorScript.new()
+	var zone: EnvironmentVolume = editor.create_zone()
+	assert_not_null(zone)
+	if zone:
+		zone.free()
+	editor.free()
+
+func test_environment_editor_deletes_zone_without_optional_zone_list() -> void:
+	var editor: Node = EnvironmentZoneEditorScript.new()
+	var zone := EnvironmentVolume.new()
+	assert_true(editor.delete_zone(zone))
+	zone.free()
+	editor.free()

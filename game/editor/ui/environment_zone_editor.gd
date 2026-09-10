@@ -222,18 +222,18 @@ func create_zone(pos: Vector3 = Vector3.ZERO, sz: Vector3 = Vector3.ZERO) -> Env
 		visual_indicator.material_override = zone_material
 		zone.add_child(visual_indicator)
 
-	# Add to current scene
-	var parent_scene: Node = get_tree().current_scene
-	if parent_scene:
-		parent_scene.add_child(zone)
+	# Add to the current scene only when this editor is tree-attached
+	if is_inside_tree() and get_tree().current_scene:
+		get_tree().current_scene.add_child(zone)
 
 	# Track the zone
 	_zones[zone.name] = zone
 
-	# Add to UI list
-	var item: TreeItem = _zone_list.create_item()
-	item.set_text(0, zone.name)
-	item.set_metadata(0, zone)
+	# Add to UI list when the optional zone tree exists
+	if _zone_list:
+		var item: TreeItem = _zone_list.create_item()
+		item.set_text(0, zone.name)
+		item.set_metadata(0, zone)
 
 	# Emit signal
 	zone_created.emit(zone)
@@ -249,12 +249,13 @@ func delete_zone(zone: EnvironmentVolume) -> bool:
 	# Remove from tracking
 	_zones.erase(zone.name)
 
-	# Remove from UI
-	var items: Array[TreeItem] = _zone_list.get_root().get_children()
-	for item: TreeItem in items:
-		if item.get_metadata(0) == zone:
-			item.free()
-			break
+	# Remove from UI when the optional zone tree exists
+	if _zone_list:
+		var items: Array[TreeItem] = _zone_list.get_root().get_children()
+		for item: TreeItem in items:
+			if item.get_metadata(0) == zone:
+				item.free()
+				break
 
 	# Remove from scene
 	zone.queue_free()
@@ -266,7 +267,7 @@ func delete_zone(zone: EnvironmentVolume) -> bool:
 
 ## Update zone parameters
 func update_zone_parameters(zone: EnvironmentVolume, params: Dictionary) -> void:
-	if not zone:
+	if not zone or not is_instance_valid(zone):
 		return
 
 	# Update weather override
@@ -358,7 +359,7 @@ func load_preset(preset_name: String) -> Error:
 	var preset_data: Variant = json.data
 	if preset_data is Dictionary:
 		_presets[preset_name] = preset_data
-		if _selected_zone:
+		if _selected_zone and is_instance_valid(_selected_zone):
 			update_zone_parameters(_selected_zone, preset_data.get("parameters", {}))
 		preset_loaded.emit(preset_name)
 		return OK
