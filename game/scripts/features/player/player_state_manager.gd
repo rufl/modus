@@ -207,7 +207,11 @@ func _sync_mode(peer_id: int, new_mode: int) -> void:
 
 @rpc("any_peer", "call_remote", "reliable")
 func request_set_mode(new_mode: int) -> void:
+	if not multiplayer.is_server() or not new_mode is int or new_mode < int(Mode.PLAYING) or new_mode > int(Mode.EDITOR):
+		return
 	var sender_id: int = multiplayer.get_remote_sender_id()
+	if sender_id <= 0:
+		return
 
 	# RPC Rate Limiting Validation
 	var network_mgr: Node = GameManager.get_core_system("network")
@@ -218,14 +222,15 @@ func request_set_mode(new_mode: int) -> void:
 			)
 			return
 
-	# Validation: Can only switch to SPECTATOR or EDITOR if allowed
-	# For now, allow basic switching
 	set_player_mode(sender_id, new_mode)
-
 
 @rpc("any_peer", "call_remote", "reliable")
 func request_set_state(new_state: int) -> void:
+	if not multiplayer.is_server() or not new_state is int or new_state < Enums.PlayerState.ALIVE or new_state > Enums.PlayerState.MENU:
+		return
 	var sender_id: int = multiplayer.get_remote_sender_id()
+	if sender_id <= 0:
+		return
 
 	# RPC Rate Limiting Validation
 	var network_mgr: Node = GameManager.get_core_system("network")
@@ -235,25 +240,26 @@ func request_set_state(new_state: int) -> void:
 				"[PlayerState] Rate limit exceeded for peer %d" % sender_id, "PlayerState"
 			)
 			return
-
-	# Validation: Users can only update their own state
-	set_player_state(sender_id, new_state)
-
-
 @rpc("any_peer", "call_remote", "reliable")
 func request_assist_downed() -> void:
+	if not multiplayer.is_server():
+		return
 	var sender_id: int = multiplayer.get_remote_sender_id()
-	if get_player_state(sender_id) == Enums.PlayerState.DOWNED:
-		# Logic for "Help me!" callout
-		GameManager.get_core_system("logger").info(
-			"Player %d requested assistance!" % sender_id, "PlayerState"
-		)
-		# Could emit a signal for UI
+	if sender_id <= 0 or get_player_state(sender_id) != Enums.PlayerState.DOWNED:
+		return
+	# Logic for "Help me!" callout
+	GameManager.get_core_system("logger").info(
+		"Player %d requested assistance!" % sender_id, "PlayerState"
+	)
 
 
 @rpc("any_peer", "call_remote", "reliable")
 func request_spectate_target(target_id: int) -> void:
+	if not multiplayer.is_server() or not target_id is int:
+		return
 	var sender_id: int = multiplayer.get_remote_sender_id()
+	if sender_id <= 0 or not _player_states.has(target_id):
+		return
 	GameManager.get_core_system("logger").info(
 		"Player %d requested to spectate %d" % [sender_id, target_id], "PlayerState"
 	)
