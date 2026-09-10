@@ -16,6 +16,8 @@ const EmbeddedLevelEditorScript := preload("res://game/editor/embedded_level_edi
 const ToolbarDockScript := preload("res://shared/editor_core/ui/toolbar_dock.gd")
 const HotbarScript := preload("res://shared/editor_core/ui/hotbar.gd")
 const EditorFeaturesScript := preload("res://shared/editor_core/core/editor_features.gd")
+const EnvironmentZoneEditorScript := preload("res://game/editor/ui/environment_zone_editor.gd")
+
 
 
 
@@ -399,3 +401,9 @@ func test_editor_workshop_browser_uses_panel_container_base() -> void:
 	features._init_workshop_system()
 	assert_true(features.workshop_browser is PanelContainer)
 	assert_eq(features.workshop_browser.name, "WorkshopBrowserPanel")
+
+func test_environment_editor_ignores_preset_action_without_optional_panel() -> void:
+	var editor: Node = EnvironmentZoneEditorScript.new()
+	editor.show_preset_manager = false
+	editor._on_apply_preset_pressed()
+	editor.free()

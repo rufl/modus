@@ -410,7 +410,9 @@ func _on_apply_preset_pressed() -> void:
 	if not _selected_zone:
 		return
 
-	var list: ItemList = _preset_manager.get_node("VBoxContainer/PresetList")
+	if not _preset_manager:
+		return
+	var list := _preset_manager.get_node_or_null("VBoxContainer/PresetList") as ItemList
 	if list and list.is_anything_selected():
 		var idx: int = list.get_selected_items()[0]
 		var preset_name: String = list.get_item_text(idx)
