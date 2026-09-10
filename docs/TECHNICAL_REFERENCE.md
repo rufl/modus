@@ -82,7 +82,7 @@ Source wiring does not prove live feel, controller behavior, network correction,
 - Standalone scene: `standalone/editor/main.tscn`
 - Focused proof: `docs/EDITOR_ROUNDTRIP_PROOF.md`
 
-The standalone source has explicit TODOs for undo/redo and mod export. No current exported-app UI run closes those gaps.
+- The standalone entry now routes Undo/Redo through the shared runtime history manager and exports the current level through `LevelPackager` as `.mdsl`; focused proof covers both dispatch and packaging. Native exported-app startup and full graphical workflow evidence remain open.
 
 ## Map generation and showcase
 

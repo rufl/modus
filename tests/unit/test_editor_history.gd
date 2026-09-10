@@ -17,6 +17,7 @@ const ToolbarDockScript := preload("res://shared/editor_core/ui/toolbar_dock.gd"
 const HotbarScript := preload("res://shared/editor_core/ui/hotbar.gd")
 const EditorFeaturesScript := preload("res://shared/editor_core/core/editor_features.gd")
 const EnvironmentZoneEditorScript := preload("res://game/editor/ui/environment_zone_editor.gd")
+const StandaloneEditorScript := preload("res://standalone/editor/standalone_main.gd")
 
 
 
@@ -446,3 +447,37 @@ func test_environment_editor_deletes_zone_without_optional_zone_list() -> void:
 	assert_true(editor.delete_zone(zone))
 	zone.free()
 	editor.free()
+
+func test_standalone_editor_uses_runtime_undo_and_redo_menu_actions() -> void:
+	var main: Node = StandaloneEditorScript.new()
+	var target := Node3D.new()
+	var undo: UndoRedo = EditorGlobalsScript.get_undo_redo()
+	undo.clear_history()
+	undo.create_action("Standalone test")
+	undo.add_do_property(target, "position", Vector3.ONE)
+	undo.add_undo_property(target, "position", Vector3.ZERO)
+	undo.commit_action()
+	main._on_edit_menu_pressed(0)
+	assert_eq(target.position, Vector3.ZERO)
+	main._on_edit_menu_pressed(1)
+	assert_eq(target.position, Vector3.ONE)
+	target.free()
+	main.free()
+	undo.clear_history()
+
+func test_standalone_editor_exports_current_level_package() -> void:
+	var main: Node = StandaloneEditorScript.new()
+	var embedded: Node = EmbeddedLevelEditorScript.new()
+	embedded.level_root = Node3D.new()
+	embedded.level_root.name = "StandaloneExport"
+	main._editor = embedded
+	var output_dir := "user://standalone_editor_export/"
+	var package_path := output_dir + "standalone_export.mdsl"
+	DirAccess.make_dir_recursive_absolute(output_dir)
+	assert_true(main._export_mod_to_directory(output_dir))
+	assert_true(FileAccess.file_exists(package_path))
+	DirAccess.remove_absolute(package_path)
+	DirAccess.remove_absolute(output_dir)
+	embedded.level_root.free()
+	embedded.free()
+	main.free()

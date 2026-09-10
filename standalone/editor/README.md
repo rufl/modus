@@ -13,17 +13,14 @@
 
 ## Implemented in the standalone entry
 
-The script instantiates the embedded editor and creates File, Edit, View, and Help menus. It wires new/open/save/save-as actions to the embedded editor and exposes basic view toggles/about text.
+The script instantiates the embedded editor and creates File, Edit, View, and Help menus. New/open/save/save-as actions use the embedded editor; Undo/Redo uses the shared runtime history manager; Cut/Copy/Paste/Select All route through the selection manager; view toggles are stateful; documentation and shortcut entries show maintained local guidance; and Export as Mod packages the current level through `LevelPackager` into a `.mdsl` archive.
 
-## Explicit source limitations
+## Remaining proof boundaries
 
-- Undo and redo display “not available” dialogs; custom standalone UndoRedo is a TODO.
-- “Export as Mod” displays a planned/not-implemented dialog.
-- Help opens a placeholder repository wiki URL.
-- Cut, copy, paste, select-all, keyboard-shortcut help, and some menu items have no implemented match branch.
 - No current graphical/exported-app evidence proves the preset opens this scene, saves correctly on each OS, or supports the advertised editor tools end to end.
+- File corruption, permission, path, overwrite, and native exported-app behavior remain unproven.
 
-The focused round-trip proof in `docs/EDITOR_ROUNDTRIP_PROOF.md` exercises save, export-folder, reload, and actor survival through the underlying model path. It explicitly does not prove live standalone UI interaction.
+The focused round-trip proof in `docs/EDITOR_ROUNDTRIP_PROOF.md` exercises save, export-folder, reload, and actor survival through the underlying model path. Focused standalone proof now covers runtime Undo/Redo dispatch and `.mdsl` export; it does not prove live standalone UI interaction.
 
 ## Export caution
 

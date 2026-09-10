@@ -45,8 +45,8 @@ ENet fallback, local filesystem simulation, and Steam-unavailable handling are s
 
 ## Productization After Proof
 
-- Harden the editor's standalone undo/redo workflow.
-- Turn focused mod packaging and local Workshop behavior into a documented distribution workflow.
+- Standalone Undo/Redo now routes through the shared runtime history manager, and the standalone File/Edit/Help menus provide selection actions, maintained local guidance, stateful view toggles, and `.mdsl` export through the existing LevelPackager. Native exported-app and full graphical proof remain required.
+- Focused mod packaging and local Workshop behavior are now documented as a `.mdsl` distribution workflow; real Steam publication remains blocked.
 - Clear, exclude, or replace the 212 non-cleared rows in the generated provenance ledger; verified Kenney CC0 and dip000 MIT notices are already retained.
 - Add contextualized benchmark tables for supported hardware/build profiles.
 - Review the completed evidence index and replace automated-only media with approved manual marketing captures where required.

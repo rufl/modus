@@ -1,9 +1,12 @@
 extends Control
 
 const EmbeddedEditor = preload("res://game/editor/embedded_level_editor.gd")
+const EditorGlobals = preload("res://shared/editor_core/core/editor_globals.gd")
+const LevelPackager = preload("res://shared/editor_core/data/level_packager.gd")
 
 var _editor: Control
 var _current_save_path: String = ""
+var _view_menu: PopupMenu
 
 
 func _ready() -> void:
@@ -24,6 +27,7 @@ func _ready() -> void:
 
 func _create_menu_bar() -> void:
 	var menu_bar: MenuBar = MenuBar.new()
+	menu_bar.name = "MenuBar"
 	add_child(menu_bar)
 	move_child(menu_bar, 0)
 
@@ -61,17 +65,17 @@ func _create_menu_bar() -> void:
 	menu_bar.set_menu_title(1, "Edit")
 
 	# View Menu
-	var view_menu: PopupMenu = PopupMenu.new()
-	view_menu.name = "ViewMenu"
-	view_menu.add_check_item("Show Grid", 0)
-	view_menu.add_check_item("Show Spawn Points", 1)
-	view_menu.add_check_item("Show Connections", 2)
-	view_menu.set_item_checked(0, true)
-	view_menu.set_item_checked(1, true)
-	view_menu.set_item_checked(2, true)
-	view_menu.id_pressed.connect(_on_view_menu_pressed)
+	_view_menu = PopupMenu.new()
+	_view_menu.name = "ViewMenu"
+	_view_menu.add_check_item("Show Grid", 0)
+	_view_menu.add_check_item("Show Spawn Points", 1)
+	_view_menu.add_check_item("Show Connections", 2)
+	_view_menu.set_item_checked(0, true)
+	_view_menu.set_item_checked(1, true)
+	_view_menu.set_item_checked(2, true)
+	_view_menu.id_pressed.connect(_on_view_menu_pressed)
 
-	menu_bar.add_child(view_menu)
+	menu_bar.add_child(_view_menu)
 	menu_bar.set_menu_title(2, "View")
 
 	# Help Menu
@@ -106,41 +110,43 @@ func _on_file_menu_pressed(id: int) -> void:
 func _on_edit_menu_pressed(id: int) -> void:
 	match id:
 		0:  # Undo
-			# TODO(v1.0): Implement custom UndoRedo system for standalone editor
-			# EditorInterface is only available in Godot Editor, not standalone builds
-			var dialog: AcceptDialog = AcceptDialog.new()
-			dialog.title = "Undo Not Available"
-			dialog.dialog_text = (
-				"Undo/Redo system is planned for v1.0.\n\n"
-				+ "Currently only available when running as Godot Editor plugin."
-			)
-			add_child(dialog)
-			dialog.popup_centered()
-			dialog.confirmed.connect(func() -> void: dialog.queue_free())
+			EditorGlobals.get_undo_redo().undo()
 		1:  # Redo
-			# TODO(v1.0): Implement custom UndoRedo system for standalone editor
-			var dialog: AcceptDialog = AcceptDialog.new()
-			dialog.title = "Redo Not Available"
-			dialog.dialog_text = (
-				"Undo/Redo system is planned for v1.0.\n\n"
-				+ "Currently only available when running as Godot Editor plugin."
-			)
-			add_child(dialog)
-			dialog.popup_centered()
-			dialog.confirmed.connect(func() -> void: dialog.queue_free())
+			EditorGlobals.get_undo_redo().redo()
+		2:  # Cut
+			if _editor and _editor.selection_manager:
+				_editor.selection_manager.copy()
+				_editor.selection_manager.delete_selected()
+		3:  # Copy
+			if _editor and _editor.selection_manager:
+				_editor.selection_manager.copy()
+		4:  # Paste
+			if _editor and _editor.selection_manager and _editor.level_root:
+				_editor.selection_manager.paste(Vector3.ZERO, _editor.level_root)
+		5:  # Select All
+			if _editor and _editor.selection_manager and _editor.level_root:
+				var nodes: Array[Node3D] = []
+				for child: Node in _editor.level_root.get_children():
+					if child is Node3D:
+						nodes.append(child)
+				_editor.selection_manager.select_multiple(nodes)
 
 
 func _on_view_menu_pressed(id: int) -> void:
-	var menu: PopupMenu = get_node("ViewMenu")
-	menu.toggle_item_checked(id)
+	if _view_menu:
+		_view_menu.toggle_item_checked(id)
 
 
 func _on_help_menu_pressed(id: int) -> void:
 	match id:
 		0:  # Documentation
-			OS.shell_open("https://github.com/your-repo/wiki")
+			_show_documentation_dialog()
+		1:  # Keyboard Shortcuts
+			_show_shortcuts_dialog()
 		2:  # About
 			_show_about_dialog()
+
+
 
 
 func _new_level() -> void:
@@ -189,27 +195,66 @@ func _save_as_dialog() -> void:
 
 
 func _export_mod_dialog() -> void:
-	# TODO(v1.1, @modding-team): Implement mod export system
-	# Implementation plan:
-	# 1. Create export dialog UI with mod metadata fields
-	# 2. Implement PCK packing for mod files
-	# 3. Add manifest.json generation
-	# 4. Implement file validation (check for required files)
-	# 5. Add compression options
-	# 6. Test with example mods
-	# Estimated effort: 20-30 hours
-	# Priority: MEDIUM (modders can manually create PCKs for now)
-	
-	# Temporary: Show not implemented message
-	var dialog: AcceptDialog = AcceptDialog.new()
-	dialog.title = "Mod Export"
-	dialog.dialog_text = (
-		"Mod export system is planned for v1.1.\n\n"
-		+ "For now, manually create PCK files using Godot's export system."
+	if not _editor or not _editor.level_root:
+		_show_message("Mod Export", "No level is available to export.")
+		return
+
+	var dialog := FileDialog.new()
+	dialog.file_mode = FileDialog.FILE_MODE_OPEN_DIR
+	dialog.access = FileDialog.ACCESS_FILESYSTEM
+	dialog.title = "Choose Mod Export Folder"
+	dialog.dir_selected.connect(
+		func(path: String) -> void:
+			_export_mod_to_directory(path)
+			dialog.queue_free()
 	)
+	dialog.canceled.connect(func() -> void: dialog.queue_free())
+	add_child(dialog)
+	dialog.popup_centered(Vector2i(800, 600))
+
+
+func _export_mod_to_directory(output_dir: String) -> bool:
+	if not _editor or not _editor.level_root:
+		return false
+
+	var manifest := LevelPackager.LevelManifest.new()
+	manifest.name = _editor.level_root.name
+	manifest.author = "MODUS Editor"
+	manifest.description = "Level exported from the MODUS standalone editor."
+	var result = LevelPackager.package_level(_editor.level_root, output_dir, manifest)
+	if result.success:
+		_show_message("Mod Export Complete", "Created %s" % result.output_path)
+	else:
+		_show_message("Mod Export Failed", result.error_msg)
+	return result.success
+
+
+func _show_documentation_dialog() -> void:
+	_show_message(
+		"MODUS Editor Documentation",
+		"Use the maintained editor guide at standalone/editor/README.md and the "
+		+ "round-trip proof at docs/EDITOR_ROUNDTRIP_PROOF.md."
+	)
+
+
+func _show_shortcuts_dialog() -> void:
+	_show_message(
+		"Keyboard Shortcuts",
+		"B: Block  P: Paint  E: Eraser  T: Entity  S: Spawn  C: Connect\n"
+		+ "G: Grid  R: Rotate  [ / ]: Brush Size\n"
+		+ "RMB + WASD: Fly camera"
+	)
+
+
+func _show_message(title: String, message: String) -> void:
+	if not is_inside_tree():
+		return
+	var dialog := AcceptDialog.new()
+	dialog.title = title
+	dialog.dialog_text = message
+	dialog.confirmed.connect(func() -> void: dialog.queue_free())
 	add_child(dialog)
 	dialog.popup_centered()
-	dialog.confirmed.connect(func() -> void: dialog.queue_free())
 
 
 func _show_about_dialog() -> void:
