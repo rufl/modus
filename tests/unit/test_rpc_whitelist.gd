@@ -127,13 +127,19 @@ func test_critical_issue_7_revive_rpc_present() -> void:
 	assert_true(
 		RPCWhitelist.is_allowed("request_revive_start"), "request_revive_start should be allowed"
 	)
+	assert_true(
+		RPCWhitelist.is_allowed("request_revive_stop"), "request_revive_stop should be allowed"
+	)
+	assert_true(
+		RPCWhitelist.is_allowed("request_bleedout_immediate"),
+		"request_bleedout_immediate should be allowed"
+	)
 
-	# Both should require validation to prevent exploit
-	assert_true(
-		RPCWhitelist.requires_validation("request_revive"),
-		"request_revive should require validation"
-	)
-	assert_true(
-		RPCWhitelist.requires_validation("request_revive_start"),
-		"request_revive_start should require validation"
-	)
+	# All revive lifecycle requests require validation to prevent spoofed targets.
+	for method in [
+		"request_revive",
+		"request_revive_start",
+		"request_revive_stop",
+		"request_bleedout_immediate",
+	]:
+		assert_true(RPCWhitelist.requires_validation(method), "%s should require validation" % method)

@@ -150,9 +150,19 @@ func request_revive_start(reviver: NodePath) -> void:
 	# Only process on server
 	if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
 		return
-
 	if not is_downed:
 		return
+
+	var rpc_sender_id: int = multiplayer.get_remote_sender_id()
+	if rpc_sender_id != 0:
+		var gm: Node = get_node_or_null("/root/GameManager")
+		var network_svc: Node = gm.get_core_system("network") if gm else null
+		if network_svc and network_svc.has_method("get"):
+			var network_mgr: Node = network_svc.network_manager
+			if network_mgr and not network_mgr.validate_rpc(
+				rpc_sender_id, "request_revive_start", [reviver]
+			):
+				return
 
 	# Atomic check - prevent race condition from multiple RPC calls
 	if _revive_in_progress:
@@ -210,6 +220,13 @@ func request_revive_stop() -> void:
 	# Only process on server
 	if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
 		return
+	var sender_id: int = multiplayer.get_remote_sender_id()
+	if sender_id != 0:
+		var network_svc: Node = GameManager.get_core_system("network")
+		if network_svc and network_svc.network_manager and not network_svc.network_manager.validate_rpc(
+			sender_id, "request_revive_stop", [get_path()]
+		):
+			return
 
 	is_being_revived = false
 	reviver_path = NodePath()
@@ -248,13 +265,21 @@ func request_bleedout() -> void:
 
 @rpc("any_peer", "call_local", "reliable")
 func request_bleedout_immediate() -> void:
+	# Only server can authorize this
+	if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
+		return
+
 	# Validation: only if actually downed
 	if not is_downed:
 		return
 
-	# Only server can authorize this
-	if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
-		return
+	var sender_id: int = multiplayer.get_remote_sender_id()
+	if sender_id != 0:
+		var network_svc: Node = GameManager.get_core_system("network")
+		if network_svc and network_svc.network_manager and not network_svc.network_manager.validate_rpc(
+			sender_id, "request_bleedout_immediate", [get_path()]
+		):
+			return
 
 	# Force bleedout
 	_bleedout()

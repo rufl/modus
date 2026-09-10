@@ -51,6 +51,7 @@ The September 10 refreshed aggregate supersedes the August 4 historical total fo
 - Progress 2026-09-10 trusted-peer security tranche: Steam-authenticated peers no longer bypass RPC whitelist/rate limits or server movement bounds. NetworkManager focused proof passes 14/14 with 54 assertions. `[truth:test]` `[truth:source-audit]`
 - Progress 2026-09-10 semantic RPC validation tranche: player-status updates are peer-bound with bounded health/state values; chat payloads reject empty, oversized, and line-control input. NetworkManager proof passes 15/15 with 59 assertions; RPC whitelist proof remains 9/9 with 119 assertions. `[truth:test]` `[truth:source-audit]`
 - Progress 2026-09-10 RPC payload tranche: kill reports now require sender participation and bounded weapon-source text; Steam ticket payloads require positive IDs and bounded non-empty buffers. NetworkManager proof passes 15/15 with 62 assertions; RPC whitelist proof remains 9/9 with 119 assertions. `[truth:test]` `[truth:source-audit]`
+- Progress 2026-09-10 revive authority tranche: start, stop, and immediate-bleedout RPCs now validate sender-owned targets and rate limits before server-side handling; distance checks remain authoritative. Revive unit proof passes 8/8 and property proof 5/5; whitelist proof remains 9/9 with 121 assertions. `[truth:test]` `[truth:source-audit]`
 ### Manual And Performance Evidence
 
 - [ ] Import manual gameplay evidence and clear the zero-hours blocker. `[truth:source-audit]` `[truth:test]`

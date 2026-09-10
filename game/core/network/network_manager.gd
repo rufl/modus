@@ -358,6 +358,8 @@ func validate_rpc(peer_id: int, method: String, args: Array = []) -> bool:
 				return _validate_kill_registration(peer_id, args)
 			"_validate_steam_ticket":
 				return _validate_steam_ticket(args)
+			"_validate_target_player_rpc":
+				return _validate_target_player_rpc(peer_id, args)
 			_:
 				push_error("[Security] Unknown validator: %s" % validator)
 				return false  # Fail secure
@@ -809,6 +811,17 @@ func _validate_steam_ticket(args: Array) -> bool:
 	return true
 
 
+
+func _validate_target_player_rpc(peer_id: int, args: Array) -> bool:
+	if args.size() != 1 or not args[0] is NodePath:
+		return false
+	var target_component: Node = get_node_or_null(args[0])
+	var player: Node = _get_player_by_peer_id(peer_id)
+	return (
+		target_component != null
+		and player != null
+		and target_component.get_parent() == player
+	)
 ## Validate pickup request
 
 

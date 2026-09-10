@@ -76,6 +76,7 @@ Published context: [Performance Baseline Proof](PERFORMANCE_BASELINE_PROOF.md). 
 - September 10 security proof: NetworkEditor accepts only server-side finite, bounded, safe-path payloads; entity and transform RPCs are explicitly whitelisted and rate-limited. Focused proof passes 5/5 NetworkEditor integration tests and 9/9 RPC-whitelist tests.
 - September 10 trusted-peer proof: Steam-authenticated peers remain subject to RPC whitelist/rate limits and server movement validation; NetworkManager focused proof passes 14/14 with 54 assertions.
 - September 10 RPC payload proof: kill reports require sender participation and bounded source text; Steam ticket RPCs require positive IDs and bounded non-empty buffers. NetworkManager focused proof passes 15/15 with 62 assertions; RPC whitelist proof passes 9/9 with 119 assertions.
+- September 10 revive authority proof: start, stop, and immediate-bleedout requests are server-only, rate-limited, and bound to the target player's owned component; distance checks remain server-authoritative. Unit revive proof passes 8/8 and property proof passes 5/5.
 
 ## Missing Before Release
 

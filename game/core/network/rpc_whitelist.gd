@@ -443,6 +443,20 @@ const ALLOWED_RPCS: Dictionary = {
 		"validator_method": "_validate_revive_request",
 		"description": "Start revive process"
 	},
+	"request_revive_stop":
+	{
+		"calls_per_second": 5.0,
+		"requires_validation": true,
+		"validator_method": "_validate_target_player_rpc",
+		"description": "Stop revive process"
+	},
+	"request_bleedout_immediate":
+	{
+		"calls_per_second": 1.0,
+		"requires_validation": true,
+		"validator_method": "_validate_target_player_rpc",
+		"description": "Request immediate bleedout"
+	},
 }
 
 
