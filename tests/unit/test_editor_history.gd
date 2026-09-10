@@ -418,3 +418,8 @@ func test_environment_editor_ignores_incomplete_parameter_panel() -> void:
 	editor._parameter_panel.free()
 	zone.free()
 	editor.free()
+
+func test_environment_editor_ignores_zone_selection_without_zone_list() -> void:
+	var editor: Node = EnvironmentZoneEditorScript.new()
+	editor._on_zone_selected()
+	editor.free()

@@ -420,6 +420,8 @@ func _on_apply_preset_pressed() -> void:
 
 
 func _on_zone_selected() -> void:
+	if not _zone_list:
+		return
 	var item: TreeItem = _zone_list.get_selected()
 	if item:
 		_selected_zone = item.get_metadata(0)
