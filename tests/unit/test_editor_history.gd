@@ -1,6 +1,7 @@
 extends ModusGutTestBase
 
 const EditorGlobalsScript := preload("res://shared/editor_core/core/editor_globals.gd")
+const PaintBrushScript := preload("res://shared/editor_core/tools/paint_brush.gd")
 
 
 func before_each() -> void:
@@ -47,3 +48,20 @@ func test_standalone_erase_supports_undo() -> void:
 	assert_true(undo.has_undo(), "Standalone erase should create an undo action")
 	undo.undo()
 	assert_eq(level_root.get_child_count(), 1, "Undo should restore the erased target")
+
+
+func test_standalone_paint_supports_undo_and_redo() -> void:
+	var target := CSGBox3D.new()
+	add_child_autofree(target)
+	var brush: PaintBrush = PaintBrush.new()
+	brush.set_material(StandardMaterial3D.new())
+
+	brush._apply_material(target, Vector3.UP)
+	assert_not_null(target.material, "Paint should apply a material")
+
+	var undo: UndoRedo = EditorGlobalsScript.get_undo_redo()
+	assert_true(undo.has_undo(), "Standalone paint should create an undo action")
+	undo.undo()
+	assert_null(target.material, "Undo should restore the original material")
+	undo.redo()
+	assert_not_null(target.material, "Redo should restore the painted material")

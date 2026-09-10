@@ -4,7 +4,7 @@ extends RefCounted
 
 signal painted(node: Node, material: Material)
 
-enum ProjectionMode { BOX, PLANAR, WORLD_XZ, WORLD_XY, WORLD_YZ }  # Box UV mapping  # Planar projection based on face normal  # World-aligned XZ  # World-aligned XY  # World-aligned YZ
+enum ProjectionMode { BOX, PLANAR, WORLD_XZ, WORLD_XY, WORLD_YZ }
 
 var grid_system: Node = null
 var editor_state: Node = null
@@ -92,7 +92,7 @@ func _find_paintable_node(node: Node) -> Node:
 
 
 func _apply_material(node: Node, hit_normal: Vector3) -> void:
-	var undo := EditorInterface.get_editor_undo_redo()
+	var undo: UndoRedo = EditorGlobals.get_undo_redo()
 	undo.create_action("Paint Material")
 
 	if node is CSGShape3D:
@@ -107,8 +107,8 @@ func _apply_material(node: Node, hit_normal: Vector3) -> void:
 		var old_material: Material = node.get_surface_override_material(0)
 		var new_material := _prepare_material(hit_normal)
 
-		undo.add_do_method(node, "set_surface_override_material", 0, new_material)
-		undo.add_undo_method(node, "set_surface_override_material", 0, old_material)
+		undo.add_do_method(Callable(node, "set_surface_override_material").bind(0, new_material))
+		undo.add_undo_method(Callable(node, "set_surface_override_material").bind(0, old_material))
 
 	undo.commit_action()
 
