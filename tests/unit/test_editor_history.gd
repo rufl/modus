@@ -244,3 +244,48 @@ func test_visual_script_selection_is_runtime_safe() -> void:
 
 	assert_eq(selected.size(), 1)
 	assert_eq(selected[0].source, source)
+
+
+func test_editor_state_entity_placement_uses_history() -> void:
+	var scene_root := Node3D.new()
+	add_child_autofree(scene_root)
+	EditorGlobalsScript.set_runtime_root(scene_root)
+	var template := Node3D.new()
+	var packed := PackedScene.new()
+	assert_eq(packed.pack(template), OK)
+	template.free()
+
+	var state: Node = EditorStateScript.new()
+	add_child_autofree(state)
+	state.selected_asset = {"id": "crate", "scene": packed}
+	state.hover_position = Vector3(4, 0, 0)
+	state._preview_rotation = PI / 2.0
+
+	assert_eq(state._apply_entity_placer(), 1)
+	await get_tree().process_frame
+	assert_eq(scene_root.get_child_count(), 1)
+	assert_true(scene_root.get_child(0).get_meta("level_editor_placed"))
+	assert_true(scene_root.get_child(0).position.is_equal_approx(Vector3(4, 0, 0)))
+	EditorGlobalsScript.get_undo_redo().undo()
+	assert_eq(scene_root.get_child_count(), 0)
+	EditorGlobalsScript.set_runtime_root(null)
+
+
+func test_editor_state_spawn_point_history_and_invalid_type() -> void:
+	var scene_root := Node3D.new()
+	add_child_autofree(scene_root)
+	EditorGlobalsScript.set_runtime_root(scene_root)
+	var state: Node = EditorStateScript.new()
+	add_child_autofree(state)
+	state.selected_asset = {"spawn_type": "player"}
+	state._apply_spawn_point()
+	await get_tree().process_frame
+	assert_eq(scene_root.get_child_count(), 1)
+	assert_eq(scene_root.get_child(0).name, "PlayerSpawn")
+	EditorGlobalsScript.get_undo_redo().undo()
+	assert_eq(scene_root.get_child_count(), 0)
+
+	state.selected_asset = {"spawn_type": "unknown"}
+	assert_eq(state._apply_spawn_point(), 0)
+	assert_eq(scene_root.get_child_count(), 0)
+	EditorGlobalsScript.set_runtime_root(null)

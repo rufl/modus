@@ -490,6 +490,9 @@ func _apply_spawn_point() -> int:
 		"item":
 			spawn.spawn_type = 2  # SpawnType.ITEM
 			spawn.name = "ItemSpawn"
+		_:
+			spawn.queue_free()
+			return LocalEditorGlobals.AFTER_GUI_INPUT_PASS
 
 	var undo := LocalEditorGlobals.get_undo_redo()
 	undo.create_action("Place Spawn Point")
