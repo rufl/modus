@@ -27,7 +27,7 @@ func enter(_player: CharacterBody3D) -> void:
 		_sync_fly_state.rpc(true)
 
 
-@rpc("any_peer", "call_local", "reliable")
+@rpc("authority", "call_local", "reliable")
 func _sync_fly_state(flying: bool) -> void:
 	## Sync fly state across network
 	if flying:

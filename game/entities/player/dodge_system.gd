@@ -322,7 +322,7 @@ func _end_dodge() -> void:
 
 ## Sync dodge state to other players for visual feedback
 
-@rpc("any_peer", "call_remote", "unreliable")
+@rpc("authority", "call_remote", "unreliable")
 func _sync_dodge_state(dodging: bool, direction: Vector3) -> void:
 	## Receive dodge state from authority player
 	# Only apply if we're not the authority (remote player visualization)

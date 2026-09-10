@@ -615,7 +615,7 @@ func update_weapon_pose() -> void:
 		wpc.update_pose()
 
 
-@rpc("any_peer", "call_local", "unreliable")
+@rpc("authority", "call_local", "unreliable")
 func _sync_movement_state(_c: bool, _s: bool) -> void:
 	# Only remote players should receive this
 	var is_local: bool = not multiplayer.has_multiplayer_peer() or is_multiplayer_authority()

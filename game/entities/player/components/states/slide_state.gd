@@ -32,7 +32,7 @@ func enter(_player: CharacterBody3D) -> void:
 		_sync_slide_state.rpc(slide_direction, slide_time_left)
 
 
-@rpc("any_peer", "call_local", "unreliable")
+@rpc("authority", "call_local", "unreliable")
 func _sync_slide_state(direction: Vector3, time_left: float) -> void:
 	## Sync slide state across network
 	slide_direction = direction

@@ -58,7 +58,7 @@ func enter(_player: CharacterBody3D) -> void:
 		_sync_dash_state.rpc(dash_direction, dash_time_left, dash_count)
 
 
-@rpc("any_peer", "call_local", "unreliable")
+@rpc("authority", "call_local", "unreliable")
 func _sync_dash_state(direction: Vector3, time_left: float, count: int) -> void:
 	## Sync dash state across network
 	dash_direction = direction

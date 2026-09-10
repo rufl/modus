@@ -80,6 +80,7 @@ Published context: [Performance Baseline Proof](PERFORMANCE_BASELINE_PROOF.md). 
 - September 10 interaction RPC proof: physics-object pickup requests are sender-owned, object-typed, and distance-bounded; throw requests reject non-finite and excessive directions. NetworkManager focused proof passes 15/15 with 64 assertions; RPC whitelist proof passes 9/9 with 127 assertions.
 - September 11 damage authority proof: player damage reception is authority-only, and malformed/non-finite damage-request payloads are rejected before server processing. Combat feature proof passes 20/20 with 30 assertions; NetworkManager proof passes 15/15 with 64 assertions.
 - September 11 weapon VFX authority proof: blood, decal, debris, muzzle-flash, tracer, and cartridge RPCs accept calls only from the authority; clients cannot directly spawn arbitrary world effects. Combat proof passes 20/20 with 30 assertions; NetworkManager proof passes 15/15 with 64 assertions; RPC whitelist proof passes 9/9 with 127 assertions.
+- September 11 player-state authority proof: movement, dodge, dash, slide, wallrun, walljump, fly, firing-state, and restored-alive synchronization RPCs accept updates only from their authority. NetworkManager proof passes 15/15 with 64 assertions; combat proof passes 20/20 with 30 assertions; RPC whitelist proof passes 9/9 with 127 assertions.
 
 ## Missing Before Release
 

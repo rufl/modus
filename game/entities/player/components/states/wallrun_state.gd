@@ -50,7 +50,7 @@ func enter(_player: CharacterBody3D) -> void:
 		_sync_wallrun_state.rpc(wall_normal, wall_direction, wallrun_time_left, side)
 
 
-@rpc("any_peer", "call_local", "unreliable")
+@rpc("authority", "call_local", "unreliable")
 func _sync_wallrun_state(
 	w_normal: Vector3, w_direction: Vector3, time_left: float, wall_side: int
 ) -> void:
@@ -192,7 +192,7 @@ func _perform_walljump() -> void:
 	transition_to("inair")
 
 
-@rpc("any_peer", "call_local", "unreliable")
+@rpc("authority", "call_local", "unreliable")
 func _sync_walljump(w_normal: Vector3, force: float, y_force: float) -> void:
 	## Sync walljump across network
 	var jump_direction: Vector3 = w_normal + Vector3.UP

@@ -155,6 +155,6 @@ func _apply_local_cooldown(weapon: WeaponData) -> void:
 		_fire_cooldown = weapon.fire_rate
 
 
-@rpc("call_remote", "reliable")
+@rpc("authority", "call_remote", "reliable")
 func _set_firing_state(firing: bool) -> void:
 	_is_firing = firing
