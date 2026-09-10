@@ -318,18 +318,15 @@ func _exec_setblock(args: Array) -> Dictionary:
 	if not level_root:
 		return {"success": false, "message": "No level root set"}
 
-	# Check existing block at position
-	if mode == "keep":
-		# TODO(v1.1, @editor-team): Implement proper spatial query (4-6 hours)
-		# For now, always place blocks (replace mode)
-		# Need to implement: Check if block exists at grid position before placing
-		pass
-
-	# Create block
 	var cell_size: float = 1.0
 	if grid_system:
 		cell_size = grid_system.cell_size if "cell_size" in grid_system else 1.0
 
+	# Keep mode only places into an empty grid cell.
+	if mode == "keep" and _is_grid_cell_occupied(pos, cell_size):
+		return {"success": false, "message": "Cell at %s is occupied" % pos}
+
+	# Create block
 	var block := CSGBox3D.new()
 	block.size = Vector3.ONE * cell_size
 	block.position = pos
@@ -337,6 +334,32 @@ func _exec_setblock(args: Array) -> Dictionary:
 	level_root.add_child(block)
 
 	return {"success": true, "message": "Placed %s at %s" % [block_id, pos]}
+
+
+func _is_grid_cell_occupied(pos: Vector3, cell_size: float) -> bool:
+	if not level_root:
+		return false
+	var half := maxf(cell_size * 0.5, 0.01)
+	var query_box := AABB(pos - Vector3.ONE * half, Vector3.ONE * cell_size)
+	for node in level_root.find_children("*", "Node3D", true, false):
+		if not is_instance_valid(node) or not node.get_meta("level_editor_placed", false):
+			continue
+		var bounds := _get_node_bounds(node, cell_size)
+		if bounds.intersects(query_box):
+			return true
+	return false
+
+
+func _get_node_bounds(node: Node3D, fallback_size: float) -> AABB:
+	if node is CSGShape3D:
+		var shape := node as CSGShape3D
+		return AABB(shape.global_position - shape.size * 0.5, shape.size)
+	if node is MeshInstance3D and (node as MeshInstance3D).mesh:
+		var mesh_instance := node as MeshInstance3D
+		var local_bounds := mesh_instance.mesh.get_aabb()
+		return AABB(mesh_instance.global_transform * local_bounds.position, local_bounds.size)
+	return AABB(node.global_position - Vector3.ONE * fallback_size * 0.5, Vector3.ONE * fallback_size)
+
 
 
 ## Summon command

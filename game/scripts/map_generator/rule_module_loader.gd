@@ -21,6 +21,9 @@ var _rules_by_phase: Dictionary = {}
 ## All loaded rule instances
 var _all_rules: Array = []  # Array of RuleBase instances
 
+## Rules owned by each source file for precise hot reload removal
+var _rules_by_file: Dictionary = {}
+
 ## File modification times for hot-reload detection
 var _file_mtimes: Dictionary = {}
 
@@ -42,11 +45,10 @@ func _init() -> void:
 ##
 ## @return: true if rules were loaded successfully, false otherwise
 func load_rules() -> bool:
-	_log_info("Loading rule modules from: %s" % RULES_DIR)
-
 	# Clear existing rules
 	_rules_by_phase.clear()
 	_all_rules.clear()
+	_rules_by_file.clear()
 	_file_mtimes.clear()
 
 	# Check if rules directory exists
@@ -197,13 +199,14 @@ func _load_rule_file(file_path: String) -> bool:
 	# Add to registry
 	if not _rules_by_phase.has(phase):
 		_rules_by_phase[phase] = []
-
 	_rules_by_phase[phase].append(rule)
 	_all_rules.append(rule)
+	if not _rules_by_file.has(file_path):
+		_rules_by_file[file_path] = []
+	_rules_by_file[file_path].append(rule)
 
 	# Track file modification time
 	_file_mtimes[file_path] = FileAccess.get_modified_time(file_path)
-
 	return true
 
 
@@ -223,14 +226,17 @@ func _is_rule_base_subclass(script: GDScript) -> bool:
 
 
 ## Remove all rule instances loaded from a specific file
-##
-## @param _file_path: Path to the rule file
-func _remove_rules_from_file(_file_path: String) -> void:
-	# This is a simplified implementation - in a real system you'd need to
-	# track which file each rule came from
-	_log_warning("Hot-reload requires full reload - clearing all rules")
-	_rules_by_phase.clear()
-	_all_rules.clear()
+func _remove_rules_from_file(file_path: String) -> void:
+	var owned: Array = _rules_by_file.get(file_path, [])
+	for rule in owned:
+		if rule is RuleBase:
+			var phase: String = rule.get_phase()
+			if _rules_by_phase.has(phase):
+				_rules_by_phase[phase].erase(rule)
+				if _rules_by_phase[phase].is_empty():
+					_rules_by_phase.erase(phase)
+		_all_rules.erase(rule)
+	_rules_by_file.erase(file_path)
 
 
 ## Sort rules by priority within each phase (higher priority first)

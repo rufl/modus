@@ -102,13 +102,12 @@ func _play_shake_animation() -> void:
 	if not floor_mesh:
 		return
 
-	# Play creak sound
 	var creak_sound := AudioStreamPlayer3D.new()
+	creak_sound.stream = _create_impact_stream(0.22, 180.0, 0.18)
 	add_child(creak_sound)
 	creak_sound.global_position = global_position
-	# TODO(v1.1, @audio-team): Add creak sound stream
-	# For now, visual feedback only (shake animation)
-	# Estimated effort: 2 hours (find/create sound, integrate)
+	creak_sound.play()
+	creak_sound.finished.connect(creak_sound.queue_free)
 
 	# Shake tween
 	if _shake_tween and _shake_tween.is_running():
@@ -184,11 +183,11 @@ func _collapse_floor() -> void:
 
 	# Play collapse sound
 	var collapse_sound := AudioStreamPlayer3D.new()
+	collapse_sound.stream = _create_impact_stream(0.6, 72.0, 0.4)
 	add_child(collapse_sound)
 	collapse_sound.global_position = global_position
-	# TODO(v1.1, @audio-team): Add collapse sound stream
-	# For now, visual feedback only (debris particles)
-	# Estimated effort: 2 hours (find/create sound, integrate)
+	collapse_sound.play()
+	collapse_sound.finished.connect(collapse_sound.queue_free)
 
 	# Respawn if not one-time
 	if not one_time and respawn_delay > 0:
@@ -203,6 +202,23 @@ func _respawn_floor() -> void:
 	if floor_mesh:
 		floor_mesh.visible = true
 		floor_mesh.position = _original_position
+
+
+func _create_impact_stream(duration: float, frequency: float, amplitude: float) -> AudioStreamWAV:
+	var stream := AudioStreamWAV.new()
+	stream.format = AudioStreamWAV.FORMAT_16_BITS
+	stream.mix_rate = 22050
+	stream.stereo = false
+	var sample_count := maxi(1, int(duration * stream.mix_rate))
+	var data := PackedByteArray()
+	data.resize(sample_count * 2)
+	for i in sample_count:
+		var t := float(i) / float(stream.mix_rate)
+		var envelope := exp(-5.0 * t / duration)
+		var value := sin(TAU * frequency * t) * amplitude * envelope
+		data.encode_s16(i * 2, int(clampf(value, -1.0, 1.0) * 32767.0))
+	stream.data = data
+	return stream
 
 
 func get_inspector_properties() -> Array[Dictionary]:

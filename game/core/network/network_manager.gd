@@ -77,6 +77,10 @@ func get_steam_manager() -> Node:
 	return _steam_manager
 
 
+func get_peer_steam_id(peer_id: int) -> int:
+	return int(_peer_steam_ids.get(peer_id, 0))
+
+
 func _ready() -> void:
 	var gm: Node = get_node_or_null("/root/GameManager")
 	if gm:

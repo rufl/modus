@@ -309,8 +309,7 @@ func save_player_data(peer_id: int) -> void:
 	# Update active stats if player node exists
 	_update_data_from_node(peer_id, data)
 
-	var path: String = _get_save_path(data["uuid"])
-	var file: FileAccess = FileAccess.open(path, FileAccess.WRITE)
+	var file: FileAccess = FileAccess.open(DATA_DIR + _get_persistent_player_id(peer_id) + ".json", FileAccess.WRITE)
 
 	if file:
 		file.store_string(JSONHelperClass.safe_stringify(data, "\t"))
@@ -398,28 +397,36 @@ func _get_save_path(uuid: String) -> String:
 
 
 func _load_from_disk(peer_id: int) -> Dictionary:
-	# Note: In a real auth system, we'd lookup UUID by username/auth-token
-	# For now we use peer_id mapping (implied temporary persistence)
+	var persistent_id := _get_persistent_player_id(peer_id)
+	var path := DATA_DIR + persistent_id + ".json"
+	if FileAccess.file_exists(path):
+		var data: Dictionary = JSON5Loader.load_file(path)
+		if data:
+			return data
 
-	# For Host (Peer 1), we can try to load a stable profile
+	# Preserve the host profile compatibility path.
 	if peer_id == 1:
-		var path: String = DATA_DIR + "host_profile.json"
-		if FileAccess.file_exists(path):
-			var data: Dictionary = JSON5Loader.load_file(path)
-			if data:
-				_log_info("[PlayerService] Loaded host profile")
-				return data
-
-	# For clients, without Auth Service, we cannot reliably map PeerID -> File
-	# TODO(#001, @network-team, 2026-03-15): Integrate with SteamID for lookup
-	# Implementation plan:
-	# 1. Get Steam API from NetworkService.steam_manager
-	# 2. Call Steam.getSteamID64() for peer
-	# 3. Use SteamID as persistent identifier instead of peer_id
-	# 4. Load profile from DATA_DIR + steam_id + ".json"
-	# 5. Handle fallback for non-Steam builds (use peer_id)
-	# Estimated effort: 8-12 hours
+		var host_path := DATA_DIR + "host_profile.json"
+		if FileAccess.file_exists(host_path):
+			var host_data: Dictionary = JSON5Loader.load_file(host_path)
+			if host_data:
+				return host_data
 	return {}
+
+
+func _get_persistent_player_id(peer_id: int) -> String:
+	var gm: Node = get_node_or_null("/root/GameManager")
+	var network_service: Variant = gm.get_core_system("network") if gm else null
+	var network_manager: Variant = network_service.network_manager if network_service else null
+	if network_manager and network_manager.has_method("get_peer_steam_id"):
+		var steam_id := int(network_manager.get_peer_steam_id(peer_id))
+		if steam_id > 0:
+			return str(steam_id)
+	if network_service and network_service.steam_manager:
+		var local_id := int(network_service.steam_manager.get_steam_id())
+		if local_id > 0 and peer_id == multiplayer.get_unique_id():
+			return str(local_id)
+	return "peer_%d" % peer_id
 
 
 func _update_data_from_node(peer_id: int, data: Dictionary) -> void:

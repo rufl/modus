@@ -25,9 +25,9 @@ enum ThemeType { TECH, HELL, URBAN, CAVE, JUMBLED }
 
 # Gameplay
 @export var monster_density: float = 0.5  # 0.0-1.0
+@export var minimum_monsters: int = 0  # Explicit floor for small maps
 @export var difficulty_scaling: DifficultyLevel = DifficultyLevel.NORMAL
 @export var item_density: float = 0.5  # 0.0-1.0
-@export var secret_room_count: int = 2  # 0-5
 @export var enable_key_locks: bool = true
 @export var enable_boss_arena: bool = true
 @export var enable_secrets: bool = true

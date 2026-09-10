@@ -88,10 +88,21 @@ func _on_milestone_reached(hours: float) -> void:
 
 
 func _show_milestone_notification(hours: float) -> void:
-	# Show milestone in console/log
-	var logger := GameManager.get_core_system("logger")
-	if logger:
-		logger.info("🎉 MILESTONE REACHED: %.0f hours of testing!" % hours, "Testing")
+	var notification := PanelContainer.new()
+	notification.name = "MilestoneNotification"
+	notification.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	notification.position = Vector2(-180, 48)
+	notification.custom_minimum_size = Vector2(360, 56)
+	var label := Label.new()
+	label.text = "Milestone reached: %.0f hours" % hours
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	notification.add_child(label)
+	add_child(notification)
 
-	# TODO(v1.1): Add fancy popup notification with animation
-	# For now, console logging is sufficient for tracking milestones
+	var tween := create_tween()
+	notification.modulate.a = 0.0
+	tween.tween_property(notification, "modulate:a", 1.0, 0.2)
+	tween.tween_interval(2.5)
+	tween.tween_property(notification, "modulate:a", 0.0, 0.4)
+	tween.tween_callback(notification.queue_free)

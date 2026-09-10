@@ -21,6 +21,7 @@ enum DamageType {
 @export_group("Damage Properties")
 @export var base_amount: float = 0.0
 @export var damage_type: DamageType = DamageType.GENERIC
+@export var target_armor: float = 0.0
 @export var armor_penetration: float = 0.0  ## 0.0 to 1.0 (percent of armor ignored)
 @export_group("Critical Hit")
 @export var is_critical: bool = false

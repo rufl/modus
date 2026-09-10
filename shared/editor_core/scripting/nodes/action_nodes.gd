@@ -106,7 +106,7 @@ func execute(input_data: Dictionary = {}) -> int:
 		ActionType.SET_VARIABLE:
 			_do_set_variable(input_data)
 		ActionType.TELEPORT_PLAYER:
-			_do_teleport()
+			_do_teleport(input_data)
 		ActionType.PRINT_DEBUG:
 			_log(str("[LevelScript] %s" % debug_message), "Log")
 
@@ -134,32 +134,33 @@ func _do_toggle() -> void:
 
 
 func _do_play_sound() -> void:
-	# STUB: Not implemented - editor feature not actively used
-	# See docs/PHASE_3_STUB_ANALYSIS.md for details
-	# TODO: Implement if visual scripting feature is needed
-	pass
+	if sound_path.is_empty():
+		return
+	var stream := load(sound_path) as AudioStream
+	if not stream:
+		push_warning("[LevelActionNode] Could not load sound: %s" % sound_path)
+		return
+	var player := AudioStreamPlayer3D.new()
+	player.stream = stream
+	player.bus = "SFX"
+	player.global_position = global_position
+	var world := get_tree().current_scene
+	if world:
+		world.add_child(player)
+	else:
+		add_child(player)
+	player.play()
+	player.finished.connect(player.queue_free)
 
 
 func _do_spawn() -> void:
 	if not entity_scene:
 		return
-
-	# Only server spawns networked entities
-	if not multiplayer.is_server():
+	if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
 		return
-
-	# var spawn_pos: Vector3 = Vector3.ZERO
-	# Resolve "At Point" input if connected
-	# if has_slot_connection(SLOT_OBJECT):
-	# pass
-
-	# For now, just spawn at the node's own location if no target
-
 	var entity: Node = entity_scene.instantiate()
 	if entity is Node3D:
-		entity.global_position = global_position  # Default to self pos
-
-	# Add to World (so MultiplayerSpawner picks it up)
+		entity.global_position = global_position
 	var world = get_tree().current_scene
 	if world:
 		world.add_child(entity)
@@ -173,18 +174,55 @@ func _do_destroy() -> void:
 		target.queue_free()
 
 
-func _do_set_variable(_data: Dictionary) -> void:
-	# STUB: Not implemented - editor feature not actively used
-	# See docs/PHASE_3_STUB_ANALYSIS.md for details
-	# TODO: Implement level variable system if visual scripting feature is needed
-	pass
+func _do_set_variable(data: Dictionary) -> void:
+	var variable := variable_name.strip_edges()
+	if variable.is_empty():
+		variable = str(data.get("variable_name", "")).strip_edges()
+	if variable.is_empty():
+		return
+	var value: Variant = data.get("value", data.get(variable, null))
+	var root := _get_runtime_root()
+	if not root:
+		return
+	var variables: Dictionary = root.get_meta("level_variables", {}).duplicate(true)
+	variables[variable] = value
+	root.set_meta("level_variables", variables)
+	if root.has_method("set_level_variable"):
+		root.set_level_variable(variable, value)
 
 
-func _do_teleport() -> void:
-	# STUB: Not implemented - editor feature not actively used
-	# See docs/PHASE_3_STUB_ANALYSIS.md for details
-	# TODO: Implement player teleportation if visual scripting feature is needed
-	pass
+func _do_teleport(data: Dictionary) -> void:
+	var destination := _resolve_target(data)
+	if not destination:
+		return
+	var player := _find_player()
+	if player is Node3D:
+		(player as Node3D).global_position = destination.global_position
+		if player.has_method("on_teleported"):
+			player.on_teleported(destination.global_position)
+
+
+func _resolve_target(data: Dictionary) -> Node3D:
+	var candidate: Variant = data.get("target", data.get("to_point", null))
+	if candidate is Node3D:
+		return candidate
+	if not target_path.is_empty():
+		var target := get_node_or_null(target_path)
+		if target is Node3D:
+			return target
+	return null
+
+
+func _find_player() -> Node:
+	var players := get_tree().get_nodes_in_group("player")
+	if players.is_empty():
+		players = get_tree().get_nodes_in_group("players")
+	return players[0] if not players.is_empty() else null
+
+
+func _get_runtime_root() -> Node:
+	var scene := get_tree().current_scene
+	return scene if scene else get_parent()
 
 
 func serialize() -> Dictionary:

@@ -11,9 +11,9 @@ var current_state: EnemyState
 var target: Node3D
 var start_position: Vector3
 var parent_body: CharacterBody3D
+var _target_threat: Dictionary = {}
 
 var _dodge_cooldown: float = 0.0
-
 
 func _ready() -> void:
 	parent_body = get_parent()
@@ -58,6 +58,8 @@ func _physics_process(delta: float) -> void:
 	# Cooldowns
 	if _dodge_cooldown > 0:
 		_dodge_cooldown -= delta
+	for tracked in _target_threat.keys():
+		_target_threat[tracked] = maxf(0.0, float(_target_threat[tracked]) - delta * 0.5)
 
 	# Check if AI is active (toggled by parent/showcase)
 	if parent_body and "is_ai_active" in parent_body:
@@ -95,19 +97,16 @@ func change_state(new_state: EnemyState) -> void:
 
 	current_state.enter()
 	# print("Enemy AI State Changed to: ", new_state.name)
-
-
 func _on_target_spotted(new_target: Node3D) -> void:
 	target = new_target
-	# Trigger state transition if applicable
-	# For simplicity, if we see a player, we usually chase
+	_target_threat[new_target] = maxf(float(_target_threat.get(new_target, 0.0)), 1.0)
 	if has_node("ChaseState"):
 		change_state(get_node("ChaseState"))
 
 
-func _on_target_lost(_old_target: Node3D) -> void:
-	# Target lost (player became invisible, went out of range, or broke LOS)
-	# Clear target and return to default behavior
+func _on_target_lost(old_target: Node3D) -> void:
+	if old_target:
+		_target_threat.erase(old_target)
 	target = null
 
 	# Return to appropriate default state
@@ -165,52 +164,36 @@ func interrupt_for_pain() -> void:
 		)
 
 
-func on_damage_received(attacker: Node3D, _damage_amount: float) -> void:
-	# Retaliation Logic
+func on_damage_received(attacker: Node3D, damage_amount: float) -> void:
 	if not attacker:
 		return
 
-	# If we have no target, or target is dead/invalid, switch to attacker
-	# Also switch if attacker is closer/more dangerous? For now, just simplistic auto-aggro.
+	_target_threat[attacker] = float(_target_threat.get(attacker, 0.0)) + maxf(damage_amount, 1.0)
+	var current_threat: float = float(_target_threat.get(target, 0.0)) if target and is_instance_valid(target) else -1.0
+	var should_switch: bool = not target or not is_instance_valid(target) or _target_threat[attacker] >= current_threat
+	if not should_switch:
+		return
 
-	var should_switch: bool = false
-	if not target or not is_instance_valid(target):
-		should_switch = true
-	elif target != attacker:
-		# Maybe switch if we haven't hit current target in a while?
-		# Or simple "last hit" logic?
-		should_switch = true
+	target = attacker
+	var gm: Node = get_node_or_null("/root/GameManager")
+	var logger: Node = gm.get_core_system("logger") if gm else null
+	if logger:
+		logger.info("[AI] Retaliating against: %s" % attacker.name, "Enemy")
+	# Low Health Check (Crisis Mode)
+	if health and health.max_health > 0:
+		var health_percent: float = health.current_health / health.max_health
+		if health_percent < 0.3:
+			if "is_downed" in parent_body:
+				parent_body.is_downed = true
+			if has_node("FleeState"):
+				change_state(get_node("FleeState"))
+				return
 
-	if should_switch:
-		target = attacker
-		var gm: Node = get_node_or_null("/root/GameManager")
-		var logger: Node = gm.get_core_system("logger") if gm else null
-		var is_infighting: bool = attacker.is_in_group("enemies")
-		if is_infighting:
-			if logger:
-				logger.info(
-					"[AI] INFIGHTING! %s vs %s" % [parent_body.name, attacker.name], "Enemy"
-				)
-		else:
-			if logger:
-				logger.info("[AI] Retaliating against: " + " " + str(attacker.name), "Enemy")
-
-		# Low Health Check (Crisis Mode)
-		if health and health.max_health > 0:
-			var health_percent: float = health.current_health / health.max_health
-			if health_percent < 0.3:
-				if "is_downed" in parent_body:
-					parent_body.is_downed = true
-
-				if has_node("FleeState"):
-					change_state(get_node("FleeState"))
-					return
-
-		# Transition to combat/chase immediately
-		if has_node("ChaseState"):
-			change_state(get_node("ChaseState"))
-		elif has_node("AttackState"):  # Fallback if no chase
-			change_state(get_node("AttackState"))
+	# Transition to combat/chase immediately
+	if has_node("ChaseState"):
+		change_state(get_node("ChaseState"))
+	elif has_node("AttackState"):
+		change_state(get_node("AttackState"))
 
 
 func _check_danger() -> void:

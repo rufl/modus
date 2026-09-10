@@ -51,19 +51,27 @@ func calculate(damage_info: DamageInfo) -> float:
 	return base_damage
 
 
-## Apply armor penetration to damage
-func _apply_armor_penetration(damage: float, _armor_pen: float, _damage_info: DamageInfo) -> float:
-	# If no armor system is enabled, return full damage
-	if not combat_config.get("armor", {}).get("enabled", false):
+## Apply armor penetration and configured damage reduction.
+func _apply_armor_penetration(damage: float, armor_pen: float, damage_info: DamageInfo) -> float:
+	var armor_config: Dictionary = combat_config.get("armor", {})
+	if not armor_config.get("enabled", false):
 		return damage
 
-	# Armor penetration reduces the effectiveness of armor
-	# armor_pen of 1.0 = full damage (ignores armor)
-	# armor_pen of 0.0 = armor fully effective
+	var penetration := clampf(maxf(armor_pen, damage_info.armor_penetration), 0.0, 1.0)
+	var effective_armor := maxf(damage_info.target_armor, 0.0) * (1.0 - penetration)
+	if effective_armor <= 0.0:
+		return damage
 
-	# This is a simplified implementation - in a real system,
-	# you would get the target's armor value and calculate reduction
-	return damage
+	var max_reduction := clampf(float(armor_config.get("max_reduction", 0.75)), 0.0, 0.95)
+	var reduction := 0.0
+	match str(armor_config.get("damage_reduction_formula", "linear")).to_lower():
+		"exponential":
+			reduction = max_reduction * (1.0 - exp(-effective_armor / 100.0))
+		"logarithmic":
+			reduction = max_reduction * log(1.0 + effective_armor) / log(101.0)
+		_:
+			reduction = minf(max_reduction, effective_armor / (effective_armor + 100.0))
+	return damage * (1.0 - clampf(reduction, 0.0, max_reduction))
 
 
 ## Apply hitbox multiplier based on hit location

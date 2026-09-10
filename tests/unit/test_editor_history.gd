@@ -19,6 +19,13 @@ const EditorFeaturesScript := preload("res://shared/editor_core/core/editor_feat
 const EnvironmentZoneEditorScript := preload("res://game/editor/ui/environment_zone_editor.gd")
 const StandaloneEditorScript := preload("res://standalone/editor/standalone_main.gd")
 const AdvancedBrushScript := preload("res://game/editor/advanced_brush_tool.gd")
+const DamageCalculatorScript := preload("res://game/scripts/features/combat/damage_calculator.gd")
+const DamageInfoScript := preload("res://game/scripts/features/combat/damage_info.gd")
+const GenerationConfigScript := preload("res://game/scripts/map_generator/generation_config.gd")
+const GenerationContextScript := preload("res://game/scripts/map_generator/generation_context.gd")
+const GameplayElementPlacerScript := preload(
+	"res://game/scripts/map_generator/gameplay_element_placer.gd"
+)
 
 
 
@@ -511,3 +518,27 @@ func test_advanced_brush_fill_uses_density_and_detached_clear_is_safe() -> void:
 	for child: Node in brush.get_children():
 		child.free()
 	brush.free()
+
+
+func test_damage_calculator_applies_armor_formula_and_penetration() -> void:
+	var calculator: Node = DamageCalculatorScript.new(
+		{"bullet": {"armor_penetration": 0.0}},
+		{"armor": {"enabled": true, "damage_reduction_formula": "linear", "max_reduction": 0.75}}
+	)
+	var info: Resource = DamageInfoScript.create(100.0, DamageInfoScript.DamageType.BULLET)
+	info.target_armor = 100.0
+	assert_almost_eq(calculator.calculate(info), 50.0, 0.01)
+	info.armor_penetration = 1.0
+	assert_almost_eq(calculator.calculate(info), 100.0, 0.01)
+	calculator.free()
+
+
+func test_generation_config_controls_small_map_monster_floor() -> void:
+	var config: Resource = GenerationConfigScript.new()
+	assert_eq(config.minimum_monsters, 0)
+	config.minimum_monsters = 3
+	var context = GenerationContextScript.new()
+	context.config = config
+	context.grid_size = Vector2i(1, 1)
+	var placer = GameplayElementPlacerScript.new()
+	assert_eq(placer._calculate_monster_count(context), 3)

@@ -84,6 +84,7 @@ Source wiring does not prove live feel, controller behavior, network correction,
 
 - The standalone entry now routes Undo/Redo through the shared runtime history manager and exports the current level through `LevelPackager` as `.mdsl`; focused proof covers both dispatch and packaging. Native exported-app startup and full graphical workflow evidence remain open.
 - Advanced brush source: `game/editor/advanced_brush_tool.gd`; staircase, arch, torus, capsule, density-aware fill, and detached operation guards have focused proof.
+- Concrete debt fixes: `editor_console.gd` now honors `setblock keep` occupancy, `editor_features.gd` resolves package authors from config/system identity, action nodes execute sound/variable/teleport operations, `DamageCalculator` applies configured armor formulas, rule hot reload removes only file-owned instances, and player profiles prefer SteamID persistence with non-Steam fallback.
 
 ## Map generation and showcase
 

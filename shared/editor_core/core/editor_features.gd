@@ -337,18 +337,16 @@ func _on_package_file_selected(path: String) -> void:
 
 	_log("[EditorFeatures] Packaging level to: " + " " + str(path), "Log")
 
-	# Create basic manifest
+	# Create manifest
 	var manifest = LevelPackagerScript.LevelManifest.new()
 	manifest.name = level_root.name
-	# TODO(v1.1, @editor-team): Load author from editor settings (2 hours)
-	manifest.author = "Local User"  # Placeholder until settings system implemented
+	manifest.author = _get_package_author()
 
 	# Package it
 	var result = LevelPackagerScript.package_level(level_root, path.get_base_dir(), manifest)
 
 	if result.success:
 		_log("[EditorFeatures] Package success: " + " " + str(result.output_path), "Log")
-		# Maybe show a confirmation dialog or console message?
 		if command_console and command_console.has_method("log_message"):
 			var msg: String = "[System] Level packaged successfully at " + result.output_path
 			command_console.log_message(msg)
@@ -356,6 +354,18 @@ func _on_package_file_selected(path: String) -> void:
 		push_error("Package failed: " + result.error_msg)
 		if command_console and command_console.has_method("log_message"):
 			command_console.log_message("[System] Packaging failed: " + result.error_msg)
+
+
+func _get_package_author() -> String:
+	var config_service: Node = GameManager.get_core_system("config") if GameManager else null
+	if config_service and config_service.has_method("get_value"):
+		var configured: String = str(config_service.get_value("editor.author", "")).strip_edges()
+		if not configured.is_empty():
+			return configured
+	var system_user := OS.get_environment("USER").strip_edges()
+	if system_user.is_empty():
+		system_user = OS.get_environment("USERNAME").strip_edges()
+	return system_user if not system_user.is_empty() else "Local User"
 
 
 func toggle_workshop() -> void:

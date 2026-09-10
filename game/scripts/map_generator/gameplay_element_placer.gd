@@ -83,8 +83,8 @@ func _calculate_monster_count(context: GenerationContext) -> int:
 	var difficulty_multiplier := _get_difficulty_multiplier(context.config.difficulty_scaling)
 	count = int(count * difficulty_multiplier)
 
-	# Ensure minimum count
-	return maxi(count, 5)
+	# Respect the authored floor instead of forcing five enemies into every map.
+	return maxi(count, maxi(0, context.config.minimum_monsters))
 
 
 ## Get difficulty multiplier for monster count
