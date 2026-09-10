@@ -1,8 +1,8 @@
 # MODUS Current Status
 
-> **Documentation status: maintained reference.** This is the consolidated published snapshot, not a fresh verification run. Generated reports and raw logs are local-only; each report describes its own invocation.
+> **Documentation status: maintained reference.** This is the consolidated published snapshot; fresh verification records are dated below. Generated reports and raw logs are local-only; each report describes its own invocation.
 
-**Updated:** September 9, 2026 <!-- craft-ignore: status sheet uses deliberate labels -->
+**Updated:** September 10, 2026 <!-- craft-ignore: status sheet uses deliberate labels -->
 **Version:** `0.9.5-beta`  
 **Engine:** Godot 4.7+  
 **Project status:** Alpha-quality codebase with a pre-alpha evidence boundary  
@@ -10,7 +10,7 @@
 
 ## Summary
 
-MODUS contains broad FPS framework code plus focused and golden-demo runtime proof, but reviewed manual gameplay evidence is absent and the release-version gate is blocked. September 9 closes six engineering repair groups with 67 focused tests/612 assertions, an eleven-step actual gameplay smoke, isolated native asset rendering, and a compiled Godot audio-shutdown patch. The August 4 strict aggregate and older category lanes are retained historical evidence, not the current-tree suite total. A bounded performance capture exists but does not establish production targets.
+MODUS contains broad FPS framework code plus focused and golden-demo runtime proof, but reviewed manual gameplay evidence is absent and the release-version gate is blocked. September 9 closes six engineering repair groups with 67 focused tests/612 assertions, an eleven-step actual gameplay smoke, isolated native asset rendering, and a compiled Godot audio-shutdown patch. The September 10 refreshed headless aggregate passes 1,568/1,568 tests with 21,718 assertions across 135 scripts; two GUI-required files remain skipped. A bounded performance capture exists but does not establish production targets.
 
 The canonical publication rules are in [Documentation Truth](DOCUMENTATION_TRUTH.md).
 
@@ -26,11 +26,11 @@ Publication cleanup preserves old local evidence without refreshing it. Fresh cl
 | Showcase scene launch smoke | **PASS** | Fresh August 2 world-scene load/initialization only |
 | Golden demo runtime smoke | **PASS** | August 4: all 8 controlled framework-loop steps; automated scope, not manual feel |
 | September engineering repairs | **PASS** | 67 focused tests/612 assertions; eleven-step real-player smoke; native four-prop/ten-icon render; explicit patched Godot required for the MP3 fix |
-| Retained complete Godot/GUT suite | **PASS** | Historical August 4: 1440/1440 passing, 20,475 assertions, no risky/pending tests or GUT-reported orphans |
-| Latest strict aggregate attempt | **PASS/complete** | August 4: full summary completed in 702.76 seconds under a bounded 3600-second run; Godot emitted six engine-exit ObjectDB leak diagnostics |
-| Latest batched Unit lane | **PASS** | August 1: 1056/1056 passing, 16,419 assertions, 0 failing, pending, or GUT-reported orphans |
-| Latest batched Integration lane | **PASS** | July 19: 200/200 passing; 2 GUI-required files skipped |
-| Latest batched Property lane | **PASS** | August 1: 175/175 passing, 2,804 assertions, no GUT-reported orphans |
+| Retained complete Godot/GUT suite | **PASS** | September 10 refreshed headless aggregate: 1,568/1,568 passing, 21,718 assertions across 135 scripts; 10 warnings and 31 deprecations; two GUI-required files skipped |
+| Latest strict aggregate attempt | **PASS/complete** | September 10: `run_all_tests_headless.sh` completed in 1,169.121 seconds with the patched Godot 4.7.2 binary; Godot emitted the known engine-exit ObjectDB diagnostics |
+| Latest batched Unit lane | **PASS** | September 10: 1,166/1,166 passing |
+| Latest batched Integration lane | **PASS** | September 10: 227/227 passing; 2 GUI-required files skipped |
+| Latest batched Property lane | **PASS** | September 10: 175/175 passing, 2,804 assertions |
 | Manual evidence | **BLOCKED / RECORDER READY** | Responsive 20-item F8 workflow and strict CSV validation pass; 0 reviewed CSV files and 0.00 validated hours |
 | Performance evidence | **PASS** | One bounded 66.4-second/130-sample showcase capture; not a production FPS claim |
 | Release-version evidence | **BLOCKED** | Project remains `0.9.5-beta` |
@@ -104,8 +104,8 @@ These results are narrower than the aggregate suite and must not be summed into 
 | Local Workshop simulation | 1/1, 13 assertions |
 | Source shape/resource/editor registry | 37/37, 172 assertions, zero GUT orphans; canonical paths and built-in actor instantiation only |
 
-The July 17 focused threaded/export results and August 4 strict aggregate are historical observations. They do not certify later changes or replace a refreshed full-suite run.
 
+The September 10 refreshed aggregate is current-tree automated evidence: 1,568/1,568 selected tests passed with 21,718 assertions across 135 scripts. It does not certify the two GUI-required files, benchmark performance, manual gameplay feel, packaging, rights, or external service proof.
 ## Source-Backed Implementation Boundary
 
 - `project.godot` registers two autoloads: `GameManager` and `MapGenerator`.
