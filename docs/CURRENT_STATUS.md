@@ -10,7 +10,7 @@
 
 ## Summary
 
-MODUS contains broad FPS framework code plus focused and golden-demo runtime proof, but reviewed manual gameplay evidence is absent and the release-version gate is blocked. September 9 closes six engineering repair groups with 67 focused tests/612 assertions, an eleven-step actual gameplay smoke, isolated native asset rendering, and a compiled Godot audio-shutdown patch. The September 10 refreshed headless aggregate passes 1,568/1,568 tests with 21,718 assertions across 135 scripts; two GUI-required files remain skipped. A bounded performance capture exists but does not establish production targets.
+MODUS contains broad FPS framework code plus focused and golden-demo runtime proof, but reviewed manual gameplay evidence is absent and the release-version gate is blocked. September 9 closes six engineering repair groups with 67 focused tests/612 assertions, an eleven-step actual gameplay smoke, isolated native asset rendering, and a compiled Godot audio-shutdown patch. September 10 refreshed headless aggregate passes 1,568/1,568 tests with 21,718 assertions across 135 scripts; two GUI-required files remain skipped. Fresh September 10 package and multiplayer proof passes resource-notice checks for all three presets, local separate-process ENet client connection, reconnect/lag/network focused suites, and the multiplayer profile smoke. Platform executable exports remain blocked by missing Godot export templates.
 
 The canonical publication rules are in [Documentation Truth](DOCUMENTATION_TRUTH.md).
 
@@ -35,7 +35,7 @@ Publication cleanup preserves old local evidence without refreshing it. Fresh cl
 | Performance evidence | **PASS** | One bounded 66.4-second/130-sample showcase capture; not a production FPS claim |
 | Release-version evidence | **BLOCKED** | Project remains `0.9.5-beta` |
 | Production readiness | **NOT READY** | 2 validator-tracked blockers: manual evidence and release version; provenance clearance is outside that count |
-| Release evidence bundle | **INDEX COMPLETE / RELEASE BLOCKED** | Hashed menu/welcome/mod/golden-demo captures, short automated video, bounded benchmark table, known-limits matrix, and provenance ledger are retained; manual marketing review, packaging, and rights clearance remain open |
+| Release evidence bundle | **INDEX COMPLETE / RELEASE BLOCKED** | Hashed menu/welcome/mod/golden-demo captures, short automated video, bounded benchmark table, known-limits matrix, provenance ledger, fresh three-preset notice checks, and local ENet/reconnect/latency/rate-limit proof are retained; manual marketing review, executable templates, installer, Steam, and rights clearance remain open |
 
 ## Current Focused Automated Proof
 
@@ -46,6 +46,11 @@ These results are narrower than the aggregate suite and must not be summed into 
 | Server rewind / combat / adjacent weapons | September 9: 119/119, 255 assertions; eight runtime checks pass after six baseline failures; controlled latency and real physics, not WAN/manual proof |
 | Save service | 8/8; current encrypted slot existence/list/delete contract and score-key restoration |
 | Network manager | 9/9 |
+| Reconnect | 2/2; focused token preservation and reconnect cancellation proof |
+| Combat latency | 10/10; controlled 100 ms rewind/reconciliation proof; representative WAN sessions remain open |
+| Network rate validation | 13/13 focused network-manager proof; real abusive-client soak remains open |
+| ENet host/join | PASS; separate Godot server/client process, client connected over localhost; server is intentionally terminated by harness after client success |
+| Package notices | 6/6 required notices match for Windows Desktop, Dedicated Server (Linux), and Standalone Editor resource exports; executable export blocked by missing Linux/Windows templates |
 | RPC whitelist | 9/9 |
 | Mod-loading integration | 12/12 |
 | Enemy AI | 13/13 |

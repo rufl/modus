@@ -6,6 +6,7 @@ const TIMEOUT_SECONDS := 4.0
 var _role := ""
 var _port := DEFAULT_PORT
 var _peer: ENetMultiplayerPeer
+var _multiplayer: MultiplayerAPI
 var _timer: SceneTreeTimer
 
 func _initialize() -> void:
@@ -18,6 +19,7 @@ func _initialize() -> void:
 	if args.size() > 1:
 		_port = int(args[1])
 	_peer = ENetMultiplayerPeer.new()
+	_multiplayer = MultiplayerAPI.create_default_interface()
 	if _role == "server":
 		_start_server()
 	else:
@@ -25,14 +27,18 @@ func _initialize() -> void:
 	_timer = create_timer(TIMEOUT_SECONDS)
 	_timer.timeout.connect(_on_timeout)
 
+func _process(_delta: float) -> bool:
+	if _multiplayer:
+		_multiplayer.poll()
+	return false
 func _start_server() -> void:
 	var error := _peer.create_server(_port, 1)
 	if error != OK:
 		push_error("ENet server creation failed: %s" % error)
 		quit(1)
 		return
-	get_root().multiplayer.multiplayer_peer = _peer
-	get_root().multiplayer.peer_connected.connect(_on_server_peer_connected)
+	_multiplayer.multiplayer_peer = _peer
+	_multiplayer.peer_connected.connect(_on_server_peer_connected)
 	print("ENET_SERVER_LISTENING port=%d" % _port)
 
 func _start_client() -> void:
@@ -41,8 +47,8 @@ func _start_client() -> void:
 		push_error("ENet client creation failed: %s" % error)
 		quit(1)
 		return
-	get_root().multiplayer.multiplayer_peer = _peer
-	get_root().multiplayer.connected_to_server.connect(_on_client_connected)
+	_multiplayer.multiplayer_peer = _peer
+	_multiplayer.connected_to_server.connect(_on_client_connected)
 	print("ENET_CLIENT_CONNECTING port=%d" % _port)
 
 func _on_server_peer_connected(peer_id: int) -> void:
@@ -58,7 +64,7 @@ func _on_timeout() -> void:
 	quit(1)
 
 func _exit_tree() -> void:
-	if get_root().multiplayer.multiplayer_peer == _peer:
-		get_root().multiplayer.multiplayer_peer = null
+	if _multiplayer and _multiplayer.multiplayer_peer == _peer:
+		_multiplayer.multiplayer_peer = null
 	if _peer:
 		_peer.close()
