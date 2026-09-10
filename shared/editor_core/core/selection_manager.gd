@@ -2,6 +2,7 @@
 class_name SelectionManager
 extends Node
 
+
 # Helper function to safely log messages
 func _log(message: String, category: String = "Game") -> void:
 	var logger = GameManager.get_core_system("logger")
@@ -9,7 +10,6 @@ func _log(message: String, category: String = "Game") -> void:
 		logger.info(message, category)
 	else:
 		print("[%s] %s" % [category, message])
-
 
 
 signal selection_changed(nodes: Array[Node3D])
@@ -192,7 +192,7 @@ func paste(position: Vector3, parent: Node) -> Array[Node3D]:
 		return []
 
 	var pasted: Array[Node3D] = []
-	var undo := EditorInterface.get_editor_undo_redo()
+	var undo: UndoRedo = EditorGlobals.get_undo_redo()
 	undo.create_action("Paste %d Objects" % clipboard.size())
 
 	# Calculate centroid of copied items
@@ -211,10 +211,12 @@ func paste(position: Vector3, parent: Node) -> Array[Node3D]:
 			node.global_rotation = data.rotation
 			node.scale = data.scale
 
-			undo.add_do_method(parent, "add_child", node)
-			undo.add_do_property(node, "owner", parent.get_tree().edited_scene_root)
-			undo.add_undo_method(parent, "remove_child", node)
-			undo.add_undo_method(node, "queue_free")
+			undo.add_do_method(Callable(parent, "add_child").bind(node))
+			var edited_root: Node = EditorGlobals.get_edited_scene_root()
+			if edited_root:
+				undo.add_do_property(node, "owner", edited_root)
+			undo.add_undo_method(Callable(parent, "remove_child").bind(node))
+			undo.add_undo_method(Callable(node, "queue_free"))
 
 			pasted.append(node)
 
@@ -292,7 +294,7 @@ func delete_selected() -> int:
 	if selected_nodes.is_empty():
 		return 0
 
-	var undo := EditorInterface.get_editor_undo_redo()
+	var undo: UndoRedo = EditorGlobals.get_undo_redo()
 	undo.create_action("Delete %d Objects" % selected_nodes.size())
 
 	var count := 0
@@ -301,9 +303,9 @@ func delete_selected() -> int:
 			continue
 
 		var parent := node.get_parent()
-		undo.add_do_method(parent, "remove_child", node)
-		undo.add_do_method(node, "queue_free")
-		undo.add_undo_method(parent, "add_child", node)
+		undo.add_do_method(Callable(parent, "remove_child").bind(node))
+		undo.add_do_method(Callable(node, "queue_free"))
+		undo.add_undo_method(Callable(parent, "add_child").bind(node))
 		undo.add_undo_reference(node)
 		count += 1
 
@@ -322,7 +324,7 @@ func move_selection(offset: Vector3) -> void:
 	if selected_nodes.is_empty():
 		return
 
-	var undo := EditorInterface.get_editor_undo_redo()
+	var undo: UndoRedo = EditorGlobals.get_undo_redo()
 	undo.create_action("Move Selection")
 
 	for node in selected_nodes:
@@ -341,7 +343,7 @@ func rotate_selection(axis: Vector3, angle: float) -> void:
 	if selected_nodes.is_empty():
 		return
 
-	var undo := EditorInterface.get_editor_undo_redo()
+	var undo: UndoRedo = EditorGlobals.get_undo_redo()
 	undo.create_action("Rotate Selection")
 
 	for node in selected_nodes:

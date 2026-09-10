@@ -6,6 +6,8 @@ const TransformInspectorScript := preload(
 	"res://shared/editor_core/gizmos/entity_transform_inspector.gd"
 )
 
+const SelectionManagerScript := preload("res://shared/editor_core/core/selection_manager.gd")
+
 
 func before_each() -> void:
 	await modus_setup()
@@ -110,3 +112,27 @@ func test_standalone_scale_flip_and_reset_support_history() -> void:
 		"Undo should restore the prior rotation"
 	)
 	assert_eq(target.scale, Vector3.ONE * 2.0)
+
+
+func test_standalone_selection_move_and_delete_support_history() -> void:
+	var level_root := Node3D.new()
+	add_child_autofree(level_root)
+	var target := Node3D.new()
+	level_root.add_child(target)
+	var manager: Node = SelectionManagerScript.new()
+	add_child_autofree(manager)
+
+	manager.select(target)
+	manager.move_selection(Vector3(2, 0, 0))
+	assert_eq(target.position, Vector3(2, 0, 0))
+
+	var undo: UndoRedo = EditorGlobalsScript.get_undo_redo()
+	undo.undo()
+	assert_eq(target.position, Vector3.ZERO, "Undo should restore the selected node position")
+	undo.redo()
+	assert_eq(target.position, Vector3(2, 0, 0), "Redo should restore the move")
+
+	manager.delete_selected()
+	assert_eq(level_root.get_child_count(), 0, "Delete should remove the selected node")
+	undo.undo()
+	assert_eq(level_root.get_child_count(), 1, "Undo should restore the deleted node")
