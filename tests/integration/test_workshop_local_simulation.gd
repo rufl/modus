@@ -1,5 +1,42 @@
 extends ModusGutTestBase
 
+
+class SteamQueryDouble extends RefCounted:
+	signal steam_shutdown
+
+	var released_handles: Array[int] = []
+	var send_result: Variant = 0
+
+	func createQueryAllUGCRequest(
+		_query_type: int,
+		_matching_type: int,
+		_creator_app_id: int,
+		_consumer_app_id: int,
+		_page: int
+	) -> int:
+		return 101
+
+	func sendQueryUGCRequest(_query_handle: int) -> Variant:
+		return send_result
+
+	func releaseQueryUGCRequest(query_handle: int) -> void:
+		released_handles.append(query_handle)
+
+	func setSearchText(_query_handle: int, _query: String) -> bool:
+		return true
+
+	func addRequiredTag(_query_handle: int, _tag: String) -> bool:
+		return true
+
+	func setMatchAnyTag(_query_handle: int, _match_any: bool) -> bool:
+		return true
+
+	func getQueryUGCResult(_query_handle: int, _index: int) -> Dictionary:
+		return {}
+
+	func get_current_app_id() -> int:
+		return 480
+
 const LevelPackagerScript = preload("res://shared/editor_core/data/level_packager.gd")
 const WorkshopManagerScript = preload("res://shared/editor_core/data/workshop_manager.gd")
 
@@ -117,6 +154,45 @@ func test_steam_metadata_conversion_normalizes_ugc_result() -> void:
 	assert_eq(item.get("downloads"), 12)
 	assert_eq(item.get("rating"), 0.75)
 
+
+
+func test_steam_numeric_send_failure_releases_query_once() -> void:
+	workshop_browse_failures.clear()
+	var manager := WorkshopManagerScript.new()
+	add_child_autofree(manager)
+	var steam_double := SteamQueryDouble.new()
+	steam_double.send_result = 0
+	manager.steam = steam_double
+	manager.steam_available = true
+	manager.steam_ugc_available = true
+	manager.browse_failed.connect(_capture_browse_failure)
+
+	manager.browse_items("numeric-send-failure")
+
+	assert_eq(workshop_browse_failures.size(), 1)
+	assert_eq(steam_double.released_handles, [101])
+	assert_eq(manager._active_browse_query_handle, 0)
+
+
+func test_steam_shutdown_fails_active_query_once() -> void:
+	workshop_browse_failures.clear()
+	var manager := WorkshopManagerScript.new()
+	add_child_autofree(manager)
+	var steam_double := SteamQueryDouble.new()
+	manager.steam = steam_double
+	manager.steam_available = true
+	manager.steam_ugc_available = true
+	manager._active_browse_query_handle = 202
+	manager._active_browse_query_text = "shutdown-query"
+	manager.browse_failed.connect(_capture_browse_failure)
+
+	manager._on_steam_shutdown()
+	manager._on_steam_shutdown()
+
+	assert_eq(workshop_browse_failures.size(), 1)
+	assert_eq(steam_double.released_handles, [202])
+	assert_eq(manager._active_browse_query_handle, 0)
+	assert_false(manager.steam_ugc_available)
 
 func _remove_directory(path: String) -> void:
 	var dir := DirAccess.open(path)

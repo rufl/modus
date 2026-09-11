@@ -98,3 +98,35 @@ func test_binary_dependency_diagnostic_identifies_package_relative_target() -> v
 	assert_true("package-relative 'texture_albedo.png'" in message)
 	assert_true("res://missing/normal.png::Texture2D" in message)
 	assert_true("not included in the package" in message)
+
+
+func test_manifest_parser_rejects_malformed_field_types() -> void:
+	var malformed := LevelPackagerScript.LevelManifest.from_dict({
+		"level_file": 42,
+		"thumbnail": "thumbnail.png",
+	})
+	assert_null(malformed, "Manifest fields with unexpected types must be rejected")
+
+	var malformed_tags := LevelPackagerScript.LevelManifest.from_dict({
+		"tags": ["valid", 7],
+	})
+	assert_null(malformed_tags, "Manifest arrays must contain only strings")
+
+
+func test_archive_entry_validation_rejects_empty_and_ambiguous_paths() -> void:
+	assert_false(
+		LevelPackagerScript._is_valid_archive_entry(""),
+		"Empty archive entries must fail closed"
+	)
+	assert_false(
+		LevelPackagerScript._is_valid_archive_entry("assets//texture.png"),
+		"Archive entries with empty path components must fail closed"
+	)
+	assert_false(
+		LevelPackagerScript._is_valid_archive_entry("assets/./texture.png"),
+		"Archive entries with dot components must fail closed"
+	)
+	assert_true(
+		LevelPackagerScript._is_valid_archive_entry("assets/texture.png"),
+		"Valid archive entries must remain supported"
+	)

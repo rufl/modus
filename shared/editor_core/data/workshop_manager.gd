@@ -59,6 +59,10 @@ func _exit_tree() -> void:
 		var query_callback := Callable(self, "_on_ugc_query_completed")
 		if steam.is_connected("ugc_query_completed", query_callback):
 			steam.disconnect("ugc_query_completed", query_callback)
+	if steam and steam.has_signal("steam_shutdown"):
+		var shutdown_callback := Callable(self, "_on_steam_shutdown")
+		if steam.is_connected("steam_shutdown", shutdown_callback):
+			steam.disconnect("steam_shutdown", shutdown_callback)
 
 
 func _init_directories() -> void:
@@ -79,6 +83,10 @@ func _init_steam() -> void:
 			steam.ugc_item_created.connect(_on_ugc_item_created)
 		if steam.has_signal("ugc_item_updated"):
 			steam.ugc_item_updated.connect(_on_ugc_item_updated)
+		if steam.has_signal("steam_shutdown"):
+			var shutdown_callback := Callable(self, "_on_steam_shutdown")
+			if not steam.is_connected("steam_shutdown", shutdown_callback):
+				steam.connect("steam_shutdown", shutdown_callback)
 		steam_ugc_available = _detect_steam_ugc_capability()
 		if steam_ugc_available:
 			var query_callback := Callable(self, "_on_ugc_query_completed")
@@ -137,6 +145,14 @@ func _release_active_browse_query() -> void:
 		steam.call("releaseQueryUGCRequest", _active_browse_query_handle)
 	_active_browse_query_handle = 0
 	_active_browse_query_text = ""
+
+func _on_steam_shutdown() -> void:
+	steam_ugc_available = false
+	_steam_ugc_unavailable_reason = (
+		"Steam Workshop browsing is unavailable: Steam shut down while the Workshop request was active"
+	)
+	if _active_browse_query_handle != 0:
+		_fail_browse(_active_browse_query_text, _steam_ugc_unavailable_reason)
 
 
 ## Upload a level to workshop
@@ -414,10 +430,15 @@ func _steam_browse(query: String, tags: PackedStringArray, sort_by: String) -> v
 			return
 
 	var send_result: Variant = steam.call("sendQueryUGCRequest", query_handle)
-	# GodotSteam's documented binding returns void; test doubles and older bindings
-	# may return bool, in which case false is an immediate request failure.
+	# GodotSteam's documented binding returns void; some bindings expose a
+	# SteamAPICall_t instead. Zero or a negative value means the request failed.
 	if send_result is bool and not send_result:
 		_fail_browse(query, "Steam rejected the Workshop UGC query request.")
+	elif send_result is int and send_result <= 0:
+		_fail_browse(
+			query,
+			"Steam could not start the Workshop UGC query. Verify that Steam is running and try again."
+		)
 
 
 func _fail_browse(query: String, reason: String) -> void:

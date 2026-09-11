@@ -777,11 +777,15 @@ func _validate_shoot_request(peer_id: int, args: Array) -> bool:
 		if weapon_manager.has_method("get_current_ammo"):
 			# Assuming we can get ammo for specific weapon index
 			# Using get_current_ammo() gets CURRENT equipped.
-			# If client says index != current, suspicious?
+			# The server's equipped weapon is authoritative.  Accepting a
+			# mismatched index would let a client bypass ammo and fire-rate checks
+			# for another weapon.
 			if weapon_manager.current_weapon_index != weapon_index:
-				# Lag? Or hack?
-				# Allow if it matches internal weapon list size
-				pass
+				push_warning(
+					"[Network] Peer %d tried to fire weapon %d while weapon %d is equipped"
+					% [peer_id, weapon_index, weapon_manager.current_weapon_index]
+				)
+				return false
 			else:
 				var ammo: Array = weapon_manager.get_current_ammo()
 				if ammo.size() > 0 and ammo[0] <= 0:

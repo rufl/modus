@@ -43,6 +43,8 @@ class LevelManifest:
 		}
 
 	static func from_dict(data: Dictionary) -> LevelManifest:
+		if not _is_valid_dict(data):
+			return null
 		var manifest := LevelManifest.new()
 		manifest.id = data.get("id", "")
 		manifest.name = data.get("name", "")
@@ -58,6 +60,29 @@ class LevelManifest:
 		manifest.asset_count = data.get("asset_count", 0)
 		manifest.workshop_id = data.get("workshop_id", "")
 		return manifest
+
+	static func _is_valid_dict(data: Dictionary) -> bool:
+		for field_name: String in [
+			"id", "name", "author", "description", "version", "thumbnail",
+			"level_file", "workshop_id"
+		]:
+			if data.has(field_name) and not data[field_name] is String:
+				return false
+		for field_name: String in ["created_at", "updated_at", "asset_count"]:
+			if data.has(field_name) and not data[field_name] is int:
+				return false
+		if data.has("asset_count") and data["asset_count"] < 0:
+			return false
+		for field_name: String in ["tags", "dependencies"]:
+			if not data.has(field_name):
+				continue
+			var values: Variant = data[field_name]
+			if not (values is Array or values is PackedStringArray):
+				return false
+			for value: Variant in values:
+				if not value is String:
+					return false
+		return true
 
 
 ## Package result
@@ -80,6 +105,22 @@ class ExtractResult:
 	var manifest: LevelManifest = null
 
 
+static func _validate_manifest(manifest: LevelManifest) -> String:
+	if not _is_valid_package_path(manifest.level_file.replace("\\", "/")):
+		return "Manifest paths must be relative package files"
+	if not _is_valid_package_path(manifest.thumbnail.replace("\\", "/")):
+		return "Manifest paths must be relative package files"
+	var level_path := manifest.level_file.replace("\\", "/")
+	var thumbnail_path := manifest.thumbnail.replace("\\", "/")
+	if level_path == MANIFEST_FILE or thumbnail_path == MANIFEST_FILE:
+		return "Manifest paths cannot replace manifest.json"
+	if level_path == thumbnail_path:
+		return "Manifest level_file and thumbnail must differ"
+	if manifest.asset_count < 0:
+		return "Manifest asset_count cannot be negative"
+	return ""
+
+
 ## Package a level scene into .mdsl format
 static func package_level(
 	level_root: Node3D, output_dir: String, manifest: LevelManifest, thumbnail: Image = null
@@ -92,6 +133,11 @@ static func package_level(
 	if not manifest:
 		result.error_msg = "No manifest provided"
 		return result
+	var manifest_error := _validate_manifest(manifest)
+	if not manifest_error.is_empty():
+		result.error_msg = manifest_error
+		return result
+
 
 	if manifest.name.is_empty():
 		manifest.name = level_root.name
@@ -241,6 +287,11 @@ static func package_level(
 		return _package_failure(result, temp_dir, "Failed to create ZIP: %s" % error_string(zip_err))
 
 	_remove_directory(temp_dir)
+	if DirAccess.dir_exists_absolute(ProjectSettings.globalize_path(temp_dir)):
+		if FileAccess.file_exists(zip_path):
+			DirAccess.remove_absolute(ProjectSettings.globalize_path(zip_path))
+		result.error_msg = "Failed to clean staging directory"
+		return result
 	result.success = true
 	result.output_path = zip_path
 	result.manifest = manifest
@@ -249,57 +300,93 @@ static func package_level(
 
 static func _package_failure(result: PackageResult, temp_dir: String, message: String) -> PackageResult:
 	_remove_directory(temp_dir)
-	result.error_msg = message
+	if DirAccess.dir_exists_absolute(ProjectSettings.globalize_path(temp_dir)):
+		result.error_msg = "%s; failed to clean staging directory" % message
+	else:
+		result.error_msg = message
 	return result
-
 
 ## Extract a .mdsl package
 static func extract_level(mdsl_path: String, output_dir: String) -> ExtractResult:
 	var result := ExtractResult.new()
+	var output_preexisting := DirAccess.dir_exists_absolute(
+		ProjectSettings.globalize_path(output_dir)
+	)
 
 	if not FileAccess.file_exists(mdsl_path):
 		result.error_msg = "Package not found: %s" % mdsl_path
 		return result
-
 	var extract_err: Error = _extract_zip(mdsl_path, output_dir)
 	if extract_err != OK:
-		result.error_msg = "Failed to extract: %s" % error_string(extract_err)
+		_cleanup_failed_extraction(output_dir, output_preexisting)
+		if extract_err == ERR_INVALID_PARAMETER:
+			result.error_msg = "Failed to extract: archive contains an empty, unsafe, or duplicate entry"
+		else:
+			result.error_msg = "Failed to extract: %s" % error_string(extract_err)
 		return result
 
 	var manifest_path := output_dir.path_join(MANIFEST_FILE)
 	if not FileAccess.file_exists(manifest_path):
+		_cleanup_failed_extraction(output_dir, output_preexisting)
 		result.error_msg = "Manifest not found in package"
 		return result
 	var manifest_file := FileAccess.open(manifest_path, FileAccess.READ)
 	if not manifest_file:
+		_cleanup_failed_extraction(output_dir, output_preexisting)
 		result.error_msg = "Failed to read manifest"
 		return result
 	var manifest_json := manifest_file.get_as_text()
 	var manifest_read_err := manifest_file.get_error()
 	manifest_file.close()
 	if manifest_read_err != OK:
+		_cleanup_failed_extraction(output_dir, output_preexisting)
 		result.error_msg = "Failed to read manifest: %s" % error_string(manifest_read_err)
 		return result
 
 	var parsed: Variant = JSON.parse_string(manifest_json)
 	if not parsed is Dictionary:
+		_cleanup_failed_extraction(output_dir, output_preexisting)
 		result.error_msg = "Invalid manifest format"
 		return result
 	result.manifest = LevelManifest.from_dict(parsed)
+	if not result.manifest:
+		_cleanup_failed_extraction(output_dir, output_preexisting)
+		result.error_msg = "Malformed manifest fields"
+		return result
+	var manifest_error := _validate_manifest(result.manifest)
+	if not manifest_error.is_empty():
+		_cleanup_failed_extraction(output_dir, output_preexisting)
+		result.error_msg = "Malformed manifest: %s" % manifest_error
+		return result
 	result.manifest.level_file = result.manifest.level_file.replace("\\", "/")
 	result.manifest.thumbnail = result.manifest.thumbnail.replace("\\", "/")
 	if not _is_safe_zip_entry(result.manifest.level_file, output_dir):
+		_cleanup_failed_extraction(output_dir, output_preexisting)
 		result.error_msg = "Manifest level_file escapes package: %s" % result.manifest.level_file
 		return result
 	if not _is_safe_zip_entry(result.manifest.thumbnail, output_dir):
+		_cleanup_failed_extraction(output_dir, output_preexisting)
 		result.error_msg = "Manifest thumbnail escapes package: %s" % result.manifest.thumbnail
+		return result
+	if result.manifest.level_file == result.manifest.thumbnail:
+		_cleanup_failed_extraction(output_dir, output_preexisting)
+		result.error_msg = "Manifest level_file and thumbnail must differ"
+		return result
+	if (
+		result.manifest.level_file == MANIFEST_FILE
+		or result.manifest.thumbnail == MANIFEST_FILE
+	):
+		_cleanup_failed_extraction(output_dir, output_preexisting)
+		result.error_msg = "Manifest paths cannot replace manifest.json"
 		return result
 	result.level_path = output_dir.path_join(result.manifest.level_file)
 	var thumbnail_path := output_dir.path_join(result.manifest.thumbnail)
 	if not FileAccess.file_exists(result.level_path):
+		_cleanup_failed_extraction(output_dir, output_preexisting)
 		result.error_msg = "Manifest level_file is missing: %s" % result.manifest.level_file
 		return result
 	if not FileAccess.file_exists(thumbnail_path):
+		_cleanup_failed_extraction(output_dir, output_preexisting)
 		result.error_msg = "Manifest thumbnail is missing: %s" % result.manifest.thumbnail
 		return result
 	result.success = true
@@ -316,6 +403,52 @@ static func _is_valid_package_path(path: String) -> bool:
 		if component == ".." or component.is_empty() or component == ".":
 			return false
 	return true
+
+
+static func _is_valid_archive_entry(entry_path: String) -> bool:
+	var normalized := entry_path.replace("\\", "/")
+	if normalized.ends_with("/"):
+		normalized = normalized.trim_suffix("/")
+	if not _is_valid_package_path(normalized):
+		return false
+	return not normalized.contains("//")
+
+
+static func _validate_archive_entries(reader: ZIPReader) -> bool:
+	var seen: Dictionary = {}
+	var seen_files: Dictionary = {}
+	var descendants: Dictionary = {}
+	for file_path: String in reader.get_files():
+		if not _is_valid_archive_entry(file_path):
+			return false
+		var normalized := file_path.replace("\\", "/")
+		var is_directory := normalized.ends_with("/")
+		if is_directory:
+			normalized = normalized.trim_suffix("/")
+		if seen.has(normalized):
+			return false
+		var components := normalized.split("/", true)
+		var prefix := ""
+		for component: String in components:
+			prefix = component if prefix.is_empty() else prefix + "/" + component
+			if prefix != normalized and seen_files.has(prefix):
+				return false
+		if not is_directory and descendants.has(normalized):
+			return false
+		seen[normalized] = true
+		if not is_directory:
+			seen_files[normalized] = true
+		prefix = ""
+		for component: String in components:
+			prefix = component if prefix.is_empty() else prefix + "/" + component
+			if prefix != normalized:
+				descendants[prefix] = true
+	return true
+
+
+static func _cleanup_failed_extraction(output_dir: String, output_preexisting: bool) -> void:
+	if not output_preexisting:
+		_remove_directory(output_dir)
 ## Read manifest from .mdsl without full extraction
 
 
@@ -326,7 +459,7 @@ static func read_manifest(mdsl_path: String) -> LevelManifest:
 		reader.close()
 		return null
 
-	if not reader.file_exists(MANIFEST_FILE):
+	if not _validate_archive_entries(reader) or not reader.file_exists(MANIFEST_FILE):
 		reader.close()
 		return null
 	var content: PackedByteArray = reader.read_file(MANIFEST_FILE)
@@ -339,13 +472,17 @@ static func read_manifest(mdsl_path: String) -> LevelManifest:
 		reader.close()
 		return null
 	var manifest := LevelManifest.from_dict(parsed)
+	if not manifest or not _validate_manifest(manifest).is_empty():
+		reader.close()
+		return null
 	manifest.level_file = manifest.level_file.replace("\\", "/")
 	manifest.thumbnail = manifest.thumbnail.replace("\\", "/")
 	if (
-		not _is_valid_package_path(manifest.level_file)
-		or not _is_valid_package_path(manifest.thumbnail)
-		or not reader.file_exists(manifest.level_file)
+		not reader.file_exists(manifest.level_file)
 		or not reader.file_exists(manifest.thumbnail)
+		or manifest.level_file == manifest.thumbnail
+		or manifest.level_file == MANIFEST_FILE
+		or manifest.thumbnail == MANIFEST_FILE
 	):
 		reader.close()
 		return null
@@ -360,7 +497,7 @@ static func read_thumbnail(mdsl_path: String) -> Image:
 	if err != OK:
 		reader.close()
 		return null
-	if not reader.file_exists(MANIFEST_FILE):
+	if not _validate_archive_entries(reader) or not reader.file_exists(MANIFEST_FILE):
 		reader.close()
 		return null
 	var manifest_content := reader.read_file(MANIFEST_FILE)
@@ -372,8 +509,11 @@ static func read_thumbnail(mdsl_path: String) -> Image:
 		reader.close()
 		return null
 	var manifest := LevelManifest.from_dict(parsed)
+	if not manifest or not _validate_manifest(manifest).is_empty():
+		reader.close()
+		return null
 	manifest.thumbnail = manifest.thumbnail.replace("\\", "/")
-	if not _is_valid_package_path(manifest.thumbnail) or not reader.file_exists(manifest.thumbnail):
+	if not reader.file_exists(manifest.thumbnail):
 		reader.close()
 		return null
 	var content: PackedByteArray = reader.read_file(manifest.thumbnail)
@@ -384,7 +524,6 @@ static func read_thumbnail(mdsl_path: String) -> Image:
 	if img.load_png_from_buffer(content) != OK:
 		return null
 	return img
-
 
 ## Collect all referenced assets, including transitive ResourceLoader dependencies.
 static func _collect_assets(level_root: Node) -> Array[String]:
@@ -648,17 +787,10 @@ static func _add_dir_to_zip(
 
 static func _is_safe_zip_entry(entry_path: String, extraction_root: String) -> bool:
 	var normalized_path: String = entry_path.replace("\\", "/")
-	if normalized_path.is_empty() or normalized_path.contains("://"):
+	if not _is_valid_archive_entry(normalized_path):
 		return false
-	if normalized_path.begins_with("/") or (
-		normalized_path.length() >= 2 and normalized_path[1] == ":"
-	):
-		return false
-
-	for component: String in normalized_path.split("/", true):
-		if component == "..":
-			return false
-
+	if normalized_path.ends_with("/"):
+		normalized_path = normalized_path.trim_suffix("/")
 	var root_path: String = ProjectSettings.globalize_path(extraction_root).simplify_path()
 	var target_path: String = ProjectSettings.globalize_path(
 		extraction_root.path_join(normalized_path)
@@ -696,6 +828,9 @@ static func _extract_zip(zip_path: String, output_dir: String) -> Error:
 		reader.close()
 		return err
 
+	if not _validate_archive_entries(reader):
+		reader.close()
+		return ERR_INVALID_PARAMETER
 	var root_err: Error = _ensure_zip_directory(output_dir)
 	if root_err != OK:
 		reader.close()
