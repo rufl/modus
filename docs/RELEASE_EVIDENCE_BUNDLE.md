@@ -97,5 +97,5 @@ Published context: [Performance Baseline Proof](PERFORMANCE_BASELINE_PROOF.md). 
 - Imported ManualTestTimer CSV evidence.
 - Additional display-synchronized benchmark rows covering declared hardware and modes.
 - ~~A known-limits matrix for networking, Steam, editor, performance, and content scope.~~ See [Known-Limits Matrix](KNOWN_LIMITS_MATRIX.md); it is source/evidence-bounded and does not replace runtime proof.
-- Clearance, exclusion, or replacement of the remaining 59 unverified provenance rows. The twelve private Suno tracks were removed; Quaternius animation assets and derived resources are cleared under CC0; author-confirmed liquid shaders and materials are classified MIT.
+- Clearance, exclusion, or replacement of the remaining 55 unverified provenance rows. The twelve private Suno tracks were removed; Quaternius animation assets and derived resources are cleared under CC0; author-confirmed liquid and skybox shaders/materials are classified MIT.
 - Installer inspection remains blocked: the repository contains no installer definition/toolchain. Executable export and resource notice proof are complete for all three configured presets; Windows runtime, Steam/Workshop service proof, manual evidence, and provenance clearance remain open.
