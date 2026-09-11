@@ -92,6 +92,7 @@ func _server_place_block(data: Dictionary) -> void:
 	# Broadcast to all clients (including server via call_local)
 	_sync_place_block.rpc(data)
 
+
 ## Validate if a peer has edit permission
 ## Returns true if editing is allowed, false otherwise
 
@@ -178,8 +179,10 @@ func _server_place_entity(data: Dictionary) -> void:
 	var gm: Node = get_node_or_null("/root/GameManager")
 	if gm:
 		var network_mgr: Variant = gm.get_core_system("network")
-		if network_mgr and network_mgr.has_method("validate_rpc") and not network_mgr.validate_rpc(
-			sender_id, "place_entity", [data]
+		if (
+			network_mgr
+			and network_mgr.has_method("validate_rpc")
+			and not network_mgr.validate_rpc(sender_id, "place_entity", [data])
 		):
 			return
 	# Validate permissions
@@ -199,8 +202,10 @@ func _server_transform_node(data: Dictionary) -> void:
 	var gm: Node = get_node_or_null("/root/GameManager")
 	if gm:
 		var network_mgr: Variant = gm.get_core_system("network")
-		if network_mgr and network_mgr.has_method("validate_rpc") and not network_mgr.validate_rpc(
-			sender_id, "transform_node", [data]
+		if (
+			network_mgr
+			and network_mgr.has_method("validate_rpc")
+			and not network_mgr.validate_rpc(sender_id, "transform_node", [data])
 		):
 			return
 	if not _validate_edit_permission(sender_id, "allow_transform"):
@@ -235,7 +240,9 @@ func _validate_editor_payload(action: String, payload: Variant) -> bool:
 			if not payload is Dictionary:
 				return false
 			var spawn_type: Variant = payload.get("spawn_type")
-			var id: String = payload.get("enemy_id", "") if spawn_type == 1 else payload.get("item_id", "")
+			var id: String = (
+				payload.get("enemy_id", "") if spawn_type == 1 else payload.get("item_id", "")
+			)
 			return (
 				payload.get("type", "") == "entity_placer"
 				and payload.get("subtype", "") == "spawn_point"
@@ -251,9 +258,7 @@ func _validate_editor_payload(action: String, payload: Variant) -> bool:
 			for field in ["position", "rotation", "scale"]:
 				if payload.has(field) and not _is_finite_vector(payload[field]):
 					return false
-			return (
-				payload.has("position") or payload.has("rotation") or payload.has("scale")
-			)
+			return payload.has("position") or payload.has("rotation") or payload.has("scale")
 	return false
 
 
@@ -283,14 +288,21 @@ func _is_bounded_string(value: Variant, maximum: int) -> bool:
 	if not value is String:
 		return false
 	var text: String = value
-	return not text.is_empty() and text.length() <= maximum and not text.contains("\n") and not text.contains("\r")
+	return (
+		not text.is_empty()
+		and text.length() <= maximum
+		and not text.contains("\n")
+		and not text.contains("\r")
+	)
 
 
 func _is_safe_relative_path(value: Variant) -> bool:
 	if not _is_bounded_string(value, 256):
 		return false
 	var path: String = value
-	return not path.begins_with("/") and not path.contains("..") and not NodePath(path).is_absolute()
+	return (
+		not path.begins_with("/") and not path.contains("..") and not NodePath(path).is_absolute()
+	)
 
 
 func _is_resource_path(value: Variant) -> bool:
@@ -298,6 +310,7 @@ func _is_resource_path(value: Variant) -> bool:
 		return false
 	var path: String = value
 	return path.begins_with("res://") and ResourceLoader.exists(path)
+
 
 func _is_optional_resource_path(value: Variant) -> bool:
 	return value == "" or _is_resource_path(value)

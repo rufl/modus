@@ -309,7 +309,9 @@ func save_player_data(peer_id: int) -> void:
 	# Update active stats if player node exists
 	_update_data_from_node(peer_id, data)
 
-	var file: FileAccess = FileAccess.open(DATA_DIR + _get_persistent_player_id(peer_id) + ".json", FileAccess.WRITE)
+	var file: FileAccess = FileAccess.open(
+		DATA_DIR + _get_persistent_player_id(peer_id) + ".json", FileAccess.WRITE
+	)
 
 	if file:
 		file.store_string(JSONHelperClass.safe_stringify(data, "\t"))

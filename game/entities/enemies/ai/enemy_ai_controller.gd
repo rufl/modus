@@ -15,6 +15,7 @@ var _target_threat: Dictionary = {}
 
 var _dodge_cooldown: float = 0.0
 
+
 func _ready() -> void:
 	parent_body = get_parent()
 	start_position = parent_body.global_position
@@ -97,6 +98,8 @@ func change_state(new_state: EnemyState) -> void:
 
 	current_state.enter()
 	# print("Enemy AI State Changed to: ", new_state.name)
+
+
 func _on_target_spotted(new_target: Node3D) -> void:
 	target = new_target
 	_target_threat[new_target] = maxf(float(_target_threat.get(new_target, 0.0)), 1.0)
@@ -169,8 +172,12 @@ func on_damage_received(attacker: Node3D, damage_amount: float) -> void:
 		return
 
 	_target_threat[attacker] = float(_target_threat.get(attacker, 0.0)) + maxf(damage_amount, 1.0)
-	var current_threat: float = float(_target_threat.get(target, 0.0)) if target and is_instance_valid(target) else -1.0
-	var should_switch: bool = not target or not is_instance_valid(target) or _target_threat[attacker] >= current_threat
+	var current_threat: float = (
+		float(_target_threat.get(target, 0.0)) if target and is_instance_valid(target) else -1.0
+	)
+	var should_switch: bool = (
+		not target or not is_instance_valid(target) or _target_threat[attacker] >= current_threat
+	)
 	if not should_switch:
 		return
 

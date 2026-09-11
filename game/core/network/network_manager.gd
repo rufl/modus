@@ -733,9 +733,10 @@ func _validate_damage_request(args: Array) -> bool:
 	if args.size() < 3:
 		return false
 	if (
-		not args[0] is float
-		and not args[0] is int
-	) or not args[1] is int or not args[2] is Vector3:
+		(not args[0] is float and not args[0] is int)
+		or not args[1] is int
+		or not args[2] is Vector3
+	):
 		return false
 	if not args[2].is_finite():
 		return false
@@ -790,6 +791,7 @@ func _validate_chat_message(args: Array) -> bool:
 		and not message.contains("\r")
 	)
 
+
 func _validate_kill_registration(peer_id: int, args: Array) -> bool:
 	if args.size() < 2 or args.size() > 3:
 		return false
@@ -803,7 +805,11 @@ func _validate_kill_registration(peer_id: int, args: Array) -> bool:
 		if not args[2] is String:
 			return false
 		var damage_source: String = args[2]
-		if damage_source.length() > 64 or damage_source.contains("\n") or damage_source.contains("\r"):
+		if (
+			damage_source.length() > 64
+			or damage_source.contains("\n")
+			or damage_source.contains("\r")
+		):
 			return false
 	return true
 
@@ -821,17 +827,12 @@ func _validate_steam_ticket(args: Array) -> bool:
 	return true
 
 
-
 func _validate_target_player_rpc(peer_id: int, args: Array) -> bool:
 	if args.size() != 1 or not args[0] is NodePath:
 		return false
 	var target_component: Node = get_node_or_null(args[0])
 	var player: Node = _get_player_by_peer_id(peer_id)
-	return (
-		target_component != null
-		and player != null
-		and target_component.get_parent() == player
-	)
+	return target_component != null and player != null and target_component.get_parent() == player
 
 
 func _validate_interaction_pickup(peer_id: int, args: Array) -> bool:

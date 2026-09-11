@@ -142,4 +142,6 @@ func test_critical_issue_7_revive_rpc_present() -> void:
 		"request_revive_stop",
 		"request_bleedout_immediate",
 	]:
-		assert_true(RPCWhitelist.requires_validation(method), "%s should require validation" % method)
+		assert_true(
+			RPCWhitelist.requires_validation(method), "%s should require validation" % method
+		)

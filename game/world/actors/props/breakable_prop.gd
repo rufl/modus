@@ -116,7 +116,12 @@ func _request_damage(amount: float, damage_type: String) -> void:
 	var damage: float = float(amount)
 	if not is_finite(damage) or damage <= 0.0 or damage > max_health * 4.0:
 		return
-	if not damage_type is String or damage_type.length() > 32 or damage_type.contains("\n") or damage_type.contains("\r"):
+	if (
+		not damage_type is String
+		or damage_type.length() > 32
+		or damage_type.contains("\n")
+		or damage_type.contains("\r")
+	):
 		return
 
 	var peer_id: int = multiplayer.get_remote_sender_id()

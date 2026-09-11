@@ -159,8 +159,9 @@ func request_revive_start(reviver: NodePath) -> void:
 		var network_svc: Node = gm.get_core_system("network") if gm else null
 		if network_svc and network_svc.has_method("get"):
 			var network_mgr: Node = network_svc.network_manager
-			if network_mgr and not network_mgr.validate_rpc(
-				rpc_sender_id, "request_revive_start", [reviver]
+			if (
+				network_mgr
+				and not network_mgr.validate_rpc(rpc_sender_id, "request_revive_start", [reviver])
 			):
 				return
 
@@ -223,8 +224,12 @@ func request_revive_stop() -> void:
 	var sender_id: int = multiplayer.get_remote_sender_id()
 	if sender_id != 0:
 		var network_svc: Node = GameManager.get_core_system("network")
-		if network_svc and network_svc.network_manager and not network_svc.network_manager.validate_rpc(
-			sender_id, "request_revive_stop", [get_path()]
+		if (
+			network_svc
+			and network_svc.network_manager
+			and not network_svc.network_manager.validate_rpc(
+				sender_id, "request_revive_stop", [get_path()]
+			)
 		):
 			return
 
@@ -276,8 +281,12 @@ func request_bleedout_immediate() -> void:
 	var sender_id: int = multiplayer.get_remote_sender_id()
 	if sender_id != 0:
 		var network_svc: Node = GameManager.get_core_system("network")
-		if network_svc and network_svc.network_manager and not network_svc.network_manager.validate_rpc(
-			sender_id, "request_bleedout_immediate", [get_path()]
+		if (
+			network_svc
+			and network_svc.network_manager
+			and not network_svc.network_manager.validate_rpc(
+				sender_id, "request_bleedout_immediate", [get_path()]
+			)
 		):
 			return
 

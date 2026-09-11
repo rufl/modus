@@ -207,7 +207,12 @@ func _sync_mode(peer_id: int, new_mode: int) -> void:
 
 @rpc("any_peer", "call_remote", "reliable")
 func request_set_mode(new_mode: int) -> void:
-	if not multiplayer.is_server() or not new_mode is int or new_mode < int(Mode.PLAYING) or new_mode > int(Mode.EDITOR):
+	if (
+		not multiplayer.is_server()
+		or not new_mode is int
+		or new_mode < int(Mode.PLAYING)
+		or new_mode > int(Mode.EDITOR)
+	):
 		return
 	var sender_id: int = multiplayer.get_remote_sender_id()
 	if sender_id <= 0:
@@ -224,9 +229,15 @@ func request_set_mode(new_mode: int) -> void:
 
 	set_player_mode(sender_id, new_mode)
 
+
 @rpc("any_peer", "call_remote", "reliable")
 func request_set_state(new_state: int) -> void:
-	if not multiplayer.is_server() or not new_state is int or new_state < Enums.PlayerState.ALIVE or new_state > Enums.PlayerState.MENU:
+	if (
+		not multiplayer.is_server()
+		or not new_state is int
+		or new_state < Enums.PlayerState.ALIVE
+		or new_state > Enums.PlayerState.MENU
+	):
 		return
 	var sender_id: int = multiplayer.get_remote_sender_id()
 	if sender_id <= 0:
@@ -240,6 +251,8 @@ func request_set_state(new_state: int) -> void:
 				"[PlayerState] Rate limit exceeded for peer %d" % sender_id, "PlayerState"
 			)
 			return
+
+
 @rpc("any_peer", "call_remote", "reliable")
 func request_assist_downed() -> void:
 	if not multiplayer.is_server():

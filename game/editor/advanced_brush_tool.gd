@@ -481,14 +481,26 @@ func _create_arch_mesh(size: Vector3) -> ArrayMesh:
 		for point in back_points:
 			point.z = depth
 		_append_quad(vertices, indices, points[0], points[1], points[2], points[3])
-		_append_quad(vertices, indices, back_points[3], back_points[2], back_points[1], back_points[0])
+		_append_quad(
+			vertices, indices, back_points[3], back_points[2], back_points[1], back_points[0]
+		)
 		_append_quad(vertices, indices, points[0], back_points[0], back_points[1], points[1])
 		_append_quad(vertices, indices, points[3], points[2], back_points[2], back_points[3])
 		_append_quad(vertices, indices, points[1], back_points[1], back_points[2], points[2])
 		_append_quad(vertices, indices, points[0], points[3], back_points[3], back_points[0])
 	# Pillars close the arch at the ground.
-	_append_box(vertices, indices, Vector3(-outer_radius, -size.y * 0.5, -depth), Vector3(-inner_radius, 0, depth))
-	_append_box(vertices, indices, Vector3(inner_radius, -size.y * 0.5, -depth), Vector3(outer_radius, 0, depth))
+	_append_box(
+		vertices,
+		indices,
+		Vector3(-outer_radius, -size.y * 0.5, -depth),
+		Vector3(-inner_radius, 0, depth)
+	)
+	_append_box(
+		vertices,
+		indices,
+		Vector3(inner_radius, -size.y * 0.5, -depth),
+		Vector3(outer_radius, 0, depth)
+	)
 	return _build_mesh(vertices, indices)
 
 
@@ -782,7 +794,9 @@ func _fill_area_with_brush(start_pos: Vector3) -> bool:
 			for z in range(ceili(-half_size.z / spacing), ceili(half_size.z / spacing) + 1):
 				if placed >= max_count:
 					break
-				var hash_value := float(absi(x * 73856093 + y * 19349663 + z * 83492791) % 1000) / 1000.0
+				var hash_value := (
+					float(absi(x * 73856093 + y * 19349663 + z * 83492791) % 1000) / 1000.0
+				)
 				if hash_value > clampf(brush_density, 0.0, 1.0):
 					continue
 				if _place_brush_object(start_pos + Vector3(x, y, z) * spacing):

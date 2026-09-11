@@ -94,7 +94,11 @@ func _request_retrieve() -> void:
 
 	# Find sender player node
 	var player: Node = _get_player_by_id(sender_id)
-	if not player or not player is Node3D or player.global_position.distance_to(global_position) > 3.5:
+	if (
+		not player
+		or not player is Node3D
+		or player.global_position.distance_to(global_position) > 3.5
+	):
 		return
 
 	# Double check ownership on server

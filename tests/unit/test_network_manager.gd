@@ -216,6 +216,7 @@ func test_rpc_rate_limiting_editor():
 		var result3: bool = _network_manager.validate_rpc(peer_id, method, [{}])
 		assert_true(result3, "place_block call after cooldown should succeed")
 
+
 func test_semantic_validation_rejects_forged_status_and_chat_payloads() -> void:
 	if not _network_manager:
 		var ns := NetworkSvc.get_service()

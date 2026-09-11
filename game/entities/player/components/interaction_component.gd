@@ -157,8 +157,9 @@ func _validate_client_rpc(method: String, args: Array) -> bool:
 
 @rpc("any_peer", "call_local", "reliable")
 func _request_pickup_object(object_path: NodePath) -> void:
-	if not multiplayer.is_server() or not _validate_client_rpc(
-		"_request_pickup_object", [object_path]
+	if (
+		not multiplayer.is_server()
+		or not _validate_client_rpc("_request_pickup_object", [object_path])
 	):
 		return
 	var obj: Node = get_node_or_null(object_path)

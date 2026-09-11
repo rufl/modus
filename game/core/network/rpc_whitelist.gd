@@ -193,11 +193,7 @@ const ALLOWED_RPCS: Dictionary = {
 		"description": "Paint block in editor"
 	},
 	"place_entity":
-	{
-		"calls_per_second": 5.0,
-		"requires_validation": false,
-		"description": "Place editor entity"
-	},
+	{"calls_per_second": 5.0, "requires_validation": false, "description": "Place editor entity"},
 	"transform_node":
 	{
 		"calls_per_second": 15.0,

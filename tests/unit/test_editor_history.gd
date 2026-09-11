@@ -28,9 +28,6 @@ const GameplayElementPlacerScript := preload(
 )
 
 
-
-
-
 func before_each() -> void:
 	await modus_setup()
 	EditorGlobalsScript._runtime_undo_redo = null
@@ -389,6 +386,7 @@ func test_embedded_editor_save_load_round_trip() -> void:
 	editor.free()
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
+
 func test_editor_toolbar_and_hotbar_build_runtime_controls() -> void:
 	var toolbar: HBoxContainer = ToolbarDockScript.new()
 	toolbar._create_toolbar()
@@ -404,6 +402,7 @@ func test_editor_toolbar_and_hotbar_build_runtime_controls() -> void:
 	assert_eq(hotbar.primary_buttons[0].name, "Button")
 	hotbar.free()
 
+
 func test_editor_workshop_browser_uses_panel_container_base() -> void:
 	var features: Node = EditorFeaturesScript.new()
 	add_child_autofree(features)
@@ -411,12 +410,14 @@ func test_editor_workshop_browser_uses_panel_container_base() -> void:
 	assert_true(features.workshop_browser is PanelContainer)
 	assert_eq(features.workshop_browser.name, "WorkshopBrowserPanel")
 
+
 func test_environment_editor_ignores_preset_actions_without_optional_panel() -> void:
 	var editor: Node = EnvironmentZoneEditorScript.new()
 	editor.show_preset_manager = false
 	editor._on_apply_preset_pressed()
 	editor._on_delete_preset_pressed()
 	editor.free()
+
 
 func test_environment_editor_ignores_incomplete_parameter_panel() -> void:
 	var editor: Node = EnvironmentZoneEditorScript.new()
@@ -428,10 +429,12 @@ func test_environment_editor_ignores_incomplete_parameter_panel() -> void:
 	zone.free()
 	editor.free()
 
+
 func test_environment_editor_ignores_zone_selection_without_zone_list() -> void:
 	var editor: Node = EnvironmentZoneEditorScript.new()
 	editor._on_zone_selected()
 	editor.free()
+
 
 func test_environment_editor_ignores_preset_refresh_without_preset_list() -> void:
 	var editor: Node = EnvironmentZoneEditorScript.new()
@@ -441,6 +444,7 @@ func test_environment_editor_ignores_preset_refresh_without_preset_list() -> voi
 	preset_manager.free()
 	editor.free()
 
+
 func test_environment_editor_creates_zone_without_optional_zone_list() -> void:
 	var editor: Node = EnvironmentZoneEditorScript.new()
 	var zone: EnvironmentVolume = editor.create_zone()
@@ -449,12 +453,14 @@ func test_environment_editor_creates_zone_without_optional_zone_list() -> void:
 		zone.free()
 	editor.free()
 
+
 func test_environment_editor_deletes_zone_without_optional_zone_list() -> void:
 	var editor: Node = EnvironmentZoneEditorScript.new()
 	var zone := EnvironmentVolume.new()
 	assert_true(editor.delete_zone(zone))
 	zone.free()
 	editor.free()
+
 
 func test_standalone_editor_uses_runtime_undo_and_redo_menu_actions() -> void:
 	var main: Node = StandaloneEditorScript.new()
@@ -473,6 +479,7 @@ func test_standalone_editor_uses_runtime_undo_and_redo_menu_actions() -> void:
 	main.free()
 	undo.clear_history()
 
+
 func test_standalone_editor_exports_current_level_package() -> void:
 	var main: Node = StandaloneEditorScript.new()
 	var embedded: Node = EmbeddedLevelEditorScript.new()
@@ -489,6 +496,7 @@ func test_standalone_editor_exports_current_level_package() -> void:
 	embedded.level_root.free()
 	embedded.free()
 	main.free()
+
 
 func test_advanced_brush_generates_specialized_meshes() -> void:
 	var brush: Node = AdvancedBrushScript.new()

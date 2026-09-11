@@ -92,33 +92,38 @@ func test_editor_payload_validation_accepts_editor_shapes() -> void:
 		return
 
 	assert_true(
-		_network_editor._validate_editor_payload(
-			"place_block",
-			{
-				"type": "block_brush",
-				"position": Vector3.ZERO,
-				"size": Vector3.ONE,
-				"material_path": "",
-			}
+		(
+			_network_editor
+			. _validate_editor_payload(
+				"place_block",
+				{
+					"type": "block_brush",
+					"position": Vector3.ZERO,
+					"size": Vector3.ONE,
+					"material_path": "",
+				}
+			)
+		)
+	)
+	assert_true(
+		(
+			_network_editor
+			. _validate_editor_payload(
+				"place_entity",
+				{
+					"type": "entity_placer",
+					"subtype": "spawn_point",
+					"spawn_type": 1,
+					"enemy_id": "crawler",
+					"position": Vector3.ZERO,
+					"rotation_y": 0.0,
+				}
+			)
 		)
 	)
 	assert_true(
 		_network_editor._validate_editor_payload(
-			"place_entity",
-			{
-				"type": "entity_placer",
-				"subtype": "spawn_point",
-				"spawn_type": 1,
-				"enemy_id": "crawler",
-				"position": Vector3.ZERO,
-				"rotation_y": 0.0,
-			}
-		)
-	)
-	assert_true(
-		_network_editor._validate_editor_payload(
-			"transform_node",
-			{"path": "Block", "position": Vector3.ONE}
+			"transform_node", {"path": "Block", "position": Vector3.ONE}
 		)
 	)
 
@@ -129,23 +134,23 @@ func test_editor_payload_validation_rejects_unsafe_values() -> void:
 		return
 
 	assert_false(
-		_network_editor._validate_editor_payload(
-			"place_block",
-			{
-				"type": "block_brush",
-				"position": Vector3(INF, 0.0, 0.0),
-				"size": Vector3.ONE,
-				"material_path": "",
-			}
+		(
+			_network_editor
+			. _validate_editor_payload(
+				"place_block",
+				{
+					"type": "block_brush",
+					"position": Vector3(INF, 0.0, 0.0),
+					"size": Vector3.ONE,
+					"material_path": "",
+				}
+			)
 		)
 	)
-	assert_false(
-		_network_editor._validate_editor_payload("delete_node", "../root")
-	)
+	assert_false(_network_editor._validate_editor_payload("delete_node", "../root"))
 	assert_false(
 		_network_editor._validate_editor_payload(
-			"paint_block",
-			{"path": "Block", "material_path": "user://untrusted.tres"}
+			"paint_block", {"path": "Block", "material_path": "user://untrusted.tres"}
 		)
 	)
 
