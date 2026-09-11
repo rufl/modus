@@ -26,9 +26,21 @@ func get_cached_thumbnail(asset_path: String, size: Vector2i) -> Texture2D:
 	if _asset_thumbnail_cache.has(cache_key):
 		return _asset_thumbnail_cache[cache_key]
 
-	# Generate thumbnail (placeholder - would actually render)
-	var thumb := _generate_placeholder_thumbnail(asset_path, size)
+	var thumb := _load_thumbnail_texture(asset_path, size)
 	_asset_thumbnail_cache[cache_key] = thumb
+
+	# Limit cache size
+	if _asset_thumbnail_cache.size() > 100:
+		_evict_oldest_cache_entries(_asset_thumbnail_cache, 50)
+
+	return thumb
+
+
+func _load_thumbnail_texture(asset_path: String, size: Vector2i) -> Texture2D:
+	var resource := ResourceLoader.load(asset_path)
+	if resource is Texture2D:
+		return resource
+	return _generate_placeholder_thumbnail(asset_path, size)
 
 	# Limit cache size
 	if _asset_thumbnail_cache.size() > 100:
@@ -98,10 +110,10 @@ func _calculate_node_bounds(node: Node3D) -> AABB:
 
 
 ## Invalidate bounds cache for a node
-
-
-func invalidate_bounds(node: Node3D) -> void:
-	_node_bounds_cache.erase(node.get_instance_id())
+func invalidate_bounds(_node: Node3D) -> void:
+	# Parent bounds include descendants, so invalidating one node must invalidate
+	# every cached aggregate to avoid stale culling after transforms/child edits.
+	_node_bounds_cache.clear()
 
 
 ## Get cached material
@@ -252,7 +264,22 @@ func is_visible_in_camera(node: Node3D, camera: Camera3D) -> bool:
 		return true
 
 	var bounds := get_node_bounds(node)
-	return camera.is_position_in_frustum(bounds.get_center())
+	if bounds.size == Vector3.ZERO:
+		return camera.is_position_in_frustum(bounds.position)
+	var max_corner := bounds.position + bounds.size
+	for corner: Vector3 in [
+		bounds.position,
+		Vector3(max_corner.x, bounds.position.y, bounds.position.z),
+		Vector3(bounds.position.x, max_corner.y, bounds.position.z),
+		Vector3(bounds.position.x, bounds.position.y, max_corner.z),
+		Vector3(max_corner.x, max_corner.y, bounds.position.z),
+		Vector3(max_corner.x, bounds.position.y, max_corner.z),
+		Vector3(bounds.position.x, max_corner.y, max_corner.z),
+		max_corner,
+	]:
+		if camera.is_position_in_frustum(corner):
+			return true
+	return false
 
 
 ## Filter nodes by visibility for culling
