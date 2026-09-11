@@ -87,6 +87,19 @@ SKYBOX_PATHS = {
     "game/world/actors/sky/retro_sky.tres",
     "game/world/actors/sky/retro_sky_mat.tres",
 }
+MIT_PROJECT_PATHS = {
+    "game/art/models/skel/procedural_reference.glb",
+    "game/core/network/default_network_config.tres",
+    "game/default_bus_layout.tres",
+    "game/scenes/world.tres",
+    "game/scripts/features/effects/effects/gib_physics.tres",
+    "shared/editor_core/icons/level_root.svg",
+    "shared/editor_core/icons/plugin_icon.svg",
+    "shared/editor_core/icons/spawn_enemy.svg",
+    "shared/editor_core/icons/spawn_item.svg",
+    "shared/editor_core/icons/spawn_player.svg",
+    "shared/editor_core/icons/spawn_point.svg",
+}
 BLOOD_POOL_PATHS = {
     "game/art/shaders/blood_pool.gdshader",
     "shared/shaders/blood_pool.gd",
@@ -170,6 +183,15 @@ def classify(path: Path, digest: str) -> dict[str, str]:
             "notes": "User-confirmed original AI-assisted skybox shader/material work; no external asset source is claimed.",
         }
 
+    if relative in MIT_PROJECT_PATHS:
+        return {
+            "status": "cleared",
+            "author": "LichForge",
+            "source": "Original project asset authored for MODUS",
+            "license": "MIT",
+            "local_notice": "LICENSE",
+            "notes": "User-confirmed project-owned asset; no external asset source is claimed.",
+        }
     if relative in ORIGINAL_ICONS:
         if digest != ORIGINAL_ICONS[relative]:
             base["notes"] = "Icon changed after the original-artwork provenance record."

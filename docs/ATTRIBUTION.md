@@ -7,7 +7,7 @@
 
 ## Current Ledger Boundary
 
-`tools/generate_provenance_ledger.py` inventories the asset/resource extensions distributed from `game/`, `shared/`, `standalone/`, and `mods/`, plus the derived blood-pool script. The current ledger contains **218 assets: 163 cleared and 55 unverified**. The twelve private Suno tracks were removed from the repository and are no longer distributed.
+`tools/generate_provenance_ledger.py` inventories the asset/resource extensions distributed from `game/`, `shared/`, `standalone/`, and `mods/`, plus the derived blood-pool script. The current ledger contains **218 assets: 174 cleared and 44 unverified**. The twelve private Suno tracks were removed from the repository and are no longer distributed.
 
 Run `tools/generate_provenance_ledger.py --check` after asset changes. `--strict` intentionally fails until every distributed row is cleared or removed.
 
@@ -23,6 +23,7 @@ Run `tools/generate_provenance_ledger.py --check` after asset changes. `--strict
 | Quaternius Universal Animation Library | `game/art/anims/`, `game/art/models/mannequin_mesh.glb`, `game/art/models/mannequin_mesh_Mannequin.res`, and `game/art/models/pistol.glb` | Official pack page identifies the library as CC0 and free for commercial use; local notice is retained at `docs/licenses/QUATERNIUS_CC0-1.0.txt`. Godot `.res` files are derived resources. |
 | Liquid shaders and materials | `game/art/shaders/{enhanced_liquid,liquid,retro_blood,retro_lava,retro_poison,retro_water}.gdshader` and four matching liquid `.tres` files | User-confirmed original AI-assisted generation by the LichForge author; classified MIT with the project `LICENSE` notice. |
 | Skybox shaders and materials | `game/world/actors/sky/{clouds,retro_sky}.gdshader` and the matching `retro_sky*.tres` files | User-confirmed original AI-assisted generation by the LichForge author; classified MIT with the project `LICENSE` notice. |
+| Project-owned resources and editor icons | `game/core/network/default_network_config.tres`, `game/default_bus_layout.tres`, `game/scenes/world.tres`, `game/scripts/features/effects/effects/gib_physics.tres`, `game/art/models/skel/procedural_reference.glb`, and six `shared/editor_core/icons/*.svg` files | User-confirmed original LichForge assets; classified MIT with the project `LICENSE` notice. |
 
 The Kenney files are pixel-equivalent rather than byte-identical because their PNG encoding differs from the current official ZIP. Their repository hashes and source URLs are pinned in the ledger.
 
