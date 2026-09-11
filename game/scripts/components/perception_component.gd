@@ -125,7 +125,7 @@ func _scan_environment() -> void:
 		_append_unique_targets(potential_targets, registry.get_all_players())
 		if aggressive_against_all:
 			_append_unique_targets(potential_targets, registry.get_all_enemies())
-	else:
+	if potential_targets.is_empty():
 		_append_unique_targets(potential_targets, get_tree().get_nodes_in_group("player"))
 		_append_unique_targets(potential_targets, get_tree().get_nodes_in_group("players"))
 		if aggressive_against_all:
