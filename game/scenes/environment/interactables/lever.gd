@@ -17,12 +17,38 @@ func _ready() -> void:
 	_update_visuals(true)
 
 
-func _on_interacted(_interactor: Node) -> void:
-	_set_state.rpc(not is_on)
+func _on_interacted(interactor: Node) -> void:
+	if not interactor or not _is_valid_interactor(interactor):
+		return
+	if multiplayer.is_server():
+		_sync_state.rpc(not is_on)
+	else:
+		_request_state.rpc_id(1, not is_on)
 
 
 @rpc("any_peer", "call_local", "reliable")
-func _set_state(new_state: bool) -> void:
+func _request_state(new_state: bool) -> void:
+	if not multiplayer.is_server():
+		return
+	var sender_id: int = multiplayer.get_remote_sender_id()
+	if sender_id <= 0:
+		return
+	for player: Node in get_tree().get_nodes_in_group("player"):
+		if player.get_multiplayer_authority() == sender_id and _is_valid_interactor(player):
+			_sync_state.rpc(new_state)
+			return
+
+
+func _is_valid_interactor(interactor: Node) -> bool:
+	return (
+		interactor.is_in_group("player")
+		and interactor is Node3D
+		and (interactor as Node3D).global_position.distance_to(global_position) <= 3.5
+	)
+
+
+@rpc("authority", "call_local", "reliable")
+func _sync_state(new_state: bool) -> void:
 	is_on = new_state
 	toggled.emit(is_on)
 	_update_visuals()

@@ -45,7 +45,7 @@ These results are narrower than the aggregate suite and must not be summed into 
 | --- | --- |
 | Server rewind / combat / adjacent weapons | September 9: 119/119, 255 assertions; eight runtime checks pass after six baseline failures; controlled latency and real physics, not WAN/manual proof |
 | Save service | 8/8; current encrypted slot existence/list/delete contract and score-key restoration |
-| Network manager | 15/15; trusted Steam-authenticated peers remain subject to whitelist, rate limits, movement validation, semantic status/chat/kill/ticket/revive/interaction validation, authority-only damage, weapon visual effects, player-state synchronization, bounded lifecycle, grenade, prop-damage, chest, backpack, and treasure-chest requests |
+| Network manager | 15/15; trusted Steam-authenticated peers remain subject to whitelist, rate limits, movement validation, semantic status/chat/kill/ticket/revive/interaction validation, authority-only damage, weapon visual effects, player-state synchronization, bounded lifecycle, grenade, prop-damage, chest, backpack, treasure-chest, button, lever, and EnemyLab requests |
 | Reconnect | 2/2; focused token preservation and reconnect cancellation proof |
 | Combat latency | 10/10; controlled 100 ms rewind/reconciliation proof; representative WAN sessions remain open |
 | Network rate validation | 13/13 focused network-manager proof; real abusive-client soak remains open |

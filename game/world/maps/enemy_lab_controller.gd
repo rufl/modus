@@ -36,14 +36,29 @@ func register_enemy(enemy: Node, index: int) -> void:
 @rpc("any_peer", "call_local", "reliable")
 func request_state_change(state_name: String) -> void:
 	if not multiplayer.is_server():
-		# Forward to server
 		request_state_change.rpc_id(1, state_name)
+		return
+	if not STATE_MAP.has(state_name):
+		return
+
+	var sender_id: int = multiplayer.get_remote_sender_id()
+	if sender_id > 0 and not _is_valid_state_request_sender(sender_id):
+		return
+	if multiplayer.has_multiplayer_peer() and sender_id <= 0:
 		return
 
 	GameManager.get_core_system("logger").info(
 		"[EnemyLab] State change requested: " + " " + str(state_name), "World"
 	)
 	_apply_state_change(state_name)
+
+
+func _is_valid_state_request_sender(sender_id: int) -> bool:
+	for player: Node in get_tree().get_nodes_in_group("player"):
+		if player.get_multiplayer_authority() != sender_id or not player is Node3D:
+			continue
+		return (player as Node3D).global_position.distance_to(global_position) <= 12.0
+	return false
 
 
 func _apply_state_change(state_req: String) -> void:
