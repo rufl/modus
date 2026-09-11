@@ -92,27 +92,35 @@ func test_network_manager_falls_back_to_enet_when_steam_unavailable() -> void:
 	assert_true(active_peer is ENetMultiplayerPeer, "Unavailable Steam must select ENet")
 	var enet_peer := active_peer as ENetMultiplayerPeer
 	assert_not_null(enet_peer)
-	if enet_peer:
-		assert_gt(enet_peer.get_host().get_local_port(), 0)
+	if not enet_peer:
+		return
+	assert_gt(enet_peer.get_host().get_local_port(), 0)
 	assert_true(multiplayer.is_server())
 	assert_eq(hosting_ports.size(), 1)
 	assert_eq(hosting_ports[0], enet_peer.get_host().get_local_port())
 	assert_eq(_network_manager.get_network_mode(), "ENet (IP/LAN)")
-
 
 func test_enet_server_accepts_client_on_ephemeral_port() -> void:
 	var server_root := _create_multiplayer_root("EnetServer")
 	var server_api: SceneMultiplayer = server_root.get_multiplayer() as SceneMultiplayer
 	var server_peer := ENetMultiplayerPeer.new()
 	_peers.append(server_peer)
-	assert_eq(server_peer.create_server(0, 2), OK)
+	var server_error: Error = server_peer.create_server(0, 2)
+	assert_eq(server_error, OK)
+	if server_error != OK or not server_peer.get_host():
+		return
 	server_api.multiplayer_peer = server_peer
 
 	var client_root := _create_multiplayer_root("EnetClient")
 	var client_api: SceneMultiplayer = client_root.get_multiplayer() as SceneMultiplayer
 	var client_peer := ENetMultiplayerPeer.new()
 	_peers.append(client_peer)
-	assert_eq(client_peer.create_client("127.0.0.1", server_peer.get_host().get_local_port()), OK)
+	var client_error: Error = client_peer.create_client(
+		"127.0.0.1", server_peer.get_host().get_local_port()
+	)
+	assert_eq(client_error, OK)
+	if client_error != OK:
+		return
 	client_api.multiplayer_peer = client_peer
 
 	assert_true(

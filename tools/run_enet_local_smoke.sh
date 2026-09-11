@@ -61,6 +61,11 @@ on_signal() {
   note="Smoke interrupted by ${signal}; child processes were terminated."
   stop_process "$client_pid"
   stop_process "$server_pid"
+  client_pid=""
+  server_pid=""
+  client_exit="interrupted"
+  server_exit="interrupted"
+  write_report
   exit 128
 }
 
