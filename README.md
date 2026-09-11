@@ -2,7 +2,11 @@
 
 > **Documentation status: maintained reference.** Published readiness is consolidated in `docs/DOCUMENTATION_TRUTH.md` and `docs/CURRENT_STATUS.md`. Generated reports are local invocation records; narrower claims in this file apply only to the named subsystem or workflow.
 
-MODUS is an experimental Godot 4.7 multiplayer FPS framework and template. The repository contains substantial gameplay, networking, editor, modding, data/configuration, splitscreen, and procedural-map code, but it is not a production-ready game or SDK.
+MODUS is an experimental Godot 4.7 multiplayer FPS framework and playable mechanics lab for developers who still care how guns feel, movement flows, enemies pressure space, and levels create stories.
+
+If you like boomer shooters, arena shooters, looter shooters, procedural maps, co-op experiments, or games that expose their systems instead of hiding them behind a black box, MODUS is built in that direction.
+
+It combines fast FPS combat, movement, weapons, loot, enemy AI, procedural map generation, splitscreen, multiplayer foundations, a level editor, and a modding SDK in one inspectable project. Build a tight combat room, a procedural gauntlet, a strange weapon pack, a custom enemy faction, or a ruleset that changes how the whole game behaves.
 
 **Version:** `0.9.5-beta`
 
@@ -10,9 +14,31 @@ MODUS is an experimental Godot 4.7 multiplayer FPS framework and template. The r
 
 **Readiness:** **NOT READY**
 
-**Manual evidence:** 0 imported sessions / 0.00 recorded hours
+MODUS is not presented as a shipped game or production-ready SDK. Manual gameplay evidence, release packaging, Workshop publication, and broader external runtime validation remain open. The project keeps those boundaries visible while the underlying systems are developed and tested.
 
-Read [Documentation Truth](docs/DOCUMENTATION_TRUTH.md) and [Current Status](docs/CURRENT_STATUS.md) before using project-wide claims. Generate the local `docs/PRODUCTION_READINESS_REPORT.md` with `tools/validate_production_readiness.sh`; it is an output, not a required checkout file. See the [Ship-Readiness Estimate](docs/SHIP_READINESS_ESTIMATE.md) for the explicit gateboard and calendar estimate.
+## Why MODUS
+
+MODUS takes the parts that make FPS games worth mastering:
+
+- Boomer-shooter movement rhythm and immediate weapon feedback.
+- Arena-shooter space, pressure, routes, and target priority.
+- Looter-shooter variety through weapons, pickups, equipment, inventory, and modifiers.
+- Procedural replayability through rooms, hallways, caves, slopes, 3D floors, navigation, and gameplay placement.
+- Mod-friendly experimentation through data overrides, event exchange, script hooks, sample packages, and validation.
+- Developer control through inspectable Godot scenes, configuration, editor tooling, focused tests, and server-authoritative boundaries.
+
+The intended workflow is direct: edit a level, tune a weapon, change the data, reload the route, and test the result. MODUS is for the developer who thinks, “The gun should kick harder,” “That enemy needs to force movement,” or “I want to change the rules, not just replace a texture.”
+
+## What You Can Build
+
+- A fast solo FPS with handcrafted combat arenas.
+- A procedural run with escalating enemies and loot.
+- A co-op or splitscreen experiment.
+- A custom weapons-and-modifiers sandbox.
+- A mod package that changes data, events, enemies, or rules.
+- A level-editor workflow that stays close to the playable result.
+
+The project is mechanics-first: velocity, pressure, readable systems, strange weapons, and levels worth learning.
 
 ## Start Here
 
