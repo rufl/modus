@@ -31,6 +31,7 @@ enum ThemeType { TECH, HELL, URBAN, CAVE, JUMBLED }
 @export var enable_key_locks: bool = true
 @export var enable_boss_arena: bool = true
 @export var enable_secrets: bool = true
+@export_range(1, 3) var secret_room_count: int = 1
 
 # Export
 @export var export_format: ExportFormat = ExportFormat.PACKED_SCENE
