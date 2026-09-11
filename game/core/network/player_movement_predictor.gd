@@ -164,11 +164,7 @@ func apply_movement(input: RefCounted) -> void:
 
 
 func is_prediction_active() -> bool:
-	return (
-		is_physics_processing()
-		and net_config != null
-		and net_config.enable_client_prediction
-	)
+	return is_physics_processing() and net_config != null and net_config.enable_client_prediction
 
 
 func _cleanup_acknowledged_inputs() -> void:

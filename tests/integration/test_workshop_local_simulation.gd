@@ -1,7 +1,8 @@
 extends ModusGutTestBase
 
 
-class SteamQueryDouble extends RefCounted:
+class SteamQueryDouble:
+	extends RefCounted
 	signal steam_shutdown
 
 	var released_handles: Array[int] = []
@@ -37,6 +38,7 @@ class SteamQueryDouble extends RefCounted:
 	func get_current_app_id() -> int:
 		return 480
 
+
 const LevelPackagerScript = preload("res://shared/editor_core/data/level_packager.gd")
 const WorkshopManagerScript = preload("res://shared/editor_core/data/workshop_manager.gd")
 
@@ -45,6 +47,7 @@ const WORKSHOP_DIR := "user://workshop/"
 
 var workshop_browse_results: Array[Dictionary] = []
 var workshop_browse_failures: Array[Dictionary] = []
+
 
 func test_local_workshop_upload_download_browse_and_subscription() -> void:
 	_remove_directory(FIXTURE_DIR)
@@ -132,18 +135,21 @@ func test_steam_browse_reports_unsupported_capability() -> void:
 func test_steam_metadata_conversion_normalizes_ugc_result() -> void:
 	var manager := WorkshopManagerScript.new()
 	add_child_autofree(manager)
-	var item := manager._convert_steam_ugc_metadata(
-		{
-			"file_id": 42,
-			"title": "Remote Fixture",
-			"description": "Steam metadata",
-			"tags": "Action, Puzzle, ",
-			"steam_id_owner": 76561198000000000,
-			"time_created": 100,
-			"time_updated": 200,
-			"score": 0.75,
-			"total_unique_subscriptions": 12,
-		}
+	var item := (
+		manager
+		. _convert_steam_ugc_metadata(
+			{
+				"file_id": 42,
+				"title": "Remote Fixture",
+				"description": "Steam metadata",
+				"tags": "Action, Puzzle, ",
+				"steam_id_owner": 76561198000000000,
+				"time_created": 100,
+				"time_updated": 200,
+				"score": 0.75,
+				"total_unique_subscriptions": 12,
+			}
+		)
 	)
 
 	assert_eq(item.get("item_id"), "42")
@@ -153,7 +159,6 @@ func test_steam_metadata_conversion_normalizes_ugc_result() -> void:
 	assert_eq(item.get("updated"), 200)
 	assert_eq(item.get("downloads"), 12)
 	assert_eq(item.get("rating"), 0.75)
-
 
 
 func test_steam_numeric_send_failure_releases_query_once() -> void:
@@ -193,6 +198,7 @@ func test_steam_shutdown_fails_active_query_once() -> void:
 	assert_eq(steam_double.released_handles, [202])
 	assert_eq(manager._active_browse_query_handle, 0)
 	assert_false(manager.steam_ugc_available)
+
 
 func _remove_directory(path: String) -> void:
 	var dir := DirAccess.open(path)

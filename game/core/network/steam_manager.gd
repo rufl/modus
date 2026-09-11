@@ -137,6 +137,7 @@ func initialize_steam_server(data: Dictionary) -> void:
 		"SteamManager"
 	)
 
+
 func _connect_steam_signals() -> void:
 	var steam: Object = Engine.get_singleton("Steam")
 	# Standard Lobbies - with safety checks

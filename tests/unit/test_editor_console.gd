@@ -58,9 +58,7 @@ func test_fill_modes_place_expected_cells_and_honor_block_material() -> void:
 
 	for child: Node in level_root.get_children():
 		child.free()
-	result = console._exec_fill(
-		["block_stone", 0.0, 0.0, 0.0, 2.0, 2.0, 2.0, "outline"]
-	)
+	result = console._exec_fill(["block_stone", 0.0, 0.0, 0.0, 2.0, 2.0, 2.0, "outline"])
 	assert_true(result.success)
 	assert_eq(level_root.get_child_count(), 20)
 	registry.free()

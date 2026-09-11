@@ -71,7 +71,9 @@ func save_data(slot_name: String, data: Dictionary, metadata: Dictionary = {}) -
 
 
 func _write_encrypted_stage(path: String, content: String) -> bool:
-	var file: FileAccess = FileAccess.open_encrypted_with_pass(path, FileAccess.WRITE, ENCRYPTION_KEY)
+	var file: FileAccess = FileAccess.open_encrypted_with_pass(
+		path, FileAccess.WRITE, ENCRYPTION_KEY
+	)
 	if not file:
 		_handle_error("Failed to open staged save file for writing: %s" % path)
 		return false
@@ -113,7 +115,9 @@ func _validate_staged_files(data_path: String, meta_path: String) -> bool:
 	var data_err: Error = data_file.get_error()
 	data_file.close()
 	if data_err != OK:
-		_handle_error("Failed to read staged save file %s: %s" % [data_path, error_string(data_err)])
+		_handle_error(
+			"Failed to read staged save file %s: %s" % [data_path, error_string(data_err)]
+		)
 		return false
 
 	var data_json := JSON.new()
@@ -129,7 +133,9 @@ func _validate_staged_files(data_path: String, meta_path: String) -> bool:
 	var meta_err: Error = meta_file.get_error()
 	meta_file.close()
 	if meta_err != OK:
-		_handle_error("Failed to read staged metadata file %s: %s" % [meta_path, error_string(meta_err)])
+		_handle_error(
+			"Failed to read staged metadata file %s: %s" % [meta_path, error_string(meta_err)]
+		)
 		return false
 
 	var meta_json := JSON.new()
@@ -225,6 +231,7 @@ func _validate_slot_name(slot_name: String) -> bool:
 		if not (is_lower or is_upper or is_digit or character == "_" or character == "-"):
 			return false
 	return true
+
 
 ## Legacy path-based save API retained for older tests and compatibility tools.
 ## Use save_data/load_data for production slot saves.
@@ -352,7 +359,10 @@ func get_all_saves() -> Array[Dictionary]:
 		if not dir.current_is_dir() and file_name.ends_with(METADATA_EXT):
 			var slot_name: String = file_name.trim_suffix(METADATA_EXT)
 			# Only complete, safely named pairs are listable slots.
-			if _validate_slot_name(slot_name) and FileAccess.file_exists(SAVE_DIR + slot_name + DATA_EXT):
+			if (
+				_validate_slot_name(slot_name)
+				and FileAccess.file_exists(SAVE_DIR + slot_name + DATA_EXT)
+			):
 				var meta: Dictionary = get_slot_metadata(slot_name)
 				meta["slot_name"] = slot_name
 				saves.append(meta)
@@ -389,6 +399,7 @@ func delete_save(slot_name: String) -> void:
 	_cleanup_staged_files(data_path + ".staging", meta_path + ".staging")
 	_remove_file_if_exists(data_path)
 	_remove_file_if_exists(meta_path)
+
 
 func _handle_error(msg: String) -> void:
 	push_error("[SaveService] " + msg)

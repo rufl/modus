@@ -44,7 +44,10 @@ static func _resolve_behavior(data: Dictionary) -> String:
 	# EnemyData historically emits "aggressive" for every role. Prefer the
 	# authored support role in that case so support enemies do not attack by
 	# silently falling through the aggressive default.
-	if behavior.is_empty() or (behavior == "aggressive" and role in ["support", "healer", "summoner", "rally"]):
+	if (
+		behavior.is_empty()
+		or (behavior == "aggressive" and role in ["support", "healer", "summoner", "rally"])
+	):
 		behavior = role
 	return behavior if not behavior.is_empty() else "aggressive"
 
@@ -103,7 +106,8 @@ static func _add_behavior_states(
 					{
 						"summon_minions": true,
 						"minion_type": abilities.get("minion_type", "swarmling"),
-						"summon_count": abilities.get("summon_count", abilities.get("max_summons", 3)),
+						"summon_count":
+						abilities.get("summon_count", abilities.get("max_summons", 3)),
 						"summon_cooldown": abilities.get("summon_cooldown", 10.0)
 					}
 				)
@@ -116,9 +120,8 @@ static func _add_behavior_states(
 				"[EnemyAIFactory] Rally behavior is unsupported: no rally state exists; using idle"
 			)
 		_:
-			push_error(
-				"[EnemyAIFactory] Unsupported enemy behavior '%s'; using idle" % behavior
-			)
+			push_error("[EnemyAIFactory] Unsupported enemy behavior '%s'; using idle" % behavior)
+
 
 static func _add_ability_states(controller: EnemyAIController, abilities: Dictionary) -> void:
 	# Healer Logic

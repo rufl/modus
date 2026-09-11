@@ -4,8 +4,8 @@ extends ModusGutTestBase
 # Converted from legacy Dictionary format to GUT assertions
 
 
-
-class LifecycleProbe extends ModScript:
+class LifecycleProbe:
+	extends ModScript
 	var init_count: int = 0
 	var cleanup_count: int = 0
 
@@ -14,6 +14,7 @@ class LifecycleProbe extends ModScript:
 
 	func _mod_cleanup() -> void:
 		cleanup_count += 1
+
 
 func before_each() -> void:
 	await modus_setup()
@@ -144,7 +145,6 @@ func test_mod_script_has_lifecycle_methods() -> void:
 			instance.free()
 
 
-
 func test_mod_script_lifecycle_is_idempotent() -> void:
 	var instance := LifecycleProbe.new()
 	add_child(instance)
@@ -156,6 +156,7 @@ func test_mod_script_lifecycle_is_idempotent() -> void:
 	instance.on_mod_unloaded()
 	assert_eq(instance.cleanup_count, 1, "Unloading a mod twice should clean up once")
 	instance.free()
+
 
 # =============================================================================
 # MODS DIRECTORY

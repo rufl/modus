@@ -84,8 +84,10 @@ func _update_lod(force: bool = false) -> void:
 		return
 
 	# Dedicated servers have no camera and must not run client-side LOD.
-	if multiplayer.has_multiplayer_peer() and multiplayer.is_server() and OS.has_feature(
-		"dedicated_server"
+	if (
+		multiplayer.has_multiplayer_peer()
+		and multiplayer.is_server()
+		and OS.has_feature("dedicated_server")
 	):
 		return
 

@@ -252,8 +252,11 @@ func _validate_data(data: Variant, schema: Dictionary, path: String) -> bool:
 				push_warning("[ConfigService] %s is missing %s" % [path, required_key])
 				return false
 		for key: String in schema.get("properties", {}):
-			if object_data.has(key) and not _validate_data(
-				object_data[key], schema.properties[key], "%s.%s" % [path, key]
+			if (
+				object_data.has(key)
+				and not _validate_data(
+					object_data[key], schema.properties[key], "%s.%s" % [path, key]
+				)
 			):
 				return false
 	elif schema_type == "array" and schema.has("items"):

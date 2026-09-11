@@ -41,8 +41,6 @@ enum ThemeType { TECH, HELL, URBAN, CAVE, JUMBLED }
 @export var debug_mode: bool = false  # Enable intermediate state saving for debugging
 
 
-
-
 ## Compatibility helper for callers that also accept dictionary configs.
 ## Resource properties must be inspected through get_property_list() rather
 ## than Dictionary.has().

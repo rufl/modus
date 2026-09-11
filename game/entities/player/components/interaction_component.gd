@@ -129,10 +129,7 @@ func collect_key(key_id: String) -> void:
 
 @rpc("any_peer", "call_local", "reliable")
 func _request_collect_key(key_id: String) -> void:
-	if (
-		not multiplayer.is_server()
-		or not _validate_client_rpc("_request_collect_key", [key_id])
-	):
+	if not multiplayer.is_server() or not _validate_client_rpc("_request_collect_key", [key_id]):
 		return
 	collect_key(key_id)
 

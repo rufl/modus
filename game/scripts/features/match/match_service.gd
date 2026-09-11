@@ -179,7 +179,6 @@ func initialize() -> void:
 	subscribe_event("item_picked_up", _on_item_picked_up_event)
 	subscribe_event("xp_gained", _on_xp_gained_event)
 
-
 	_mark_initialized()
 	_log_info(
 		"[Match] Initialized - Time limit: %ds, Frag limit: %d" % [match_time_limit, frag_limit]

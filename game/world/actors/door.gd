@@ -118,7 +118,6 @@ func _is_valid_request_sender() -> bool:
 	return _get_requesting_player() != null
 
 
-
 @rpc("authority", "call_local", "reliable")
 func _perform_open() -> void:
 	is_open = true

@@ -83,6 +83,7 @@ func get_steam_manager() -> Node:
 func get_peer_steam_id(peer_id: int) -> int:
 	return int(_peer_steam_ids.get(peer_id, 0))
 
+
 func _bind_steam_auth_signal() -> void:
 	var steam: Node = get_steam_manager()
 	if steam and steam.has_signal("steam_auth_ticket_validated"):
@@ -111,8 +112,10 @@ func _on_steam_auth_ticket_validated(steam_id: int, response: int) -> void:
 
 	if response != 0:
 		push_warning(
-			"[Network] Steam Auth rejected for peer %d (ID: %d, response: %d)"
-			% [peer_id, steam_id, response]
+			(
+				"[Network] Steam Auth rejected for peer %d (ID: %d, response: %d)"
+				% [peer_id, steam_id, response]
+			)
 		)
 		# Keep the pending entry until disconnect so its started session is ended.
 		multiplayer.disconnect_peer(peer_id)
@@ -120,7 +123,9 @@ func _on_steam_auth_ticket_validated(steam_id: int, response: int) -> void:
 
 	for verified_peer: Variant in _peer_steam_ids:
 		if int(_peer_steam_ids[verified_peer]) == steam_id and int(verified_peer) != peer_id:
-			push_warning("[Network] Steam ID %d is already verified for peer %d" % [steam_id, verified_peer])
+			push_warning(
+				"[Network] Steam ID %d is already verified for peer %d" % [steam_id, verified_peer]
+			)
 			multiplayer.disconnect_peer(peer_id)
 			return
 
@@ -177,7 +182,6 @@ func _exit_tree() -> void:
 		if steam.steam_auth_ticket_validated.is_connected(_on_steam_auth_ticket_validated):
 			steam.steam_auth_ticket_validated.disconnect(_on_steam_auth_ticket_validated)
 
-
 	# Timer signals
 	if _reconnect_timer:
 		if _reconnect_timer.timeout.is_connected(_on_reconnect_timer_timeout):
@@ -218,12 +222,16 @@ func _load_network_config() -> void:
 			# Load reconnection settings from config
 			_max_reconnect_attempts = int(
 				_get_first_config_value(
-					cm, ["network.connection.max_reconnect_attempts", "network.max_reconnect_attempts"], 5
+					cm,
+					["network.connection.max_reconnect_attempts", "network.max_reconnect_attempts"],
+					5
 				)
 			)
 			_reconnect_delay_ms = int(
 				_get_first_config_value(
-					cm, ["network.connection.reconnect_delay_ms", "network.reconnect_delay_ms"], 2000
+					cm,
+					["network.connection.reconnect_delay_ms", "network.reconnect_delay_ms"],
+					2000
 				)
 			)
 			_reconnect_window_sec = float(
@@ -249,9 +257,7 @@ func _load_network_config() -> void:
 ## Load NetworkConfig resource (new netcode architecture)
 
 
-func _get_first_config_value(
-	cm: Variant, paths: Array[String], default_value: Variant
-) -> Variant:
+func _get_first_config_value(cm: Variant, paths: Array[String], default_value: Variant) -> Variant:
 	for path: String in paths:
 		var value: Variant = cm.get_value(path, null)
 		if value != null and not value is Dictionary:
@@ -336,10 +342,7 @@ func _load_network_config_resource() -> void:
 			var json_hist_ms: float = float(
 				_get_first_config_value(
 					cm,
-					[
-						"network.lag_compensation.max_window_ms",
-						"network.lag_compensation_max_ms"
-					],
+					["network.lag_compensation.max_window_ms", "network.lag_compensation_max_ms"],
 					1000.0
 				)
 			)
@@ -355,7 +358,10 @@ func _load_network_config_resource() -> void:
 			var interpolation_enabled: bool = bool(
 				_get_first_config_value(
 					cm,
-					["network.snapshot_buffer.interpolation_enabled", "network.interpolation_enabled"],
+					[
+						"network.snapshot_buffer.interpolation_enabled",
+						"network.interpolation_enabled"
+					],
 					true
 				)
 			)
@@ -371,6 +377,7 @@ func _load_network_config_resource() -> void:
 		var logger2: Variant = gm.get_core_system("logger")
 		if logger2 and logger2.has_method("info"):
 			logger2.info("[Network] Created default NetworkConfig", "Network")
+
 
 ## Initialize method for GameCore service pattern
 
@@ -782,16 +789,16 @@ func _validate_shoot_request(peer_id: int, args: Array) -> bool:
 			# for another weapon.
 			if weapon_manager.current_weapon_index != weapon_index:
 				push_warning(
-					"[Network] Peer %d tried to fire weapon %d while weapon %d is equipped"
-					% [peer_id, weapon_index, weapon_manager.current_weapon_index]
+					(
+						"[Network] Peer %d tried to fire weapon %d while weapon %d is equipped"
+						% [peer_id, weapon_index, weapon_manager.current_weapon_index]
+					)
 				)
 				return false
-			else:
-				var ammo: Array = weapon_manager.get_current_ammo()
-				if ammo.size() > 0 and ammo[0] <= 0:
-					push_warning("[Network] Peer %d tried to shoot with 0 ammo" % peer_id)
-					return false
-
+			var ammo: Array = weapon_manager.get_current_ammo()
+			if ammo.size() > 0 and ammo[0] <= 0:
+				push_warning("[Network] Peer %d tried to shoot with 0 ammo" % peer_id)
+				return false
 		# 3. FIRE RATE VALIDATION
 		if weapon_manager.weapons and weapon_index < weapon_manager.weapons.size():
 			var weapon_data: Resource = weapon_manager.weapons[weapon_index]
@@ -1366,7 +1373,6 @@ func _on_peer_connected(id: int) -> void:
 
 ## Client -> Server: Verify Steam Auth Ticket
 
-
 @rpc("any_peer", "call_remote", "reliable")
 func verify_steam_ticket(ticket_bundle: Dictionary) -> void:
 	if not multiplayer.is_server():
@@ -1414,9 +1420,9 @@ func verify_steam_ticket(ticket_bundle: Dictionary) -> void:
 		var logger: Variant = gm.get_core_system("logger")
 		if logger and logger.has_method("info"):
 			logger.info(
-				"[Network] Steam Auth pending for peer %d (ID: %d)" % [peer_id, steam_id],
-				"Network"
+				"[Network] Steam Auth pending for peer %d (ID: %d)" % [peer_id, steam_id], "Network"
 			)
+
 
 ## Peer disconnected handler
 

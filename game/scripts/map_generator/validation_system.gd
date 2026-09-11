@@ -347,7 +347,6 @@ func _find_player_start_position(context: RefCounted) -> Vector2i:
 			):
 				return room_cell
 
-
 	# Last resort: find first walkable cell
 	for y in range(context.grid.size()):
 		for x in range(context.grid[y].size()):
@@ -424,6 +423,7 @@ func _flood_fill_reaches(
 		queue.append(Vector2i(current.x, current.y - 1))
 
 	return false
+
 
 ## Flood fill to count reachable cells from start position
 func _flood_fill_count(grid: Array, start: Vector2i) -> int:

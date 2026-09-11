@@ -13,8 +13,6 @@ func _ready() -> void:
 ## Override this to initialize your mod.
 
 
-
-
 func _mod_init() -> void:
 	pass
 

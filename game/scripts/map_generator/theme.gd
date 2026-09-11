@@ -105,7 +105,9 @@ static func _create_placeholder_material(color: Color) -> StandardMaterial3D:
 ## Used for voxel-based cave terrain.
 func get_cave_material() -> Material:
 	if theme_type == GenerationConfig.ThemeType.CAVE:
-		return wall_material if wall_material else _create_placeholder_material(Color(0.3, 0.25, 0.2))
+		return (
+			wall_material if wall_material else _create_placeholder_material(Color(0.3, 0.25, 0.2))
+		)
 	if _generated_cave_material:
 		return _generated_cave_material
 

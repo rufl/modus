@@ -98,8 +98,6 @@ func apply_preset(preset: NetworkPreset, recalculate_derived: bool = true) -> vo
 		_calculate_derived_values()
 
 
-
-
 func get_config_summary() -> String:
 	## Returns human-readable summary of current configuration
 	var summary: String = "Network Configuration:"

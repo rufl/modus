@@ -44,6 +44,7 @@ func _activate_node(node: Node) -> void:
 	node.set_process(true)
 	node.set_physics_process(true)
 
+
 func _trim_or_pool(node: Node, pool: Array, configured_size: int) -> void:
 	# Keep the configured warm pool; trim overflow on return so active effects
 	# are never recycled or displaced to make room.
@@ -51,6 +52,7 @@ func _trim_or_pool(node: Node, pool: Array, configured_size: int) -> void:
 		node.queue_free()
 		return
 	pool.append(node)
+
 
 ## Pools
 var _muzzle_flash_pool: Array[Node3D] = []
@@ -391,6 +393,7 @@ func spawn_light(
 
 	return light
 
+
 func _return_light(light: OmniLight3D) -> void:
 	if not is_instance_valid(light):
 		return
@@ -415,9 +418,7 @@ func spawn_shell_casing(
 		shell = _shell_casing_pool.pop_back()
 		if enable_stats:
 			_stats.shell_reuses += 1
-	elif _can_create(
-		shell_casing_pool_size, _shell_casing_pool.size(), _active_shells.size()
-	):
+	elif _can_create(shell_casing_pool_size, _shell_casing_pool.size(), _active_shells.size()):
 		shell = _create_shell_instance()
 		add_child(shell)
 		if enable_stats:

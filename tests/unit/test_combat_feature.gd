@@ -8,6 +8,8 @@ var combat_feature: CombatFeature
 var test_target: Node3D
 var test_source: Node3D
 
+const MockDamageTargetScript = preload("res://tests/mocks/mock_damage_target.gd")
+
 
 func before_each():
 	# Wait for autoloads to initialize
@@ -173,7 +175,7 @@ func test_maximum_damage_enforced():
 	# Create a mock target with take_damage method
 	var mock_target := Node3D.new()
 	mock_target.name = "MockTarget"
-	mock_target.set_script(load("res://tests/mocks/mock_damage_target.gd"))
+	mock_target.set_script(MockDamageTargetScript)
 	add_child(mock_target)
 
 	var damage_info := DamageInfo.new()
@@ -193,7 +195,7 @@ func test_maximum_damage_enforced():
 func test_hit_detected_event_applies_damage():
 	var mock_target := Node3D.new()
 	mock_target.name = "HitDetectedTarget"
-	mock_target.set_script(load("res://tests/mocks/mock_damage_target.gd"))
+	mock_target.set_script(MockDamageTargetScript)
 	add_child(mock_target)
 
 	var damage_info := DamageInfo.new()
@@ -368,11 +370,7 @@ func test_hitbox_multipliers_use_target_hitbox_metadata() -> void:
 		{},
 		{
 			"hitboxes":
-			{
-				"headshot_multiplier": 2.5,
-				"bodyshot_multiplier": 1.0,
-				"limbshot_multiplier": 0.75
-			}
+			{"headshot_multiplier": 2.5, "bodyshot_multiplier": 1.0, "limbshot_multiplier": 0.75}
 		}
 	)
 	add_child_autofree(calculator)

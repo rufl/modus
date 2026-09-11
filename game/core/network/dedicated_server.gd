@@ -230,8 +230,9 @@ func _is_safe_zip_entry(entry_path: String, extraction_root: String) -> bool:
 	var normalized_path: String = entry_path.replace("\\", "/")
 	if normalized_path.is_empty() or normalized_path.contains("://"):
 		return false
-	if normalized_path.begins_with("/") or (
-		normalized_path.length() >= 2 and normalized_path[1] == ":"
+	if (
+		normalized_path.begins_with("/")
+		or (normalized_path.length() >= 2 and normalized_path[1] == ":")
 	):
 		return false
 
@@ -240,9 +241,9 @@ func _is_safe_zip_entry(entry_path: String, extraction_root: String) -> bool:
 			return false
 
 	var root_path: String = ProjectSettings.globalize_path(extraction_root).simplify_path()
-	var target_path: String = ProjectSettings.globalize_path(
-		extraction_root.path_join(normalized_path)
-	).simplify_path()
+	var target_path: String = (
+		ProjectSettings.globalize_path(extraction_root.path_join(normalized_path)).simplify_path()
+	)
 	if not (target_path == root_path or target_path.begins_with(root_path + "/")):
 		return false
 

@@ -105,8 +105,10 @@ func _report_missing_owner() -> void:
 		return
 	_owner_error_reported = true
 	push_error(
-		"[EffectsFeature] EffectsService owner not found; "
-		+ "the feature facade will remain unavailable"
+		(
+			"[EffectsFeature] EffectsService owner not found; "
+			+ "the feature facade will remain unavailable"
+		)
 	)
 
 
@@ -208,7 +210,9 @@ func spawn_particles(
 ) -> GPUParticles3D:
 	var owner := _owner_or_null()
 	if owner and owner.has_method("spawn_particles"):
-		return owner.call("spawn_particles", scene_path, pos, rot, parent, lifetime) as GPUParticles3D
+		return (
+			owner.call("spawn_particles", scene_path, pos, rot, parent, lifetime) as GPUParticles3D
+		)
 	return null
 
 

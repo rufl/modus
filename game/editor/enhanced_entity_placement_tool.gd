@@ -270,16 +270,23 @@ func _closest_geometry_edge(collider: Node3D, position: Vector3) -> Vector3:
 		Vector3(min_corner.x, max_corner.y, max_corner.z),
 	]
 	var edge_indices := [
-		[0, 1], [1, 2], [2, 3], [3, 0],
-		[4, 5], [5, 6], [6, 7], [7, 4],
-		[0, 4], [1, 5], [2, 6], [3, 7],
+		[0, 1],
+		[1, 2],
+		[2, 3],
+		[3, 0],
+		[4, 5],
+		[5, 6],
+		[6, 7],
+		[7, 4],
+		[0, 4],
+		[1, 5],
+		[2, 6],
+		[3, 7],
 	]
 	var closest := position
 	var closest_dist := INF
 	for edge: Array in edge_indices:
-		var edge_point := _closest_point_on_segment(
-			position, corners[edge[0]], corners[edge[1]]
-		)
+		var edge_point := _closest_point_on_segment(position, corners[edge[0]], corners[edge[1]])
 		var dist := position.distance_to(edge_point)
 		if dist < closest_dist:
 			closest_dist = dist
@@ -298,7 +305,9 @@ func _closest_point_on_segment(point: Vector3, start: Vector3, end: Vector3) -> 
 
 func _collect_geometry_points(node: Node, points: PackedVector3Array) -> void:
 	if node is VisualInstance3D:
-		_append_transformed_aabb((node as VisualInstance3D).get_aabb(), node.global_transform, points)
+		_append_transformed_aabb(
+			(node as VisualInstance3D).get_aabb(), node.global_transform, points
+		)
 	elif node is CollisionShape3D:
 		var collision_shape := node as CollisionShape3D
 		if collision_shape.shape:
@@ -695,7 +704,6 @@ func toggle_layer_lock(layer_name: String) -> bool:
 	return true
 
 
-
 ## Get entities in a specific layer
 func get_entities_in_layer(layer_name: String) -> Array[Node]:
 	if not _layers.has(layer_name):
@@ -773,14 +781,13 @@ func clear_all_entities() -> int:
 
 	return count
 
+
 ## Save current scene with entity layers
 func save_scene_with_layers(_file_path: String) -> Error:
 	push_error(
 		"EnhancedEntityPlacementTool: Saving scenes with layers is not available; use LevelSaveSystem"
 	)
 	return ERR_UNAVAILABLE
-
-
 
 
 ## Get statistics about placement

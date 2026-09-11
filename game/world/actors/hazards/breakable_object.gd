@@ -106,8 +106,6 @@ func receive_damage(amount: float, source: Node = null) -> void:
 		break_object(source)
 
 
-
-
 func restore_state(broken: bool) -> bool:
 	if broken:
 		break_object()

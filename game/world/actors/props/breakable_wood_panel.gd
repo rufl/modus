@@ -218,7 +218,6 @@ func _on_splinter_impact(_body: Node, splinter: RigidBody3D) -> void:
 
 	audio.stream = SoundGenerator.generate_footstep_sound("wood")
 
-
 	audio.finished.connect(audio.queue_free)
 	if audio.stream:
 		audio.play()

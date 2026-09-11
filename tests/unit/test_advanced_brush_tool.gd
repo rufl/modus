@@ -33,7 +33,9 @@ func test_hollow_primitives_build_union_and_subtraction_tree() -> void:
 		assert_true(placed, "Hollow primitive %s should be placed" % type)
 		var hollow := brush.get_child(brush.get_child_count() - 1) as CSGCombiner3D
 		assert_not_null(hollow, "Hollow primitive %s should use a CSG combiner" % type)
-		assert_eq(hollow.get_child_count(), 2, "Hollow primitive %s should have two CSG operands" % type)
+		assert_eq(
+			hollow.get_child_count(), 2, "Hollow primitive %s should have two CSG operands" % type
+		)
 		var outer := hollow.get_child(0) as CSGShape3D
 		var inner := hollow.get_child(1) as CSGShape3D
 		assert_eq(hollow.operation, CSGShape3D.OPERATION_UNION)
@@ -93,7 +95,9 @@ func test_hollow_polygon_and_custom_mesh_fail_without_orphan_nodes() -> void:
 		AdvancedBrushTool.BrushType.CAPSULE
 	]:
 		brush.brush_type = type
-		assert_false(brush._place_brush_object(Vector3.ZERO), "Unsupported hollow type %s should fail" % type)
+		assert_false(
+			brush._place_brush_object(Vector3.ZERO), "Unsupported hollow type %s should fail" % type
+		)
 		assert_eq(
 			brush.get_child_count(),
 			initial_child_count,

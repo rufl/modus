@@ -60,7 +60,9 @@ func start_session(p_session_name: String = "", metadata: Dictionary = {}) -> St
 	session_start_time = Time.get_ticks_msec() / 1000.0
 	is_tracking = true
 	session_started.emit(session_name)
-	_telemetry_checkpoint("manual_session_started", {"session_name": session_name, "metadata": session_metadata})
+	_telemetry_checkpoint(
+		"manual_session_started", {"session_name": session_name, "metadata": session_metadata}
+	)
 	print("[ManualTestTimer] Started session: %s" % session_name)
 	return session_name
 
@@ -128,7 +130,12 @@ func complete_test(result: String = "pass", notes: String = "") -> void:
 	test_completed.emit(current_test_name, duration)
 	_telemetry_checkpoint(
 		"manual_test_completed",
-		{"test_name": current_test_name, "result": normalized_result, "duration": duration, "notes": test_result.notes}
+		{
+			"test_name": current_test_name,
+			"result": normalized_result,
+			"duration": duration,
+			"notes": test_result.notes
+		}
 	)
 	print(
 		(
@@ -154,7 +161,9 @@ func end_session() -> Dictionary:
 		_write_summary(stats)
 		log_file.close()
 	session_completed.emit(session_name, total_duration)
-	_telemetry_checkpoint("manual_session_completed", {"session_name": session_name, "stats": stats})
+	_telemetry_checkpoint(
+		"manual_session_completed", {"session_name": session_name, "stats": stats}
+	)
 	is_tracking = false
 	print("[ManualTestTimer] Session completed: %s (%.2fs)" % [session_name, total_duration])
 	return stats

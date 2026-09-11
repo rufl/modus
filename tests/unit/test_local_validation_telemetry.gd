@@ -34,6 +34,8 @@ func test_local_telemetry_writes_jsonl_events_and_checkpoints() -> void:
 	assert_true(lines[1].contains('"event":"scene_loaded"'))
 	assert_true(lines[2].contains('"name":"pickup_collected"'))
 	assert_false(lines[1].contains("http://"), "Telemetry must not contain upload endpoints")
+
+
 func test_session_does_not_overwrite_existing_file() -> void:
 	var directory := ProjectSettings.globalize_path(TEST_OUTPUT)
 	DirAccess.make_dir_recursive_absolute(directory)
@@ -62,7 +64,9 @@ func test_disabled_explicit_start_is_a_no_op() -> void:
 	assert_eq(path, "")
 	assert_eq(telemetry.log_file_path, "")
 	assert_false(
-		FileAccess.file_exists(ProjectSettings.globalize_path(TEST_OUTPUT).path_join("disabled.jsonl"))
+		FileAccess.file_exists(
+			ProjectSettings.globalize_path(TEST_OUTPUT).path_join("disabled.jsonl")
+		)
 	)
 
 
@@ -87,10 +91,11 @@ func test_input_telemetry_records_allowlisted_semantics_not_text() -> void:
 	telemetry.stop_session()
 
 	var content := FileAccess.get_file_as_string(path)
-	assert_false(content.contains("\"input\""))
-	assert_false(content.contains("\"S\""))
-	assert_true(content.contains("\"event\":\"input_action\""))
-	assert_true(content.contains("\"action\":\"jump\""))
+	assert_false(content.contains('"input"'))
+	assert_false(content.contains('"S"'))
+	assert_true(content.contains('"event":"input_action"'))
+	assert_true(content.contains('"action":"jump"'))
+
 
 func test_manual_timer_checkpoints_are_captured() -> void:
 	var telemetry := get_node("/root/LocalValidationTelemetry")
@@ -112,10 +117,10 @@ func test_manual_timer_checkpoints_are_captured() -> void:
 		"manual_timer_integration.jsonl"
 	)
 	var content := FileAccess.get_file_as_string(telemetry_path)
-	assert_true(content.contains("\"event\":\"checkpoint\""))
-	assert_true(content.contains("\"name\":\"manual_test_started\""))
-	assert_true(content.contains("\"name\":\"manual_test_completed\""))
-	assert_true(content.contains("\"result\":\"pass\""))
+	assert_true(content.contains('"event":"checkpoint"'))
+	assert_true(content.contains('"name":"manual_test_started"'))
+	assert_true(content.contains('"name":"manual_test_completed"'))
+	assert_true(content.contains('"result":"pass"'))
 
 
 func _remove_test_output() -> void:

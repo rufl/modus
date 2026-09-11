@@ -13,27 +13,21 @@ func test_nested_schema_accepts_valid_configuration() -> void:
 	var schema := {
 		"type": "object",
 		"required": ["enabled", "limits"],
-		"properties": {
+		"properties":
+		{
 			"enabled": {"type": "boolean"},
-			"limits": {
-				"type": "array",
-				"items": {"type": "integer", "min": 1, "max": 10}
-			}
+			"limits": {"type": "array", "items": {"type": "integer", "min": 1, "max": 10}}
 		}
 	}
 
 	assert_true(
-		config_service._validate_data(
-			{"enabled": true, "limits": [1, 5, 10]}, schema, "test"
-		)
+		config_service._validate_data({"enabled": true, "limits": [1, 5, 10]}, schema, "test")
 	)
 
 
 func test_schema_rejects_missing_required_and_invalid_nested_values() -> void:
 	var schema := {
-		"type": "object",
-		"required": ["enabled"],
-		"properties": {"enabled": {"type": "boolean"}}
+		"type": "object", "required": ["enabled"], "properties": {"enabled": {"type": "boolean"}}
 	}
 
 	assert_false(config_service._validate_data({}, schema, "test"))

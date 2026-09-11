@@ -2933,7 +2933,6 @@ func test_support_behavior_selects_healer_state() -> void:
 	assert_eq(controller.initial_state.name, "HealerState")
 
 
-
 func test_support_behavior_does_not_chase_spotted_targets() -> void:
 	var body := CharacterBody3D.new()
 	add_child_autofree(body)
@@ -2952,6 +2951,7 @@ func test_support_behavior_does_not_chase_spotted_targets() -> void:
 	add_child_autofree(target)
 	controller._on_target_spotted(target)
 	assert_eq(controller.current_state.name, "HealerState")
+
 
 func test_perception_prefers_registry_over_duplicate_group_scan() -> void:
 	var gm: Node = get_node_or_null("/root/GameManager")

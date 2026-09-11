@@ -119,23 +119,31 @@ func configure(config: Dictionary) -> void:
 	if config.has("acceleration"):
 		acceleration = _validated_non_negative(config.acceleration, acceleration, "acceleration")
 	if config.has("rotation_speed"):
-		rotation_speed = _validated_non_negative(config.rotation_speed, rotation_speed, "rotation_speed")
+		rotation_speed = _validated_non_negative(
+			config.rotation_speed, rotation_speed, "rotation_speed"
+		)
 	if config.has("gravity"):
 		gravity = _validated_non_negative(config.gravity, gravity, "gravity")
 
 
 func _validated_non_negative(value: Variant, fallback: float, field_name: String) -> float:
 	if (typeof(value) != TYPE_FLOAT and typeof(value) != TYPE_INT) or not is_finite(float(value)):
-		push_error("[MovementComponent] Invalid %s; expected a finite non-negative number" % field_name)
+		push_error(
+			"[MovementComponent] Invalid %s; expected a finite non-negative number" % field_name
+		)
 		return fallback
 	var numeric := float(value)
 	if numeric < 0.0:
-		push_error("[MovementComponent] Invalid %s; expected a finite non-negative number" % field_name)
+		push_error(
+			"[MovementComponent] Invalid %s; expected a finite non-negative number" % field_name
+		)
 		return fallback
 	return numeric
 
+
 ## Configures the component with a single speed value.
 ## [param move_speed]: The movement speed in units per second.
+
 
 func configure_from_data(move_speed: float) -> void:
 	speed = _validated_non_negative(move_speed, speed, "move_speed")

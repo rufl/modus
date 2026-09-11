@@ -217,7 +217,6 @@ func _on_shard_impact(_body: Node, shard: RigidBody3D) -> void:
 
 	audio.stream = SoundGenerator.generate_hit_sound()
 
-
 	audio.finished.connect(audio.queue_free)
 	if audio.stream:
 		audio.play()

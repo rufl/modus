@@ -184,37 +184,21 @@ func _create_ui() -> void:
 
 
 func _connect_signals() -> void:
-	_connect_button_signal(
-		_create_zone_button, _on_create_zone_pressed, "Create Zone"
-	)
-	_connect_button_signal(
-		_delete_zone_button, _on_delete_zone_pressed, "Delete Zone"
-	)
-	_connect_button_signal(
-		_apply_preset_button, _on_apply_preset_pressed, "Apply Preset"
-	)
+	_connect_button_signal(_create_zone_button, _on_create_zone_pressed, "Create Zone")
+	_connect_button_signal(_delete_zone_button, _on_delete_zone_pressed, "Delete Zone")
+	_connect_button_signal(_apply_preset_button, _on_apply_preset_pressed, "Apply Preset")
 	_connect_tree_signal(_zone_list, _on_zone_selected, "Zone List")
 	_connect_option_signal(_weather_select, _on_weather_override_changed, "Weather Select")
-	_connect_slider_signal(
-		_gravity_slider, _on_gravity_multiplier_changed, "Gravity Slider"
-	)
+	_connect_slider_signal(_gravity_slider, _on_gravity_multiplier_changed, "Gravity Slider")
 	_connect_slider_signal(_fog_slider, _on_fog_density_changed, "Fog Slider")
 
 	if show_preset_manager:
-		_connect_button_signal(
-			_save_preset_button, _on_save_preset_pressed, "Save Preset"
-		)
-		_connect_button_signal(
-			_load_preset_button, _on_load_preset_pressed, "Load Preset"
-		)
-		_connect_button_signal(
-			_delete_preset_button, _on_delete_preset_pressed, "Delete Preset"
-		)
+		_connect_button_signal(_save_preset_button, _on_save_preset_pressed, "Save Preset")
+		_connect_button_signal(_load_preset_button, _on_load_preset_pressed, "Load Preset")
+		_connect_button_signal(_delete_preset_button, _on_delete_preset_pressed, "Delete Preset")
 
 
-func _connect_button_signal(
-	button: Button, handler: Callable, control_name: String
-) -> void:
+func _connect_button_signal(button: Button, handler: Callable, control_name: String) -> void:
 	if not button or not is_instance_valid(button):
 		push_error("EnvironmentZoneEditor: %s control is unavailable." % control_name)
 		return
@@ -222,9 +206,7 @@ func _connect_button_signal(
 		button.pressed.connect(handler)
 
 
-func _connect_tree_signal(
-	tree: Tree, handler: Callable, control_name: String
-) -> void:
+func _connect_tree_signal(tree: Tree, handler: Callable, control_name: String) -> void:
 	if not tree or not is_instance_valid(tree):
 		push_error("EnvironmentZoneEditor: %s control is unavailable." % control_name)
 		return
@@ -232,9 +214,7 @@ func _connect_tree_signal(
 		tree.item_selected.connect(handler)
 
 
-func _connect_option_signal(
-	option: OptionButton, handler: Callable, control_name: String
-) -> void:
+func _connect_option_signal(option: OptionButton, handler: Callable, control_name: String) -> void:
 	if not option or not is_instance_valid(option):
 		push_error("EnvironmentZoneEditor: %s control is unavailable." % control_name)
 		return
@@ -242,9 +222,7 @@ func _connect_option_signal(
 		option.item_selected.connect(handler)
 
 
-func _connect_slider_signal(
-	slider: Range, handler: Callable, control_name: String
-) -> void:
+func _connect_slider_signal(slider: Range, handler: Callable, control_name: String) -> void:
 	if not slider or not is_instance_valid(slider):
 		push_error("EnvironmentZoneEditor: %s control is unavailable." % control_name)
 		return

@@ -123,11 +123,7 @@ func process_command(input_command: RefCounted, delta: float = -1.0) -> void:
 
 
 func _process_movement(
-	delta: float,
-	input_dir: Vector2,
-	is_crouching: bool,
-	is_sprinting: bool,
-	wish_input_jump: bool
+	delta: float, input_dir: Vector2, is_crouching: bool, is_sprinting: bool, wish_input_jump: bool
 ) -> void:
 	if not player:
 		return
@@ -233,6 +229,7 @@ func _process_movement(
 
 	# Track velocity for next frame to detect landing impact speed.
 	_last_velocity_y = player.velocity.y
+
 
 func _try_toggle_fly_mode() -> bool:
 	# Check for permission (God Mode or already flying to toggle off?)

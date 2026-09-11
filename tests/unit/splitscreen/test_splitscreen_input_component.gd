@@ -6,7 +6,9 @@ extends GutTest
 var input_component: SplitscreenInputComponent
 var gamepad_controller: GamepadController
 
-class RecordingSplitscreenInputComponent extends SplitscreenInputComponent:
+
+class RecordingSplitscreenInputComponent:
+	extends SplitscreenInputComponent
 	var processed_deltas: Array[float] = []
 	var received_events: Array[InputEvent] = []
 
@@ -236,7 +238,11 @@ func test_unhandled_input_filters_to_assigned_device() -> void:
 	recorder._unhandled_input(matching_event)
 
 	assert_eq(recorder.received_events.size(), 1, "Only the assigned device event should dispatch")
-	assert_eq(recorder.received_events[0], matching_event, "Matching event should reach the extension hook")
+	assert_eq(
+		recorder.received_events[0],
+		matching_event,
+		"Matching event should reach the extension hook"
+	)
 
 
 ## Test: Keyboard input is rejected by the default device filter

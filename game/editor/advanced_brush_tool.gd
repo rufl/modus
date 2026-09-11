@@ -11,7 +11,6 @@ signal brush_operation_started(operation: String)
 signal brush_operation_completed(operation: String, success: bool)
 signal brush_operation_failed(brush_type: String, reason: String)
 
-
 # Brush types
 enum BrushType {
 	SPHERE = 0,
@@ -359,7 +358,6 @@ func _place_brush_object(position: Vector3) -> bool:
 	if brush_material:
 		_apply_brush_material(shape)
 
-
 	# Add to scene
 	var parent: Node3D = _get_level_parent()
 	if parent:
@@ -459,8 +457,7 @@ func _hollow_shape_failure(outer_shape: Node3D, reason: String) -> Node3D:
 func _create_hollow_shape(outer_shape: Node3D) -> Node3D:
 	if not outer_shape is CSGShape3D:
 		return _hollow_shape_failure(
-			outer_shape,
-			"Brush type %s does not support hollowing" % BrushType.keys()[brush_type]
+			outer_shape, "Brush type %s does not support hollowing" % BrushType.keys()[brush_type]
 		)
 
 	var wall: float = maxf(hollow_thickness, 0.001)
@@ -482,8 +479,7 @@ func _create_hollow_shape(outer_shape: Node3D) -> Node3D:
 		var sphere := csg_shape as CSGSphere3D
 		if sphere.radius <= wall or sphere.height <= wall * 2.0:
 			return _hollow_shape_failure(
-				outer_shape,
-				"Hollow thickness %.3f is too large for sphere size" % wall
+				outer_shape, "Hollow thickness %.3f is too large for sphere size" % wall
 			)
 		var inner_sphere := CSGSphere3D.new()
 		inner_sphere.radius = sphere.radius - wall
@@ -493,8 +489,7 @@ func _create_hollow_shape(outer_shape: Node3D) -> Node3D:
 		var cylinder := csg_shape as CSGCylinder3D
 		if cylinder.radius <= wall or cylinder.height <= wall * 2.0:
 			return _hollow_shape_failure(
-				outer_shape,
-				"Hollow thickness %.3f is too large for cylinder size" % wall
+				outer_shape, "Hollow thickness %.3f is too large for cylinder size" % wall
 			)
 		var inner_cylinder := CSGCylinder3D.new()
 		inner_cylinder.radius = cylinder.radius - wall
@@ -505,8 +500,7 @@ func _create_hollow_shape(outer_shape: Node3D) -> Node3D:
 		var torus := csg_shape as CSGTorus3D
 		if torus.outer_radius - torus.inner_radius <= wall * 2.0:
 			return _hollow_shape_failure(
-				outer_shape,
-				"Hollow thickness %.3f is too large for torus tube" % wall
+				outer_shape, "Hollow thickness %.3f is too large for torus tube" % wall
 			)
 		var inner_torus := CSGTorus3D.new()
 		inner_torus.inner_radius = torus.inner_radius + wall
@@ -941,6 +935,7 @@ func _clear_area(center_pos: Vector3) -> bool:
 	brush_applied.emit("CLEAR", removed_count)
 	return removed_count > 0
 
+
 ## Apply the selected material to editor-placed objects in the brush volume.
 func _paint_brush_objects(center_pos: Vector3) -> bool:
 	if not brush_material or not is_inside_tree() or not get_world_3d():
@@ -962,7 +957,6 @@ func _paint_brush_objects(center_pos: Vector3) -> bool:
 	if painted_count > 0:
 		brush_applied.emit("PAINT", painted_count)
 	return painted_count > 0
-
 
 
 ## Remove brush object at position

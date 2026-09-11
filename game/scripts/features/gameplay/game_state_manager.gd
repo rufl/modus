@@ -165,8 +165,11 @@ func _validate_enemy_records(data: Variant) -> bool:
 	if not data is Array:
 		return false
 	var world: Node = get_tree().current_scene
-	if not world or not world.has_method("prepare_enemy_for_restore") \
-			or not world.has_method("commit_enemy_restore"):
+	if (
+		not world
+		or not world.has_method("prepare_enemy_for_restore")
+		or not world.has_method("commit_enemy_restore")
+	):
 		return false
 	var config: Node = GameManager.get_core_system("config")
 	var max_enemies: int = int(config.get_value("enemies.max_count", 30)) if config else 30
@@ -186,7 +189,11 @@ func _validate_enemy_records(data: Variant) -> bool:
 		if not _is_valid_vec3_array(record.get("rotation", null)):
 			return false
 		var health: Variant = record.get("health", 100.0)
-		if (health is bool) or not (health is int or health is float) or not is_finite(float(health)):
+		if (
+			(health is bool)
+			or not (health is int or health is float)
+			or not is_finite(float(health))
+		):
 			return false
 		if float(health) < 0.0:
 			return false
@@ -262,9 +269,6 @@ func _is_valid_vec3_array(value: Variant) -> bool:
 	return true
 
 
-
-
-
 ## Serialize entire world state
 
 
@@ -315,6 +319,7 @@ func deserialize_world(data: Dictionary) -> bool:
 	if data.has("environment") and not _deserialize_environment(data["environment"]):
 		return false
 	return true
+
 
 # -------------------------------------------------------------------------
 # Serialization Helpers
@@ -448,8 +453,11 @@ func _serialize_enemies() -> Array:
 
 func _deserialize_enemies(data: Array) -> bool:
 	var world: Node = get_tree().current_scene
-	if not world or not world.has_method("prepare_enemy_for_restore") \
-			or not world.has_method("commit_enemy_restore"):
+	if (
+		not world
+		or not world.has_method("prepare_enemy_for_restore")
+		or not world.has_method("commit_enemy_restore")
+	):
 		return false
 
 	# Instantiate every replacement off-tree first. A failed record therefore
@@ -457,9 +465,7 @@ func _deserialize_enemies(data: Array) -> bool:
 	var staged: Array[Dictionary] = []
 	for enemy_data: Dictionary in data:
 		var enemy: Node = world.prepare_enemy_for_restore(
-			_array_to_vec3(enemy_data.position),
-			enemy_data.id,
-			_array_to_vec3(enemy_data.rotation)
+			_array_to_vec3(enemy_data.position), enemy_data.id, _array_to_vec3(enemy_data.rotation)
 		)
 		if not enemy:
 			for entry: Dictionary in staged:
@@ -539,8 +545,7 @@ func _deserialize_items(data: Array) -> bool:
 
 		var item_3d: Node3D = item as Node3D
 		var world_transform := Transform3D(
-			Basis.from_euler(_array_to_vec3(item_data.rotation)),
-			_array_to_vec3(item_data.position)
+			Basis.from_euler(_array_to_vec3(item_data.rotation)), _array_to_vec3(item_data.position)
 		)
 		item_3d.transform = (
 			(world as Node3D).global_transform.affine_inverse() * world_transform
@@ -569,6 +574,7 @@ func _deserialize_items(data: Array) -> bool:
 		if loot and item is PickupBase:
 			loot._track_pickup(item, item.owner_peer_id, item.rarity_tier)
 	return true
+
 
 func _serialize_environment() -> Dictionary:
 	var env_data: Dictionary = {"doors": [], "destructibles": []}
@@ -605,8 +611,7 @@ func _deserialize_environment(data: Dictionary) -> bool:
 		if not door or not door.has_method("restore_state"):
 			return false
 		if not door.restore_state(
-			bool(door_data.get("is_locked", false)),
-			bool(door_data.get("is_open", false))
+			bool(door_data.get("is_locked", false)), bool(door_data.get("is_open", false))
 		):
 			return false
 
@@ -617,6 +622,8 @@ func _deserialize_environment(data: Dictionary) -> bool:
 		if not destr.restore_state(bool(destr_data.get("is_broken", false))):
 			return false
 	return true
+
+
 # -------------------------------------------------------------------------
 # Utility Functions
 # -------------------------------------------------------------------------

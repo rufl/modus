@@ -38,8 +38,6 @@ func take_damage(damage_info: Variant) -> void:
 		break_object()
 
 
-
-
 func restore_state(broken: bool) -> bool:
 	if broken:
 		break_object()

@@ -22,6 +22,7 @@ func before_each() -> void:
 	_original_scene = get_tree().current_scene
 	_install_level_fixture()
 
+
 func after_each() -> void:
 	if _network_editor and _network_editor.node_deleted.is_connected(_on_node_deleted):
 		_network_editor.node_deleted.disconnect(_on_node_deleted)
@@ -54,7 +55,9 @@ func test_node_deleted_signal_has_path_parameter() -> void:
 	_network_editor._sync_delete_node("TestNode")
 
 	assert_true(_signal_received, "Deleting a level node should emit node_deleted")
-	assert_eq(_received_path, str(expected_path), "node_deleted should contain the deleted node path")
+	assert_eq(
+		_received_path, str(expected_path), "node_deleted should contain the deleted node path"
+	)
 	assert_false(_received_path.is_empty(), "Deleted node path should not be empty")
 	await get_tree().process_frame
 	assert_null(_level_root.get_node_or_null("TestNode"))
@@ -85,27 +88,33 @@ func test_editor_payload_validation_accepts_editor_shapes() -> void:
 		return
 
 	assert_true(
-		_network_editor._validate_editor_payload(
-			"place_block",
-			{
-				"type": "block_brush",
-				"position": Vector3.ZERO,
-				"size": Vector3.ONE,
-				"material_path": "",
-			}
+		(
+			_network_editor
+			. _validate_editor_payload(
+				"place_block",
+				{
+					"type": "block_brush",
+					"position": Vector3.ZERO,
+					"size": Vector3.ONE,
+					"material_path": "",
+				}
+			)
 		)
 	)
 	assert_true(
-		_network_editor._validate_editor_payload(
-			"place_entity",
-			{
-				"type": "entity_placer",
-				"subtype": "spawn_point",
-				"spawn_type": 1,
-				"enemy_id": "crawler",
-				"position": Vector3.ZERO,
-				"rotation_y": 0.0,
-			}
+		(
+			_network_editor
+			. _validate_editor_payload(
+				"place_entity",
+				{
+					"type": "entity_placer",
+					"subtype": "spawn_point",
+					"spawn_type": 1,
+					"enemy_id": "crawler",
+					"position": Vector3.ZERO,
+					"rotation_y": 0.0,
+				}
+			)
 		)
 	)
 	assert_true(
@@ -121,14 +130,17 @@ func test_editor_payload_validation_rejects_unsafe_values() -> void:
 		return
 
 	assert_false(
-		_network_editor._validate_editor_payload(
-			"place_block",
-			{
-				"type": "block_brush",
-				"position": Vector3(INF, 0.0, 0.0),
-				"size": Vector3.ONE,
-				"material_path": "",
-			}
+		(
+			_network_editor
+			. _validate_editor_payload(
+				"place_block",
+				{
+					"type": "block_brush",
+					"position": Vector3(INF, 0.0, 0.0),
+					"size": Vector3.ONE,
+					"material_path": "",
+				}
+			)
 		)
 	)
 	assert_false(_network_editor._validate_editor_payload("delete_node", "../root"))

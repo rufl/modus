@@ -250,6 +250,8 @@ func _remove_audio_effects() -> void:
 		_ambient_player.stop()
 		_ambient_player.queue_free()
 		_ambient_player = null
+
+
 ## Apply sky/background overrides while the player is inside this volume.
 func _apply_visual_effects() -> void:
 	if not sky_override_enabled:
@@ -287,8 +289,6 @@ func _remove_visual_effects() -> void:
 		env.background_mode = get_meta("original_background_mode")
 		env.sky = get_meta("original_sky")
 		env.background_color = get_meta("original_background_color")
-
-
 
 
 func _on_body_entered(body: Node3D) -> void:

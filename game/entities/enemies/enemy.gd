@@ -347,7 +347,9 @@ func _ready() -> void:
 func _apply_configured_tier_modifier(data: Dictionary) -> void:
 	if _tier_modifier_applied:
 		return
-	var modifier_key := "tier_boss_modifier" if tier >= 4 else "tier_elite_modifier" if tier >= 3 else ""
+	var modifier_key := (
+		"tier_boss_modifier" if tier >= 4 else "tier_elite_modifier" if tier >= 3 else ""
+	)
 	if modifier_key.is_empty() or not data.get(modifier_key) is Dictionary:
 		return
 

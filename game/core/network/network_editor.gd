@@ -39,7 +39,9 @@ func _ready() -> void:
 				"NetworkEditor"
 			)
 		else:
-			push_warning("[NetworkEditor] No owning NetworkSvc found; continuing in standalone mode")
+			push_warning(
+				"[NetworkEditor] No owning NetworkSvc found; continuing in standalone mode"
+			)
 
 
 func _resolve_editor_state() -> void:
@@ -155,12 +157,19 @@ func _validate_editor_rpc_rate(peer_id: int, method: String, args: Array) -> boo
 		return false
 	var gm: Node = get_node_or_null("/root/GameManager")
 	var network_svc: Variant = gm.get_core_system("network") if gm else null
-	var network_manager: Variant = network_svc.network_manager if network_svc is NetworkSvc else null
+	var network_manager: Variant = (
+		network_svc.network_manager if network_svc is NetworkSvc else null
+	)
 	if not network_manager or not network_manager.has_method("validate_rpc"):
 		push_warning("[NetworkEditor] Network manager unavailable; rejecting editor RPC")
 		return false
 	if not network_manager.validate_rpc(peer_id, method, args):
-		push_warning("[NetworkEditor] Rate limit or RPC validation rejected %s from peer %d" % [method, peer_id])
+		push_warning(
+			(
+				"[NetworkEditor] Rate limit or RPC validation rejected %s from peer %d"
+				% [method, peer_id]
+			)
+		)
 		return false
 	return true
 
@@ -231,6 +240,7 @@ func _is_allowed_scene_path(value: Variant) -> bool:
 		if path.begins_with(prefix):
 			return ResourceLoader.exists(path) and load(path) is PackedScene
 	return false
+
 
 @rpc("any_peer", "call_remote", "reliable")
 func _server_delete_node(relative_path: String) -> void:
@@ -316,12 +326,17 @@ func _validate_editor_payload(action: String, payload: Variant) -> bool:
 				return false
 			if payload.get("type", "") != "entity_placer":
 				return false
-			if not _is_finite_vector(payload.get("position")) or not _is_finite_number(payload.get("rotation_y")):
+			if (
+				not _is_finite_vector(payload.get("position"))
+				or not _is_finite_number(payload.get("rotation_y"))
+			):
 				return false
 			if payload.get("subtype", "") == "static":
 				return _is_allowed_scene_path(payload.get("scene_path", ""))
 			var spawn_type: Variant = payload.get("spawn_type")
-			var id: Variant = payload.get("enemy_id", "") if spawn_type == 1 else payload.get("item_id", "")
+			var id: Variant = (
+				payload.get("enemy_id", "") if spawn_type == 1 else payload.get("item_id", "")
+			)
 			return (
 				payload.get("subtype", "") == "spawn_point"
 				and spawn_type is int
@@ -387,10 +402,12 @@ func _is_resource_path(value: Variant) -> bool:
 	var path: String = value
 	return path.begins_with("res://") and ResourceLoader.exists(path)
 
+
 func _is_material_path(value: Variant) -> bool:
 	if not _is_resource_path(value):
 		return false
 	return load(value) is Material
+
 
 func _is_optional_resource_path(value: Variant) -> bool:
 	return value == "" or _is_material_path(value)

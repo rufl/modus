@@ -626,6 +626,7 @@ func test_movement_stats_dictionary() -> void:
 	assert_true(stats.has("consecutive_bhops"), "Stats should have consecutive_bhops")
 	assert_true(stats.has("can_slide"), "Stats should have can_slide")
 
+
 func test_movement_dictionary_restores_acceleration_configuration() -> void:
 	var movement := MovementComponent.new()
 	player.add_child(movement)

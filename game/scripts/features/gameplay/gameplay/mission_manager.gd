@@ -133,7 +133,9 @@ func _load_all_missions() -> void:
 	if not dir:
 		var missing_logger: Variant = GameManager.get_core_system("logger")
 		if missing_logger and missing_logger.has_method("info"):
-			missing_logger.info("[MissionManager] Missions directory unavailable; loaded 0 missions", "Core")
+			missing_logger.info(
+				"[MissionManager] Missions directory unavailable; loaded 0 missions", "Core"
+			)
 		return
 	if dir:
 		dir.list_dir_begin()

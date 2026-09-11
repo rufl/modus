@@ -27,7 +27,6 @@ func _ready() -> void:
 			destination_node = get_node_or_null(linked[0])
 
 
-
 func _process(delta: float) -> void:
 	# Cleanup cooldowns
 	var to_remove: Array[Node3D] = []
@@ -49,7 +48,6 @@ func _on_body_entered(body: Node3D) -> void:
 
 	if body is CharacterBody3D or body is RigidBody3D:
 		teleport(body)
-
 
 
 func teleport(body: Node3D) -> void:

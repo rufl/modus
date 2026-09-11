@@ -450,7 +450,6 @@ func _check_placement_rules(
 	return true
 
 
-
 ## Check if position is far enough from walls
 func _check_wall_distance(
 	cell_pos: Vector2i, min_distance: float, room: Room, _context: GenerationContext

@@ -194,6 +194,7 @@ func test_baked_mesh_has_collision() -> void:
 	baked_mesh.free()
 	csg_root.free()
 
+
 func test_materials_applied_to_geometry() -> void:
 	# Create a simple room
 	for y in range(3, 6):

@@ -68,7 +68,9 @@ func test_enet_server_creation_uses_ephemeral_port() -> void:
 
 func test_network_manager_falls_back_to_enet_when_steam_unavailable() -> void:
 	assert_not_null(_network_manager, "NetworkManager is required for fallback coverage")
-	assert_not_null(_steam_manager, "SteamManager is required to exercise unavailable-Steam fallback")
+	assert_not_null(
+		_steam_manager, "SteamManager is required to exercise unavailable-Steam fallback"
+	)
 	if not _network_manager or not _steam_manager:
 		return
 
@@ -99,6 +101,7 @@ func test_network_manager_falls_back_to_enet_when_steam_unavailable() -> void:
 	assert_eq(hosting_ports.size(), 1)
 	assert_eq(hosting_ports[0], enet_peer.get_host().get_local_port())
 	assert_eq(_network_manager.get_network_mode(), "ENet (IP/LAN)")
+
 
 func test_enet_server_accepts_client_on_ephemeral_port() -> void:
 	var server_root := _create_multiplayer_root("EnetServer")

@@ -33,8 +33,10 @@ func apply_to(enemy: Node3D) -> void:
 	# an effect that can never reach a victim.
 	if on_hit_effect:
 		push_error(
-			"[EnemyModifier] On-hit effect '%s' is unsupported for enemy modifiers; effect disabled"
-			% on_hit_effect.effect_name
+			(
+				"[EnemyModifier] On-hit effect '%s' is unsupported for enemy modifiers; effect disabled"
+				% on_hit_effect.effect_name
+			)
 		)
 
 	# Apply visuals
@@ -73,9 +75,7 @@ static func create_tank() -> EnemyModifier:
 
 
 static func create_ghostly() -> EnemyModifier:
-	push_error(
-		"[EnemyModifier] Ghostly is disabled: no safe enemy transparency/phase hook exists"
-	)
+	push_error("[EnemyModifier] Ghostly is disabled: no safe enemy transparency/phase hook exists")
 	return null
 
 
@@ -136,26 +136,18 @@ static func create_poisonous() -> EnemyModifier:
 
 
 static func create_electrified() -> EnemyModifier:
-	push_error(
-		"[EnemyModifier] Electrified is disabled: no safe chain-damage hook exists"
-	)
+	push_error("[EnemyModifier] Electrified is disabled: no safe chain-damage hook exists")
 	return null
 
 
 static func create_vampiric() -> EnemyModifier:
-	push_error(
-		"[EnemyModifier] Vampiric is disabled: no safe damage-dealt/lifesteal hook exists"
-	)
+	push_error("[EnemyModifier] Vampiric is disabled: no safe damage-dealt/lifesteal hook exists")
 	return null
 
 
 ## Get a random supported modifier for elite enemies.
 static func get_random_modifier() -> EnemyModifier:
 	var options: Array[Callable] = [
-		create_frenzied,
-		create_tank,
-		create_burning,
-		create_freezing,
-		create_poisonous
+		create_frenzied, create_tank, create_burning, create_freezing, create_poisonous
 	]
 	return options[randi() % options.size()].call()

@@ -76,8 +76,6 @@ func _unhandled_input(event: InputEvent) -> void:
 			print("[World] Not in game yet")
 
 
-
-
 func _process(_delta: float) -> void:
 	if not enet_peer:
 		return

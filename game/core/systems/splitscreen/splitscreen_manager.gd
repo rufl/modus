@@ -494,8 +494,6 @@ func _synchronize_game_state() -> void:
 		if obj.has_method("is_open") and obj.has_method("update_visual_state"):
 			obj.update_visual_state()
 
-
-
 	# Note: Player positions are NOT synced - each player controls their own character
 	# This is intentional for local splitscreen gameplay
 

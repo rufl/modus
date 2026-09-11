@@ -21,5 +21,7 @@ disable:
   - function-preload-variable-name
   # Function variable naming with underscore prefix is intentional for unused vars
   - function-variable-name
+  # GodotSteam's public API uses camelCase names that mocks must preserve
+  - function-name
   # Definition order is a style preference - we group by functionality
   - class-definitions-order

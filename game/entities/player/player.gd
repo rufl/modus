@@ -222,7 +222,6 @@ func _exit_tree() -> void:
 		if cfg.config_reloaded.is_connected(_configure_from_config):
 			cfg.config_reloaded.disconnect(_configure_from_config)
 
-
 	# Unregister from entity registry
 	var peer_id: int = name.to_int()
 	var gs := GameManager.get_core_system("gameplay") as GameplaySvc
@@ -319,7 +318,6 @@ func _ready() -> void:
 
 # Match state is consumed by MatchHUD; player components use match_service directly.
 # The former player-level callback was legacy wiring and is intentionally not connected.
-
 
 	# Subscribe to GameManager events (only if no ProgressionBridge handles it)
 	if not get_node_or_null("ProgressionBridge"):
@@ -534,13 +532,7 @@ func _ensure_command_movement_component() -> Node:
 	movement_component = MovementComponentScript.new()
 	movement_component.name = "MovementComponent"
 	add_child(movement_component)
-	movement_component.setup(
-		self,
-		null,
-		rocket_jump_system,
-		advanced_movement,
-		rope_movement
-	)
+	movement_component.setup(self, null, rocket_jump_system, advanced_movement, rope_movement)
 	return movement_component
 
 
@@ -565,7 +557,6 @@ func _physics_process(delta: float) -> void:
 		_melee_cooldown -= delta
 	if not is_dead:
 		_process_authoritative_actions()
-
 
 	# A predicting client owns its movement; disabled prediction keeps normal physics.
 	var predictor: Node = get_node_or_null("PlayerMovementPredictor")
@@ -595,7 +586,6 @@ func _physics_process(delta: float) -> void:
 	if rope_movement and rope_movement.is_active:
 		rope_movement.process_physics(delta)
 		return
-
 
 	if movement_component:
 		if input_component:
@@ -651,8 +641,6 @@ func has_item(item_id: String) -> bool:
 func collect_key(key_id: String) -> void:
 	if interaction_component:
 		interaction_component.collect_key(key_id)
-
-
 
 
 func _update_crosshair_target() -> void:
