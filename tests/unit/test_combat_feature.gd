@@ -189,6 +189,24 @@ func test_maximum_damage_enforced():
 	mock_target.free()
 
 
+## Test: Hit detection events apply damage through the canonical path
+func test_hit_detected_event_applies_damage():
+	var mock_target := Node3D.new()
+	mock_target.name = "HitDetectedTarget"
+	mock_target.set_script(load("res://tests/mocks/mock_damage_target.gd"))
+	add_child(mock_target)
+
+	var damage_info := DamageInfo.new()
+	damage_info.base_amount = 25.0
+	damage_info.damage_type = DamageInfo.DamageType.MELEE
+	damage_info.source = test_source
+
+	combat_feature._on_hit_detected({"target": mock_target, "damage_info": damage_info})
+
+	assert_gt(damage_info.final_damage, 0.0, "Hit detection should apply calculated damage")
+	mock_target.free()
+
+
 ## Test: Damage calculation with BULLET damage type
 func test_damage_calculation_bullet():
 	var damage_info := DamageInfo.new()

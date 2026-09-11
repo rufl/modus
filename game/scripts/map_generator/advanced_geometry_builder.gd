@@ -261,11 +261,9 @@ func _create_3d_floor_platform(parent: CSGCombiner3D, floor_3d: ThreeDFloor) -> 
 		_create_platform_collision(platform_box, floor_3d)
 
 
-## Create collision shape for 3D floor platform
-func _create_platform_collision(_platform_box: CSGBox3D, _floor_3d: ThreeDFloor) -> void:
-	# CSG nodes automatically generate collision when use_collision is true on root
-	# Additional collision handling can be added here if needed
-	pass
+## Enable the CSG collision generated for a 3D floor platform.
+func _create_platform_collision(platform_box: CSGBox3D, _floor_3d: ThreeDFloor) -> void:
+	platform_box.use_collision = true
 
 
 ## Get all slope definitions (for navigation mesh integration)

@@ -144,11 +144,12 @@ func _on_damage_requested(data: Dictionary) -> void:
 		apply_damage(target, damage_info)
 
 
-## Event handler for hit detection
-func _on_hit_detected(_data: Dictionary) -> void:
-	# Handle hit detection events
-	# This can be used for additional processing when hits are detected
-	pass
+## Event handler for hit detection.
+func _on_hit_detected(data: Dictionary) -> void:
+	var target: Node = data.get("target")
+	var damage_info: DamageInfo = data.get("damage_info")
+	if target and damage_info:
+		apply_damage(target, damage_info)
 
 
 ## Borrow the canonical system; its lifecycle belongs to CombatSvc.
