@@ -171,7 +171,9 @@ static func package_level(
 			if not binary_dependencies.is_empty():
 				return _package_failure(
 					result, temp_dir,
-					"Cannot rewrite binary asset dependencies for '%s'" % source_path
+					_format_binary_dependency_error(
+						source_path, asset_map[source_path], binary_dependencies, asset_map
+					)
 				)
 		elif _is_text_resource(asset_path):
 			rewrite_err = _rewrite_text_resource(
@@ -471,6 +473,44 @@ static func _build_asset_map(assets: Array[String]) -> Dictionary:
 static func _is_text_resource(path: String) -> bool:
 	var extension := path.get_extension().to_lower()
 	return extension in ["tscn", "tres", "godot", "gd", "gdshader", "shader", "material"]
+
+
+static func _format_binary_dependency_error(
+	source_path: String,
+	source_package_path: String,
+	dependency_entries: PackedStringArray,
+	asset_map: Dictionary
+) -> String:
+	var dependency_messages: Array[String] = []
+	var source_package_dir := source_package_path.get_base_dir()
+	for dependency_entry: String in dependency_entries:
+		var dependency_path := dependency_entry.get_slice("::", 0)
+		if dependency_path.is_empty():
+			dependency_path = dependency_entry
+		var normalized_dependency := dependency_path.replace("\\", "/").simplify_path()
+		var package_dependency: String = asset_map.get(normalized_dependency, "")
+		if package_dependency.is_empty():
+			dependency_messages.append(
+				"'%s' is not included in the package" % dependency_path
+			)
+		else:
+			var relative_dependency := _relative_package_path(
+				source_package_dir, package_dependency
+			)
+			dependency_messages.append(
+				"'%s' must be remapped to package-relative '%s' (packaged at '%s')"
+				% [dependency_path, relative_dependency, package_dependency]
+			)
+	return (
+		"Cannot rewrite binary asset '%s' (package path '%s'): unresolved dependency%s: %s. "
+		+ "Binary resource references cannot be rewritten; convert the asset to a text resource "
+		+ "or remove the dependency."
+	) % [
+		source_path,
+		source_package_path,
+		"" if dependency_messages.size() == 1 else "ies",
+		", ".join(dependency_messages)
+	]
 
 
 static func _rewrite_text_resource(

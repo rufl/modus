@@ -12,11 +12,15 @@ func initialize() -> void:
 	push_error("[%s] initialize() must be overridden" % get_script().get_global_name())
 
 
-## Override this to implement service shutdown
-
-
+## Reset the base lifecycle state without touching subclass-owned resources.
+##
+## Subclasses may perform their own cleanup before or after calling `super`.
+## Keeping this method state-only makes repeated shutdown calls harmless and
+## leaves ownership of child nodes and other resources with each subclass.
 func shutdown() -> void:
-	pass
+	if not _initialized:
+		return
+	_initialized = false
 
 
 ## Check if service is initialized

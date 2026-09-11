@@ -10,10 +10,76 @@ signal node_deleted(path: String)
 var is_edit_mode: bool = false
 var editor_state: Node = null  # Reference to local EditorState
 
+var _registered_network_service: Node = null
+var _standalone_notice_logged: bool = false
+
 
 func _ready() -> void:
-	# Register self if needed
-	pass
+	_resolve_editor_state()
+	if not editor_state and is_inside_tree():
+		call_deferred("_resolve_editor_state")
+
+	var network_service: Node = _get_owning_network_service()
+	if network_service:
+		_standalone_notice_logged = false
+		if (
+			_registered_network_service != network_service
+			and network_service.has_method("register_network_editor")
+		):
+			network_service.call("register_network_editor", self)
+			_registered_network_service = network_service
+		return
+
+	if not _standalone_notice_logged:
+		_standalone_notice_logged = true
+		var logger: Variant = _get_logger()
+		if logger and logger.has_method("warning"):
+			logger.warning(
+				"[NetworkEditor] No owning NetworkSvc found; continuing in standalone mode",
+				"NetworkEditor"
+			)
+		else:
+			push_warning("[NetworkEditor] No owning NetworkSvc found; continuing in standalone mode")
+
+
+func _resolve_editor_state() -> void:
+	if is_instance_valid(editor_state):
+		return
+	editor_state = null
+
+	var tree: SceneTree = get_tree()
+	if not tree or not tree.root:
+		return
+
+	var embedded_editor: Node = tree.root.find_child("EmbeddedLevelEditor", true, false)
+	if embedded_editor:
+		if "editor_state" in embedded_editor:
+			var state: Variant = embedded_editor.get("editor_state")
+			if state is Node and is_instance_valid(state):
+				editor_state = state
+				return
+		var child_state: Node = embedded_editor.get_node_or_null("EditorState")
+		if child_state:
+			editor_state = child_state
+			return
+
+	var state_node: Node = tree.root.find_child("EditorState", true, false)
+	if state_node:
+		editor_state = state_node
+
+
+func _get_owning_network_service() -> Node:
+	var current: Node = get_parent()
+	while current:
+		if current is NetworkSvc:
+			return current
+		current = current.get_parent()
+	return null
+
+
+func _get_logger() -> Variant:
+	var game_manager: Node = get_node_or_null("/root/GameManager")
+	return game_manager.get_core_system("logger") if game_manager else null
 
 
 # ============================================================================
