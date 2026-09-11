@@ -100,6 +100,30 @@ MIT_PROJECT_PATHS = {
     "shared/editor_core/icons/spawn_player.svg",
     "shared/editor_core/icons/spawn_point.svg",
 }
+MIT_SHADER_PATHS = {
+    "game/art/shaders/atmospheric_volume.gdshader",
+    "game/art/shaders/blood_decal.gdshader",
+    "game/art/shaders/blood_trail.gdshader",
+    "game/art/shaders/blur.gdshader",
+    "game/art/shaders/dark_camo.gdshader",
+    "game/art/shaders/debris_shard.gdshader",
+    "game/art/shaders/first_person_body.gdshader",
+    "game/art/shaders/gib_meat.gdshader",
+    "game/art/shaders/godmode.gdshader",
+    "game/art/shaders/invisibility.gdshader",
+    "game/art/shaders/post_process.gdshader",
+    "game/art/shaders/retro_decal.gdshader",
+    "game/art/shaders/retro_ember_trail.gdshader",
+    "game/art/shaders/retro_particle.gdshader",
+    "game/art/shaders/retro_smoke_trail.gdshader",
+    "game/art/shaders/retro_tracer.gdshader",
+    "game/art/shaders/screen_effects.gdshader",
+    "game/art/shaders/smoke_fireball.gdshader",
+    "game/art/shaders/spectator.gdshader",
+    "game/art/shaders/water_advanced.gdshader",
+    "shared/shaders/blood_pool.gdshader",
+    "shared/shaders/blood_pool_retro.gdshader",
+}
 BLOOD_POOL_PATHS = {
     "game/art/shaders/blood_pool.gdshader",
     "shared/shaders/blood_pool.gd",
@@ -183,7 +207,7 @@ def classify(path: Path, digest: str) -> dict[str, str]:
             "notes": "User-confirmed original AI-assisted skybox shader/material work; no external asset source is claimed.",
         }
 
-    if relative in MIT_PROJECT_PATHS:
+    if relative in MIT_PROJECT_PATHS or relative in MIT_SHADER_PATHS:
         return {
             "status": "cleared",
             "author": "LichForge",
