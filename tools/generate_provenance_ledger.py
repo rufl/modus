@@ -124,6 +124,15 @@ MIT_SHADER_PATHS = {
     "shared/shaders/blood_pool.gdshader",
     "shared/shaders/blood_pool_retro.gdshader",
 }
+MIT_EFFECT_TEXTURE_PATHS = {
+    "game/art/textures/blood_drip.png",
+    "game/art/textures/decals/blood_splat.png",
+    "game/art/textures/decals/bullet_hit.png",
+    "game/art/textures/decals/burn_scorch.png",
+    "game/art/textures/decals/hivelocity_hit.png",
+    "game/art/textures/decals/mid_blood_splat.png",
+    "game/art/textures/decals/smol_blood_splat.png",
+}
 BLOOD_POOL_PATHS = {
     "game/art/shaders/blood_pool.gdshader",
     "shared/shaders/blood_pool.gd",
@@ -207,7 +216,7 @@ def classify(path: Path, digest: str) -> dict[str, str]:
             "notes": "User-confirmed original AI-assisted skybox shader/material work; no external asset source is claimed.",
         }
 
-    if relative in MIT_PROJECT_PATHS or relative in MIT_SHADER_PATHS:
+    if relative in MIT_PROJECT_PATHS or relative in MIT_SHADER_PATHS or relative in MIT_EFFECT_TEXTURE_PATHS:
         return {
             "status": "cleared",
             "author": "LichForge",
