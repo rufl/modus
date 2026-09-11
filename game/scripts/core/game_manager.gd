@@ -387,8 +387,8 @@ func _register_core_events() -> void:
 	register_event("damage_dealt")
 	register_event("player_died")
 	register_event("player_damaged")
-	register_event("player_spawned")
 	register_event("enemy_died")
+	register_event("prop_destroyed")
 
 	# Match events
 	register_event("match_started")

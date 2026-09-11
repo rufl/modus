@@ -38,9 +38,12 @@
     "performance": {
         // Enable performance profiling
         "profiling_enabled": false,
-        
+
         // Log startup time
-        "log_startup_time": false
+        "log_startup_time": false,
+
+        // Log lazy-loaded feature startup times
+        "log_lazy_loading": false
     },
 
     "prop_replacer": {

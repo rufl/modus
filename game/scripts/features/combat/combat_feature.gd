@@ -67,8 +67,10 @@ func initialize() -> void:
 
 ## Shutdown the combat feature
 func shutdown() -> void:
-	# Unsubscribe from events
-	var game_manager: Node = get_node_or_null("/root/GameManager")
+	# Unsubscribe from events while the feature is still attached to a scene tree.
+	var game_manager: Node = null
+	if is_inside_tree():
+		game_manager = get_node_or_null("/root/GameManager")
 	if game_manager and game_manager.has_method("unsubscribe"):
 		game_manager.unsubscribe("damage_requested", _on_damage_requested)
 		game_manager.unsubscribe("hit_detected", _on_hit_detected)
