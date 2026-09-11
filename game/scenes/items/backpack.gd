@@ -89,16 +89,20 @@ func _request_retrieve() -> void:
 	if not multiplayer.is_server():
 		return
 	var sender_id: int = multiplayer.get_remote_sender_id()
+	if sender_id <= 0:
+		return
 
 	# Find sender player node
 	var player: Node = _get_player_by_id(sender_id)
-	if player:
-		# Double check ownership on server
-		var gs := GameManager.get_core_system("gameplay") as GameplaySvc
-		if gs and gs.player:
-			var p_uuid: String = gs.player.get_player_uuid(sender_id)
-			if p_uuid == owner_uuid:
-				_retrieve(player)
+	if not player or not player is Node3D or player.global_position.distance_to(global_position) > 3.5:
+		return
+
+	# Double check ownership on server
+	var gs := GameManager.get_core_system("gameplay") as GameplaySvc
+	if gs and gs.player:
+		var p_uuid: String = gs.player.get_player_uuid(sender_id)
+		if p_uuid == owner_uuid:
+			_retrieve(player)
 
 
 func _retrieve(player: Node) -> void:

@@ -67,9 +67,16 @@ func _request_open(opener_id: int) -> void:
 	if not multiplayer.is_server() or opened or not opener_id is int:
 		return
 	var sender_id: int = multiplayer.get_remote_sender_id()
-	if sender_id != 0 and sender_id != opener_id:
+	if sender_id <= 0 or sender_id != opener_id:
 		return
-	_open_chest(opener_id)
+	for player: Node in get_tree().get_nodes_in_group("player"):
+		if (
+			player.get_multiplayer_authority() == sender_id
+			and player is Node3D
+			and player.global_position.distance_to(global_position) <= 3.5
+		):
+			_open_chest(opener_id)
+			return
 
 
 func _open_chest(opener_id: int) -> void:
