@@ -111,11 +111,9 @@ func _request_damage(amount: float, damage_type: String) -> void:
 	var is_server_or_sp: bool = not multiplayer.has_multiplayer_peer() or multiplayer.is_server()
 	if not is_server_or_sp:
 		return
-	if not amount is float and not amount is int:
+	if not is_finite(amount) or amount <= 0.0 or amount > max_health * 4.0:
 		return
-	var damage: float = float(amount)
-	if not is_finite(damage) or damage <= 0.0 or damage > max_health * 4.0:
-		return
+	var damage: float = amount
 	if (
 		not damage_type is String
 		or damage_type.length() > 32
