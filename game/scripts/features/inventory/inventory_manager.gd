@@ -410,7 +410,8 @@ func give_debug_items() -> void:
 
 @rpc("any_peer", "call_remote", "reliable")
 func _request_debug_items() -> void:
-	if not multiplayer.is_server():
+	# Debug loadouts are local development tooling, never a release RPC.
+	if not OS.is_debug_build() or not multiplayer.is_server():
 		return
 	var sender_id: int = multiplayer.get_remote_sender_id()
 	_process_give_debug_items(sender_id)

@@ -156,7 +156,7 @@ func initialize() -> void:
 		if logger:
 			logger.info("[AudioSystem] Played test sound on initialize", "Core")
 
-	# Start music if playlist is available
+	# Start music if playlist is available.
 	if not _playlist.is_empty():
 		randomize()
 		var track: String = _playlist.pick_random()
@@ -172,8 +172,6 @@ func initialize() -> void:
 				logger.info("[AudioSystem] Started music: %s" % track.get_file(), "Core")
 		else:
 			push_warning("[AudioSystem] Failed to load music track: %s" % track)
-	else:
-		push_warning("[AudioSystem] No music tracks found in playlist")
 
 
 # --- Public API ---
