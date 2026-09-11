@@ -125,8 +125,8 @@ func test_tool_scripts_exist() -> void:
 		"res://game/core/tools/sound_generator.gd",
 		"res://game/core/tools/blood_pool.gd",
 		"res://game/core/tools/minimap_generator.gd",
+		"res://game/scripts/core/local_validation_telemetry.gd"
 	]
-
 	for path in tool_paths:
 		assert_file_exists(path, "Tool script should exist: %s" % path)
 
@@ -377,6 +377,7 @@ func test_critical_autoloads_exist() -> void:
 	var autoloads: Array[String] = [
 		"GameManager",
 		"MapGenerator",
+		"LocalValidationTelemetry",
 		# Note: EnemyTracker may not be an autoload
 	]
 

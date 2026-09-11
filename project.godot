@@ -29,6 +29,7 @@ default_bus_layout="res://game/default_bus_layout.tres"
 
 GameManager="*res://game/scripts/core/game_manager.gd"
 MapGenerator="*res://game/scripts/map_generator/map_generator.gd"
+LocalValidationTelemetry="*res://game/scripts/core/local_validation_telemetry.gd"
 
 [debug]
 

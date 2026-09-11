@@ -86,6 +86,8 @@ require_file "tools/generate_provenance_ledger.py"
 require_file "tools/run_main_player_path_smoke.sh"
 require_file "tools/run_showcase_golden_demo_smoke.sh"
 require_file "tools/showcase_golden_demo_smoke.gd"
+require_file "tools/report_local_validation_telemetry.py"
+require_file "game/scripts/core/local_validation_telemetry.gd"
 require_file "tools/validate_manual_evidence.sh"
 require_file "tools/run_manual_showcase_session.sh"
 require_file "tests/manual/manual_evidence_overlay.tscn"
@@ -102,6 +104,7 @@ require_file "game/ui/menus/welcome_screen.tscn"
 
 require_text "project.godot" 'config/features=PackedStringArray("4.7")'
 require_text "project.godot" 'GameManager="*res://game/scripts/core/game_manager.gd"'
+require_text "project.godot" 'LocalValidationTelemetry="*res://game/scripts/core/local_validation_telemetry.gd"'
 require_text "project.godot" 'MapGenerator="*res://game/scripts/map_generator/map_generator.gd"'
 require_text "README.md" "Godot 4.7+"
 require_text "README.md" "./tests/runners/run_all_tests_headless.sh"

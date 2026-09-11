@@ -12,6 +12,20 @@
 - Required metadata: tester, OS, renderer, resolution, input devices, scene route, and build identity.
 - Run `tools/validate_manual_evidence.sh --strict` after each imported session; only test-row time counts toward the threshold.
 
+## Local validation telemetry
+
+Set `MODUS_LOCAL_TELEMETRY=1` before a testplay session to record opt-in JSONL events under `user://validation_telemetry/`. The recorder captures session metadata, scene paths, input actions, runtime samples, warning/error log signals, and explicit checkpoints. It never sends data over the network or uploads automatically.
+
+Use `LocalValidationTelemetry.checkpoint("name", {"key": value})` from a local test harness or feature probe for milestone evidence. Summarize exported files with:
+
+```bash
+python tools/report_local_validation_telemetry.py \
+  --logs logs/validation_telemetry \
+  --report logs/validation_telemetry/report.md
+```
+
+Copy only reviewed telemetry and the associated manual CSV/captures into the evidence bundle. Telemetry indicates what occurred; it does not replace human pass/fail notes.
+
 ## Startup and route
 
 - [ ] Main menu opens and all visible primary actions respond.
