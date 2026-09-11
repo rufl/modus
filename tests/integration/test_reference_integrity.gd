@@ -67,7 +67,7 @@ func test_projectile_paths_exist() -> void:
 		"res://game/entities/projectiles/rocket.tscn",
 		"res://game/entities/projectiles/grenade.tscn",
 		"res://game/entities/projectiles/plasma.tscn",
-		"res://game/entities/projectiles/bfg_ball.tscn",
+		"res://game/entities/projectiles/nuker3000_ball.tscn",
 		"res://game/entities/projectiles/grenade.gd",
 		"res://game/entities/projectiles/rocket.gd",
 	]

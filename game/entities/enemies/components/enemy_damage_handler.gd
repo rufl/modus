@@ -236,7 +236,7 @@ func _handle_death(
 	var allow_gib: bool = false
 	var gib_intensity: float = 1.0
 
-	# ONLY allow gibbing for direct explosive hits (rockets, grenades, BFG)
+	# ONLY allow gibbing for direct explosive hits (rockets, grenades, Nuker 3000)
 	if d_type == DamageInfo.DamageType.EXPLOSIVE or d_type == DamageInfo.DamageType.EXPLOSION:
 		# Direct explosive hit with overkill - allow gibbing
 		if overkill_ratio > 0.3:

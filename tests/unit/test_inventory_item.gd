@@ -1,6 +1,6 @@
 extends GutTest
 
-const ICON_PATH: String = "res://game/ui/icons/weapons/pistol.png"
+const ICON_PATH: String = "res://game/ui/icons/weapons/pistol.svg"
 const SLOT_SCENE: PackedScene = preload("res://game/ui/hud/inventory_slot.tscn")
 
 

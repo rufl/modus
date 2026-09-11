@@ -133,6 +133,18 @@ MIT_EFFECT_TEXTURE_PATHS = {
     "game/art/textures/decals/mid_blood_splat.png",
     "game/art/textures/decals/smol_blood_splat.png",
 }
+MIT_WEAPON_ICON_PATHS = {
+    "game/ui/icons/weapons/chaingun.svg",
+    "game/ui/icons/weapons/grenade_launcher.svg",
+    "game/ui/icons/weapons/knife.svg",
+    "game/ui/icons/weapons/machinegun.svg",
+    "game/ui/icons/weapons/nuker3000.svg",
+    "game/ui/icons/weapons/pistol.svg",
+    "game/ui/icons/weapons/railgun.svg",
+    "game/ui/icons/weapons/rocket_launcher.svg",
+    "game/ui/icons/weapons/shotgun.svg",
+    "game/ui/icons/weapons/spinlaser.svg",
+}
 BLOOD_POOL_PATHS = {
     "game/art/shaders/blood_pool.gdshader",
     "shared/shaders/blood_pool.gd",
@@ -216,7 +228,12 @@ def classify(path: Path, digest: str) -> dict[str, str]:
             "notes": "User-confirmed original AI-assisted skybox shader/material work; no external asset source is claimed.",
         }
 
-    if relative in MIT_PROJECT_PATHS or relative in MIT_SHADER_PATHS or relative in MIT_EFFECT_TEXTURE_PATHS:
+    if (
+        relative in MIT_PROJECT_PATHS
+        or relative in MIT_SHADER_PATHS
+        or relative in MIT_EFFECT_TEXTURE_PATHS
+        or relative in MIT_WEAPON_ICON_PATHS
+    ):
         return {
             "status": "cleared",
             "author": "LichForge",

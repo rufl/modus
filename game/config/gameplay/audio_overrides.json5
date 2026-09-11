@@ -13,9 +13,9 @@
   "reload_chaingun": "",        // Suggested Length: 3.0s (Mechanical spooling/belt noise)
   "reload_grenade_launcher": "", // Suggested Length: 2.5s (Metallic breech clunk)
   "reload_rocket_launcher": "",  // Suggested Length: 3.0s (Heavy motorized loading)
-  "reload_hyperblaster": "",     // Suggested Length: 2.0s (High-frequency thermal purge)
-  "reload_railgun": "",          // Suggested Length: 2.5s (Capacitor charge/whine)
-  "reload_bfg10k": "",           // Suggested Length: 4.0s (Massive ritualistic power-up)
+  "reload_spinlaser": "",       // Suggested Length: 2.0s (High-frequency thermal purge)
+  "reload_railgun": "",         // Suggested Length: 2.5s (Capacitor charge/whine)
+  "reload_nuker3000": "",       // Suggested Length: 4.0s (Massive ritualistic power-up)
 
   // Weapon & Combat
   "shoot": "",

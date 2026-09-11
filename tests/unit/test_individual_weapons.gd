@@ -118,12 +118,12 @@ func test_rocket_launcher_weapon_exists() -> void:
 	)
 
 
-func test_hyperblaster_weapon_exists() -> void:
-	# Get hyperblaster weapon
-	var hyperblaster: WeaponData = _get_weapon_by_name("Hyperblaster")
+func test_spinlaser_weapon_exists() -> void:
+	# Get spinlaser weapon
+	var spinlaser: WeaponData = _get_weapon_by_name("Spinlaser")
 
-	assert_not_null(hyperblaster, "Hyperblaster weapon should exist")
-	assert_eq(hyperblaster.weapon_name, "Hyperblaster", "Hyperblaster should have correct name")
+	assert_not_null(spinlaser, "Spinlaser weapon should exist")
+	assert_eq(spinlaser.weapon_name, "Spinlaser", "Spinlaser should have correct name")
 
 
 func test_railgun_weapon_exists() -> void:
@@ -134,12 +134,12 @@ func test_railgun_weapon_exists() -> void:
 	assert_eq(railgun.weapon_name, "Railgun", "Railgun should have correct name")
 
 
-func test_bfg_weapon_exists() -> void:
-	# Get BFG weapon
-	var bfg: WeaponData = _get_weapon_by_name("BFG10K")
+func test_nuker3000_weapon_exists() -> void:
+	# Get Nuker 3000 weapon
+	var nuker3000: WeaponData = _get_weapon_by_name("Nuker 3000")
 
-	assert_not_null(bfg, "BFG weapon should exist")
-	assert_eq(bfg.weapon_name, "BFG10K", "BFG should have correct name")
+	assert_not_null(nuker3000, "Nuker 3000 weapon should exist")
+	assert_eq(nuker3000.weapon_name, "Nuker 3000", "Nuker 3000 should have correct name")
 
 
 # ============================================================================
@@ -212,30 +212,30 @@ func test_grenade_launcher_is_projectile() -> void:
 	)
 
 
-func test_hyperblaster_is_projectile() -> void:
-	# Get hyperblaster
-	var hyperblaster: WeaponData = _get_weapon_by_name("Hyperblaster")
+func test_spinlaser_is_projectile() -> void:
+	# Get spinlaser
+	var spinlaser: WeaponData = _get_weapon_by_name("Spinlaser")
 
 	# Verify projectile weapon
-	assert_not_null(hyperblaster.projectile_scene, "Hyperblaster should be projectile weapon")
+	assert_not_null(spinlaser.projectile_scene, "Spinlaser should be projectile weapon")
 
 
-func test_bfg_is_projectile() -> void:
-	# Get BFG
-	var bfg: WeaponData = _get_weapon_by_name("BFG10K")
+func test_nuker3000_is_projectile() -> void:
+	# Get Nuker 3000
+	var nuker3000: WeaponData = _get_weapon_by_name("Nuker 3000")
 
 	# Verify projectile weapon
-	assert_not_null(bfg.projectile_scene, "BFG should be projectile weapon")
+	assert_not_null(nuker3000.projectile_scene, "Nuker 3000 should be projectile weapon")
 
 
 func test_projectile_weapons_have_speed() -> void:
 	# Get projectile weapons
 	var rocket: WeaponData = _get_weapon_by_name("Rocket Launcher")
-	var hyperblaster: WeaponData = _get_weapon_by_name("Hyperblaster")
+	var spinlaser: WeaponData = _get_weapon_by_name("Spinlaser")
 
 	# Verify projectile speed
 	assert_gt(rocket.projectile_speed, 0.0, "Projectile weapons should have positive speed")
-	assert_gt(hyperblaster.projectile_speed, 0.0, "Projectile weapons should have positive speed")
+	assert_gt(spinlaser.projectile_speed, 0.0, "Projectile weapons should have positive speed")
 
 
 # ============================================================================
@@ -287,12 +287,12 @@ func test_railgun_damage() -> void:
 	assert_eq(railgun.damage, 80, "Railgun should deal 80 damage")
 
 
-func test_bfg_damage() -> void:
-	# Get BFG
-	var bfg: WeaponData = _get_weapon_by_name("BFG10K")
+func test_nuker3000_damage() -> void:
+	# Get Nuker 3000
+	var nuker3000: WeaponData = _get_weapon_by_name("Nuker 3000")
 
 	# Verify damage
-	assert_eq(bfg.damage, 200, "BFG should deal 200 damage")
+	assert_eq(nuker3000.damage, 200, "Nuker 3000 should deal 200 damage")
 
 
 func test_knife_damage() -> void:

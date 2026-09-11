@@ -64,9 +64,9 @@ func _is_two_handed(wn: String) -> bool:
 		"chaingun",
 		"smg",
 		"launcher",
-		"blaster",
+		"spinlaser",
 		"railgun",
-		"bfg",
+		"nuker3000",
 	]
 	for kw: String in two_handed_keywords:
 		if kw in wn:

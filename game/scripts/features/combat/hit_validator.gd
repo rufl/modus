@@ -99,7 +99,7 @@ func _is_server() -> bool:
 
 
 func _is_hitscan(info: DamageInfo, weapon: WeaponData, data: Dictionary) -> bool:
-	# BULLET also describes plasma projectiles; ENERGY also describes BFG.
+	# BULLET also describes plasma projectiles; ENERGY also describes Nuker 3000.
 	# Classify the weapon, not its damage enum alone, and exclude secondary DOT/AOE.
 	if (
 		info.damage_type

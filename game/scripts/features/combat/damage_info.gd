@@ -15,7 +15,7 @@ enum DamageType {
 	VOID,  ## Kill volumes / out of bounds
 	CRITICAL,  ## Critical hit damage (visual feedback)
 	SHOTGUN,  ## Shotgun pellets (special gib rules)
-	ENERGY  ## High-damage energy weapons (BFG, Railgun, etc.)
+	ENERGY  ## High-damage energy weapons (Nuker 3000, Railgun, etc.)
 }
 
 @export_group("Damage Properties")

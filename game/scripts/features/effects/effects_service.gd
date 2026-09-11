@@ -171,7 +171,7 @@ func _register_projectile_pools() -> void:
 		"rocket": "res://game/entities/projectiles/rocket.tscn",
 		"plasma": "res://game/entities/projectiles/plasma.tscn",
 		"grenade": "res://game/entities/projectiles/grenade.tscn",
-		"bfg_ball": "res://game/entities/projectiles/bfg_ball.tscn",
+		"nuker3000_ball": "res://game/entities/projectiles/nuker3000_ball.tscn",
 		"gib": "res://game/entities/effects/gib.tscn",
 		"decal": "res://game/entities/effects/generic_decal.tscn",
 		"explosion": "res://game/entities/projectiles/explosion_quake.tscn",

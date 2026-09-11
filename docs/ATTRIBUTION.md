@@ -7,7 +7,7 @@
 
 ## Current Ledger Boundary
 
-`tools/generate_provenance_ledger.py` inventories the asset/resource extensions distributed from `game/`, `shared/`, `standalone/`, and `mods/`, plus the derived blood-pool script. The current ledger contains **218 assets: 203 cleared and 15 unverified**. The twelve private Suno tracks were removed from the repository and are no longer distributed.
+`tools/generate_provenance_ledger.py` inventories the asset/resource extensions distributed from `game/`, `shared/`, `standalone/`, and `mods/`, plus the derived blood-pool script. The current ledger contains **218 assets: 213 cleared and 5 unverified**. The twelve private Suno tracks were removed from the repository and are no longer distributed.
 
 Run `tools/generate_provenance_ledger.py --check` after asset changes. `--strict` intentionally fails until every distributed row is cleared or removed.
 
@@ -26,6 +26,7 @@ Run `tools/generate_provenance_ledger.py --check` after asset changes. `--strict
 | Project-owned resources and editor icons | `game/core/network/default_network_config.tres`, `game/default_bus_layout.tres`, `game/scenes/world.tres`, `game/scripts/features/effects/effects/gib_physics.tres`, `game/art/models/skel/procedural_reference.glb`, and six `shared/editor_core/icons/*.svg` files | User-confirmed original LichForge assets; classified MIT with the project `LICENSE` notice. |
 | Project-owned shaders | The 22 remaining shader paths under `game/art/shaders/` and `shared/shaders/` | User-confirmed original LichForge AI-assisted shader work; classified MIT with the project `LICENSE` notice. |
 | Project-owned effect textures | `game/art/textures/blood_drip.png` and six `game/art/textures/decals/*.png` files | User-confirmed original LichForge artwork; classified MIT with the project `LICENSE` notice. |
+| Project-owned weapon icons | `game/ui/icons/weapons/*.svg` (ten replacement icons) | User-confirmed original LichForge artwork; classified MIT with the project `LICENSE` notice. |
 
 The Kenney files are pixel-equivalent rather than byte-identical because their PNG encoding differs from the current official ZIP. Their repository hashes and source URLs are pinned in the ledger.
 

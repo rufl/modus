@@ -9,7 +9,7 @@
 			{
 				"skill_id": "weapon_damage_1",
 				"display_name": "Weapon Damage I",
-				"icon_path": "res://game/ui/icons/weapons/machinegun.png",
+				"icon_path": "res://game/ui/icons/weapons/machinegun.svg",
 				"description": "+10% weapon damage",
 				"tree_type": "combat",
 				"tier": 1,
@@ -23,7 +23,7 @@
 			{
 				"skill_id": "weapon_damage_2",
 				"display_name": "Weapon Damage II",
-				"icon_path": "res://game/ui/icons/weapons/machinegun.png",
+				"icon_path": "res://game/ui/icons/weapons/machinegun.svg",
 				"description": "+20% weapon damage (total)",
 				"tree_type": "combat",
 				"tier": 2,
@@ -37,7 +37,7 @@
 			{
 				"skill_id": "weapon_damage_3",
 				"display_name": "Weapon Damage III",
-				"icon_path": "res://game/ui/icons/weapons/machinegun.png",
+				"icon_path": "res://game/ui/icons/weapons/machinegun.svg",
 				"description": "+30% weapon damage (total)",
 				"tree_type": "combat",
 				"tier": 3,
@@ -51,7 +51,7 @@
 			{
 				"skill_id": "crit_chance_1",
 				"display_name": "Critical Chance I",
-				"icon_path": "res://game/ui/icons/weapons/railgun.png",
+				"icon_path": "res://game/ui/icons/weapons/railgun.svg",
 				"description": "+5% critical hit chance",
 				"tree_type": "combat",
 				"tier": 1,
@@ -65,7 +65,7 @@
 			{
 				"skill_id": "crit_damage",
 				"display_name": "Critical Damage",
-				"icon_path": "res://game/ui/icons/weapons/railgun.png",
+				"icon_path": "res://game/ui/icons/weapons/railgun.svg",
 				"description": "Critical hits deal +50% damage (2x total)",
 				"tree_type": "combat",
 				"tier": 2,
@@ -79,7 +79,7 @@
 			{
 				"skill_id": "reload_speed",
 				"display_name": "Fast Reload",
-				"icon_path": "res://game/ui/icons/weapons/pistol.png",
+				"icon_path": "res://game/ui/icons/weapons/pistol.svg",
 				"description": "+25% reload speed",
 				"tree_type": "combat",
 				"tier": 1,
@@ -93,7 +93,7 @@
 			{
 				"skill_id": "fire_rate",
 				"display_name": "Rapid Fire",
-				"icon_path": "res://game/ui/icons/weapons/chaingun.png",
+				"icon_path": "res://game/ui/icons/weapons/chaingun.svg",
 				"description": "+15% fire rate",
 				"tree_type": "combat",
 				"tier": 2,
@@ -107,7 +107,7 @@
 			{
 				"skill_id": "ammo_capacity",
 				"display_name": "Ammo Capacity",
-				"icon_path": "res://game/ui/icons/weapons/shotgun.png",
+				"icon_path": "res://game/ui/icons/weapons/shotgun.svg",
 				"description": "+50% magazine size",
 				"tree_type": "combat",
 				"tier": 2,
