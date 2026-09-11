@@ -134,7 +134,7 @@ func _server_place_block(data: Dictionary) -> void:
 	var sender_id: int = multiplayer.get_remote_sender_id()
 	if (
 		not _validate_editor_rpc_rate(sender_id, "place_block", [data])
-		or not _validate_editor_permission(sender_id, "allow_place_blocks")
+		or not _validate_edit_permission(sender_id, "allow_place_blocks")
 		or not _validate_editor_payload("place_block", data)
 	):
 		return

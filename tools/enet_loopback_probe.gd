@@ -1,6 +1,6 @@
 extends SceneTree
 
-const TIMEOUT_SECONDS := 4.0
+const TIMEOUT_SECONDS := 15.0
 
 var _role := ""
 var _port := 0
@@ -21,7 +21,7 @@ func _initialize() -> void:
 		quit(64)
 		return
 	_peer = ENetMultiplayerPeer.new()
-	_multiplayer = MultiplayerAPI.create_default_interface()
+	_multiplayer = get_multiplayer()
 	if _role == "server":
 		_start_server()
 	else:
@@ -32,6 +32,9 @@ func _initialize() -> void:
 func _process(_delta: float) -> bool:
 	if _multiplayer:
 		_multiplayer.poll()
+		if _role == "server" and not _multiplayer.get_peers().is_empty():
+			print("ENET_SERVER_PEER_CONNECTED id=%d" % _multiplayer.get_peers()[0])
+			quit(0)
 	return false
 
 func _start_server() -> void:

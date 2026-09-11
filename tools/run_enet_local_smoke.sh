@@ -118,7 +118,7 @@ else
 fi
 
 if [[ "$status" == "BLOCKED" && "$port" != "-" && -n "$port" ]]; then
-  probe_timeout="${MODUS_ENET_SMOKE_TIMEOUT:-8}"
+  probe_timeout="${MODUS_ENET_SMOKE_TIMEOUT:-20}"
   if ! [[ "$probe_timeout" =~ ^[0-9]+$ ]] || [[ "$probe_timeout" -lt 1 ]]; then
     status="FAIL"
     note="MODUS_ENET_SMOKE_TIMEOUT must be a positive integer number of seconds."

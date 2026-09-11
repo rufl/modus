@@ -90,9 +90,13 @@ func _create_and_add(script: GDScript, node_name: String) -> Node:
 	node.set_script(script)
 	add_child(node)
 
-	# Runtime type assertion for safety
-	var expected_type: String = node_name  # NetworkManager, SteamManager, etc.
-	if not node.get_script().get_global_name() == expected_type:
+	# Runtime type assertion for safety. A script can fail to attach when its
+	# dependency graph is still compiling; keep startup alive and report it.
+	var expected_type: String = node_name
+	var attached_script: GDScript = node.get_script() as GDScript
+	if not attached_script:
+		push_error("NetworkService: Script failed to attach for %s" % node_name)
+	elif attached_script.get_global_name() != expected_type:
 		push_warning(
 			(
 				"NetworkService: Type mismatch for %s (expected class_name: %s)"
