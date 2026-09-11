@@ -84,6 +84,7 @@ Published context: [Performance Baseline Proof](PERFORMANCE_BASELINE_PROOF.md). 
 - September 11 player lifecycle request proof: mode/state requests execute only on the server with valid sender IDs and bounded enums; assistance requires a downed sender, and spectate requests require an existing target. Player systems proof passes 15/15 with 38 assertions; NetworkManager proof passes 15/15 with 64 assertions; RPC whitelist proof passes 9/9 with 127 assertions.
 - September 11 gameplay request proof: grenade spawn requests require the owning sender, finite direction/origin bounds; breakable-prop damage rejects malformed, non-finite, excessive, and unsafe damage types; military-chest requests bind opener identity to the sender. Weapon proof passes 58/58 with 76 assertions; NetworkManager proof passes 15/15 with 64 assertions; RPC whitelist proof passes 9/9 with 127 assertions.
 - September 11 loot-request proof: backpack retrieval and military-chest opening require valid sender identity and server-side interaction distance. Loot proof passes 7/7 with 71 assertions; NetworkManager proof passes 15/15 with 64 assertions; RPC whitelist proof passes 9/9 with 127 assertions.
+- September 11 treasure/effect authority proof: treasure-chest requests require a valid sender and nearby player before opening; enemy damage flashes accept RPC calls only from authority. Effects proof passes 12/12 with 26 assertions; NetworkManager proof passes 15/15 with 64 assertions; RPC whitelist proof passes 9/9 with 127 assertions.
 
 ## Missing Before Release
 

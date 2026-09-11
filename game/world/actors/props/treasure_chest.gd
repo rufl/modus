@@ -167,17 +167,20 @@ func _request_open() -> void:
 @rpc("any_peer", "reliable")
 func _request_open_rpc() -> void:
 	## Client request to open chest
-	if not multiplayer.is_server():
+	if not multiplayer.is_server() or is_opened:
 		return
 
 	var peer_id: int = multiplayer.get_remote_sender_id()
+	if peer_id <= 0:
+		return
 
-	# Validate player is close enough
+	# Validate player is close enough and exists.
 	var player: Node3D = _get_player_by_peer(peer_id)
-	if player:
-		var distance: float = player.global_position.distance_to(global_position)
-		if distance > 3.5:  # Slightly larger than interaction area
-			return
+	if not player:
+		return
+	var distance: float = player.global_position.distance_to(global_position)
+	if distance > 3.5:  # Slightly larger than interaction area
+		return
 
 	_open_chest()
 

@@ -23,7 +23,7 @@ func _ready() -> void:
 
 ## Trigger damage flash effect - can be called via RPC for sync
 
-@rpc("any_peer", "call_local", "reliable")
+@rpc("authority", "call_local", "reliable")
 func trigger_flash() -> void:
 	if is_flashing:
 		return
