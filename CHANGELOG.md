@@ -3,6 +3,7 @@
 > **Documentation status: maintained reference.** Published readiness is consolidated in `docs/DOCUMENTATION_TRUTH.md` and `docs/CURRENT_STATUS.md`. Generated reports are local invocation records; narrower claims below apply only to the named subsystem or workflow.
 
 ## Unreleased
+- 2026-09-11 `[config]` `[truth:test]`: replaced the configuration service's unconditional validation success with recursive schema checks for types, required keys, nested properties/items, enums, numeric bounds, and minimum lengths. Focused validation proof passes 17/17 tests with 109 assertions.
 - 2026-09-11 `[content]` `[truth:source-audit]`: replaced the weapon PNG icon set with ten consistent original MIT SVG icons, renamed the user-facing weapons to Spinlaser and Nuker 3000, and renamed their scene/projectile paths. Provenance ledger now has 213 cleared and 5 unverified assets.
 - 2026-09-11 `[content]` `[truth:source-audit]`: regenerated the four retro prototype textures with a cohesive slate/teal/amber palette and classified the generated map overview snapshot as a MODUS minimap artifact. Provenance ledger is now fully cleared at 218/218 assets.
 - 2026-09-11 `[distribution]` `[truth:source-audit]`: recorded author confirmation for seven blood/effect texture PNGs as original MIT LichForge work. The ledger now has 218 assets with 203 cleared and 15 unverified; unresolved provenance is limited to weapon/editor PNG assets.

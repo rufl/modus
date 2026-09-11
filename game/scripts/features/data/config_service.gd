@@ -226,12 +226,69 @@ func _deep_merge(base: Dictionary, override: Dictionary) -> Dictionary:
 
 
 func _define_schemas() -> void:
-	# Simplified schema definition (can be expanded back if needed)
 	_schemas["system"] = {"type": "object"}
 	_schemas["gameplay"] = {"type": "object"}
 	_schemas["visuals"] = {"type": "object"}
 
 
-func _validate_data(_data: Variant, _schema: Dictionary, _path: String) -> bool:
-	# Implementation simplified for brevity, but kept structure
+func _validate_data(data: Variant, schema: Dictionary, path: String) -> bool:
+	if not schema.has("type"):
+		return true
+
+	var schema_type: String = schema.type
+	var type_valid := _matches_schema_type(data, schema_type)
+	if not type_valid:
+		push_warning("[ConfigService] %s must be %s" % [path, schema_type])
+		return false
+
+	if schema.has("enum") and data not in schema.enum:
+		push_warning("[ConfigService] %s has an invalid value" % path)
+		return false
+
+	if schema_type == "object":
+		var object_data: Dictionary = data
+		for required_key: String in schema.get("required", []):
+			if not object_data.has(required_key):
+				push_warning("[ConfigService] %s is missing %s" % [path, required_key])
+				return false
+		for key: String in schema.get("properties", {}):
+			if object_data.has(key) and not _validate_data(
+				object_data[key], schema.properties[key], "%s.%s" % [path, key]
+			):
+				return false
+	elif schema_type == "array" and schema.has("items"):
+		for index: int in data.size():
+			if not _validate_data(data[index], schema.items, "%s[%d]" % [path, index]):
+				return false
+
+	if schema.has("min") and float(data) < float(schema.min):
+		push_warning("[ConfigService] %s is below the minimum" % path)
+		return false
+	if schema.has("max") and float(data) > float(schema.max):
+		push_warning("[ConfigService] %s exceeds the maximum" % path)
+		return false
+	if schema.has("min_length") and data.size() < int(schema.min_length):
+		push_warning("[ConfigService] %s is shorter than required" % path)
+		return false
 	return true
+
+
+func _matches_schema_type(value: Variant, schema_type: String) -> bool:
+	match schema_type:
+		"object":
+			return value is Dictionary
+		"array":
+			return value is Array
+		"string":
+			return value is String
+		"number":
+			return value is int or value is float
+		"integer":
+			return value is int
+		"boolean":
+			return value is bool
+		"null":
+			return value == null
+		_:
+			push_warning("[ConfigService] Unknown schema type: %s" % schema_type)
+			return false
