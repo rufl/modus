@@ -309,13 +309,22 @@ func save_player_data(peer_id: int) -> void:
 	# Update active stats if player node exists
 	_update_data_from_node(peer_id, data)
 
-	var file: FileAccess = FileAccess.open(
-		DATA_DIR + _get_persistent_player_id(peer_id) + ".json", FileAccess.WRITE
-	)
+	var serialized := JSONHelperClass.safe_stringify(data, "\t")
+	var save_paths: Array[String] = []
+	var uuid := str(data.get("uuid", ""))
+	if not uuid.is_empty():
+		save_paths.append(_get_save_path(uuid))
+	var persistent_path := DATA_DIR + _get_persistent_player_id(peer_id) + ".json"
+	if not save_paths.has(persistent_path):
+		save_paths.append(persistent_path)
 
-	if file:
-		file.store_string(JSONHelperClass.safe_stringify(data, "\t"))
-		file.close()
+	for path: String in save_paths:
+		var file: FileAccess = FileAccess.open(path, FileAccess.WRITE)
+		if file:
+			file.store_string(serialized)
+			file.close()
+
+	if not save_paths.is_empty() and FileAccess.file_exists(save_paths[0]):
 		player_saved.emit(peer_id)
 		_log_info("[PlayerService] Saved data for peer %d" % peer_id)
 
