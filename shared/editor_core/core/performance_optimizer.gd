@@ -42,12 +42,55 @@ func _load_thumbnail_texture(asset_path: String, size: Vector2i) -> Texture2D:
 		return resource
 	return _generate_placeholder_thumbnail(asset_path, size)
 
-	# Limit cache size
-	if _asset_thumbnail_cache.size() > 100:
-		_evict_oldest_cache_entries(_asset_thumbnail_cache, 50)
 
-	return thumb
 
+
+
+## Render a PackedScene thumbnail when a scene tree is available.
+## Callers in async UI flows should await this method for scene assets.
+func get_cached_thumbnail_async(asset_path: String, size: Vector2i) -> Texture2D:
+	var cache_key := "%s_%dx%d" % [asset_path, size.x, size.y]
+	if _asset_thumbnail_cache.has(cache_key):
+		return _asset_thumbnail_cache[cache_key]
+
+	var resource := ResourceLoader.load(asset_path)
+	if not resource is PackedScene:
+		return get_cached_thumbnail(asset_path, size)
+
+	var tree := Engine.get_main_loop() as SceneTree
+	if not tree or not tree.root:
+		return get_cached_thumbnail(asset_path, size)
+
+	var instance: Node = resource.instantiate()
+	if not instance is Node3D:
+		instance.queue_free()
+		return get_cached_thumbnail(asset_path, size)
+
+	var viewport := SubViewport.new()
+	viewport.size = size
+	viewport.transparent_bg = true
+	viewport.own_world_3d = true
+	viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
+	tree.root.add_child(viewport)
+	viewport.add_child(instance)
+
+	var bounds := get_node_bounds(instance)
+	var center := bounds.position + bounds.size * 0.5
+	var extent := maxf(bounds.size.length(), 1.0)
+	var camera := Camera3D.new()
+	camera.position = center + Vector3(1.0, 1.0, 1.0).normalized() * maxf(extent * 1.8, 3.0)
+	camera.look_at(center)
+	viewport.add_child(camera)
+	var light := DirectionalLight3D.new()
+	light.rotation_degrees = Vector3(-45.0, -30.0, 0.0)
+	viewport.add_child(light)
+
+	await tree.process_frame
+	await tree.process_frame
+	var thumbnail := ImageTexture.create_from_image(viewport.get_texture().get_image())
+	_asset_thumbnail_cache[cache_key] = thumbnail
+	viewport.queue_free()
+	return thumbnail
 
 func _generate_placeholder_thumbnail(asset_path: String, size: Vector2i) -> Texture2D:
 	# Create a colored placeholder based on asset type
