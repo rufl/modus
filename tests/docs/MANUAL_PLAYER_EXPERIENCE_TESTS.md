@@ -6,7 +6,7 @@
 
 - Use Godot 4.7 in a normal graphical session.
 - Record OS, renderer, resolution, input devices, scene/profile, build identity, and tester.
-- Prefer `tools/run_manual_showcase_session.sh --tester NAME --input DEVICES`; it launches the main-menu route with an F8 review overlay and writes directly to `logs/manual_test_logs/`.
+- Prefer `tools/run_manual_showcase_session.sh --tester NAME --input DEVICES`; it launches the main-menu route with an F8 review overlay, writes CSV directly to `logs/manual_test_logs/`, and enables local JSONL telemetry in `logs/validation_telemetry/`.
 - Mark failures and unavailable paths explicitly; Fail and Skip require notes and must not be omitted from the session.
 - Direct `ManualTestTimer` users may still copy completed CSVs from `user://manual_test_logs/` to `logs/manual_test_logs/`.
 - Required metadata: tester, OS, renderer, resolution, input devices, scene route, and build identity.

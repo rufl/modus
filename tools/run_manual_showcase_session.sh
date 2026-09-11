@@ -9,6 +9,7 @@ session=""
 renderer="gl_compatibility"
 resolution="1280x720"
 evidence_dir="logs/manual_test_logs"
+telemetry_dir="logs/validation_telemetry"
 
 usage() {
   cat <<'USAGE'
@@ -27,7 +28,7 @@ Options:
   --renderer METHOD     gl_compatibility, mobile, or forward_plus.
   --resolution WxH      Window resolution. Default: 1280x720.
   --evidence-dir DIR    CSV destination. Default: logs/manual_test_logs.
-  -h, --help            Show this help.
+  --telemetry-dir DIR  JSONL telemetry destination. Default: logs/validation_telemetry.
 
 Environment:
   GODOT_BIN             Godot 4.7 executable or absolute path.
@@ -60,6 +61,10 @@ while [[ $# -gt 0 ]]; do
       evidence_dir="${2:-}"
       shift 2
       ;;
+    --telemetry-dir)
+      telemetry_dir="${2:-}"
+      shift 2
+      ;;
     -h|--help)
       usage
       exit 0
@@ -82,6 +87,7 @@ done
   printf 'Invalid --resolution value: %s\n' "$resolution" >&2
   exit 64
 }
+[[ -n "$telemetry_dir" ]] || { printf 'Invalid --telemetry-dir value.\n' >&2; exit 64; }
 
 if [[ "$(uname -s)" == "Linux" && -z "${DISPLAY:-}" && -z "${WAYLAND_DISPLAY:-}" ]]; then
   printf 'A normal graphical display is required for manual evidence.\n' >&2
@@ -92,9 +98,9 @@ godot_bin="$(modus_find_godot_bin)"
 if [[ ! -f .godot/global_script_class_cache.cfg ]]; then
   modus_import_project "$godot_bin"
 fi
-
-mkdir -p "$evidence_dir"
+mkdir -p "$evidence_dir" "$telemetry_dir"
 evidence_dir="$(realpath "$evidence_dir")"
+telemetry_dir="$(realpath "$telemetry_dir")"
 if [[ -z "$session" ]]; then
   session="showcase_manual_$(date +%Y%m%d_%H%M%S)"
 fi
@@ -108,9 +114,11 @@ build_identity="0.9.5-beta+${commit}${dirty}"
 
 printf 'Launching manual evidence session: %s\n' "$session"
 printf 'CSV destination: %s\n' "$evidence_dir"
+printf 'Telemetry destination: %s\n' "$telemetry_dir"
 printf 'Press F8 or Gamepad Back to switch between gameplay and result recording.\n'
-
 env \
+  MODUS_LOCAL_TELEMETRY=1 \
+  MODUS_LOCAL_TELEMETRY_DIR="$telemetry_dir" \
   MODUS_MANUAL_TESTER="$tester" \
   MODUS_MANUAL_INPUTS="$input_devices" \
   MODUS_MANUAL_SESSION="$session" \

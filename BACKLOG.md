@@ -68,6 +68,7 @@ The September 10 refreshed aggregate supersedes the August 4 historical total fo
 ### Manual And Performance Evidence
 
 - [ ] Import manual gameplay evidence and clear the zero-hours blocker. `[truth:source-audit]` `[truth:test]`
+- Progress 2026-09-11 local validation tranche: the manual evidence timer now emits local-only telemetry checkpoints for session/test start and completion; `tools/run_manual_showcase_session.sh` enables JSONL capture by default with an explicit `--telemetry-dir`; focused telemetry proof passes 2/2 with 12 assertions and manual evidence proof passes 2/2 with 21 assertions. This improves review correlation but does not create human gameplay evidence. `[truth:test]` `[truth:source-audit]`
   - Progress 2026-08-04: added `tools/run_manual_showcase_session.sh` plus a responsive F8/Gamepad Back recorder overlay for the 20-item bounded route. It writes directly to `logs/manual_test_logs/`, captures required tester/build/device/runtime metadata, requires notes for Fail/Skip, and keeps incomplete rows explicit. The validator now counts only reviewed test-row duration instead of idle recorder overhead; its deterministic self-check and focused Godot UI/timer proof pass.
   - Shortcoming: current status still records zero reviewed manual testing hours; automated interaction with the recorder is not manual gameplay evidence.
   - Completion proof required: ManualTestTimer CSV evidence exists under `logs/manual_test_logs`; `tools/validate_manual_evidence.sh --strict` passes; docs record exactly what was tested and what remains untested.
