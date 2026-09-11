@@ -7,7 +7,7 @@
 
 ## Current Ledger Boundary
 
-`tools/generate_provenance_ledger.py` inventories the asset/resource extensions distributed from `game/`, `shared/`, `standalone/`, and `mods/`, plus the derived blood-pool script. The current ledger contains **218 assets: 149 cleared and 69 unverified**. The twelve private Suno tracks were removed from the repository and are no longer distributed.
+`tools/generate_provenance_ledger.py` inventories the asset/resource extensions distributed from `game/`, `shared/`, `standalone/`, and `mods/`, plus the derived blood-pool script. The current ledger contains **218 assets: 159 cleared and 59 unverified**. The twelve private Suno tracks were removed from the repository and are no longer distributed.
 
 Run `tools/generate_provenance_ledger.py --check` after asset changes. `--strict` intentionally fails until every distributed row is cleared or removed.
 
@@ -21,7 +21,7 @@ Run `tools/generate_provenance_ledger.py --check` after asset changes. `--strict
 | Kenney Prototype Textures | Three retained PNGs under `game/art/textures/kenney_prototype_textures/` | Pixel-identical to their corresponding files in Kenney's official Prototype Textures ZIP. The official page states CC0; legal text is retained at `docs/licenses/KENNEY_CC0-1.0.txt`. |
 | Kenney Particle Pack | Two retained PNGs under `game/art/textures/kenney_particle_pack/` | Pixel-identical to the official transparent PNGs. The official page states CC0; the same local CC0 text applies. |
 | Quaternius Universal Animation Library | `game/art/anims/`, `game/art/models/mannequin_mesh.glb`, `game/art/models/mannequin_mesh_Mannequin.res`, and `game/art/models/pistol.glb` | Official pack page identifies the library as CC0 and free for commercial use; local notice is retained at `docs/licenses/QUATERNIUS_CC0-1.0.txt`. Godot `.res` files are derived resources. |
-| Ten sample-item SVG icons | Original editable geometry under `game/art/ui/icons/`, authored with OpenAI assistance on September 9; each source embeds authorship and `SPDX-License-Identifier: MIT`, with hashes pinned by the ledger generator | Covers health, shield, speed/damage stims, materials, and ammunition icons only; no external artwork, fonts, or embedded images used. |
+| Liquid shaders and materials | `game/art/shaders/{enhanced_liquid,liquid,retro_blood,retro_lava,retro_poison,retro_water}.gdshader` and four matching liquid `.tres` files | User-confirmed original AI-assisted generation by the LichForge author; classified MIT with the project `LICENSE` notice. |
 
 The Kenney files are pixel-equivalent rather than byte-identical because their PNG encoding differs from the current official ZIP. Their repository hashes and source URLs are pinned in the ledger.
 

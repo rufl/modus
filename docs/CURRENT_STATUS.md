@@ -158,9 +158,9 @@ This source inventory is not equivalent to complete runtime or user-experience p
 1. No reviewed ManualTestTimer CSV evidence has been imported; the recorder and validator are ready, but recorded manual gameplay remains 0.00 validated hours.
 2. The project is still explicitly `0.9.5-beta`, so the 1.0 release-version gate is blocked.
 
-The two-count is the scope of `tools/validate_production_readiness.sh`, not exhaustive release or legal clearance. The current 218-row provenance ledger clears 149 assets; the twelve private Suno tracks were removed rather than distributed, and the Quaternius Universal Animation Library plus derived Godot resources are cleared under CC0. Sixty-nine distributed assets remain unverified.
+The two-count is the scope of `tools/validate_production_readiness.sh`, not exhaustive release or legal clearance. The current 218-row provenance ledger clears 159 assets; the twelve private Suno tracks were removed rather than distributed, the Quaternius Universal Animation Library plus derived Godot resources are cleared under CC0, and the author-confirmed liquid shaders/materials are classified MIT. Fifty-nine distributed assets remain unverified.
 
-Additional open proof: network latency and automatic reconnect, real Steam/GodotSteam, live complete editor UI, real Workshop publication, display-synchronized performance, a refreshed full aggregate, and resolution or exclusion of the remaining 69 provenance rows. Local real-ENet behavior and all four formerly missing props now have focused proof; stock Godot still requires the explicit audio patch described in [Known Limits](KNOWN_LIMITS_MATRIX.md).
+Additional open proof: network latency and automatic reconnect, real Steam/GodotSteam, live complete editor UI, real Workshop publication, display-synchronized performance, a refreshed full aggregate, and resolution or exclusion of the remaining 59 provenance rows. Local real-ENet behavior and all four formerly missing props now have focused proof; stock Godot still requires the explicit audio patch described in [Known Limits](KNOWN_LIMITS_MATRIX.md).
 
 ## Project Inventory
 
