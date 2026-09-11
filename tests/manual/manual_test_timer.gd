@@ -60,6 +60,7 @@ func start_session(p_session_name: String = "", metadata: Dictionary = {}) -> St
 	session_start_time = Time.get_ticks_msec() / 1000.0
 	is_tracking = true
 	session_started.emit(session_name)
+	_telemetry_checkpoint("manual_session_started", {"session_name": session_name, "metadata": session_metadata})
 	print("[ManualTestTimer] Started session: %s" % session_name)
 	return session_name
 
@@ -77,10 +78,10 @@ func start_test(test_name: String) -> void:
 			)
 		)
 		complete_test("incomplete", "A new test started before this item was reviewed")
-
 	current_test_name = _clean_csv_value(test_name)
 	current_test_start_time = Time.get_ticks_msec() / 1000.0
 	test_started.emit(current_test_name)
+	_telemetry_checkpoint("manual_test_started", {"test_name": current_test_name})
 	print("[ManualTestTimer] Started test: %s" % current_test_name)
 
 
@@ -125,6 +126,10 @@ func complete_test(result: String = "pass", notes: String = "") -> void:
 		log_file.flush()
 
 	test_completed.emit(current_test_name, duration)
+	_telemetry_checkpoint(
+		"manual_test_completed",
+		{"test_name": current_test_name, "result": normalized_result, "duration": duration, "notes": test_result.notes}
+	)
 	print(
 		(
 			"[ManualTestTimer] Completed test: %s (%.2fs, %s)"
@@ -148,10 +153,9 @@ func end_session() -> Dictionary:
 	if log_file:
 		_write_summary(stats)
 		log_file.close()
-		log_file = null
-
-	is_tracking = false
 	session_completed.emit(session_name, total_duration)
+	_telemetry_checkpoint("manual_session_completed", {"session_name": session_name, "stats": stats})
+	is_tracking = false
 	print("[ManualTestTimer] Session completed: %s (%.2fs)" % [session_name, total_duration])
 	return stats
 
@@ -309,6 +313,12 @@ func _safe_session_name(value: String) -> String:
 
 func _clean_csv_value(value: String) -> String:
 	return value.replace("\r", " ").replace("\n", " ").replace(",", ";").strip_edges()
+
+
+func _telemetry_checkpoint(event_name: String, fields: Dictionary) -> void:
+	var telemetry := get_node_or_null("/root/LocalValidationTelemetry")
+	if telemetry and telemetry.has_method("checkpoint"):
+		telemetry.checkpoint(event_name, fields)
 
 
 func print_statistics() -> void:

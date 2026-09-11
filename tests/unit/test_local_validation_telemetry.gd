@@ -2,6 +2,7 @@ extends ModusGutTestBase
 
 const TEST_OUTPUT := "user://local_validation_telemetry_unit"
 const TelemetryScript = preload("res://game/scripts/core/local_validation_telemetry.gd")
+const ManualTimerScript = preload("res://tests/manual/manual_test_timer.gd")
 
 
 func before_each() -> void:
@@ -33,6 +34,31 @@ func test_local_telemetry_writes_jsonl_events_and_checkpoints() -> void:
 	assert_true(lines[1].contains('"event":"scene_loaded"'))
 	assert_true(lines[2].contains('"name":"pickup_collected"'))
 	assert_false(lines[1].contains("http://"), "Telemetry must not contain upload endpoints")
+
+func test_manual_timer_checkpoints_are_captured() -> void:
+	var telemetry := get_node("/root/LocalValidationTelemetry")
+	telemetry.enabled = true
+	telemetry.output_directory = TEST_OUTPUT
+	telemetry.start_session("manual timer integration")
+
+	var timer := ManualTimerScript.new()
+	timer.output_directory = TEST_OUTPUT
+	add_child_autofree(timer)
+	timer.start_session("review")
+	timer.start_test("gamepad_control")
+	await get_tree().process_frame
+	timer.complete_test("pass", "Observed")
+	timer.end_session()
+	telemetry.stop_session()
+
+	var telemetry_path := ProjectSettings.globalize_path(TEST_OUTPUT).path_join(
+		"manual_timer_integration.jsonl"
+	)
+	var content := FileAccess.get_file_as_string(telemetry_path)
+	assert_true(content.contains("\"event\":\"checkpoint\""))
+	assert_true(content.contains("\"name\":\"manual_test_started\""))
+	assert_true(content.contains("\"name\":\"manual_test_completed\""))
+	assert_true(content.contains("\"result\":\"pass\""))
 
 
 func _remove_test_output() -> void:
