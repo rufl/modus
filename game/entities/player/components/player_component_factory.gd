@@ -366,7 +366,8 @@ static func _setup_interaction(player: Node) -> void:
 	player.add_child(player.interaction_component)
 	player.interaction_component.setup(player, player.camera)
 
-	player.interaction_component.item_collected.connect(player.on_item_collected)
+	# PickupBase updates inventory and the EventBus directly. The old player-level
+	# item_collected callback was compatibility wiring and is intentionally not connected.
 
 
 static func _setup_movement_state_machine(player: Node) -> void:

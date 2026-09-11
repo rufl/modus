@@ -202,21 +202,18 @@ func _physics_process(delta: float) -> void:
 	if not _is_moving:
 		return
 
-	# Dash Cooldown
+	# Dash cooldown
 	if _dash_timer > 0.0:
 		_dash_timer -= delta
 
-	# Dash Execution
+	# Dash execution. The parent owns move_and_slide, so only publish velocity.
 	if _is_dashing:
 		_dash_time_left -= delta
 		if _dash_time_left <= 0.0:
 			_is_dashing = false
-			_parent_body.velocity = Vector3.ZERO  # Stop dash momentum? Or decay?
 		else:
 			_parent_body.velocity = _dash_velocity
-			move_and_slide_proxy()
 			return
-
 	# If we are close enough or navigation finished
 	if nav_agent.is_navigation_finished():
 		stop()
@@ -279,10 +276,3 @@ func _on_velocity_computed(safe_velocity: Vector3) -> void:
 		return  # Ignore avoidance during dash
 	_parent_body.velocity.x = safe_velocity.x
 	_parent_body.velocity.z = safe_velocity.z
-
-
-func move_and_slide_proxy() -> void:
-	# Wrapper to call move_and_slide on parent if needed,
-	# but usually parent calls it in their physics process.
-	# Here we just set velocity.
-	pass

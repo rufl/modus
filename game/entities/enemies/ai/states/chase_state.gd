@@ -8,6 +8,7 @@ var _lost_timer: float = 0.0
 
 
 func enter() -> void:
+	# Chase has no entry side effects; target steering runs in physics_update.
 	pass
 
 

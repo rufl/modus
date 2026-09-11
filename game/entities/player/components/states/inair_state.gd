@@ -4,6 +4,7 @@ extends State
 
 func enter(_player: CharacterBody3D) -> void:
 	## Enter in-air state
+	# Airborne velocity and transitions are maintained by physics_update.
 	pass
 
 

@@ -13,11 +13,5 @@ func _ready() -> void:
 
 
 func _on_pickup(player: CharacterBody3D) -> void:
-	if "has_double_jump" in player:
-		if player.has_double_jump:
-			# Already has it
-			# Maybe play a special "already have it" sound or just refresh text
-			pass
-		else:
-			player.has_double_jump = true
-			# Feedback handled by standard pickup_base _sync_collected (sound + log)
+	if "has_double_jump" in player and not player.has_double_jump:
+		player.has_double_jump = true

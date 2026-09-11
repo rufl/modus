@@ -205,7 +205,7 @@ func _on_spawned_prop_tree_exiting(prop: Node3D) -> void:
 
 
 func _draw() -> void:
-	# Editor visualization handled in _process for 3D
+	# Editor gizmos own visualization; this node has no custom draw primitive.
 	pass
 
 

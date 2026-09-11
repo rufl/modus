@@ -494,23 +494,7 @@ func _synchronize_game_state() -> void:
 		if obj.has_method("is_open") and obj.has_method("update_visual_state"):
 			obj.update_visual_state()
 
-	# Sync spawn positions - ensure players don't spawn on top of each other
-	var spawn_points: Array[Node] = get_tree().get_nodes_in_group("spawn_player")
-	if not spawn_points.is_empty():
-		# Mark used spawn points
-		var used_spawns: Array[Vector3] = []
-		for player_id: int in session_state.players.keys():
-			var player_data: Dictionary = session_state.players[player_id]
-			if player_data.has("spawn_position"):
-				used_spawns.append(player_data.spawn_position)
 
-	# Sync game rules (time limit, score, etc.)
-	var gm: Node = get_node_or_null("/root/GameManager")
-	if gm:
-		var gs: Node = gm.get_core_system("gameplay")
-		if gs and gs.match_service:
-			# Match state is already global, just ensure UI is synced
-			pass
 
 	# Note: Player positions are NOT synced - each player controls their own character
 	# This is intentional for local splitscreen gameplay

@@ -53,6 +53,5 @@ func _on_wind_changed(value: float) -> void:
 
 
 func _refresh_ui() -> void:
-	# Read current state if possible?
-	# For now, we push updates.
+	# Environment state has no readback API; controls push changes through editor_state.
 	pass

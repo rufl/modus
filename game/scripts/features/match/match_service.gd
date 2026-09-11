@@ -179,10 +179,6 @@ func initialize() -> void:
 	subscribe_event("item_picked_up", _on_item_picked_up_event)
 	subscribe_event("xp_gained", _on_xp_gained_event)
 
-	# Auto-start if server or singleplayer
-	if not multiplayer.has_multiplayer_peer() or multiplayer.is_server():
-		# Optional: Auto-start or wait for command
-		pass
 
 	_mark_initialized()
 	_log_info(
@@ -291,11 +287,8 @@ func start_match(settings: Dictionary = {}) -> void:
 	if gs and gs.mission:
 		gs.mission.handle_match_started(settings)
 
-	# Broadcast to clients
-	if not multiplayer.has_multiplayer_peer():
-		# Singleplayer: No broadcast, but logic is already local
-		pass
-	elif multiplayer:
+	# Broadcast only when a multiplayer peer exists; single-player state is local.
+	if multiplayer.has_multiplayer_peer():
 		_sync_match_state.rpc(current_match_state, time_left)
 
 	var logger: Node = gm.get_core_system("logger") if gm else null
@@ -323,10 +316,8 @@ func end_match(winner_id: int = -1) -> void:
 	# Emit event
 	emit_event("match_ended", {"winner_id": winner_id})
 
-	# Broadcast to clients
-	if not multiplayer.has_multiplayer_peer():
-		pass
-	elif multiplayer:
+	# Broadcast only when a multiplayer peer exists; single-player state is local.
+	if multiplayer.has_multiplayer_peer():
 		_sync_match_state.rpc(current_match_state, 0.0)
 
 	var gm: Node = get_node_or_null("/root/GameManager")

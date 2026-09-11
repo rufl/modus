@@ -222,10 +222,6 @@ func _exit_tree() -> void:
 		if cfg.config_reloaded.is_connected(_configure_from_config):
 			cfg.config_reloaded.disconnect(_configure_from_config)
 
-	# Match Service signals
-	if match_service:
-		if match_service.match_state_changed.is_connected(_on_match_state_changed):
-			match_service.match_state_changed.disconnect(_on_match_state_changed)
 
 	# Unregister from entity registry
 	var peer_id: int = name.to_int()
@@ -321,9 +317,9 @@ func _ready() -> void:
 	if cfg:
 		cfg.config_reloaded.connect(_configure_from_config)
 
-	# Connect match service signals
-	if match_service:
-		match_service.match_state_changed.connect(_on_match_state_changed)
+# Match state is consumed by MatchHUD; player components use match_service directly.
+# The former player-level callback was legacy wiring and is intentionally not connected.
+
 
 	# Subscribe to GameManager events (only if no ProgressionBridge handles it)
 	if not get_node_or_null("ProgressionBridge"):
@@ -657,8 +653,6 @@ func collect_key(key_id: String) -> void:
 		interaction_component.collect_key(key_id)
 
 
-func _on_match_state_changed(_new_state: int) -> void:
-	pass
 
 
 func _update_crosshair_target() -> void:
@@ -769,10 +763,6 @@ func _interpolate_remote_player(delta: float) -> void:
 func _update_interaction_tooltip() -> void:
 	if hud_bridge:
 		hud_bridge.update_interaction_tooltip()
-
-
-func on_item_collected(_item_id: String) -> void:
-	pass
 
 
 func on_enemy_killed_event(data: Dictionary) -> void:

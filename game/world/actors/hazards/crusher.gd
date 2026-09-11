@@ -100,6 +100,5 @@ func _try_kill(body: Node) -> void:
 
 @rpc("authority", "call_local", "reliable")
 func _play_impact_effects() -> void:
-	# Client side effects
-	# Spawn particles, play sound
+	# No effect assets are exposed; retain the RPC as an extension hook for clients.
 	pass

@@ -4,6 +4,8 @@ extends Node
 var controller: EnemyAIController
 
 
+## Lifecycle hooks are intentionally empty; concrete states opt into only the
+## callbacks they need.
 func enter() -> void:
 	pass
 

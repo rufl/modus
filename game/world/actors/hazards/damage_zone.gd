@@ -37,7 +37,9 @@ func _on_body_entered(body: Node3D) -> void:
 		_damage_entity(body)
 
 		if enter_sound:
-			GameManager.get_core_system("audio").play_sound_3d(enter_sound, body.global_position)
+			var audio: Node = GameManager.get_core_system("audio")
+			if audio and audio.has_method("play_stream_3d"):
+				audio.play_stream_3d(enter_sound, body.global_position)
 
 
 func _on_body_exited(body: Node3D) -> void:

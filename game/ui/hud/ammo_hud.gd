@@ -79,8 +79,8 @@ func _on_hud_settings_changed() -> void:
 
 
 func _on_theme_changed() -> void:
+	# ThemeManager updates shared theme resources; this HUD has no local styling.
 	if weapon_label:
-		# Could update label styling here if desired
 		pass
 
 

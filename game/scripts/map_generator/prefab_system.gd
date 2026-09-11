@@ -340,6 +340,7 @@ func place_prefabs_in_room(
 
 	# Track placed positions for collision avoidance
 	var placed_positions: Array[Vector3] = []
+	var placed_counts: Dictionary = {}
 
 	# Attempt to place prefabs
 	var attempts := 0
@@ -366,7 +367,9 @@ func place_prefabs_in_room(
 			continue
 
 		# Check placement rules
-		if not _check_placement_rules(world_pos, cell_pos, entry.metadata, room, context):
+		if not _check_placement_rules(
+			world_pos, cell_pos, entry.metadata, room, context, placed_counts, entry.file_path
+		):
 			continue
 
 		# Instantiate the prefab
@@ -385,6 +388,7 @@ func place_prefabs_in_room(
 
 		# Track placement
 		placed_positions.append(world_pos)
+		placed_counts[entry.file_path] = int(placed_counts.get(entry.file_path, 0)) + 1
 		results.append(PlacementResult.new(instance, entry, world_pos, rotation))
 
 	return results
@@ -412,7 +416,9 @@ func _check_placement_rules(
 	cell_pos: Vector2i,
 	metadata: PrefabMetadata,
 	room: Room,
-	context: GenerationContext
+	context: GenerationContext,
+	placed_counts: Dictionary,
+	prefab_key: String
 ) -> bool:
 	var rules: Dictionary = metadata.placement_rules
 
@@ -422,21 +428,27 @@ func _check_placement_rules(
 		if not _check_wall_distance(cell_pos, min_dist, room, context):
 			return false
 
-	# Check requires_floor
-	if rules.has("requires_floor"):
-		var requires_floor: bool = rules["requires_floor"]
-		if requires_floor:
-			# For now, assume all positions have floor
-			# This can be enhanced with actual floor detection
-			pass
+	# Check requires_floor against the generated cell type.
+	if rules.get("requires_floor", false):
+		if (
+			cell_pos.y < 0
+			or cell_pos.y >= context.grid.size()
+			or cell_pos.x < 0
+			or cell_pos.x >= context.grid[cell_pos.y].size()
+		):
+			return false
+		var cell: Cell = context.grid[cell_pos.y][cell_pos.x]
+		if cell.type == Cell.Type.EMPTY:
+			return false
 
-	# Check max_per_room
+	# Check max_per_room using placements accepted in this room.
 	if rules.has("max_per_room"):
-		# This would need to be tracked per room
-		# For now, we'll skip this check as it requires additional state tracking
-		pass
+		var max_per_room: int = int(rules["max_per_room"])
+		if max_per_room >= 0 and int(placed_counts.get(prefab_key, 0)) >= max_per_room:
+			return false
 
 	return true
+
 
 
 ## Check if position is far enough from walls

@@ -66,7 +66,7 @@ func _input(event: InputEvent) -> void:
 		is_remapping = false
 		get_viewport().set_input_as_handled()
 	elif event is InputEventMouseButton and event.pressed:
-		# Could support mouse buttons here too if InputService supports it
+		# InputService currently remaps keyboard events only; leave mouse bindings unchanged.
 		pass
 
 

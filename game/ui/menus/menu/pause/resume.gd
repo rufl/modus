@@ -36,6 +36,5 @@ func _on_pressed() -> void:
 		if parent_menu:
 			parent_menu.visible = false
 		else:
-			# Just hide self hierarchy up to a point?
-			# Better: Emit signal used by HUD
+			# No pause layer is available; avoid hiding an unrelated ancestor.
 			pass

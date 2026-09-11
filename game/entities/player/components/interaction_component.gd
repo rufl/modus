@@ -115,14 +115,26 @@ func has_key(key_id: String) -> bool:
 
 
 func collect_key(key_id: String) -> void:
-	if key_id not in _collected_keys:
-		if multiplayer.is_server():
-			_collected_keys.append(key_id)
-			_sync_collected_keys.rpc(_collected_keys)
-			item_collected.emit(key_id)
-		else:
-			# Client can optimistically collect or wait for sync
-			pass
+	if key_id.is_empty() or key_id in _collected_keys:
+		return
+
+	if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
+		_request_collect_key.rpc_id(1, key_id)
+		return
+
+	_collected_keys.append(key_id)
+	_sync_collected_keys.rpc(_collected_keys)
+	item_collected.emit(key_id)
+
+
+@rpc("any_peer", "call_local", "reliable")
+func _request_collect_key(key_id: String) -> void:
+	if (
+		not multiplayer.is_server()
+		or not _validate_client_rpc("_request_collect_key", [key_id])
+	):
+		return
+	collect_key(key_id)
 
 
 # Internal Logic

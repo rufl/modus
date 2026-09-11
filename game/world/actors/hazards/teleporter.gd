@@ -20,13 +20,12 @@ var _cooldowns: Dictionary = {}  # Body -> Timer
 
 func _ready() -> void:
 	body_entered.connect(_on_body_entered)
-	body_exited.connect(_on_body_exited)
-
 	# Auto-find destination if linked via Editor connection system (future proofing)
 	if not destination_node and has_meta("linked_nodes"):
 		var linked: Array = get_meta("linked_nodes")
 		if linked is Array and linked.size() > 0:
 			destination_node = get_node_or_null(linked[0])
+
 
 
 func _process(delta: float) -> void:
@@ -52,14 +51,13 @@ func _on_body_entered(body: Node3D) -> void:
 		teleport(body)
 
 
-func _on_body_exited(_body: Node3D) -> void:
-	pass
-
 
 func teleport(body: Node3D) -> void:
 	# 1. Play Enter Sound/FX
 	if enter_sound:
-		GameManager.get_core_system("audio").play_sound_3d(enter_sound, global_position)
+		var enter_audio: Node = GameManager.get_core_system("audio")
+		if enter_audio and enter_audio.has_method("play_stream_3d"):
+			enter_audio.play_stream_3d(enter_sound, global_position)
 
 	# 2. Calculate new position
 	var target_pos: Vector3 = destination_node.global_position
@@ -89,7 +87,9 @@ func teleport(body: Node3D) -> void:
 
 	# 5. Play Exit Sound/FX at destination
 	if exit_sound:
-		GameManager.get_core_system("audio").play_sound_3d(exit_sound, target_pos)
+		var exit_audio: Node = GameManager.get_core_system("audio")
+		if exit_audio and exit_audio.has_method("play_stream_3d"):
+			exit_audio.play_stream_3d(exit_sound, target_pos)
 
 	# Trigger Destination Cooldown (so we don't teleport back instantly if it's a 2-way)
 	if destination_node is Teleporter:

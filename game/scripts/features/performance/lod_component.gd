@@ -83,12 +83,10 @@ func _update_lod(force: bool = false) -> void:
 	if not is_inside_tree():
 		return
 
-	# specific for multiplayer: handle server-side LOD?
-	if not multiplayer.has_multiplayer_peer():
-		pass
-	elif multiplayer.is_server() and not OS.has_feature("dedicated_server"):
-		pass
-	elif multiplayer.is_server():
+	# Dedicated servers have no camera and must not run client-side LOD.
+	if multiplayer.has_multiplayer_peer() and multiplayer.is_server() and OS.has_feature(
+		"dedicated_server"
+	):
 		return
 
 	# Logic: If using frustum culling and off-screen, force CULL state
@@ -130,8 +128,8 @@ func _apply_lod(level: LODLevel) -> void:
 		LODLevel.HIGH:
 			if optimize_process:
 				target_node.process_mode = Node.PROCESS_MODE_INHERIT
-			if optimize_physics and target_node is CollisionObject3D:
-				pass
+			# Keep collision layers active; disabling them would break gameplay and
+			# network interactions, so optimize_physics is intentionally conservative.
 			if optimize_visibility:
 				target_node.visible = true
 

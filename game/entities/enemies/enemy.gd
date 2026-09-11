@@ -242,14 +242,9 @@ func _ready() -> void:
 		if visuals:
 			bullet_decals.setup(self, visuals)
 
-	# Equip weapon logic
-	if visuals:
-		if data.get("ai_config", {}).get("attack_type", "melee") == "melee":
-			visuals.equip_knife("right")
-		else:
-			# Ranged: Attach dummy gun or specific model if we have one
-			# For now, default visuals creates dummy weapon if none attached
-			pass
+	# Equip melee visuals; ranged enemies use the default unarmed visual.
+	if visuals and data.get("ai_config", {}).get("attack_type", "melee") == "melee":
+		visuals.equip_knife("right")
 
 	if "corpse_scene" in data.get("visuals", {}):
 		var corpse_path: String = data.visuals.corpse_scene

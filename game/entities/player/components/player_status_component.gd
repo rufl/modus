@@ -99,7 +99,13 @@ func _is_editing_mode() -> bool:
 
 
 func _load_config() -> void:
-	# Try to load config from GameManager.get_core_system("config") via global class
-	# if strictly needed, but preferably Player.gd pushes config to us.
-	# For now, defaults are fine, Player.gd calls configure() on config load.
-	pass
+	var cfg: Node = GameManager.get_core_system("config")
+	if not cfg or not cfg.has_method("get_value"):
+		return
+
+	var status_cfg: Variant = cfg.get_value("player_modes.status", {})
+	if status_cfg is Dictionary and not status_cfg.is_empty():
+		configure(
+			status_cfg.get("afk_threshold_seconds", afk_threshold),
+			status_cfg.get("status_update_interval", _status_update_interval)
+		)

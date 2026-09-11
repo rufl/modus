@@ -80,12 +80,9 @@ func setup_extended_hud() -> void:
 	if not _hud_layer:
 		return
 
-	# Minimap
+	# Minimap is owned by the authored HUD scene; this bridge must not invent one.
 	if not _hud_layer.has_node("Minimap"):
-		# Assuming Minimap is part of the base HUD scene?
-		# If not, we should instantiate it.
-		# But the original code just checked for existence.
-		pass
+		_log("[PlayerHUDBridge] Minimap not present in HUD scene", "HUD")
 	else:
 		_log("[PlayerHUDBridge] Minimap found", "HUD")
 
@@ -117,15 +114,10 @@ func setup_extended_hud() -> void:
 			_hud_layer.add_child(node)
 			_log("[PlayerHUDBridge] Added SkillTreeUI", "HUD")
 
-	# Inventory UI
-	# Assuming it might be part of base or needing instantiation.
-	# Original code checked "InventoryUI".
+	# Inventory UI is supplied by the authored HUD scene; no runtime path is
+	# available here, so leave the optional element absent.
 	if not _hud_layer.has_node("InventoryUI"):
-		# If we have a path for it?
-		# Let's assume it should be there or we add it.
-		# Original code just warned if missing.
-		# We'll skip instantiation if we don't have a path, but we could add it if we knew the path.
-		pass
+		_log("[PlayerHUDBridge] InventoryUI not present in HUD scene", "HUD")
 
 
 func _create_interaction_tooltip() -> void:

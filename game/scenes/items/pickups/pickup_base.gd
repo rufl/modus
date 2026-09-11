@@ -495,3 +495,9 @@ func _play_sound() -> void:
 		get_tree().current_scene.add_child(audio)
 		audio.global_position = global_position
 		audio.finished.connect(audio.queue_free)
+		return
+
+	# Use the generated pickup event when no per-item stream is authored.
+	var audio_service: Node = GameManager.get_core_system("audio")
+	if audio_service and audio_service.has_method("play_pickup_sound"):
+		audio_service.play_pickup_sound(global_position)

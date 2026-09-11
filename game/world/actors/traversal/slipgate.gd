@@ -201,13 +201,13 @@ func _apply_teleport_animation(entity: Node3D) -> void:
 
 	match teleport_animation_type:
 		0:  # Instant - No animation
-			pass
+			return
 		1:  # Fade Out/In
 			await _animate_fade_teleport(entity)
 		2:  # Scale Animation
 			await _animate_scale_teleport(entity)
 		_:  # Default to instant
-			pass
+			return
 
 
 ## Fade out/in animation for teleportation

@@ -608,8 +608,6 @@ func _scan_music_folder() -> void:
 				_playlist.append(path + file)
 			file = dir.get_next()
 		dir.list_dir_end()
-	else:
-		pass
 
 	# Safe access during initialization
 	var gm: Node = get_node_or_null("/root/GameManager")

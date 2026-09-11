@@ -4,6 +4,7 @@ extends State
 
 func enter(_player: CharacterBody3D) -> void:
 	## Enter idle state
+	# Idle has no entry side effects; its physics callback handles transitions.
 	pass
 
 

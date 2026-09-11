@@ -4,6 +4,7 @@ extends State
 
 func enter(_player: CharacterBody3D) -> void:
 	## Enter walk state
+	# Walk speed is applied by physics_update from the current input.
 	pass
 
 

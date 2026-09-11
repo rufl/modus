@@ -4,20 +4,14 @@ extends State
 
 func enter(_player: CharacterBody3D) -> void:
 	## Enter crouch state
-	# Set crouching camera height
-	var camera_component: Node = player.get_node_or_null("CameraComponent")
-	if camera_component:
-		# This will be handled by the existing camera component
-		pass
+	# CameraComponent observes player.is_crouching and owns height interpolation.
+	pass
 
 
 func exit() -> void:
 	## Exit crouch state
-	# Reset camera height
-	var camera_component: Node = player.get_node_or_null("CameraComponent")
-	if camera_component:
-		# This will be handled by the existing camera component
-		pass
+	# CameraComponent observes player.is_crouching and restores height on transition.
+	pass
 
 
 func physics_update(_delta: float) -> void:

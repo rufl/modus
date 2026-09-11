@@ -134,7 +134,6 @@ func _add_log_entry(text: String, color: Color) -> void:
 
 	_schedule_fade(label)
 
-	_schedule_fade(label)
 
 
 func _schedule_fade(label: Label) -> void:

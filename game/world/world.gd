@@ -76,9 +76,6 @@ func _unhandled_input(event: InputEvent) -> void:
 			print("[World] Not in game yet")
 
 
-func _notification(_what: int) -> void:
-	# Legacy logic removed
-	pass
 
 
 func _process(_delta: float) -> void:
@@ -820,9 +817,8 @@ func _on_options_button_toggled(toggled_on: bool) -> void:
 		# Show Options, Hide Main
 		_animate_menu_transition(main_menu, options_menu)
 	else:
-		# Is this ever called by button toggle off?
-		# Usually Back button handles the return.
-		pass
+		# Back navigation is handled by the dedicated Back button.
+		return
 
 
 func _on_back_pressed() -> void:

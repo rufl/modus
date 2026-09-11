@@ -48,6 +48,7 @@ enum WeatherType { NONE = -1, CLEAR = 0, RAIN = 1, SNOW = 2, STORM = 3, WINDY = 
 
 var _weather_controller: WeatherController
 var _affected_bodies: Array[Node3D] = []
+var _ambient_player: AudioStreamPlayer3D = null
 
 
 func _ready() -> void:
@@ -213,52 +214,81 @@ func _find_world_environment() -> WorldEnvironment:
 	return null
 
 
-## Apply physics effects to entities
+## Apply physics effects to entities.
+## Native Area3D gravity and the wind loop handle the currently supported effects;
+## per-body friction/bounce overrides are intentionally not applied here.
 func _apply_physics_effects() -> void:
-	# These effects would typically be applied to entities in the area
-	# through collision/physics callbacks
 	pass
 
 
-## Remove physics effects
+## Remove physics effects.
+## There is no per-body override state to restore because none is applied above.
 func _remove_physics_effects() -> void:
-	# Reset physics effects to default
 	pass
 
 
-## Apply audio effects
+## Apply audio effects while the player is inside this volume.
 func _apply_audio_effects() -> void:
-	if ambient_sound:
-		# Play ambient sound if available
-		# This would typically be done through an audio system
-		pass
+	if not ambient_sound:
+		return
+
+	if not _ambient_player:
+		_ambient_player = AudioStreamPlayer3D.new()
+		_ambient_player.name = "EnvironmentAmbient"
+		_ambient_player.stream = ambient_sound
+		_ambient_player.volume_db = ambient_volume_db
+		_ambient_player.pitch_scale = ambient_pitch_scale
+		_ambient_player.autoplay = true
+		add_child(_ambient_player)
+	elif not _ambient_player.playing:
+		_ambient_player.play()
 
 
-## Remove audio effects
+## Stop audio effects when the player leaves this volume.
 func _remove_audio_effects() -> void:
-	if ambient_sound:
-		# Stop playing ambient sound
-		pass
-
-
-## Apply visual effects
+	if _ambient_player:
+		_ambient_player.stop()
+		_ambient_player.queue_free()
+		_ambient_player = null
+## Apply sky/background overrides while the player is inside this volume.
 func _apply_visual_effects() -> void:
-	# Apply sky overrides and visual effects
-	if sky_override_enabled:
-		# This would typically interact with the WorldEnvironment
-		# or rendering system
-		pass
+	if not sky_override_enabled:
+		return
+
+	var world_env: WorldEnvironment = _find_world_environment()
+	if not world_env or not world_env.environment:
+		return
+
+	var env: Environment = world_env.environment
+	if not has_meta("original_background_mode"):
+		set_meta("original_background_mode", env.background_mode)
+		set_meta("original_sky", env.sky)
+		set_meta("original_background_color", env.background_color)
+
+	if sky_override_sky:
+		env.background_mode = Environment.BG_SKY
+		env.sky = sky_override_sky
+	else:
+		env.background_mode = Environment.BG_COLOR
+		env.background_color = sky_override_bg_color
 
 
-## Remove visual effects
+## Restore the environment background when the player leaves this volume.
 func _remove_visual_effects() -> void:
-	if sky_override_enabled:
-		# Reset to default sky
-		pass
+	if not sky_override_enabled:
+		return
+
+	var world_env: WorldEnvironment = _find_world_environment()
+	if not world_env or not world_env.environment:
+		return
+
+	var env: Environment = world_env.environment
+	if has_meta("original_background_mode"):
+		env.background_mode = get_meta("original_background_mode")
+		env.sky = get_meta("original_sky")
+		env.background_color = get_meta("original_background_color")
 
 
-func _on_weather_changed(_type: int) -> void:
-	pass  # Placeholder for future implementation
 
 
 func _on_body_entered(body: Node3D) -> void:

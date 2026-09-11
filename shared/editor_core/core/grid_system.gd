@@ -15,6 +15,7 @@ var occupied_cells: Dictionary = {}
 
 
 func _ready() -> void:
+	# Exported defaults and empty occupancy state require no runtime initialization.
 	pass
 
 

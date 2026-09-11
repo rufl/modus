@@ -35,12 +35,6 @@ func physics_update(delta: float) -> void:
 	if controller.movement.nav_agent.is_navigation_finished():
 		_is_waiting = true
 		_hold_timer = patrol_hold_time
-		if controller.has_node("IdleState"):
-			# Optionally switch to Idle state for the wait duration to play idle anims
-			# But for now keeping it simple inside Patrol
-			pass
-
-			pass
 
 
 func configure(type: String, radius: float, hold: float) -> void:

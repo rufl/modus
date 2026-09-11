@@ -133,6 +133,8 @@ func _add_default_buttons() -> void:
 
 
 func _connect_signals() -> void:
+	# Built-in button signals are connected while controls are constructed; subclasses
+	# may override this hook for additional connections.
 	pass
 
 

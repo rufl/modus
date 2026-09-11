@@ -17,7 +17,6 @@ func _ready() -> void:
 	var gs := GameManager.get_core_system("gameplay") as GameplaySvc
 	if gs and gs.weather:
 		gs.weather.weather_changed.connect(_on_weather_changed)
-		gs.weather.wind_changed.connect(_on_wind_changed)
 
 		# Init
 		_on_weather_changed(gs.weather.current_weather)
@@ -118,8 +117,3 @@ func _update_fog(type: int) -> void:
 			_target_fog_density = 0.1
 		_:
 			_target_fog_density = 0.01
-
-
-func _on_wind_changed(_strength: float, _direction: Vector3) -> void:
-	# Keep particles relative to camera maybe?
-	pass

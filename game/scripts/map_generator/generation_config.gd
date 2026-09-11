@@ -41,9 +41,6 @@ enum ThemeType { TECH, HELL, URBAN, CAVE, JUMBLED }
 @export var debug_mode: bool = false  # Enable intermediate state saving for debugging
 
 
-func _init() -> void:
-	# Set default values
-	pass
 
 
 ## Compatibility helper for callers that also accept dictionary configs.

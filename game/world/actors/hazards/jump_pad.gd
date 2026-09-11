@@ -26,4 +26,6 @@ func _on_body_entered(body: Node3D) -> void:
 			body.velocity.z += launch_velocity.z
 
 		if launch_sound:
-			GameManager.get_core_system("audio").play_sound_3d(launch_sound, global_position)
+			var audio: Node = GameManager.get_core_system("audio")
+			if audio and audio.has_method("play_stream_3d"):
+				audio.play_stream_3d(launch_sound, global_position)

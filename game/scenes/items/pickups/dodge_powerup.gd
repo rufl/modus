@@ -12,8 +12,5 @@ func _ready() -> void:
 
 
 func _on_pickup(player: CharacterBody3D) -> void:
-	if "has_dodge" in player:
-		if player.has_dodge:
-			pass
-		else:
-			player.has_dodge = true
+	if "has_dodge" in player and not player.has_dodge:
+		player.has_dodge = true
