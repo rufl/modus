@@ -74,3 +74,27 @@ func test_package_rejects_level_and_thumbnail_collision() -> void:
 		"level_file and thumbnail must differ" in result.error_msg,
 		"Level/thumbnail collision should be reported to the package caller"
 	)
+
+
+func test_binary_dependency_diagnostic_identifies_package_relative_target() -> void:
+	var asset_map := {
+		"res://textures/albedo.png": "assets/texture_albedo.png",
+	}
+	var dependencies := PackedStringArray([
+		"res://textures/albedo.png::Texture2D",
+		"res://missing/normal.png::Texture2D",
+	])
+
+	var message := LevelPackagerScript._format_binary_dependency_error(
+		"res://materials/wall.res",
+		"assets/material_wall.res",
+		dependencies,
+		asset_map
+	)
+
+	assert_true("res://materials/wall.res" in message)
+	assert_true("assets/material_wall.res" in message)
+	assert_true("res://textures/albedo.png::Texture2D" in message)
+	assert_true("package-relative 'texture_albedo.png'" in message)
+	assert_true("res://missing/normal.png::Texture2D" in message)
+	assert_true("not included in the package" in message)

@@ -503,7 +503,6 @@ func test_advanced_brush_generates_specialized_meshes() -> void:
 	for brush_type in [
 		AdvancedBrushScript.BrushType.STAIRCASE,
 		AdvancedBrushScript.BrushType.ARCH,
-		AdvancedBrushScript.BrushType.TORUS,
 		AdvancedBrushScript.BrushType.CAPSULE,
 	]:
 		var shape: Node3D = brush._create_brush_shape(brush_type)
@@ -511,6 +510,11 @@ func test_advanced_brush_generates_specialized_meshes() -> void:
 		assert_not_null(mesh)
 		assert_gt(mesh.get_surface_count(), 0)
 		shape.free()
+
+	var torus: Node3D = brush._create_brush_shape(AdvancedBrushScript.BrushType.TORUS)
+	assert_true(torus is CSGTorus3D)
+	assert_gt((torus as CSGTorus3D).outer_radius, (torus as CSGTorus3D).inner_radius)
+	torus.free()
 	brush.free()
 
 

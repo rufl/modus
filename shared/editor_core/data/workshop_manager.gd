@@ -28,16 +28,37 @@ const WORKSHOP_UPLOADS := "user://workshop/uploads/"
 const JSONHelperClass = preload("res://game/core/json_helper.gd")
 
 var steam_available: bool = false
-var steam: Node = null  # GodotSteam reference
+var steam: Object = null  # GodotSteam singleton
+var steam_ugc_available: bool = false
 var cached_items: Dictionary = {}  # item_id -> metadata
 var subscribed_items: Array[String] = []
+var _active_browse_query_handle: int = 0
+var _active_browse_query_text: String = ""
+var _steam_ugc_unavailable_reason: String = ""
 
+const _STEAM_UGC_QUERY_METHODS: Array[String] = [
+	"createQueryAllUGCRequest",
+	"sendQueryUGCRequest",
+	"getQueryUGCResult",
+	"releaseQueryUGCRequest",
+	"setSearchText",
+	"addRequiredTag",
+	"setMatchAnyTag",
+]
 
 func _ready() -> void:
 	name = "WorkshopManager"
 	_init_directories()
 	_init_steam()
 	_load_cached_items()
+
+
+func _exit_tree() -> void:
+	_release_active_browse_query()
+	if steam and steam.has_signal("ugc_query_completed"):
+		var query_callback := Callable(self, "_on_ugc_query_completed")
+		if steam.is_connected("ugc_query_completed", query_callback):
+			steam.disconnect("ugc_query_completed", query_callback)
 
 
 func _init_directories() -> void:
@@ -58,10 +79,64 @@ func _init_steam() -> void:
 			steam.ugc_item_created.connect(_on_ugc_item_created)
 		if steam.has_signal("ugc_item_updated"):
 			steam.ugc_item_updated.connect(_on_ugc_item_updated)
+		steam_ugc_available = _detect_steam_ugc_capability()
+		if steam_ugc_available:
+			var query_callback := Callable(self, "_on_ugc_query_completed")
+			if not steam.is_connected("ugc_query_completed", query_callback):
+				steam.connect("ugc_query_completed", query_callback)
+		else:
+			_log("[WorkshopManager] %s" % _steam_ugc_unavailable_reason, "Warning")
 	else:
 		var logger: Node = GameManager.get_core_system("logger")
 		if logger and logger.has_method("info"):
 			logger.info("[WorkshopManager] Steam not available, using local mode", "Log")
+
+
+func _detect_steam_ugc_capability() -> bool:
+	_steam_ugc_unavailable_reason = ""
+	if not steam:
+		_steam_ugc_unavailable_reason = "Steam Workshop browsing is unavailable: the Steam singleton is missing"
+		return false
+
+	var missing_methods: Array[String] = []
+	for method_name: String in _STEAM_UGC_QUERY_METHODS:
+		if not steam.has_method(method_name):
+			missing_methods.append(method_name)
+	if not missing_methods.is_empty():
+		_steam_ugc_unavailable_reason = (
+			"Steam Workshop browsing is unavailable: GodotSteam is missing UGC methods: %s. "
+			+ "Install a GodotSteam build with ISteamUGC query support."
+		) % ", ".join(missing_methods)
+		return false
+	if not steam.has_signal("ugc_query_completed"):
+		_steam_ugc_unavailable_reason = (
+			"Steam Workshop browsing is unavailable: GodotSteam is missing the "
+			"ugc_query_completed callback signal. Install a GodotSteam build with UGC query support."
+		)
+		return false
+	return true
+
+
+func _steam_get_app_id() -> int:
+	if not steam:
+		return 0
+	for method_name: String in ["get_current_app_id", "getAppID", "get_app_id"]:
+		if steam.has_method(method_name):
+			return int(steam.call(method_name))
+	return 0
+
+
+func _steam_constant(name: String, fallback: int) -> int:
+	if steam and name in steam:
+		return int(steam.get(name))
+	return fallback
+
+
+func _release_active_browse_query() -> void:
+	if _active_browse_query_handle != 0 and steam and steam.has_method("releaseQueryUGCRequest"):
+		steam.call("releaseQueryUGCRequest", _active_browse_query_handle)
+	_active_browse_query_handle = 0
+	_active_browse_query_text = ""
 
 
 ## Upload a level to workshop
@@ -265,14 +340,90 @@ func browse_items(
 		_local_browse(query, tags, sort_by)
 
 
-func _steam_browse(query: String, _tags: PackedStringArray, _sort_by: String) -> void:
-	# This checkout does not expose a GodotSteam UGC query method or callback.
-	# Never pretend that Steam browsing succeeded when only local browsing is
-	# available.
-	var reason := "Steam Workshop browsing is unavailable: no GodotSteam UGC query API was discovered"
+func _steam_browse(query: String, tags: PackedStringArray, sort_by: String) -> void:
+	if not steam_ugc_available:
+		var reason := _steam_ugc_unavailable_reason
+		if reason.is_empty():
+			reason = "Steam Workshop browsing is unavailable: GodotSteam UGC capability was not detected"
+		_fail_browse(query, reason)
+		return
+
+	_release_active_browse_query()
+	var app_id := _steam_get_app_id()
+	if app_id <= 0:
+		_fail_browse(
+			query,
+			"Steam Workshop browsing is unavailable: GodotSteam reports no current app ID. "
+			+ "Initialize Steam with the configured Workshop app ID before browsing."
+		)
+		return
+
+	var query_type := _steam_constant("UGC_QUERY_RANKED_BY_LAST_UPDATED_DATE", 19)
+	match sort_by:
+		"downloads":
+			query_type = _steam_constant("UGC_QUERY_RANKED_BY_TOTAL_UNIQUE_SUBSCRIPTIONS", 12)
+		"rating":
+			query_type = _steam_constant("UGC_QUERY_RANKED_BY_VOTE", 0)
+		"updated":
+			query_type = _steam_constant("UGC_QUERY_RANKED_BY_LAST_UPDATED_DATE", 19)
+		_:
+			query_type = _steam_constant("UGC_QUERY_RANKED_BY_LAST_UPDATED_DATE", 19)
+
+	var matching_type := _steam_constant("UGC_MATCHING_UGC_TYPE_ITEMS_READY_TO_USE", 2)
+	var handle_variant: Variant = steam.call(
+		"createQueryAllUGCRequest", query_type, matching_type, app_id, app_id, 1
+	)
+	var query_handle := int(handle_variant)
+	if query_handle <= 0:
+		_fail_browse(
+			query,
+			"Steam Workshop browsing could not create a UGC query. "
+			+ "Verify the configured app ID and Workshop configuration."
+		)
+		return
+
+	_active_browse_query_handle = query_handle
+	_active_browse_query_text = query
+
+	if not query.is_empty():
+		var search_result: Variant = steam.call("setSearchText", query_handle, query)
+		if search_result is bool and not search_result:
+			_fail_browse(query, "Steam rejected the Workshop search text; use a shorter non-empty query.")
+			return
+
+	for tag: String in tags:
+		var clean_tag := tag.strip_edges()
+		if clean_tag.is_empty():
+			continue
+		var tag_result: Variant = steam.call("addRequiredTag", query_handle, clean_tag)
+		if tag_result is bool and not tag_result:
+			_fail_browse(
+				query,
+				"Steam rejected Workshop tag '%s'. Check that the tag is non-empty and supported by the app."
+				% clean_tag
+			)
+			return
+
+	if tags.size() > 1:
+		var match_result: Variant = steam.call("setMatchAnyTag", query_handle, true)
+		if match_result is bool and not match_result:
+			_fail_browse(
+				query,
+				"Steam could not configure multi-tag Workshop matching for this GodotSteam build."
+			)
+			return
+
+	var send_result: Variant = steam.call("sendQueryUGCRequest", query_handle)
+	# GodotSteam's documented binding returns void; test doubles and older bindings
+	# may return bool, in which case false is an immediate request failure.
+	if send_result is bool and not send_result:
+		_fail_browse(query, "Steam rejected the Workshop UGC query request.")
+
+
+func _fail_browse(query: String, reason: String) -> void:
+	_release_active_browse_query()
 	push_error("[WorkshopManager] %s" % reason)
 	browse_failed.emit(query, reason)
-
 
 func _local_browse(query: String, tags: PackedStringArray, _sort_by: String) -> void:
 	var results: Array[Dictionary] = []
@@ -300,6 +451,76 @@ func _local_browse(query: String, tags: PackedStringArray, _sort_by: String) -> 
 		results.append(item)
 
 	items_loaded.emit(results)
+
+
+func _on_ugc_query_completed(
+	query_handle: int,
+	result: int,
+	results_returned: int,
+	_total_matching: int,
+	_cached: bool,
+	_next_cursor: String = ""
+) -> void:
+	if query_handle != _active_browse_query_handle:
+		# A replaced query was already released. Do not release this stale callback
+		# again because some Steam runtimes invalidate released handles immediately.
+		return
+
+	var query := _active_browse_query_text
+	var ok_result := _steam_constant("RESULT_OK", 1)
+	if result != ok_result:
+		_release_active_browse_query()
+		_fail_browse(
+			query,
+			"Steam Workshop UGC query failed with result code %d. "
+			+ "Verify Steam is running, the app is authorized, and Workshop is enabled."
+			% result
+		)
+		return
+
+	var items: Array[Dictionary] = []
+	for index: int in range(maxi(results_returned, 0)):
+		var raw_item: Variant = steam.call("getQueryUGCResult", query_handle, index)
+		if raw_item is Dictionary and not raw_item.is_empty():
+			items.append(_convert_steam_ugc_metadata(raw_item))
+
+	_release_active_browse_query()
+	items_loaded.emit(items)
+
+
+func _convert_steam_ugc_metadata(raw_item: Dictionary) -> Dictionary:
+	var tags: Array[String] = []
+	var raw_tags: Variant = raw_item.get("tags", [])
+	if raw_tags is String:
+		for tag: String in raw_tags.split(",", false):
+			var clean_tag := tag.strip_edges()
+			if not clean_tag.is_empty():
+				tags.append(clean_tag)
+	elif raw_tags is Array or raw_tags is PackedStringArray:
+		for tag: Variant in raw_tags:
+			var clean_tag := str(tag).strip_edges()
+			if not clean_tag.is_empty():
+				tags.append(clean_tag)
+
+	var file_id := int(raw_item.get("file_id", 0))
+	var score_variant: Variant = raw_item.get("score", 0.0)
+	var score := float(score_variant) if score_variant is float or score_variant is int else 0.0
+	return {
+		"item_id": str(file_id),
+		"title": str(raw_item.get("title", "")),
+		"description": str(raw_item.get("description", "")),
+		"tags": tags,
+		"author": str(raw_item.get("steam_id_owner", "")),
+		"created": int(raw_item.get("time_created", 0)),
+		"updated": int(raw_item.get("time_updated", 0)),
+		"local_path": "",
+		"downloads": int(
+			raw_item.get("total_unique_subscriptions", raw_item.get("num_unique_subscriptions", 0))
+		),
+		"rating": score,
+		"preview_url": str(raw_item.get("preview_url", "")),
+		"steam_data": raw_item,
+	}
 
 
 ## Steam callbacks

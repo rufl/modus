@@ -7,7 +7,7 @@ const FIXTURE_DIR := "user://workshop_simulation_fixture/"
 const WORKSHOP_DIR := "user://workshop/"
 
 var workshop_browse_results: Array[Dictionary] = []
-
+var workshop_browse_failures: Array[Dictionary] = []
 
 func test_local_workshop_upload_download_browse_and_subscription() -> void:
 	_remove_directory(FIXTURE_DIR)
@@ -72,6 +72,52 @@ func test_local_workshop_upload_download_browse_and_subscription() -> void:
 	_remove_directory(WORKSHOP_DIR)
 
 
+func test_steam_browse_reports_unsupported_capability() -> void:
+	workshop_browse_failures.clear()
+	var manager := WorkshopManagerScript.new()
+	add_child_autofree(manager)
+	await get_tree().process_frame
+
+	manager.steam_available = true
+	manager.steam_ugc_available = false
+	manager.browse_failed.connect(_capture_browse_failure)
+	manager.browse_items("missing-api")
+
+	assert_eq(workshop_browse_failures.size(), 1)
+	if workshop_browse_failures.size() == 1:
+		assert_eq(workshop_browse_failures[0].get("query"), "missing-api")
+		assert_true(
+			"GodotSteam" in workshop_browse_failures[0].get("reason", ""),
+			"Steam browse failure should identify the unavailable GodotSteam capability"
+		)
+
+
+func test_steam_metadata_conversion_normalizes_ugc_result() -> void:
+	var manager := WorkshopManagerScript.new()
+	add_child_autofree(manager)
+	var item := manager._convert_steam_ugc_metadata(
+		{
+			"file_id": 42,
+			"title": "Remote Fixture",
+			"description": "Steam metadata",
+			"tags": "Action, Puzzle, ",
+			"steam_id_owner": 76561198000000000,
+			"time_created": 100,
+			"time_updated": 200,
+			"score": 0.75,
+			"total_unique_subscriptions": 12,
+		}
+	)
+
+	assert_eq(item.get("item_id"), "42")
+	assert_eq(item.get("tags"), ["Action", "Puzzle"])
+	assert_eq(item.get("author"), "76561198000000000")
+	assert_eq(item.get("created"), 100)
+	assert_eq(item.get("updated"), 200)
+	assert_eq(item.get("downloads"), 12)
+	assert_eq(item.get("rating"), 0.75)
+
+
 func _remove_directory(path: String) -> void:
 	var dir := DirAccess.open(path)
 	if not dir:
@@ -91,3 +137,7 @@ func _remove_directory(path: String) -> void:
 
 func _capture_browse_results(items: Array[Dictionary]) -> void:
 	workshop_browse_results = items
+
+
+func _capture_browse_failure(query: String, reason: String) -> void:
+	workshop_browse_failures.append({"query": query, "reason": reason})

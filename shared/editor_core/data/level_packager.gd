@@ -167,15 +167,14 @@ static func package_level(
 	for source_path: String in assets:
 		var asset_path := temp_dir.path_join(asset_map[source_path])
 		if not _is_text_resource(asset_path):
-			var binary_dependencies: PackedStringArray = ResourceLoader.get_dependencies(source_path)
-			if not binary_dependencies.is_empty():
-				return _package_failure(
-					result, temp_dir,
-					_format_binary_dependency_error(
-						source_path, asset_map[source_path], binary_dependencies, asset_map
-					)
-				)
-		elif _is_text_resource(asset_path):
+			# Binary formats are opaque to the packager. An empty dependency list
+			# means the bytes are self-contained, so preserve them verbatim.
+			var binary_error := _validate_binary_resource(
+				source_path, asset_map[source_path], asset_map
+			)
+			if not binary_error.is_empty():
+				return _package_failure(result, temp_dir, binary_error)
+		else:
 			rewrite_err = _rewrite_text_resource(
 				asset_path, asset_map[source_path], temp_dir, asset_map
 			)
@@ -475,6 +474,17 @@ static func _is_text_resource(path: String) -> bool:
 	return extension in ["tscn", "tres", "godot", "gd", "gdshader", "shader", "material"]
 
 
+static func _validate_binary_resource(
+	source_path: String, source_package_path: String, asset_map: Dictionary
+) -> String:
+	var dependency_entries: PackedStringArray = ResourceLoader.get_dependencies(source_path)
+	if dependency_entries.is_empty():
+		return ""
+	return _format_binary_dependency_error(
+		source_path, source_package_path, dependency_entries, asset_map
+	)
+
+
 static func _format_binary_dependency_error(
 	source_path: String,
 	source_package_path: String,
@@ -491,7 +501,8 @@ static func _format_binary_dependency_error(
 		var package_dependency: String = asset_map.get(normalized_dependency, "")
 		if package_dependency.is_empty():
 			dependency_messages.append(
-				"'%s' is not included in the package" % dependency_path
+				"'%s' is not included in the package (no package-relative target exists)"
+				% dependency_entry
 			)
 		else:
 			var relative_dependency := _relative_package_path(
@@ -499,8 +510,10 @@ static func _format_binary_dependency_error(
 			)
 			dependency_messages.append(
 				"'%s' must be remapped to package-relative '%s' (packaged at '%s')"
-				% [dependency_path, relative_dependency, package_dependency]
+				% [dependency_entry, relative_dependency, package_dependency]
 			)
+	if dependency_messages.is_empty():
+		dependency_messages.append("dependency list is malformed or empty")
 	return (
 		"Cannot rewrite binary asset '%s' (package path '%s'): unresolved dependency%s: %s. "
 		+ "Binary resource references cannot be rewritten; convert the asset to a text resource "
@@ -511,6 +524,7 @@ static func _format_binary_dependency_error(
 		"" if dependency_messages.size() == 1 else "ies",
 		", ".join(dependency_messages)
 	]
+
 
 
 static func _rewrite_text_resource(
@@ -730,24 +744,23 @@ static func _extract_zip(zip_path: String, output_dir: String) -> Error:
 
 
 static func _remove_directory(path: String) -> void:
-	var dir := DirAccess.open(path)
+	var absolute_path := ProjectSettings.globalize_path(path)
+	var dir := DirAccess.open(absolute_path)
 	if not dir:
 		return
 
 	dir.list_dir_begin()
 	var file_name: String = dir.get_next()
-
 	while not file_name.is_empty():
-		var full_path: String = path.path_join(file_name)
-		if dir.current_is_dir():
+		var full_path := absolute_path.path_join(file_name)
+		if dir.current_is_dir() and not dir.is_link(file_name):
 			_remove_directory(full_path)
-			DirAccess.remove_absolute(full_path)
 		else:
 			DirAccess.remove_absolute(full_path)
 		file_name = dir.get_next()
-
 	dir.list_dir_end()
-	DirAccess.remove_absolute(path)
+	DirAccess.remove_absolute(absolute_path)
+
 
 
 static func _generate_id() -> String:

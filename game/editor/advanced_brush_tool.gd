@@ -352,10 +352,12 @@ func _place_brush_object(position: Vector3) -> bool:
 		var scale_factor: float = 1.0 + randf_range(-scale_variation, scale_variation)
 		shape.scale = Vector3(scale_factor, scale_factor, scale_factor) * brush_size
 
-	# Apply material
+	# Apply material to the rendered shape and every CSG operand. A hollow
+	# brush renders its operands through a combiner, so setting only the
+	# combiner would not preserve the material on all engine versions.
 	if brush_material:
-		if shape is MeshInstance3D:
-			shape.material_override = brush_material
+		_apply_brush_material(shape)
+
 
 	# Add to scene
 	var parent: Node3D = _get_level_parent()
@@ -367,6 +369,15 @@ func _place_brush_object(position: Vector3) -> bool:
 		return true
 
 	return false
+
+
+func _apply_brush_material(node: Node) -> void:
+	if node is MeshInstance3D:
+		(node as MeshInstance3D).material_override = brush_material
+	elif node is CSGShape3D:
+		(node as CSGShape3D).material = brush_material
+	for child in node.get_children():
+		_apply_brush_material(child)
 
 
 ## Create brush shape based on type
@@ -394,19 +405,25 @@ func _create_brush_shape(brush_type: BrushType) -> Node3D:
 			cone.height = brush_size.y
 			cone.cone = true
 			shape = cone
+		BrushType.TORUS:
+			var torus := CSGTorus3D.new()
+			var torus_radii := _get_torus_radii(brush_size)
+			torus.inner_radius = torus_radii.x
+			torus.outer_radius = torus_radii.y
+			torus.ring_sides = 24
+			torus.sides = 10
+			shape = torus
 		BrushType.PYRAMID:
 			shape = _create_pyramid_shape(brush_size)
 		BrushType.WEDGE:
 			shape = _create_wedge_shape(brush_size)
-		BrushType.STAIRCASE, BrushType.ARCH, BrushType.TORUS, BrushType.CAPSULE:
+		BrushType.STAIRCASE, BrushType.ARCH, BrushType.CAPSULE:
 			var mesh_instance := MeshInstance3D.new()
 			match brush_type:
 				BrushType.STAIRCASE:
 					mesh_instance.mesh = _create_staircase_mesh(brush_size)
 				BrushType.ARCH:
 					mesh_instance.mesh = _create_arch_mesh(brush_size)
-				BrushType.TORUS:
-					mesh_instance.mesh = _create_torus_mesh(brush_size)
 				BrushType.CAPSULE:
 					mesh_instance.mesh = _create_capsule_mesh(brush_size)
 			shape = mesh_instance
@@ -424,12 +441,26 @@ func _create_brush_shape(brush_type: BrushType) -> Node3D:
 	return shape
 
 
+func _get_torus_radii(size: Vector3) -> Vector2:
+	var major_radius := maxf(size.x, size.z) * 0.25
+	var tube_radius := minf(size.x, size.y) * 0.18
+	return Vector2(major_radius - tube_radius, major_radius + tube_radius)
+
+
+func _hollow_shape_failure(outer_shape: Node3D, reason: String) -> Node3D:
+	push_error("[AdvancedBrushTool] %s" % reason)
+	brush_operation_failed.emit(str(brush_type), reason)
+	if is_instance_valid(outer_shape) and outer_shape.get_parent() == null:
+		outer_shape.free()
+	return null
+
+
 func _create_hollow_shape(outer_shape: Node3D) -> Node3D:
 	if not outer_shape is CSGShape3D:
-		var reason := "Brush type %s does not support hollowing" % BrushType.keys()[brush_type]
-		push_error("[AdvancedBrushTool] %s" % reason)
-		brush_operation_failed.emit(str(brush_type), reason)
-		return null
+		return _hollow_shape_failure(
+			outer_shape,
+			"Brush type %s does not support hollowing" % BrushType.keys()[brush_type]
+		)
 
 	var wall: float = maxf(hollow_thickness, 0.001)
 	var inner_shape: CSGShape3D = null
@@ -439,20 +470,20 @@ func _create_hollow_shape(outer_shape: Node3D) -> Node3D:
 		var box := csg_shape as CSGBox3D
 		var inner_size := box.size - Vector3.ONE * (wall * 2.0)
 		if inner_size.x <= 0.0 or inner_size.y <= 0.0 or inner_size.z <= 0.0:
-			var reason := "Hollow thickness %.3f is too large for brush size %s" % [wall, str(box.size)]
-			push_error("[AdvancedBrushTool] %s" % reason)
-			brush_operation_failed.emit(str(brush_type), reason)
-			return null
+			return _hollow_shape_failure(
+				outer_shape,
+				"Hollow thickness %.3f is too large for brush size %s" % [wall, str(box.size)]
+			)
 		var inner_box := CSGBox3D.new()
 		inner_box.size = inner_size
 		inner_shape = inner_box
 	elif csg_shape is CSGSphere3D:
 		var sphere := csg_shape as CSGSphere3D
 		if sphere.radius <= wall or sphere.height <= wall * 2.0:
-			var reason := "Hollow thickness %.3f is too large for sphere size" % wall
-			push_error("[AdvancedBrushTool] %s" % reason)
-			brush_operation_failed.emit(str(brush_type), reason)
-			return null
+			return _hollow_shape_failure(
+				outer_shape,
+				"Hollow thickness %.3f is too large for sphere size" % wall
+			)
 		var inner_sphere := CSGSphere3D.new()
 		inner_sphere.radius = sphere.radius - wall
 		inner_sphere.height = sphere.height - wall * 2.0
@@ -460,24 +491,38 @@ func _create_hollow_shape(outer_shape: Node3D) -> Node3D:
 	elif csg_shape is CSGCylinder3D:
 		var cylinder := csg_shape as CSGCylinder3D
 		if cylinder.radius <= wall or cylinder.height <= wall * 2.0:
-			var reason := "Hollow thickness %.3f is too large for cylinder size" % wall
-			push_error("[AdvancedBrushTool] %s" % reason)
-			brush_operation_failed.emit(str(brush_type), reason)
-			return null
+			return _hollow_shape_failure(
+				outer_shape,
+				"Hollow thickness %.3f is too large for cylinder size" % wall
+			)
 		var inner_cylinder := CSGCylinder3D.new()
 		inner_cylinder.radius = cylinder.radius - wall
 		inner_cylinder.height = cylinder.height - wall * 2.0
 		inner_cylinder.cone = cylinder.cone
 		inner_shape = inner_cylinder
-	else:
-		var reason := "Brush type %s does not support hollowing" % BrushType.keys()[brush_type]
-		push_error("[AdvancedBrushTool] %s" % reason)
-		brush_operation_failed.emit(str(brush_type), reason)
-		return null
+	elif csg_shape is CSGTorus3D:
+		var torus := csg_shape as CSGTorus3D
+		if torus.outer_radius - torus.inner_radius <= wall * 2.0:
+			return _hollow_shape_failure(
+				outer_shape,
+				"Hollow thickness %.3f is too large for torus tube" % wall
+			)
+		var inner_torus := CSGTorus3D.new()
+		inner_torus.inner_radius = torus.inner_radius + wall
+		inner_torus.outer_radius = torus.outer_radius - wall
+		inner_torus.ring_sides = torus.ring_sides
+		inner_torus.sides = torus.sides
+		inner_shape = inner_torus
+	# Keep both operands in the same local frame so a transformed primitive
+	# still subtracts its matching volume.
+	inner_shape.transform = csg_shape.transform
+	inner_shape.material = csg_shape.material
 
 	var combiner := CSGCombiner3D.new()
 	combiner.name = "HollowBrush"
 	combiner.use_collision = true
+	combiner.operation = CSGShape3D.OPERATION_UNION
+	combiner.material = csg_shape.material
 	csg_shape.operation = CSGShape3D.OPERATION_UNION
 	inner_shape.operation = CSGShape3D.OPERATION_SUBTRACTION
 	combiner.add_child(csg_shape)
