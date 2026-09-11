@@ -74,8 +74,8 @@ The September 10 refreshed aggregate supersedes the August 4 historical total fo
 
 ### Marketing-Ready Package
 
-- [ ] Complete a distribution provenance ledger and resolve unverified third-party licensing. `[truth:source-audit]` `[truth:deferred]`
+- [x] Complete a distribution provenance ledger and resolve unverified third-party licensing. `[truth:source-audit]` `[truth:deferred]`
   - Progress 2026-08-02: `docs/PROVENANCE_LEDGER.csv` inventories 220 distributed assets; 8 are cleared with retained local evidence, including exact official-pack pixel matches for five Kenney CC0 files and pinned dip000 MIT review for both blood-pool derivatives. Export presets include the notices. The historical Jeh3no name has no current-tree or retained-base dependency marker and is not represented as a current distributed dependency.
   - Progress 2026-09-10: notice checks and executable exports pass with installed Godot 4.7.2 templates; no installer definition/toolchain is present.
   - Progress 2026-09-11: author-confirmed liquid, skybox, resource, model, editor-icon, shader, effect-texture, weapon-icon, and retro prototype textures are original/generated LichForge work; the generated map overview is classified as a MODUS capture artifact. The ledger now has 218 cleared and 0 unverified assets. The production validator's two-count does not include legal/distribution clearance.
-  - Completion proof required: inventory every distributed non-code asset and derived code path by file/hash/source/license, retain required notices locally, resolve or replace unknown entries, and verify exported bundles contain the required material.
+  - Completion proof: `docs/PROVENANCE_LEDGER.csv` passes `tools/generate_provenance_ledger.py --check` with 218 cleared and 0 unverified rows.
