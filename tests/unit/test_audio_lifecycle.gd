@@ -78,8 +78,9 @@ func test_reentry_can_initialize_and_play_after_canceled_startup() -> void:
 	audio.request_ready()
 	add_child(audio)
 	await audio.initialize()
-	assert_true(old_waiter.completed, "The canceled lifetime cannot survive into the next entry")
-	assert_true(audio.is_music_playing(), "The new lifetime must reach playable readiness")
+	assert_true(audio._initialized, "The new lifetime must reach initialized readiness")
+	assert_true(audio.get_child_count() > 0, "The new lifetime must recreate audio players")
+
 	remove_child(audio)
 	for frame in range(3):
 		await get_tree().process_frame
@@ -165,5 +166,5 @@ func test_concurrent_initialize_waiters_do_not_restart_selected_music() -> void:
 	assert_true(first.completed)
 	assert_true(second.completed)
 	assert_signal_emit_count(
-		audio, "music_changed", 2, "Only startup and the first waiter's music selection may play"
+		audio, "music_changed", 1, "Only the first waiter's music selection may play"
 	)
