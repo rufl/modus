@@ -19,6 +19,8 @@ signal download_started(item_id: String)
 signal download_completed(item_id: String, success: bool, local_path: String)
 signal items_loaded(items: Array[Dictionary])
 signal subscription_changed(item_id: String, subscribed: bool)
+signal browse_failed(query: String, reason: String)
+
 
 const WORKSHOP_CACHE := "user://workshop/"
 const WORKSHOP_DOWNLOADS := "user://workshop/downloads/"
@@ -263,10 +265,13 @@ func browse_items(
 		_local_browse(query, tags, sort_by)
 
 
-func _steam_browse(_query: String, _tags: PackedStringArray, _sort_by: String) -> void:
-	# Note: Requires GodotSteam UGC queries
-	# steam.create_query_all_ugc_request(...)
-	pass
+func _steam_browse(query: String, _tags: PackedStringArray, _sort_by: String) -> void:
+	# This checkout does not expose a GodotSteam UGC query method or callback.
+	# Never pretend that Steam browsing succeeded when only local browsing is
+	# available.
+	var reason := "Steam Workshop browsing is unavailable: no GodotSteam UGC query API was discovered"
+	push_error("[WorkshopManager] %s" % reason)
+	browse_failed.emit(query, reason)
 
 
 func _local_browse(query: String, tags: PackedStringArray, _sort_by: String) -> void:

@@ -16,6 +16,7 @@ signal save_completed(path: String)
 signal load_completed(path: String)
 signal autosave_completed
 
+
 const QUICKSAVE_PATH := "user://level_editor_quicksave.tscn"
 const AUTOSAVE_DIR := "user://level_editor_autosaves/"
 const MAX_AUTOSAVES := 5
@@ -28,8 +29,32 @@ var scene_root: Node = null
 
 
 func setup(root: Node) -> void:
+	cleanup()
 	scene_root = root
+	if scene_root and is_instance_valid(scene_root) and scene_root.has_signal("tree_exiting"):
+		scene_root.tree_exiting.connect(_on_scene_root_exiting)
 
+
+
+## Release the timer and scene lifecycle connection.
+func cleanup() -> void:
+	stop_autosave()
+	if autosave_timer and is_instance_valid(autosave_timer):
+		var timer_parent: Node = autosave_timer.get_parent()
+		if timer_parent:
+			timer_parent.remove_child(autosave_timer)
+		autosave_timer.queue_free()
+	autosave_timer = null
+
+	if scene_root and is_instance_valid(scene_root) and scene_root.has_signal("tree_exiting"):
+		var exiting_callable := Callable(self, "_on_scene_root_exiting")
+		if scene_root.tree_exiting.is_connected(exiting_callable):
+			scene_root.tree_exiting.disconnect(exiting_callable)
+	scene_root = null
+
+
+func _on_scene_root_exiting() -> void:
+	cleanup()
 
 ## Quick save current level
 
@@ -150,30 +175,40 @@ func autosave() -> bool:
 		autosave_completed.emit()
 		return true
 
-	return false
-
-
 ## Start autosave timer
-
-
 func start_autosave(interval: float = 300.0) -> void:
-	autosave_interval = interval
+	if interval <= 0.0:
+		push_error("LevelSaveSystem: Autosave interval must be greater than zero")
+		return
+	if not scene_root or not is_instance_valid(scene_root):
+		push_error("LevelSaveSystem: Cannot start autosave without a valid scene root")
+		return
+	if not scene_root.is_inside_tree():
+		push_error("LevelSaveSystem: Cannot start autosave before the scene root enters the tree")
+		return
 
-	if not autosave_timer:
+	autosave_interval = interval
+	if not autosave_timer or not is_instance_valid(autosave_timer):
 		autosave_timer = Timer.new()
+		autosave_timer.name = "LevelSaveAutosaveTimer"
 		autosave_timer.timeout.connect(autosave)
 
+	if autosave_timer.get_parent() != scene_root:
+		var old_parent: Node = autosave_timer.get_parent()
+		if old_parent:
+			old_parent.remove_child(autosave_timer)
+		scene_root.add_child(autosave_timer)
+
 	autosave_timer.wait_time = autosave_interval
+	if not autosave_timer.is_stopped():
+		autosave_timer.stop()
 	autosave_timer.start()
 
 
 ## Stop autosave timer
-
-
 func stop_autosave() -> void:
-	if autosave_timer:
+	if autosave_timer and is_instance_valid(autosave_timer) and not autosave_timer.is_stopped():
 		autosave_timer.stop()
-
 
 ## Generate thumbnail from current viewport
 

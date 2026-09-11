@@ -55,6 +55,10 @@ func get_dependencies() -> Array[String]:
 
 
 func initialize() -> void:
+	if _initialized:
+		push_warning("[EffectsService] Already initialized")
+		return
+
 	await _wait_for_dependencies()
 
 	# Load quality settings
@@ -74,7 +78,34 @@ func initialize() -> void:
 	)
 
 
+## EffectsService is the sole owner of the effect module tree.
+func shutdown() -> void:
+	unsubscribe_event("player_died", _on_player_died_event)
+
+	for module: Node in [
+		effect_pool_manager,
+		particle_spawner,
+		decal_spawner,
+		blood_pool_manager,
+		gore_system,
+		tracer_renderer,
+	]:
+		if module and is_instance_valid(module):
+			module.queue_free()
+
+	effect_pool_manager = null
+	particle_spawner = null
+	decal_spawner = null
+	blood_pool_manager = null
+	gore_system = null
+	tracer_renderer = null
+	_initialized = false
+	super.shutdown()
+
+
 func _setup_modules() -> void:
+	if effect_pool_manager and is_instance_valid(effect_pool_manager):
+		return
 	# 0. Effect Pool Manager (no dependencies) - MUST BE FIRST
 	effect_pool_manager = EffectPoolManager.new()
 	effect_pool_manager.name = "EffectPoolManager"

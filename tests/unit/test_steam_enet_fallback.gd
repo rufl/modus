@@ -143,7 +143,10 @@ func test_invalid_enet_port_fails_without_connected_peer() -> void:
 func test_port_conflict_rejects_second_listener_and_allows_new_ephemeral_listener() -> void:
 	var first := ENetMultiplayerPeer.new()
 	_peers.append(first)
-	assert_eq(first.create_server(0, 2), OK)
+	var first_error: Error = first.create_server(0, 2)
+	assert_eq(first_error, OK)
+	if first_error != OK or not first.get_host():
+		return
 	var port := first.get_host().get_local_port()
 	assert_gt(port, 0)
 
@@ -154,8 +157,10 @@ func test_port_conflict_rejects_second_listener_and_allows_new_ephemeral_listene
 
 	var replacement := ENetMultiplayerPeer.new()
 	_peers.append(replacement)
-	assert_eq(replacement.create_server(0, 2), OK)
-	assert_gt(replacement.get_host().get_local_port(), 0)
+	var replacement_error: Error = replacement.create_server(0, 2)
+	assert_eq(replacement_error, OK)
+	if replacement_error == OK and replacement.get_host():
+		assert_gt(replacement.get_host().get_local_port(), 0)
 
 
 func test_fallback_configuration_is_enabled_on_network_manager() -> void:

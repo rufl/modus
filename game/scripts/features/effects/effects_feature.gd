@@ -1,7 +1,8 @@
-## EffectsFeature - Feature module for visual effects system
+## EffectsFeature - Feature facade for the visual effects system
 ##
-## Manages particles, decals, gore, tracers, and explosions.
-## Provides API for spawning various visual effects in the game world.
+## The production effect modules are owned by EffectsService. This feature is
+## kept as the configurable feature-facing API and delegates to that service.
+## It must never construct a second pool, spawner, gore, or tracer tree.
 ##
 ## Requirements: 2.3
 class_name EffectsFeature
@@ -25,7 +26,8 @@ enum ExplosionType {
 	MASSIVE,
 }
 
-## Module references
+## References to the modules owned by EffectsService. They are exposed for
+## compatibility with feature-only callers, but are never instantiated here.
 var particle_spawner: ParticleSpawner
 var decal_spawner: DecalSpawner
 var gore_system: GoreSystem
@@ -33,7 +35,6 @@ var tracer_renderer: TracerRenderer
 var blood_pool_manager: BloodPoolManager
 var effect_pool_manager: EffectPoolManager
 
-## Settings
 var current_quality: EffectQuality = EffectQuality.MEDIUM
 var max_active_explosions: int = 10
 var active_explosions: int = 0
@@ -42,155 +43,162 @@ var enable_dynamic_light: bool = true
 var enable_scorch_marks: bool = true
 var explosion_scene: PackedScene
 
-const CLEANUP_INTERVAL: float = 5.0
-var _cleanup_timer: float = 0.0
+var _owner: Node
+var _owner_error_reported: bool = false
 
 
-## Constructor
 func _init() -> void:
 	super._init("effects")
 	feature_name = "Effects System"
 
 
-## Initialize the effects feature
+## Bind this facade to the canonical EffectsService. A missing owner is an
+## integration error; do not silently fall back to constructing duplicate
+## effect modules.
 func initialize() -> void:
+	_owner = _find_owner()
+	if not _owner:
+		_report_missing_owner()
+		return
+
 	super.initialize()
-
-	# Load quality settings
-	var quality_name: String = get_config_value("quality", "MEDIUM")
-	current_quality = EffectQuality.get(quality_name.to_upper())
-
-	# Load other settings
-	max_active_explosions = get_config_value("max_active_explosions", 10)
-	enable_screen_flash = get_config_value("enable_screen_flash", true)
-	enable_dynamic_light = get_config_value("enable_dynamic_light", true)
-	enable_scorch_marks = get_config_value("enable_scorch_marks", true)
-
-	# Load explosion scene
-	var explosion_path: String = get_config_value(
-		"explosion_scene", "res://game/entities/projectiles/explosion_quake.tscn"
-	)
-	if ResourceLoader.exists(explosion_path):
-		explosion_scene = load(explosion_path)
-
-	# Setup modules
-	_setup_modules()
-	_register_projectile_pools()
+	_sync_owner_bindings()
+	_connect_owner_signals()
 
 
-## Shutdown the effects feature
+## EffectsService owns all module lifetime. The feature only disconnects its
+## signal forwarding and releases references.
 func shutdown() -> void:
-	# Clean up modules
-	if effect_pool_manager and is_instance_valid(effect_pool_manager):
-		effect_pool_manager.queue_free()
-	if particle_spawner and is_instance_valid(particle_spawner):
-		particle_spawner.queue_free()
-	if decal_spawner and is_instance_valid(decal_spawner):
-		decal_spawner.queue_free()
-	if blood_pool_manager and is_instance_valid(blood_pool_manager):
-		blood_pool_manager.queue_free()
-	if gore_system and is_instance_valid(gore_system):
-		gore_system.queue_free()
-	if tracer_renderer and is_instance_valid(tracer_renderer):
-		tracer_renderer.queue_free()
-
+	_disconnect_owner_signals()
+	_owner = null
+	particle_spawner = null
+	decal_spawner = null
+	gore_system = null
+	tracer_renderer = null
+	blood_pool_manager = null
+	effect_pool_manager = null
 	super.shutdown()
 
 
-## Process cleanup timer
-func _process(delta: float) -> void:
-	_cleanup_timer += delta
-	if _cleanup_timer >= CLEANUP_INTERVAL:
-		_cleanup_timer = 0.0
-		if particle_spawner:
-			particle_spawner.cleanup_finished_effects()
-
-
-## Setup effect modules
-func _setup_modules() -> void:
-	# Effect Pool Manager (no dependencies) - MUST BE FIRST
-	effect_pool_manager = EffectPoolManager.new()
-	effect_pool_manager.name = "EffectPoolManager"
-	add_child(effect_pool_manager)
-	effect_pool_manager.enable_stats = true
-
-	# Particle Spawner
-	particle_spawner = ParticleSpawner.new()
-	particle_spawner.name = "ParticleSpawner"
-	add_child(particle_spawner)
-	particle_spawner.set_quality(current_quality)
-	particle_spawner.particle_spawned.connect(_on_particle_spawned)
-
-	# Decal Spawner
-	decal_spawner = DecalSpawner.new()
-	decal_spawner.name = "DecalSpawner"
-	add_child(decal_spawner)
-	decal_spawner.set_quality(current_quality)
-	decal_spawner.decal_spawned.connect(_on_decal_spawned)
-
-	# Blood Pool Manager
-	blood_pool_manager = BloodPoolManager.new()
-	blood_pool_manager.name = "BloodPoolManager"
-	add_child(blood_pool_manager)
-	blood_pool_manager.auto_discover_pools = true
-
-	# Gore System (depends on other modules)
-	gore_system = GoreSystem.new()
-	gore_system.name = "GoreSystem"
-	add_child(gore_system)
-	gore_system.setup(decal_spawner, particle_spawner, blood_pool_manager)
-	gore_system.load_config(get_config_value)
-
-	# Tracer Renderer
-	tracer_renderer = TracerRenderer.new()
-	tracer_renderer.name = "TracerRenderer"
-	add_child(tracer_renderer)
-
-
-## Register projectile pools
-func _register_projectile_pools() -> void:
+func _find_owner() -> Node:
 	var game_manager: Node = get_node_or_null("/root/GameManager")
-	if not game_manager:
+	if game_manager and game_manager.has_method("get_core_system"):
+		var service: Node = game_manager.get_core_system("effects")
+		if service and service != self:
+			return service
+
+	# Test fixtures may attach the feature to a local service locator instead of
+	# the autoloaded GameManager.
+	var parent_node: Node = get_parent()
+	while parent_node:
+		if parent_node.has_method("get_core_system"):
+			var local_service: Node = parent_node.get_core_system("effects")
+			if local_service and local_service != self:
+				return local_service
+		parent_node = parent_node.get_parent()
+
+	return null
+
+
+func _report_missing_owner() -> void:
+	if _owner_error_reported:
+		return
+	_owner_error_reported = true
+	push_error(
+		"[EffectsFeature] EffectsService owner not found; "
+		+ "the feature facade will remain unavailable"
+	)
+
+
+func _owner_or_null() -> Node:
+	if _owner and is_instance_valid(_owner):
+		_sync_owner_bindings()
+		_connect_owner_signals()
+		return _owner
+
+	_owner = _find_owner()
+	if not _owner:
+		_report_missing_owner()
+		return null
+
+	_sync_owner_bindings()
+	_connect_owner_signals()
+	return _owner
+
+
+func _sync_owner_bindings() -> void:
+	if not _owner or not is_instance_valid(_owner):
 		return
 
-	var object_pool: Node = null
-	if game_manager.has_method("get_core_system"):
-		var system_service: Node = game_manager.get_core_system("system")
-		if system_service and "object_pool" in system_service:
-			object_pool = system_service.object_pool
+	particle_spawner = _owner.get("particle_spawner") as ParticleSpawner
+	decal_spawner = _owner.get("decal_spawner") as DecalSpawner
+	gore_system = _owner.get("gore_system") as GoreSystem
+	tracer_renderer = _owner.get("tracer_renderer") as TracerRenderer
+	blood_pool_manager = _owner.get("blood_pool_manager") as BloodPoolManager
+	effect_pool_manager = _owner.get("effect_pool_manager") as EffectPoolManager
 
-	if not object_pool:
+	if _owner.get("current_quality") != null:
+		current_quality = _owner.get("current_quality")
+	if _owner.get("max_active_explosions") != null:
+		max_active_explosions = _owner.get("max_active_explosions")
+	if _owner.get("active_explosions") != null:
+		active_explosions = _owner.get("active_explosions")
+	if _owner.get("enable_screen_flash") != null:
+		enable_screen_flash = _owner.get("enable_screen_flash")
+	if _owner.get("enable_dynamic_light") != null:
+		enable_dynamic_light = _owner.get("enable_dynamic_light")
+	if _owner.get("enable_scorch_marks") != null:
+		enable_scorch_marks = _owner.get("enable_scorch_marks")
+	if _owner.get("explosion_scene") != null:
+		explosion_scene = _owner.get("explosion_scene")
+
+
+func _connect_owner_signals() -> void:
+	if not _owner or not is_instance_valid(_owner):
 		return
-
-	var pool_sizes: Dictionary = {
-		EffectQuality.LOW: {"initial": 5, "max": 20},
-		EffectQuality.MEDIUM: {"initial": 10, "max": 40},
-		EffectQuality.HIGH: {"initial": 15, "max": 60},
-		EffectQuality.ULTRA: {"initial": 20, "max": 100},
-	}
-
-	var sizes: Dictionary = pool_sizes.get(current_quality, pool_sizes[EffectQuality.MEDIUM])
-
-	var projectile_scenes: Dictionary = {
-		"rocket": "res://game/entities/projectiles/rocket.tscn",
-		"plasma": "res://game/entities/projectiles/plasma.tscn",
-		"grenade": "res://game/entities/projectiles/grenade.tscn",
-		"bfg_ball": "res://game/entities/projectiles/bfg_ball.tscn",
-		"gib": "res://game/entities/effects/gib.tscn",
-		"decal": "res://game/entities/effects/generic_decal.tscn",
-		"explosion": "res://game/entities/projectiles/explosion_quake.tscn",
-		"bullet_hole": "res://game/scenes/effects/bullet_hole.tscn",
-	}
-
-	for pool_id: String in projectile_scenes:
-		var scene_path: String = projectile_scenes[pool_id]
-		if ResourceLoader.exists(scene_path):
-			var scene: PackedScene = load(scene_path)
-			if object_pool.has_method("register_pool"):
-				object_pool.register_pool(pool_id, scene, sizes.initial, sizes.max)
+	if _owner.has_signal("effect_spawned"):
+		var effect_callable := Callable(self, "_on_owner_effect_spawned")
+		if not _owner.is_connected("effect_spawned", effect_callable):
+			_owner.connect("effect_spawned", effect_callable)
+	if _owner.has_signal("decal_spawned"):
+		var decal_callable := Callable(self, "_on_owner_decal_spawned")
+		if not _owner.is_connected("decal_spawned", decal_callable):
+			_owner.connect("decal_spawned", decal_callable)
+	if _owner.has_signal("explosion_created"):
+		var explosion_callable := Callable(self, "_on_owner_explosion_created")
+		if not _owner.is_connected("explosion_created", explosion_callable):
+			_owner.connect("explosion_created", explosion_callable)
+	if _owner.has_signal("service_ready"):
+		var ready_callable := Callable(self, "_on_owner_ready")
+		if not _owner.is_connected("service_ready", ready_callable):
+			_owner.connect("service_ready", ready_callable)
 
 
-## Spawn particles
+func _disconnect_owner_signals() -> void:
+	if not _owner or not is_instance_valid(_owner):
+		return
+	if _owner.has_signal("effect_spawned"):
+		var effect_callable := Callable(self, "_on_owner_effect_spawned")
+		if _owner.is_connected("effect_spawned", effect_callable):
+			_owner.disconnect("effect_spawned", effect_callable)
+	if _owner.has_signal("decal_spawned"):
+		var decal_callable := Callable(self, "_on_owner_decal_spawned")
+		if _owner.is_connected("decal_spawned", decal_callable):
+			_owner.disconnect("decal_spawned", decal_callable)
+	if _owner.has_signal("explosion_created"):
+		var explosion_callable := Callable(self, "_on_owner_explosion_created")
+		if _owner.is_connected("explosion_created", explosion_callable):
+			_owner.disconnect("explosion_created", explosion_callable)
+	if _owner.has_signal("service_ready"):
+		var ready_callable := Callable(self, "_on_owner_ready")
+		if _owner.is_connected("service_ready", ready_callable):
+			_owner.disconnect("service_ready", ready_callable)
+
+
+func _on_owner_ready() -> void:
+	_sync_owner_bindings()
+
+
 func spawn_particles(
 	scene_path: String,
 	pos: Vector3,
@@ -198,12 +206,12 @@ func spawn_particles(
 	parent: Node3D = null,
 	lifetime: float = 5.0
 ) -> GPUParticles3D:
-	if particle_spawner:
-		return particle_spawner.spawn_particles(scene_path, pos, rot, parent, lifetime)
+	var owner := _owner_or_null()
+	if owner and owner.has_method("spawn_particles"):
+		return owner.call("spawn_particles", scene_path, pos, rot, parent, lifetime) as GPUParticles3D
 	return null
 
 
-## Spawn decal
 func spawn_decal(
 	texture: Texture2D,
 	pos: Vector3,
@@ -211,93 +219,73 @@ func spawn_decal(
 	decal_size: Vector3 = Vector3(1, 1, 1),
 	lifetime: float = 30.0
 ) -> Sprite3D:
-	if decal_spawner:
-		return decal_spawner.spawn_decal(texture, pos, normal, decal_size, lifetime)
+	var owner := _owner_or_null()
+	if owner and owner.has_method("spawn_decal"):
+		return owner.call("spawn_decal", texture, pos, normal, decal_size, lifetime) as Sprite3D
 	return null
 
 
-## Spawn blood decal
 func spawn_blood_decal(pos: Vector3, normal: Vector3, is_high_velocity: bool = false) -> Sprite3D:
-	if decal_spawner:
-		return decal_spawner.spawn_blood_decal(pos, normal, is_high_velocity)
+	var owner := _owner_or_null()
+	if owner and owner.has_method("spawn_blood_decal"):
+		return owner.call("spawn_blood_decal", pos, normal, is_high_velocity) as Sprite3D
 	return null
 
 
-## Spawn bullet hole
 func spawn_bullet_hole(pos: Vector3, normal: Vector3) -> void:
-	if decal_spawner:
-		decal_spawner.spawn_bullet_hole(pos, normal)
+	var owner := _owner_or_null()
+	if owner and owner.has_method("spawn_bullet_hole"):
+		owner.call("spawn_bullet_hole", pos, normal)
 
 
-## Spawn gore effect
 func spawn_gore_effect(
 	position: Vector3, death_direction: Vector3 = Vector3.ZERO, intensity: float = 1.0
 ) -> void:
-	if gore_system:
-		gore_system.spawn_gore_effect(position, death_direction, intensity)
+	var owner := _owner_or_null()
+	if owner and owner.has_method("spawn_gore_effect"):
+		owner.call("spawn_gore_effect", position, death_direction, intensity)
 
 
-## Spawn blood
 func spawn_blood_synced(position: Vector3, normal: Vector3, intensity: float = 1.0) -> void:
-	if gore_system:
-		gore_system.spawn_blood_synced(position, normal, intensity)
+	var owner := _owner_or_null()
+	if owner and owner.has_method("spawn_blood_synced"):
+		owner.call("spawn_blood_synced", position, normal, intensity)
 
 
-## Spawn tracer
 func spawn_tracer(
 	from: Vector3, to: Vector3, color: Color = Color(1, 0.9, 0.4), lifetime: float = 0.15
 ) -> void:
-	if tracer_renderer:
-		tracer_renderer.spawn_tracer(from, to, color, lifetime)
+	var owner := _owner_or_null()
+	if owner and owner.has_method("spawn_tracer"):
+		owner.call("spawn_tracer", from, to, color, lifetime)
 
 
-## Spawn explosion
 func spawn_explosion(
 	position: Vector3,
 	explosion_type: ExplosionType = ExplosionType.MEDIUM,
 	damage: float = 100.0,
 	radius: float = 5.0
 ) -> void:
-	if active_explosions >= max_active_explosions:
-		return
-
-	active_explosions += 1
-
-	if explosion_scene:
-		var explosion: Node3D = explosion_scene.instantiate()
-		get_tree().root.add_child(explosion)
-		explosion.global_position = position
-
-		if "damage" in explosion:
-			explosion.damage = damage
-		if "radius" in explosion:
-			explosion.radius = radius
-
-		get_tree().create_timer(5.0).timeout.connect(_on_explosion_cleanup.bind(explosion))
-
-	explosion_created.emit(position, radius)
+	var owner := _owner_or_null()
+	if owner and owner.has_method("spawn_explosion"):
+		owner.call("spawn_explosion", position, explosion_type, damage, radius)
 
 
-## Set quality level
 func set_quality(quality: EffectQuality) -> void:
 	current_quality = quality
-
-	if particle_spawner:
-		particle_spawner.set_quality(quality)
-	if decal_spawner:
-		decal_spawner.set_quality(quality)
-
-
-## Event handlers
-func _on_particle_spawned(particle: GPUParticles3D) -> void:
-	effect_spawned.emit(particle)
+	var owner := _owner_or_null()
+	if owner and owner.has_method("set_quality"):
+		owner.call("set_quality", quality)
+		_sync_owner_bindings()
 
 
-func _on_decal_spawned(decal: Sprite3D) -> void:
+func _on_owner_effect_spawned(effect: Node3D) -> void:
+	effect_spawned.emit(effect)
+
+
+func _on_owner_decal_spawned(decal: Sprite3D) -> void:
 	decal_spawned.emit(decal)
 
 
-func _on_explosion_cleanup(explosion: Node3D) -> void:
-	active_explosions -= 1
-	if is_instance_valid(explosion):
-		explosion.queue_free()
+func _on_owner_explosion_created(position: Vector3, radius: float) -> void:
+	explosion_created.emit(position, radius)

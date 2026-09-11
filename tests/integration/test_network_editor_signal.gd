@@ -5,6 +5,7 @@ extends ModusGutTestBase
 var _network_editor: Node = null
 var _test_scene: Node = null
 var _level_root: Node = null
+var _original_scene: Node = null
 var _signal_received := false
 var _received_path := ""
 
@@ -16,22 +17,22 @@ func before_each() -> void:
 		_network_editor = network_service.network_editor
 	if not _network_editor:
 		_network_editor = get_node_or_null("/root/NetworkService/NetworkEditor")
-
 	_signal_received = false
 	_received_path = ""
+	_original_scene = get_tree().current_scene
 	_install_level_fixture()
-
 
 func after_each() -> void:
 	if _network_editor and _network_editor.node_deleted.is_connected(_on_node_deleted):
 		_network_editor.node_deleted.disconnect(_on_node_deleted)
 	if get_tree().current_scene == _test_scene:
-		get_tree().current_scene = null
+		get_tree().current_scene = _original_scene
 	if is_instance_valid(_test_scene):
 		_test_scene.queue_free()
 	await get_tree().process_frame
 	_test_scene = null
 	_level_root = null
+	_original_scene = null
 	_network_editor = null
 	modus_teardown()
 

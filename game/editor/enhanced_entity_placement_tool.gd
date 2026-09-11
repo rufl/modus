@@ -13,6 +13,7 @@ signal batch_operation_completed(success_count: int, total_count: int)
 signal prefab_loaded(prefab_name: String)
 signal prefab_applied(prefab_name: String, count: int)
 signal layer_changed(old_layer: String, new_layer: String)
+signal snapping_failed(mode: int, reason: String)
 
 # Enum definitions
 enum SnapMode { NONE = 0, GRID = 1, SURFACE = 2, OBJECT = 3, EDGE = 4, CENTER = 5 }
@@ -185,14 +186,27 @@ func _apply_snapping(position: Vector3) -> Vector3:
 		SnapMode.CENTER:
 			return _snap_to_center(position)
 		_:
+			var reason := "Unknown snap mode: %d" % snap_mode
+			push_error("[EnhancedEntityPlacementTool] %s" % reason)
+			snapping_failed.emit(snap_mode, reason)
 			return position
 
 
 ## Snap to nearest edge of geometry
 func _snap_to_edge(position: Vector3) -> Vector3:
-	# Simplified: snap to grid if no complex edge detection implementation
-	# Real implementation would require analyzing mesh data
-	return _snap_to_grid(position)
+	var closest_dist: float = INF
+	var closest_edge: Vector3 = position
+	for result: Dictionary in _query_nearby_colliders(position, 5.0):
+		var collider: Node3D = result.get("collider") as Node3D
+		if not collider or collider == _preview_node:
+			continue
+		var edge_point: Vector3 = _closest_geometry_edge(collider, position)
+		var dist := position.distance_to(edge_point)
+		if dist < closest_dist:
+			closest_dist = dist
+			closest_edge = edge_point
+
+	return closest_edge
 
 
 ## Snap to center of nearest object
@@ -200,25 +214,117 @@ func _snap_to_center(position: Vector3) -> Vector3:
 	var closest_dist: float = INF
 	var closest_center: Vector3 = position
 
-	var space_state: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
-	var shape := SphereShape3D.new()
-	shape.radius = 5.0
+	for result: Dictionary in _query_nearby_colliders(position, 5.0):
+		var collider: Node3D = result.get("collider") as Node3D
+		if not collider or collider == _preview_node:
+			continue
+		var center := _geometry_center(collider)
+		var dist: float = position.distance_to(center)
+		if dist < closest_dist:
+			closest_dist = dist
+			closest_center = center
 
+	return closest_center
+
+
+func _query_nearby_colliders(position: Vector3, radius: float) -> Array[Dictionary]:
+	if not is_inside_tree() or not get_world_3d():
+		return []
+
+	var shape := SphereShape3D.new()
+	shape.radius = radius
 	var params := PhysicsShapeQueryParameters3D.new()
 	params.shape = shape
 	params.transform = Transform3D(Basis.IDENTITY, position)
+	params.collide_with_bodies = true
+	params.collide_with_areas = true
+	params.exclude = _get_excluded_bodies()
+	return get_world_3d().direct_space_state.intersect_shape(params, 32)
 
-	var results: Array[Dictionary] = space_state.intersect_shape(params)
-	for result in results:
-		var collider: Node3D = result.get("collider")
-		if collider and collider != _preview_node:
-			var center: Vector3 = collider.global_position
-			var dist: float = position.distance_to(center)
-			if dist < closest_dist:
-				closest_dist = dist
-				closest_center = center
 
-	return closest_center
+func _geometry_center(collider: Node3D) -> Vector3:
+	var points := PackedVector3Array()
+	_collect_geometry_points(collider, points)
+	if points.is_empty():
+		return collider.global_position
+	return _aabb_from_points(points).get_center()
+
+
+func _closest_geometry_edge(collider: Node3D, position: Vector3) -> Vector3:
+	var points := PackedVector3Array()
+	_collect_geometry_points(collider, points)
+	if points.is_empty():
+		return collider.global_position
+
+	var bounds := _aabb_from_points(points)
+	var min_corner := bounds.position
+	var max_corner := bounds.end
+	var corners := [
+		Vector3(min_corner.x, min_corner.y, min_corner.z),
+		Vector3(max_corner.x, min_corner.y, min_corner.z),
+		Vector3(max_corner.x, max_corner.y, min_corner.z),
+		Vector3(min_corner.x, max_corner.y, min_corner.z),
+		Vector3(min_corner.x, min_corner.y, max_corner.z),
+		Vector3(max_corner.x, min_corner.y, max_corner.z),
+		Vector3(max_corner.x, max_corner.y, max_corner.z),
+		Vector3(min_corner.x, max_corner.y, max_corner.z),
+	]
+	var edge_indices := [
+		[0, 1], [1, 2], [2, 3], [3, 0],
+		[4, 5], [5, 6], [6, 7], [7, 4],
+		[0, 4], [1, 5], [2, 6], [3, 7],
+	]
+	var closest := position
+	var closest_dist := INF
+	for edge: Array in edge_indices:
+		var edge_point := _closest_point_on_segment(
+			position, corners[edge[0]], corners[edge[1]]
+		)
+		var dist := position.distance_to(edge_point)
+		if dist < closest_dist:
+			closest_dist = dist
+			closest = edge_point
+	return closest
+
+
+func _closest_point_on_segment(point: Vector3, start: Vector3, end: Vector3) -> Vector3:
+	var segment := end - start
+	var length_squared := segment.length_squared()
+	if is_zero_approx(length_squared):
+		return start
+	var amount := clampf((point - start).dot(segment) / length_squared, 0.0, 1.0)
+	return start + segment * amount
+
+
+func _collect_geometry_points(node: Node, points: PackedVector3Array) -> void:
+	if node is VisualInstance3D:
+		_append_transformed_aabb((node as VisualInstance3D).get_aabb(), node.global_transform, points)
+	elif node is CollisionShape3D:
+		var collision_shape := node as CollisionShape3D
+		if collision_shape.shape:
+			var debug_mesh := collision_shape.shape.get_debug_mesh()
+			if debug_mesh:
+				_append_transformed_aabb(
+					debug_mesh.get_aabb(), collision_shape.global_transform, points
+				)
+	for child: Node in node.get_children():
+		_collect_geometry_points(child, points)
+
+
+func _append_transformed_aabb(
+	local_bounds: AABB, transform: Transform3D, points: PackedVector3Array
+) -> void:
+	for x in [local_bounds.position.x, local_bounds.end.x]:
+		for y in [local_bounds.position.y, local_bounds.end.y]:
+			for z in [local_bounds.position.z, local_bounds.end.z]:
+				points.append(transform * Vector3(x, y, z))
+
+
+func _aabb_from_points(points: PackedVector3Array) -> AABB:
+	var bounds := AABB(points[0], Vector3.ZERO)
+	for index in range(1, points.size()):
+		bounds = bounds.expand(points[index])
+	return bounds
 
 
 ## Snap position to grid
@@ -277,42 +383,24 @@ func _collect_bodies_recursive(node: Node, bodies: Array[RID]) -> void:
 
 ## Snap to closest object
 func _snap_to_closest_object(position: Vector3) -> Vector3:
-	# Find the closest object to snap to
 	var closest_dist: float = INF
 	var closest_pos: Vector3 = position
-	var search_radius: float = 2.0
 
-	var space_state: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
-	var sphere_shape := SphereShape3D.new()
-	sphere_shape.radius = search_radius
-
-	var params := PhysicsShapeQueryParameters3D.new()
-	params.shape = sphere_shape
-	params.transform = Transform3D(Basis.IDENTITY, position)
-	params.collide_with_bodies = true
-	params.collide_with_areas = false
-
-	var results: Array[Dictionary] = space_state.intersect_shape(params, 32)
-
-	for result in results:
-		var collider: Node3D = result.collider
+	for result: Dictionary in _query_nearby_colliders(position, 2.0):
+		var collider: Node3D = result.get("collider") as Node3D
 		if not collider or collider == _preview_node:
 			continue
 
-		var dist: float = position.distance_to(collider.global_position)
-		if dist < closest_dist and dist > 0.1:  # Avoid snapping to self
+		var feature_pos: Vector3 = collider.global_position
+		if snap_to_centers:
+			feature_pos = _geometry_center(collider)
+		elif snap_to_edges:
+			feature_pos = _closest_geometry_edge(collider, position)
+
+		var dist := position.distance_to(feature_pos)
+		if dist < closest_dist and dist > 0.1:
 			closest_dist = dist
-			closest_pos = collider.global_position
-			# Snap to specific features based on other settings
-			if snap_to_centers:
-				# Use the object's center as snap point
-				pass
-			elif snap_to_edges:
-				# Find closest edge point (would require more complex math)
-				pass
-			else:
-				# Default to object position
-				closest_pos = collider.global_position
+			closest_pos = feature_pos
 
 	return closest_pos
 
@@ -602,10 +690,10 @@ func toggle_layer_visibility(layer_name: String) -> bool:
 func toggle_layer_lock(layer_name: String) -> bool:
 	if not _layers.has(layer_name):
 		return false
-
 	var layer: EntityLayer = _layers[layer_name]
 	layer.locked = not layer.locked
 	return true
+
 
 
 ## Get entities in a specific layer
@@ -685,12 +773,14 @@ func clear_all_entities() -> int:
 
 	return count
 
-
 ## Save current scene with entity layers
 func save_scene_with_layers(_file_path: String) -> Error:
-	# This would integrate with the level saving system
-	# For now, just return OK as a placeholder
-	return OK
+	push_error(
+		"EnhancedEntityPlacementTool: Saving scenes with layers is not available; use LevelSaveSystem"
+	)
+	return ERR_UNAVAILABLE
+
+
 
 
 ## Get statistics about placement

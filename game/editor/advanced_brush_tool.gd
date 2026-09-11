@@ -9,6 +9,8 @@ extends Node3D
 signal brush_applied(brush_type: String, count: int)
 signal brush_operation_started(operation: String)
 signal brush_operation_completed(operation: String, success: bool)
+signal brush_operation_failed(brush_type: String, reason: String)
+
 
 # Brush types
 enum BrushType {
@@ -80,10 +82,7 @@ func _ready() -> void:
 	_create_preview_mesh()
 	_load_default_presets()
 
-	# Connect to editor signals if available
-	if Engine.is_editor_hint():
-		# Setup for editor use
-		pass
+	# Runtime and editor tools share the same preview node.
 
 
 func _process(_delta: float) -> void:
@@ -286,6 +285,10 @@ func _create_wedge_mesh(size: Vector3) -> ArrayMesh:
 func _apply_brush() -> void:
 	var mouse_pos: Vector3 = _get_mouse_world_position()
 	if mouse_pos == Vector3.ZERO:
+		var reason := "Unable to determine a world position for the brush"
+		push_warning("[AdvancedBrushTool] %s" % reason)
+		brush_operation_failed.emit(str(brush_type), reason)
+		brush_operation_completed.emit("apply_brush", false)
 		return
 
 	brush_operation_started.emit("apply_brush")
@@ -306,11 +309,18 @@ func _apply_brush() -> void:
 			success = _fill_area_with_brush(position)
 		OperationMode.CLEAR:
 			success = _clear_area(position)
+		OperationMode.PAINT, OperationMode.REPLACE:
+			var unsupported_reason := "Brush operation %s is not supported" % OperationMode.keys()[brush_operation_mode]
+			push_error("[AdvancedBrushTool] %s" % unsupported_reason)
+			brush_operation_failed.emit(str(brush_type), unsupported_reason)
 		_:
-			success = _place_brush_object(position)
+			var unknown_reason := "Unknown brush operation mode: %d" % brush_operation_mode
+			push_error("[AdvancedBrushTool] %s" % unknown_reason)
+			brush_operation_failed.emit(str(brush_type), unknown_reason)
 
 	brush_operation_completed.emit("apply_brush", success)
-	brush_applied.emit(str(brush_type), 1)
+	if success:
+		brush_applied.emit(str(brush_type), 1)
 
 
 ## Place a single brush object
@@ -371,6 +381,7 @@ func _create_brush_shape(brush_type: BrushType) -> Node3D:
 		BrushType.SPHERE:
 			var sphere = CSGSphere3D.new()
 			sphere.radius = min(brush_size.x, min(brush_size.y, brush_size.z)) * 0.5
+			sphere.height = brush_size.y
 			shape = sphere
 		BrushType.CYLINDER:
 			var cylinder = CSGCylinder3D.new()
@@ -400,19 +411,78 @@ func _create_brush_shape(brush_type: BrushType) -> Node3D:
 					mesh_instance.mesh = _create_capsule_mesh(brush_size)
 			shape = mesh_instance
 		_:
-			var box = CSGBox3D.new()
-			box.size = brush_size
-			shape = box
+			var invalid_brush_reason := "Unknown brush type: %d" % brush_type
+			push_error("[AdvancedBrushTool] %s" % invalid_brush_reason)
+			brush_operation_failed.emit(str(brush_type), invalid_brush_reason)
+			return null
 
-	# Apply hollow if enabled
-	if hollow_brush and shape is CSGShape3D:
-		# For CSG shapes, we'd need to create a difference operation
-		# This is a simplified approach - in a real implementation,
-		# we'd need to create a complex CSG tree for hollow shapes
-		shape.set_meta("is_hollow", hollow_brush)
-		shape.set_meta("hollow_thickness", hollow_thickness)
+	# Hollowing is a CSG subtraction, not metadata. Only primitive CSG
+	# shapes with reducible dimensions support hollowing.
+	if hollow_brush:
+		return _create_hollow_shape(shape)
 
 	return shape
+
+
+func _create_hollow_shape(outer_shape: Node3D) -> Node3D:
+	if not outer_shape is CSGShape3D:
+		var reason := "Brush type %s does not support hollowing" % BrushType.keys()[brush_type]
+		push_error("[AdvancedBrushTool] %s" % reason)
+		brush_operation_failed.emit(str(brush_type), reason)
+		return null
+
+	var wall: float = maxf(hollow_thickness, 0.001)
+	var inner_shape: CSGShape3D = null
+	var csg_shape := outer_shape as CSGShape3D
+
+	if csg_shape is CSGBox3D:
+		var box := csg_shape as CSGBox3D
+		var inner_size := box.size - Vector3.ONE * (wall * 2.0)
+		if inner_size.x <= 0.0 or inner_size.y <= 0.0 or inner_size.z <= 0.0:
+			var reason := "Hollow thickness %.3f is too large for brush size %s" % [wall, str(box.size)]
+			push_error("[AdvancedBrushTool] %s" % reason)
+			brush_operation_failed.emit(str(brush_type), reason)
+			return null
+		var inner_box := CSGBox3D.new()
+		inner_box.size = inner_size
+		inner_shape = inner_box
+	elif csg_shape is CSGSphere3D:
+		var sphere := csg_shape as CSGSphere3D
+		if sphere.radius <= wall or sphere.height <= wall * 2.0:
+			var reason := "Hollow thickness %.3f is too large for sphere size" % wall
+			push_error("[AdvancedBrushTool] %s" % reason)
+			brush_operation_failed.emit(str(brush_type), reason)
+			return null
+		var inner_sphere := CSGSphere3D.new()
+		inner_sphere.radius = sphere.radius - wall
+		inner_sphere.height = sphere.height - wall * 2.0
+		inner_shape = inner_sphere
+	elif csg_shape is CSGCylinder3D:
+		var cylinder := csg_shape as CSGCylinder3D
+		if cylinder.radius <= wall or cylinder.height <= wall * 2.0:
+			var reason := "Hollow thickness %.3f is too large for cylinder size" % wall
+			push_error("[AdvancedBrushTool] %s" % reason)
+			brush_operation_failed.emit(str(brush_type), reason)
+			return null
+		var inner_cylinder := CSGCylinder3D.new()
+		inner_cylinder.radius = cylinder.radius - wall
+		inner_cylinder.height = cylinder.height - wall * 2.0
+		inner_cylinder.cone = cylinder.cone
+		inner_shape = inner_cylinder
+	else:
+		var reason := "Brush type %s does not support hollowing" % BrushType.keys()[brush_type]
+		push_error("[AdvancedBrushTool] %s" % reason)
+		brush_operation_failed.emit(str(brush_type), reason)
+		return null
+
+	var combiner := CSGCombiner3D.new()
+	combiner.name = "HollowBrush"
+	combiner.use_collision = true
+	csg_shape.operation = CSGShape3D.OPERATION_UNION
+	inner_shape.operation = CSGShape3D.OPERATION_SUBTRACTION
+	combiner.add_child(csg_shape)
+	combiner.add_child(inner_shape)
+	return combiner
 
 
 ## Create pyramid shape using CSG
