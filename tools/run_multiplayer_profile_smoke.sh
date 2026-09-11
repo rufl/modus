@@ -67,12 +67,17 @@ else
     status="FAIL"
     note="MODUS_MULTIPLAYER_SMOKE_TIMEOUT must be a positive integer number of seconds."
   else
-    set +e
-    env HOME="$smoke_home" XDG_CACHE_HOME="$smoke_cache" XDG_CONFIG_HOME="$smoke_config" \
-      MODUS_FEATURE_PROFILE=multiplayer_demo \
-      timeout --kill-after=2s "${probe_timeout}s" \
-      "$godot_bin" --headless --path . --quit-after 3 >"$log_path" 2>&1 &
-    child_pid=$!
+    smoke_env=(HOME="$smoke_home" XDG_CACHE_HOME="$smoke_cache" XDG_CONFIG_HOME="$smoke_config")
+    if ! env "${smoke_env[@]}" "$godot_bin" --headless --path . --import >/dev/null 2>"$log_path"; then
+      status="FAIL"
+      note="multiplayer_demo import failed."
+    else
+      set +e
+      env "${smoke_env[@]}" \
+        MODUS_FEATURE_PROFILE=multiplayer_demo \
+        timeout --kill-after=2s "${probe_timeout}s" \
+        "$godot_bin" --headless --path . --quit-after 3 >"$log_path" 2>&1 &
+      child_pid=$!
     if wait "$child_pid"; then
       exit_code=0
     else
@@ -96,6 +101,7 @@ else
       note="multiplayer_demo launch exited with code $exit_code."
     fi
   fi
+fi
 fi
 
 case "$status" in
