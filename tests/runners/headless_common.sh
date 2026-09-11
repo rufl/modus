@@ -24,13 +24,6 @@ USAGE
 # Keep all implicit Godot state under one private directory for this invocation.
 # Explicit MODUS_GODOT_* paths remain caller-owned and are never removed.
 MODUS_HEADLESS_RUNTIME_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/modus-godot.XXXXXX")"
-MODUS_HEADLESS_RUNTIME_DATA="${MODUS_GODOT_DATA:-$MODUS_HEADLESS_RUNTIME_ROOT/data}"
-MODUS_HEADLESS_RUNTIME_CACHE="${MODUS_GODOT_CACHE:-$MODUS_HEADLESS_RUNTIME_ROOT/cache}"
-MODUS_HEADLESS_RUNTIME_CONFIG="${MODUS_GODOT_CONFIG:-$MODUS_HEADLESS_RUNTIME_ROOT/config}"
-MODUS_HEADLESS_RUNTIME="${MODUS_GODOT_RUNTIME:-$MODUS_HEADLESS_RUNTIME_ROOT/runtime}"
-mkdir -p "$MODUS_HEADLESS_RUNTIME_DATA" "$MODUS_HEADLESS_RUNTIME_CACHE" \
-  "$MODUS_HEADLESS_RUNTIME_CONFIG" "$MODUS_HEADLESS_RUNTIME"
-chmod 700 "$MODUS_HEADLESS_RUNTIME"
 
 modus_cleanup_headless_runtime() {
   rm -rf -- "$MODUS_HEADLESS_RUNTIME_ROOT"
@@ -39,10 +32,20 @@ modus_cleanup_headless_runtime() {
 trap modus_cleanup_headless_runtime EXIT
 
 modus_run_godot() {
-  env XDG_DATA_HOME="$MODUS_HEADLESS_RUNTIME_DATA" \
-    XDG_CACHE_HOME="$MODUS_HEADLESS_RUNTIME_CACHE" \
-    XDG_CONFIG_HOME="$MODUS_HEADLESS_RUNTIME_CONFIG" \
-    XDG_RUNTIME_DIR="$MODUS_HEADLESS_RUNTIME" "$@"
+  local runtime_data="${MODUS_GODOT_DATA:-$MODUS_HEADLESS_RUNTIME_ROOT/data}"
+  local runtime_cache="${MODUS_GODOT_CACHE:-$MODUS_HEADLESS_RUNTIME_ROOT/cache}"
+  local runtime_config="${MODUS_GODOT_CONFIG:-$MODUS_HEADLESS_RUNTIME_ROOT/config}"
+  local runtime_dir="${MODUS_GODOT_RUNTIME:-$MODUS_HEADLESS_RUNTIME_ROOT/runtime}"
+
+  mkdir -p "$runtime_data" "$runtime_cache" "$runtime_config" "$runtime_dir"
+  if [[ -z "${MODUS_GODOT_RUNTIME:-}" ]]; then
+    chmod 700 "$runtime_dir"
+  fi
+
+  env XDG_DATA_HOME="$runtime_data" \
+    XDG_CACHE_HOME="$runtime_cache" \
+    XDG_CONFIG_HOME="$runtime_config" \
+    XDG_RUNTIME_DIR="$runtime_dir" "$@"
 }
 
 modus_import_project() {
