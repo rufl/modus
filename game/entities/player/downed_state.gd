@@ -147,70 +147,60 @@ func _complete_revive() -> void:
 
 @rpc("any_peer", "call_local", "reliable")
 func request_revive_start(reviver: NodePath) -> void:
-	# Only process on server
 	if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
 		return
 	if not is_downed:
 		return
 
-	var rpc_sender_id: int = multiplayer.get_remote_sender_id()
-	if rpc_sender_id != 0:
+	var sender_id: int = multiplayer.get_remote_sender_id()
+	var victim := get_parent() as Node3D
+	var reviver_node: Node = get_node_or_null(reviver)
+	if sender_id > 0:
+		if (
+			not victim
+			or victim.get_multiplayer_authority() == sender_id
+			or not reviver_node
+			or not reviver_node is Node3D
+			or reviver_node.get_multiplayer_authority() != sender_id
+		):
+			return
 		var gm: Node = get_node_or_null("/root/GameManager")
 		var network_svc: Node = gm.get_core_system("network") if gm else null
 		if network_svc and network_svc.has_method("get"):
 			var network_mgr: Node = network_svc.network_manager
 			if (
 				network_mgr
-				and not network_mgr.validate_rpc(rpc_sender_id, "request_revive_start", [reviver])
+				and not network_mgr.validate_rpc(sender_id, "request_revive_start", [reviver])
 			):
 				return
+	elif multiplayer.has_multiplayer_peer():
+		return
 
-	# Atomic check - prevent race condition from multiple RPC calls
 	if _revive_in_progress:
 		push_warning("[DownedState] Revive already in progress - rejecting duplicate request")
 		return
 
 	_revive_in_progress = true
-
-	# FIXED: Perform immediate distance validation in RPC method to prevent race condition
-	var reviver_node: Node = get_node_or_null(reviver)
-	var victim: Node3D = get_parent() as Node3D
 	if reviver_node and victim:
-		# Check distance immediately to prevent exploits
-		# Use consistent 3.0 distance (no tolerance for exploits)
 		const MAX_REVIVE_DISTANCE: float = 3.0
-		var distance: float = reviver_node.global_position.distance_to(victim.global_position)
-		if distance > MAX_REVIVE_DISTANCE:
-			# Log exploit attempt
-			var sender_id: int = multiplayer.get_remote_sender_id()
-			var log_msg: String = (
-				"[DownedState] Revive attempt rejected - distance %.2fm > %.2fm from peer %d"
-				% [distance, MAX_REVIVE_DISTANCE, sender_id]
+		if (
+			not reviver_node is Node3D
+			or (
+				(reviver_node as Node3D).global_position.distance_to(victim.global_position)
+				> MAX_REVIVE_DISTANCE
 			)
-			push_warning(log_msg)
-			var gm: Node = get_node_or_null("/root/GameManager")
-			if gm:
-				var logger: Node = gm.get_core_system("logger")
-				if logger:
-					logger.warning(log_msg, "DownedState")
-			# Reset atomic flag and reject
+		):
 			_revive_in_progress = false
 			return
-
-		# Check if reviver is valid
 		if "is_downed" in reviver_node and reviver_node.is_downed:
-			push_warning("[DownedState] Revive attempt rejected - reviver is downed")
 			_revive_in_progress = false
 			return
 		if "is_dead" in reviver_node and reviver_node.is_dead:
-			push_warning("[DownedState] Revive attempt rejected - reviver is dead")
 			_revive_in_progress = false
 			return
 
 	is_being_revived = true
 	reviver_path = reviver
-
-	# Sync to all clients
 	_sync_revive_state.rpc(true, reviver)
 
 
@@ -218,11 +208,13 @@ func request_revive_start(reviver: NodePath) -> void:
 
 @rpc("any_peer", "call_local", "reliable")
 func request_revive_stop() -> void:
-	# Only process on server
 	if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
 		return
 	var sender_id: int = multiplayer.get_remote_sender_id()
-	if sender_id != 0:
+	if sender_id > 0:
+		var reviver_node := get_node_or_null(reviver_path)
+		if not reviver_node or reviver_node.get_multiplayer_authority() != sender_id:
+			return
 		var network_svc: Node = GameManager.get_core_system("network")
 		if (
 			network_svc
@@ -232,24 +224,10 @@ func request_revive_stop() -> void:
 			)
 		):
 			return
-
 	is_being_revived = false
 	reviver_path = NodePath()
-	_revive_in_progress = false  # Reset atomic flag
-
-	# Sync to all clients
+	_revive_in_progress = false
 	_sync_revive_state.rpc(false, NodePath())
-
-
-## Sync revive state to all clients
-
-@rpc("authority", "call_local", "reliable")
-func _sync_revive_state(being_revived: bool, reviver: NodePath) -> void:
-	is_being_revived = being_revived
-	reviver_path = reviver
-
-
-## Get current bleedout progress (0.0 = just downed, 1.0 = about to expire)
 
 
 func get_bleedout_progress() -> float:
@@ -270,16 +248,16 @@ func request_bleedout() -> void:
 
 @rpc("any_peer", "call_local", "reliable")
 func request_bleedout_immediate() -> void:
-	# Only server can authorize this
 	if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
 		return
-
-	# Validation: only if actually downed
 	if not is_downed:
 		return
 
 	var sender_id: int = multiplayer.get_remote_sender_id()
-	if sender_id != 0:
+	var victim := get_parent() as Node3D
+	if sender_id > 0:
+		if not victim or victim.get_multiplayer_authority() != sender_id:
+			return
 		var network_svc: Node = GameManager.get_core_system("network")
 		if (
 			network_svc
@@ -289,8 +267,9 @@ func request_bleedout_immediate() -> void:
 			)
 		):
 			return
+	elif multiplayer.has_multiplayer_peer():
+		return
 
-	# Force bleedout
 	_bleedout()
 
 

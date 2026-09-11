@@ -163,7 +163,12 @@ func _request_pickup_object(object_path: NodePath) -> void:
 	):
 		return
 	var obj: Node = get_node_or_null(object_path)
-	if obj and obj is RigidBody3D:
+	if (
+		obj
+		and obj is RigidBody3D
+		and _player
+		and (obj as Node3D).global_position.distance_to(_player.global_position) <= pickup_range
+	):
 		perform_pickup(obj)
 
 
