@@ -89,6 +89,7 @@ Published context: [Performance Baseline Proof](PERFORMANCE_BASELINE_PROOF.md). 
 - September 11 door/barrel/spawn source proof: door requests require a nearby sender-owned player; explosive-barrel effects accept authority calls only; world spawn requests enforce bounded modes and positive peer IDs. Local formatter/lint proof passes; runtime proof remains bounded by CI's existing baseline failures.
 - September 11 ProjectileLab source proof: freeze requests require a nearby sender-owned player, and time-scale replication is authority-only; pickup, health synchronization, and status-effect RPCs retain server/authority gates. Local formatter/lint proof passes; runtime proof remains bounded by CI's existing baseline failures.
 - September 11 downed/player-state/interaction source proof: revive and bleedout requests now bind to sender-owned player nodes with revive distance checks; assistance and spectate requests use RPC rate limits; validated player-state requests apply transitions; pickup requests require server-side range validation. Local formatter/lint proof passes; runtime proof remains bounded by CI's existing baseline failures.
+- September 11 inventory/editor source proof: split, equip, and unequip inventory RPCs now require positive sender IDs and whitelist rate limits; NetworkEditor permission checks fail closed when runtime manager/config context is unavailable. Local formatter/lint proof passes; runtime proof remains bounded by CI's existing baseline failures.
 
 ## Missing Before Release
 

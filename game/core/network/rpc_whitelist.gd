@@ -119,6 +119,20 @@ const ALLOWED_RPCS: Dictionary = {
 		"requires_validation": false,
 		"description": "Move item in inventory"
 	},
+	"split_stack":
+	{
+		"calls_per_second": 10.0,
+		"requires_validation": false,
+		"description": "Split inventory stack"
+	},
+	"equip_item":
+	{"calls_per_second": 10.0, "requires_validation": false, "description": "Equip inventory item"},
+	"unequip_item":
+	{
+		"calls_per_second": 10.0,
+		"requires_validation": false,
+		"description": "Unequip inventory item"
+	},
 	# ========================================================================
 	# MATCH SERVICE RPCS (Critical #12)
 	# ========================================================================

@@ -61,6 +61,17 @@ func get_inventory(peer_id: int) -> Inventory:
 	return _inventories.get(peer_id)
 
 
+func _validate_inventory_rpc(sender_id: int, method: String, args: Array) -> bool:
+	if not multiplayer.is_server() or sender_id <= 0:
+		return false
+	var network_svc := GameManager.get_core_system("network") as NetworkSvc
+	return (
+		not network_svc
+		or not network_svc.network_manager
+		or network_svc.network_manager.validate_rpc(sender_id, method, args)
+	)
+
+
 ## Give item to another player (client request)
 
 
@@ -77,17 +88,9 @@ func give_item(to_peer_id: int, from_slot: int, amount: int = -1) -> void:
 
 @rpc("any_peer", "reliable")
 func _request_give_item(to_peer_id: int, from_slot: int, amount: int) -> void:
-	if not multiplayer.is_server():
-		return
-
 	var from_peer_id: int = multiplayer.get_remote_sender_id()
-
-	# Rate Limited
-	var ns := GameManager.get_core_system("network") as NetworkSvc
-	if ns and ns.network_manager:
-		if not ns.network_manager.validate_rpc(from_peer_id, "give_item", [amount]):
-			return
-
+	if not _validate_inventory_rpc(from_peer_id, "give_item", [amount]):
+		return
 	_process_give_item(from_peer_id, to_peer_id, from_slot, amount)
 
 
@@ -221,17 +224,9 @@ func drop_item_for_player(target_peer_id: int, from_slot: int, drop_position: Ve
 
 @rpc("any_peer", "reliable")
 func _request_drop_for_player(target_peer_id: int, from_slot: int, drop_position: Vector3) -> void:
-	if not multiplayer.is_server():
-		return
-
 	var from_peer_id: int = multiplayer.get_remote_sender_id()
-
-	# Rate	# Validate
-	var ns := GameManager.get_core_system("network") as NetworkSvc
-	if ns and ns.network_manager:
-		if not ns.network_manager.validate_rpc(from_peer_id, "request_drop", []):
-			return
-
+	if not _validate_inventory_rpc(from_peer_id, "request_drop", []):
+		return
 	_process_drop_for_player(from_peer_id, target_peer_id, from_slot, drop_position)
 
 
@@ -555,10 +550,9 @@ func request_split_stack(from_slot: int, to_slot: int, amount: int) -> void:
 
 @rpc("any_peer", "reliable")
 func _request_split_stack(from_slot: int, to_slot: int, amount: int) -> void:
-	if not multiplayer.is_server():
-		return
-
 	var sender_id: int = multiplayer.get_remote_sender_id()
+	if not _validate_inventory_rpc(sender_id, "split_stack", [amount]):
+		return
 	_process_split_stack(sender_id, from_slot, to_slot, amount)
 
 
@@ -619,10 +613,9 @@ func request_equip_item(inv_slot: int, equip_slot_name: String) -> void:
 
 @rpc("any_peer", "reliable")
 func _request_equip_item(inv_slot: int, equip_slot_name: String) -> void:
-	if not multiplayer.is_server():
-		return
-
 	var sender_id: int = multiplayer.get_remote_sender_id()
+	if not _validate_inventory_rpc(sender_id, "equip_item", [inv_slot, equip_slot_name]):
+		return
 	_process_equip_item(sender_id, inv_slot, equip_slot_name)
 
 
@@ -656,10 +649,9 @@ func request_unequip_item(equip_slot_name: String, to_inv_slot: int) -> void:
 
 @rpc("any_peer", "reliable")
 func _request_unequip_item(equip_slot_name: String, to_inv_slot: int) -> void:
-	if not multiplayer.is_server():
-		return
-
 	var sender_id: int = multiplayer.get_remote_sender_id()
+	if not _validate_inventory_rpc(sender_id, "unequip_item", [equip_slot_name, to_inv_slot]):
+		return
 	_process_unequip_item(sender_id, equip_slot_name, to_inv_slot)
 
 

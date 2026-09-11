@@ -98,17 +98,19 @@ func _server_place_block(data: Dictionary) -> void:
 
 
 func _validate_edit_permission(peer_id: int, action: String = "") -> bool:
+	if peer_id <= 0:
+		return false
 	# Server always has permission
 	if peer_id == 1:
 		return true
 
 	var gm: Node = get_node_or_null("/root/GameManager")
 	if not gm:
-		return true  # Default to allowed if no GameManager
+		return false
 
 	var cfg: Variant = gm.get_core_system("config")
 	if not cfg:
-		return true
+		return false
 
 	# 1. Global Killswitch
 	var allow_global: bool = cfg.get_value("game_rules.allow_level_editing", true)
