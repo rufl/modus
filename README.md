@@ -84,16 +84,16 @@ For a real reviewed session, run `tools/run_manual_showcase_session.sh --tester 
 
 | Evidence | Result |
 | --- | --- |
-| Current complete Godot/GUT suite | **PASS:** August 4, 1440/1440 passing, 20,475 assertions, zero GUT-reported orphans |
-| Latest strict aggregate attempt | **PASS/complete:** August 4, finished in 702.76 seconds under the 3600-second bounded run; full summary retained, with six engine-exit ObjectDB leak diagnostics |
-| Latest batched lanes | **PASS:** August 1 Unit 1056/1056 and Property 175/175; July 19 Integration 200/200 retained; Benchmark skipped |
+| Retained complete Godot/GUT suite | **PASS:** September 10 refreshed aggregate, 1,568/1,568 passing with 21,718 assertions across 135 scripts; two GUI-required files skipped |
+| Latest strict aggregate attempt | **PASS/complete:** September 10 bounded run completed with the patched Godot 4.7.2 binary; known engine-exit ObjectDB diagnostics remain |
+| Latest batched lanes | **PASS:** Unit 1,166/1,166; Integration 227/227 with 2 GUI-required files skipped; Property 175/175 |
 | Craft / Slopometer | **PASS:** Craft penalty 0; MODUS 0.0/10 across all five dimensions |
-| Golden demo runtime smoke | **PASS:** all 8 controlled framework-loop steps on August 4; automated scope only |
-| Main menu / showcase scene launch smokes | **PASS** on August 2 for startup scope only |
+| Golden demo runtime smoke | **PASS:** all 8 controlled framework-loop steps; automated scope only |
+| Main menu / showcase scene launch smokes | **PASS:** startup scope only; see [Current Status](docs/CURRENT_STATUS.md) for dates and boundaries |
 | Manual gameplay | **BLOCKED:** the recorder workflow is ready, but no reviewed CSV evidence has been imported |
 | Performance evidence | **PASS** for one bounded 66.4-second/130-sample showcase capture only |
 | Release-version gate | **BLOCKED** — current version remains `0.9.5-beta` |
-| Production readiness | **NOT READY** with 2 validator-tracked evidence blockers: manual evidence and release version; distribution provenance is a separate open clearance gap |
+| Production readiness | **NOT READY** with manual evidence and release-version blockers; legal/distribution clearance is a separate boundary |
 
 Focused green tests are listed in [Current Status](docs/CURRENT_STATUS.md). They prove only their named contracts and do not replace manual, release, or distribution evidence.
 
@@ -108,9 +108,9 @@ The advanced-movement contract now passes 36/36 with 51 assertions in focused sc
 ### Multiplayer and Steam
 
 - The `multiplayer_demo` profile launches without profile/service lookup errors.
-- Focused real-ENet lifecycle, inventory, and late-join checks have dated passing evidence; broader latency and dedicated-client sessions remain unproven.
-- Real Steam/GodotSteam behavior has not been proven with a running client, app ID, authorized account, and real API result.
-- Server-authoritative hitscan now uses the shared, RTT-bounded player/enemy rewind system. Focused physics and weapon tests pass; client-view/interpolation calibration and representative high-latency sessions remain unproven.
+- Focused real-ENet lifecycle, reconnect, latency, rate-validation, and late-join checks have dated passing evidence; representative WAN sessions and real abusive-client soak remain unproven.
+- GodotSteam 4.22.1 authenticated local initialization has been observed with persona/Steam ID; two-account Steam lobbies, Workshop operations, and relay/P2P behavior remain unproven.
+- Server-authoritative hitscan uses the shared, RTT-bounded player/enemy rewind system. Focused physics and weapon tests pass; client-view/interpolation calibration and representative high-latency sessions remain unproven.
 
 See [Multiplayer Authority](docs/MULTIPLAYER_AUTHORITY_MODEL.md), [Profile Smoke](docs/MULTIPLAYER_PROFILE_SMOKE.md), [ENet Smoke](docs/ENET_LOCAL_HOST_JOIN_SMOKE.md), and [Steam Integration](docs/technical/STEAM_INTEGRATION.md).
 
@@ -118,8 +118,7 @@ See [Multiplayer Authority](docs/MULTIPLAYER_AUTHORITY_MODEL.md), [Profile Smoke
 
 - Focused save/export/reload proof passes for a constructed level.
 - Local filesystem Workshop upload/download/browse/subscription simulation passes.
-- The standalone editor still contains TODOs for its custom undo/redo commands.
-- Live editor UI operation and real Steam Workshop transfer remain unproven.
+- Native exported-app startup, full graphical editor workflow, and real Steam Workshop transfer remain unproven.
 
 See [Editor Round-Trip Proof](docs/EDITOR_ROUNDTRIP_PROOF.md) and [Workshop Local Simulation](docs/WORKSHOP_LOCAL_SIMULATION_PROOF.md).
 
@@ -131,7 +130,7 @@ No display-synchronized solo, splitscreen, multiplayer, low-end hardware, or lon
 
 ### Map Generator
 
-The focused `tests/unit/map_generator/` group passes 79/79 tests. The repaired threaded lane passes 8/8 with 30 assertions and the export lane passes 10/10 with 34 assertions; neither reports GUT orphans in its July 17 focused run. Seed/RNG also passes 8/8. The strict aggregate suite is green, but automated proof alone does not establish production readiness. Historical map-generator “production ready” reports are archived snapshots, not current truth.
+The current map-generator proof includes 79/79 unit tests, 8/8 threading tests, 10/10 export tests, and 8/8 seed/RNG tests. Automated proof alone does not establish production readiness. Historical map-generator “production ready” reports are archived snapshots, not current truth.
 
 ## Data and Configuration
 
@@ -222,4 +221,4 @@ Record lasting changes in `CHANGELOG.md` and maintained guides rather than addin
 
 ## License and Provenance
 
-The project MIT text is retained at `LICENSE` and `docs/LICENSE`; vendored GUT carries its MIT notice under `addons/gut/LICENSE.md`. Kenney, dip000 blood-pool material, and ten original sample-item icons have pinned local license evidence. The generated 230-row ledger clears 18 assets and retains 212 requiring rights review. See [Licensing and Provenance Inventory](docs/ATTRIBUTION.md) before redistributing the project.
+The project MIT text is retained at `LICENSE` and `docs/LICENSE`; vendored GUT carries its MIT notice under `addons/gut/LICENSE.md`. Kenney, Quaternius, dip000 blood-pool material, project-owned artwork, and generated assets have retained local provenance records. The current ledger contains **218 assets: 218 cleared and 0 unverified**. See [Licensing and Provenance Inventory](docs/ATTRIBUTION.md) before redistributing the project.
