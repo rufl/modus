@@ -305,14 +305,15 @@ func _apply_brush() -> void:
 			success = _place_brush_object(position)
 		OperationMode.REMOVE:
 			success = _remove_brush_object(position)
+		OperationMode.PAINT:
+			success = _paint_brush_objects(position)
+		OperationMode.REPLACE:
+			_clear_area(position)
+			success = _place_brush_object(position)
 		OperationMode.FILL:
 			success = _fill_area_with_brush(position)
 		OperationMode.CLEAR:
 			success = _clear_area(position)
-		OperationMode.PAINT, OperationMode.REPLACE:
-			var unsupported_reason := "Brush operation %s is not supported" % OperationMode.keys()[brush_operation_mode]
-			push_error("[AdvancedBrushTool] %s" % unsupported_reason)
-			brush_operation_failed.emit(str(brush_type), unsupported_reason)
 		_:
 			var unknown_reason := "Unknown brush operation mode: %d" % brush_operation_mode
 			push_error("[AdvancedBrushTool] %s" % unknown_reason)
@@ -939,6 +940,29 @@ func _clear_area(center_pos: Vector3) -> bool:
 			removed_count += 1
 	brush_applied.emit("CLEAR", removed_count)
 	return removed_count > 0
+
+## Apply the selected material to editor-placed objects in the brush volume.
+func _paint_brush_objects(center_pos: Vector3) -> bool:
+	if not brush_material or not is_inside_tree() or not get_world_3d():
+		return false
+
+	var shape := SphereShape3D.new()
+	shape.radius = maxf(0.5, maxf(brush_size.x, maxf(brush_size.y, brush_size.z)) * 0.5)
+	var query := PhysicsShapeQueryParameters3D.new()
+	query.shape = shape
+	query.transform = Transform3D(Basis.IDENTITY, center_pos)
+
+	var painted_count := 0
+	for result: Dictionary in get_world_3d().direct_space_state.intersect_shape(query, 64):
+		var obj: Node3D = result.get("collider", null)
+		if obj and obj.has_meta("editor_placed"):
+			_apply_brush_material(obj)
+			painted_count += 1
+
+	if painted_count > 0:
+		brush_applied.emit("PAINT", painted_count)
+	return painted_count > 0
+
 
 
 ## Remove brush object at position
