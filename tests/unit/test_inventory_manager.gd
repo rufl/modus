@@ -274,6 +274,7 @@ func test_enet_owner_receives_moves_splits_equipment_and_rejection_correction() 
 	)
 	assert_eq(replica.slots[2].id, "old_helmet")
 	assert_eq(replica.to_dict(), authoritative.to_dict())
+	await get_tree().create_timer(0.11).timeout
 	client.request_unequip_item("head", 2)
 	assert_true(
 		await _wait_for_network(
@@ -282,6 +283,7 @@ func test_enet_owner_receives_moves_splits_equipment_and_rejection_correction() 
 	)
 	assert_eq(replica.slots[2].id, "helmet")
 	assert_eq(replica.to_dict(), authoritative.to_dict())
+	await get_tree().create_timer(0.11).timeout
 	client.request_unequip_item("head", 4)
 	assert_true(
 		await _wait_for_network(func() -> bool: return replica.get_equipped("head") == null)

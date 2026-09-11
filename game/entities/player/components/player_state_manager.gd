@@ -90,7 +90,7 @@ func restore_health(hp: float, armor: float) -> void:
 		_health_component.set_health(hp, armor)
 
 
-@rpc("authority", "call_remote", "reliable")
+@rpc("any_peer", "call_remote", "reliable")
 func _sync_restored_alive() -> void:
 	if multiplayer.get_remote_sender_id() != 1:
 		return
