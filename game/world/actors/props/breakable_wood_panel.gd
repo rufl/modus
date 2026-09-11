@@ -216,8 +216,8 @@ func _on_splinter_impact(_body: Node, splinter: RigidBody3D) -> void:
 	effect_parent.add_child(audio)
 	audio.global_position = impact_position
 
-	# TODO: Load actual wood impact sound
-	# audio.stream = load("res://game/assets/audio/sfx/wood_impact.ogg")
+	audio.stream = SoundGenerator.generate_footstep_sound("wood")
+
 
 	audio.finished.connect(audio.queue_free)
 	if audio.stream:
@@ -376,10 +376,7 @@ func _play_crack_sound() -> void:
 	effect_parent.add_child(audio)
 	audio.global_position = global_position
 
-	# TODO: Load actual wood break sound
-	# var sound_path := "res://game/assets/audio/sfx/wood_break_%s.ogg" % wood_type
-	# if ResourceLoader.exists(sound_path):
-	#     audio.stream = load(sound_path)
+	audio.stream = SoundGenerator.generate_hit_sound()
 
 	audio.finished.connect(audio.queue_free)
 	if audio.stream:

@@ -215,8 +215,8 @@ func _on_shard_impact(_body: Node, shard: RigidBody3D) -> void:
 	effect_parent.add_child(audio)
 	audio.global_position = impact_position
 
-	# TODO: Load actual glass tinkle sound
-	# audio.stream = load("res://game/assets/audio/sfx/glass_shard_impact.ogg")
+	audio.stream = SoundGenerator.generate_hit_sound()
+
 
 	audio.finished.connect(audio.queue_free)
 	if audio.stream:
@@ -372,10 +372,7 @@ func _play_shatter_sound() -> void:
 	effect_parent.add_child(audio)
 	audio.global_position = global_position
 
-	# TODO: Load actual glass shatter sound
-	# var sound_path := "res://game/assets/audio/sfx/glass_shatter_%s.ogg" % glass_type
-	# if ResourceLoader.exists(sound_path):
-	#     audio.stream = load(sound_path)
+	audio.stream = SoundGenerator.generate_crit_sound()
 
 	audio.finished.connect(audio.queue_free)
 	if audio.stream:
