@@ -29,7 +29,7 @@ func take_damage(shooter_id: int) -> void:
 	explode.rpc(shooter_id)
 
 
-@rpc("any_peer", "call_local", "reliable")
+@rpc("authority", "call_local", "reliable")
 func explode(shooter_id: int) -> void:
 	# Visual feedback - hide the barrel
 	if mesh:

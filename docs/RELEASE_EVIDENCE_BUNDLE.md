@@ -86,6 +86,7 @@ Published context: [Performance Baseline Proof](PERFORMANCE_BASELINE_PROOF.md). 
 - September 11 loot-request proof: backpack retrieval and military-chest opening require valid sender identity and server-side interaction distance. Loot proof passes 7/7 with 71 assertions; NetworkManager proof passes 15/15 with 64 assertions; RPC whitelist proof passes 9/9 with 127 assertions.
 - September 11 treasure/effect authority proof: treasure-chest requests require a valid sender and nearby player before opening; enemy damage flashes accept RPC calls only from authority. Effects proof passes 12/12 with 26 assertions; NetworkManager proof passes 15/15 with 64 assertions; RPC whitelist proof passes 9/9 with 127 assertions.
 - September 11 interaction-authority source proof: button and lever requests now require a sender-owned nearby player before server application; replicated state/effects are authority-only; EnemyLab state requests require a valid mapped state and nearby sender. Local formatter/lint proof passes; CI run 52 remains red on 60 unit and 28 property failures outside this tranche.
+- September 11 door/barrel/spawn source proof: door requests require a nearby sender-owned player; explosive-barrel effects accept authority calls only; world spawn requests enforce bounded modes and positive peer IDs. Local formatter/lint proof passes; runtime proof remains bounded by CI's existing baseline failures.
 
 ## Missing Before Release
 

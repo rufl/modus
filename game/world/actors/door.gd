@@ -81,15 +81,30 @@ func close_door() -> void:
 
 @rpc("any_peer", "call_local", "reliable")
 func _request_open() -> void:
-	if multiplayer.is_server():
-		# Validate overrides/locks if needed
-		_perform_open.rpc()
+	if not multiplayer.is_server() or not _is_valid_request_sender():
+		return
+	_perform_open.rpc()
 
 
 @rpc("any_peer", "call_local", "reliable")
 func _request_close() -> void:
-	if multiplayer.is_server():
-		_perform_close.rpc()
+	if not multiplayer.is_server() or not _is_valid_request_sender():
+		return
+	_perform_close.rpc()
+
+
+func _is_valid_request_sender() -> bool:
+	var sender_id: int = multiplayer.get_remote_sender_id()
+	if sender_id <= 0:
+		return false
+	for player: Node in get_tree().get_nodes_in_group("player"):
+		if (
+			player.get_multiplayer_authority() == sender_id
+			and player is Node3D
+			and (player as Node3D).global_position.distance_to(global_position) <= 3.5
+		):
+			return true
+	return false
 
 
 @rpc("authority", "call_local", "reliable")

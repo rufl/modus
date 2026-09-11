@@ -239,9 +239,15 @@ func add_player(_peer_id: int) -> void:
 func request_spawn(mode: String = "player") -> void:
 	# In single-player (no peer), we ARE the server
 	var is_server_or_sp: bool = not multiplayer.has_multiplayer_peer() or multiplayer.is_server()
-	if not is_server_or_sp:
+	if not is_server_or_sp or mode not in ["player", "editor"]:
 		return
+
 	var peer_id: int = multiplayer.get_remote_sender_id()
+	if multiplayer.has_multiplayer_peer():
+		if peer_id <= 0:
+			return
+	else:
+		peer_id = multiplayer.get_unique_id()
 	spawn_player_node(peer_id, mode)
 
 
