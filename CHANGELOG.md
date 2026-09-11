@@ -3,6 +3,7 @@
 > **Documentation status: maintained reference.** Published readiness is consolidated in `docs/DOCUMENTATION_TRUTH.md` and `docs/CURRENT_STATUS.md`. Generated reports are local invocation records; narrower claims below apply only to the named subsystem or workflow.
 
 ## Unreleased
+- 2026-09-11 `[distribution]` `[truth:runtime]`: added a `Linux Desktop` export preset, fixed runtime mission discovery from read-only exported resources, and passed the bounded Linux export smoke on the current Godot 4.7.2 environment. This is a local reproducible artifact, not a published release, installer, signing claim, Steam build, target-Windows proof, or long-session result.
 - 2026-09-11 `[config]` `[truth:test]`: replaced the configuration service's unconditional validation success with recursive schema checks for types, required keys, nested properties/items, enums, numeric bounds, and minimum lengths. Focused validation proof passes 17/17 tests with 109 assertions.
 - 2026-09-11 `[content]` `[truth:source-audit]`: replaced the weapon PNG icon set with ten consistent original MIT SVG icons, renamed the user-facing weapons to Spinlaser and Nuker 3000, and renamed their scene/projectile paths. Provenance ledger now has 213 cleared and 5 unverified assets.
 - 2026-09-11 `[content]` `[truth:source-audit]`: regenerated the four retro prototype textures with a cohesive slate/teal/amber palette and classified the generated map overview snapshot as a MODUS minimap artifact. Provenance ledger is now fully cleared at 218/218 assets.

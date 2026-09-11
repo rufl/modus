@@ -22,7 +22,7 @@ MODUS is a developer project, not a ready-to-play Steam game and not a one-click
 
 The parts most likely to frustrate you:
 
-- There is no installer, released build, configured Workshop item, or bundled GodotSteam extension.
+- There is no installer or published release. A reproducible Linux desktop export can now be built locally, but it is not a signed, supported download and target-Windows runtime remains open.
 - The expected environment is Godot 4.7 on a writable machine with Bash; the repository does not pin a portable editor binary.
 - Optional Steam/GodotSteam and Voxel Tools integrations may be unavailable. Fallbacks keep some paths running but do not provide feature parity.
 - The Showcase route is an automated smoke path, not proof that the game feels good. Manual gameplay evidence is still zero reviewed hours.
@@ -75,6 +75,22 @@ bash tools/check_headless_runner_manifest.sh
 ```
 
 The repository does not guarantee a clean first run on every machine. Missing optional integrations, import issues, renderer differences, unsupported hardware, and the absence of a graphical session are environment boundaries, not silently successful fallbacks.
+
+## Local Linux export
+
+The repository now has a `Linux Desktop` export preset. With Godot 4.7 in the
+4.7 line and the Linux export template installed:
+
+```bash
+mkdir -p standalone/client
+godot --headless --path . --export-release "Linux Desktop" standalone/client/modus.x86_64
+tools/run_export_smoke.sh --platform linux --executable standalone/client/modus.x86_64
+```
+
+The bounded export smoke passed on the current Linux/Godot 4.7.2 environment.
+This proves one local Linux artifact launches cleanly for the smoke interval; it
+does not make the artifact a release, installer, signed binary, Steam build, or
+target-Windows proof.
 
 ## Proven Showcase Route <!-- craft-ignore: maintained project reference -->
 

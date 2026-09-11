@@ -35,7 +35,7 @@ enum ThemeType { TECH, HELL, URBAN, CAVE, JUMBLED }
 
 # Export
 @export var export_format: ExportFormat = ExportFormat.PACKED_SCENE
-@export var output_directory: String = "res://game/world/maps/generated/"
+@export var output_directory: String = "user://generated_maps/"
 
 # Debug
 @export var debug_mode: bool = false  # Enable intermediate state saving for debugging

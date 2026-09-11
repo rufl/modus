@@ -35,7 +35,7 @@ Publication cleanup preserves old local evidence without refreshing it. Fresh cl
 | Performance evidence | **PASS** | One bounded 66.4-second/130-sample showcase capture; not a production FPS claim |
 | Release-version evidence | **BLOCKED** | Project remains `0.9.5-beta` |
 | Production readiness | **NOT READY** | 2 validator-tracked blockers: manual evidence and release version; provenance clearance is outside that count |
-| Release evidence bundle | **INDEX COMPLETE / RELEASE BLOCKED** | Hashed menu/welcome/mod/golden-demo captures, short automated video, bounded benchmark table, known-limits matrix, provenance ledger, fresh three-preset notice checks, executable exports, local ENet/reconnect/latency/rate-limit proof, and authenticated Steam API initialization are retained; manual marketing review, installer, two-account Steam/Workshop, target-Windows runtime, and rights clearance remain open |
+| Release evidence bundle | **INDEX COMPLETE / RELEASE BLOCKED** | Hashed menu/welcome/mod/golden-demo captures, short automated video, bounded benchmark table, known-limits matrix, provenance ledger, fresh three-preset notice checks, local Linux desktop export smoke, executable exports, local ENet/reconnect/latency/rate-limit proof, and authenticated Steam API initialization are retained; manual marketing review, installer, two-account Steam/Workshop, target-Windows runtime, and rights clearance remain open |
 
 ## Current Focused Automated Proof
 
@@ -51,6 +51,7 @@ These results are narrower than the aggregate suite and must not be summed into 
 | Network rate validation | 13/13 focused network-manager proof; real abusive-client soak remains open |
 | ENet host/join | PASS; separate Godot server/client process, client connected over localhost; server is intentionally terminated by harness after client success |
 | Package notices | 6/6 required notices match for Windows Desktop, Dedicated Server (Linux), and Standalone Editor resource exports; Windows client, Windows editor, and Linux server executables export successfully with installed Godot 4.7.2 templates |
+| Linux desktop export | PASS; `Linux Desktop` preset builds and the bounded exported artifact smoke launches cleanly on the current Linux/Godot 4.7.2 environment; this is not a published release or target-Windows proof |
 | RPC whitelist | 9/9 |
 | Network editor RPC boundary | 5/5 focused integration proof; server-only handlers, finite/bounded payloads, safe relative paths, resource checks, and entity/transform rate limits |
 | Mod-loading integration | 12/12 |

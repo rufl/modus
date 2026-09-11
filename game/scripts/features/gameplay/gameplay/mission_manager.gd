@@ -129,11 +129,12 @@ func _on_match_started(settings: Dictionary) -> void:
 func _load_all_missions() -> void:
 	available_missions.clear()
 
-	# Ensure directory exists
-	if not DirAccess.dir_exists_absolute(MISSIONS_PATH):
-		DirAccess.make_dir_recursive_absolute(MISSIONS_PATH)
-
 	var dir := DirAccess.open(MISSIONS_PATH)
+	if not dir:
+		var missing_logger: Variant = GameManager.get_core_system("logger")
+		if missing_logger and missing_logger.has_method("info"):
+			missing_logger.info("[MissionManager] Missions directory unavailable; loaded 0 missions", "Core")
+		return
 	if dir:
 		dir.list_dir_begin()
 		var file_name: String = dir.get_next()

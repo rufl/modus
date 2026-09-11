@@ -29,6 +29,21 @@ tools/run_main_player_path_smoke.sh --strict
 
 That smoke proves menu/startup only. It does not prove movement, combat, saves, multiplayer, or editor interaction.
 
+## Build a local Linux export
+
+This is a local artifact path, not a published release. Install the Godot 4.7
+Linux export template, then run:
+
+```bash
+mkdir -p standalone/client
+godot --headless --path . --export-release "Linux Desktop" standalone/client/modus.x86_64
+tools/run_export_smoke.sh --platform linux --executable standalone/client/modus.x86_64
+```
+
+The smoke covers bounded Linux launch only. It does not prove installer quality,
+signing, Steam/GodotSteam behavior, target-Windows runtime, manual gameplay,
+or long-session stability.
+
 ## Verify the checkout
 
 ```bash
