@@ -137,11 +137,11 @@ func _create_sloped_surface(parent: CSGCombiner3D, slope: SlopeDefinition) -> vo
 	# Use CSGMesh3D with custom mesh for slopes
 	var csg_mesh := CSGMesh3D.new()
 	csg_mesh.name = "Slope_%d_%d" % [slope.grid_pos.x, slope.grid_pos.y]
+	csg_mesh.use_collision = true
 
 	# Create sloped mesh using SurfaceTool
 	var mesh := _create_sloped_mesh(slope)
 	csg_mesh.mesh = mesh
-
 	# Position at grid cell
 	var world_pos := _grid_to_world(slope.grid_pos)
 	csg_mesh.position = Vector3(world_pos.x, slope.height_offset, world_pos.y)

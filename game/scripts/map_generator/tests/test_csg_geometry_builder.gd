@@ -156,13 +156,17 @@ func test_bake_geometry_creates_mesh_instance() -> void:
 			context.grid[y][x].type = Cell.Type.ROOM
 
 	builder.initialize(context)
-	builder.build_geometry()
+	var csg_root := builder.build_geometry()
+	add_child(csg_root)
+	await get_tree().process_frame
 
 	var baked_mesh := builder.bake_geometry()
 
 	assert_not_null(baked_mesh, "Baked mesh should be created")
 	assert_true(baked_mesh is MeshInstance3D, "Baked result should be MeshInstance3D")
 	assert_not_null(baked_mesh.mesh, "Baked mesh should have mesh data")
+	baked_mesh.free()
+	csg_root.free()
 
 
 func test_baked_mesh_has_collision() -> void:
@@ -172,7 +176,9 @@ func test_baked_mesh_has_collision() -> void:
 			context.grid[y][x].type = Cell.Type.ROOM
 
 	builder.initialize(context)
-	builder.build_geometry()
+	var csg_root := builder.build_geometry()
+	add_child(csg_root)
+	await get_tree().process_frame
 
 	var baked_mesh := builder.bake_geometry()
 
@@ -185,7 +191,8 @@ func test_baked_mesh_has_collision() -> void:
 	var collision_shape := collision_body.get_node_or_null("CollisionShape")
 	assert_not_null(collision_shape, "Collision shape should exist")
 	assert_not_null(collision_shape.shape, "Collision shape should have shape data")
-
+	baked_mesh.free()
+	csg_root.free()
 
 func test_materials_applied_to_geometry() -> void:
 	# Create a simple room

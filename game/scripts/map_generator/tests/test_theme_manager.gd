@@ -66,6 +66,20 @@ func test_get_materials_for_themes() -> void:
 		assert_not_null(cave_mat, "Cave material should exist for theme %d" % theme_type)
 
 
+
+## Test: Incomplete themes receive deterministic material fallbacks
+func test_incomplete_theme_is_repaired_on_selection() -> void:
+	var incomplete := MapTheme.new()
+	incomplete.theme_type = GenerationConfig.ThemeType.HELL
+	theme_manager._themes[GenerationConfig.ThemeType.HELL] = incomplete
+
+	theme_manager.set_theme(GenerationConfig.ThemeType.HELL)
+
+	assert_not_null(incomplete.wall_material)
+	assert_not_null(incomplete.floor_material)
+	assert_not_null(incomplete.ceiling_material)
+	assert_eq(theme_manager.get_cave_material(), theme_manager.get_cave_material())
+
 ## Test: Get lighting configuration for each theme
 func test_get_lighting_configuration() -> void:
 	var theme_types := [

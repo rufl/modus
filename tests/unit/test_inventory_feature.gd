@@ -6,7 +6,7 @@ extends GutTest
 
 const InventoryFeature = preload("res://game/scripts/features/inventory/inventory_feature.gd")
 const InventoryData = preload("res://game/scripts/features/inventory/inventory_data.gd")
-
+const InventoryComponent = preload("res://game/scripts/components/inventory_component.gd")
 var inventory_feature: InventoryFeature
 
 
@@ -171,3 +171,19 @@ func test_inventory_data_signals():
 
 	assert_eq(signals_received["item_added"], 1, "item_added signal should be emitted once")
 	assert_eq(signals_received["item_removed"], 1, "item_removed signal should be emitted once")
+
+
+## Test: InventoryComponent forwards extension hook events
+func test_inventory_component_forwards_events():
+	var component := InventoryComponent.new()
+	var received: Dictionary = {"added": 0, "removed": 0, "full": 0}
+	component.item_added.connect(func(_item, _slot): received["added"] += 1)
+	component.item_removed.connect(func(_item, _slot): received["removed"] += 1)
+	component.inventory_full.connect(func(): received["full"] += 1)
+
+	component._on_item_added({"id": "item"}, 2)
+	component._on_item_removed({"id": "item"}, 2)
+	component._on_inventory_full()
+
+	assert_eq(received, {"added": 1, "removed": 1, "full": 1})
+	component.free()

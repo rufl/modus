@@ -39,7 +39,9 @@ func set_theme(theme_type: GenerationConfig.ThemeType, rng: RandomNumberGenerato
 		push_error("ThemeManager: Unknown theme type: %d" % theme_type)
 		return
 
-	_current_theme = _themes[theme_type]
+	var theme: MapTheme = _themes[theme_type]
+	theme.ensure_materials()
+	_current_theme = theme
 	_rng = rng
 
 

@@ -6,6 +6,10 @@
 ## Requirements: 4.3
 class_name InventoryComponent
 extends GameComponent
+## Signals forwarded from the owned inventory data.
+signal item_added(item: Dictionary, slot_index: int)
+signal item_removed(item: Dictionary, slot_index: int)
+signal inventory_full
 
 ## Reference to the inventory data
 var inventory: InventoryData = null
@@ -94,22 +98,22 @@ func clear_inventory() -> void:
 		inventory.clear()
 
 
-## Signal handler for item added
-func _on_item_added(_item: Dictionary, _slot_index: int) -> void:
-	# Can be overridden or connected to by entity
-	pass
+## Signal handler for item added.
+## Subclasses may extend this hook; observers can use the component signal.
+func _on_item_added(item: Dictionary, slot_index: int) -> void:
+	item_added.emit(item, slot_index)
 
 
-## Signal handler for item removed
-func _on_item_removed(_item: Dictionary, _slot_index: int) -> void:
-	# Can be overridden or connected to by entity
-	pass
+## Signal handler for item removed.
+## Subclasses may extend this hook; observers can use the component signal.
+func _on_item_removed(item: Dictionary, slot_index: int) -> void:
+	item_removed.emit(item, slot_index)
 
 
-## Signal handler for inventory full
+## Signal handler for inventory full.
+## Subclasses may extend this hook; observers can use the component signal.
 func _on_inventory_full() -> void:
-	# Can be overridden or connected to by entity
-	pass
+	inventory_full.emit()
 
 
 ## Cleanup

@@ -2,20 +2,24 @@ class_name ModScript
 extends Node
 
 var mod_info: Dictionary = {}
+var _mod_initialized: bool = false
+var _mod_cleaned_up: bool = false
 
 
 func _ready() -> void:
-	_mod_init()
+	on_mod_loaded()
 
 
-## Override this to initialize your mod
+## Override this to initialize your mod.
+
+
 
 
 func _mod_init() -> void:
 	pass
 
 
-## Override this for mod cleanup
+## Override this for mod cleanup.
 
 
 func _mod_cleanup() -> void:
@@ -71,22 +75,22 @@ func mod_print(message: String) -> void:
 			logger.info("[%s] %s" % [mod_name, message], "Core")
 
 
-## Called when mod is loaded - lifecycle method for tests
-
-
+## Called when mod is loaded.
 func on_mod_loaded() -> void:
+	if _mod_initialized:
+		return
+	_mod_initialized = true
+	_mod_cleaned_up = false
 	_mod_init()
 
 
-## Called when mod is unloaded - lifecycle method for tests
-
-
+## Called when mod is unloaded.
 func on_mod_unloaded() -> void:
+	if not _mod_initialized or _mod_cleaned_up:
+		return
+	_mod_cleaned_up = true
 	_mod_cleanup()
-
-
-## Called when mod is unloaded
 
 
 func _exit_tree() -> void:
-	_mod_cleanup()
+	on_mod_unloaded()

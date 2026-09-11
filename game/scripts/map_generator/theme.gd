@@ -15,6 +15,8 @@ extends Resource
 @export var prefab_filter_tags: Array[String] = []
 @export var shape_grammar_rules: Array[String] = []
 
+var _generated_cave_material: Material = null
+
 
 ## Get the theme name as a string
 func get_theme_name() -> String:
@@ -33,12 +35,23 @@ func get_theme_name() -> String:
 			return "unknown"
 
 
+## Fill missing exported materials with deterministic theme fallbacks.
+func ensure_materials() -> void:
+	var fallback := create_default_theme(theme_type)
+	if not wall_material:
+		wall_material = fallback.wall_material
+	if not floor_material:
+		floor_material = fallback.floor_material
+	if not ceiling_material:
+		ceiling_material = fallback.ceiling_material
+
+
 ## Create a default theme for the given type
 static func create_default_theme(p_theme_type: GenerationConfig.ThemeType) -> MapTheme:
 	var theme := MapTheme.new()
 	theme.theme_type = p_theme_type
 
-	# Create placeholder materials (will be replaced with actual materials later)
+	# Create deterministic procedural fallback materials for themes without assets.
 	match p_theme_type:
 		GenerationConfig.ThemeType.TECH:
 			theme.wall_material = _create_placeholder_material(Color(0.4, 0.5, 0.6))
@@ -79,7 +92,7 @@ static func create_default_theme(p_theme_type: GenerationConfig.ThemeType) -> Ma
 	return theme
 
 
-## Create a simple placeholder material with the given color
+## Create a simple procedural fallback material with the given color.
 static func _create_placeholder_material(color: Color) -> StandardMaterial3D:
 	var material := StandardMaterial3D.new()
 	material.albedo_color = color
@@ -88,47 +101,36 @@ static func _create_placeholder_material(color: Color) -> StandardMaterial3D:
 	return material
 
 
-## Get cave-specific material based on theme
-## Used for voxel-based cave terrain
+## Get cave-specific material based on theme.
+## Used for voxel-based cave terrain.
 func get_cave_material() -> Material:
-	# For cave theme, use wall material
 	if theme_type == GenerationConfig.ThemeType.CAVE:
-		return (
-			wall_material if wall_material else _create_placeholder_material(Color(0.3, 0.25, 0.2))
-		)
+		return wall_material if wall_material else _create_placeholder_material(Color(0.3, 0.25, 0.2))
+	if _generated_cave_material:
+		return _generated_cave_material
 
-	# For other themes, create a cave-appropriate material
 	var cave_material := StandardMaterial3D.new()
-
 	match theme_type:
 		GenerationConfig.ThemeType.TECH:
-			# Tech caves: metallic gray/blue
 			cave_material.albedo_color = Color(0.35, 0.4, 0.45)
 			cave_material.metallic = 0.3
 			cave_material.roughness = 0.7
-
 		GenerationConfig.ThemeType.HELL:
-			# Hell caves: dark red/brown rock
 			cave_material.albedo_color = Color(0.4, 0.15, 0.1)
 			cave_material.metallic = 0.0
 			cave_material.roughness = 0.95
-
 		GenerationConfig.ThemeType.URBAN:
-			# Urban caves: concrete/sewer
 			cave_material.albedo_color = Color(0.45, 0.45, 0.4)
 			cave_material.metallic = 0.0
 			cave_material.roughness = 0.85
-
 		GenerationConfig.ThemeType.JUMBLED:
-			# Jumbled: generic brown cave
 			cave_material.albedo_color = Color(0.35, 0.3, 0.25)
 			cave_material.metallic = 0.1
 			cave_material.roughness = 0.8
-
 		_:
-			# Default cave material
 			cave_material.albedo_color = Color(0.3, 0.25, 0.2)
 			cave_material.metallic = 0.0
 			cave_material.roughness = 0.9
 
-	return cave_material
+	_generated_cave_material = cave_material
+	return _generated_cave_material
