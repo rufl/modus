@@ -14,21 +14,39 @@ func _ready() -> void:
 			_button.interacted.connect(_on_button_pressed)
 
 
-func _on_button_pressed(_interactor: Node) -> void:
-	# Request server to toggle
-	toggle_freeze.rpc_id(1)
+func _on_button_pressed(interactor: Node) -> void:
+	if not interactor or not _is_valid_interactor(interactor):
+		return
+	if multiplayer.is_server():
+		_apply_freeze_toggle()
+	else:
+		toggle_freeze.rpc_id(1)
 
 
 @rpc("any_peer", "call_local", "reliable")
 func toggle_freeze() -> void:
-	# Only server decides (or authorized logic)
 	if not multiplayer.is_server():
 		return
+	var sender_id: int = multiplayer.get_remote_sender_id()
+	if sender_id <= 0:
+		return
+	for player: Node in get_tree().get_nodes_in_group("player"):
+		if player.get_multiplayer_authority() == sender_id and _is_valid_interactor(player):
+			_apply_freeze_toggle()
+			return
 
+
+func _is_valid_interactor(interactor: Node) -> bool:
+	return (
+		interactor.is_in_group("player")
+		and interactor is Node3D
+		and (interactor as Node3D).global_position.distance_to(global_position) <= 12.0
+	)
+
+
+func _apply_freeze_toggle() -> void:
 	_is_frozen = not _is_frozen
 	var new_scale: float = 0.1 if _is_frozen else 1.0
-
-	# Broadcast to all
 	_sync_time_scale.rpc(new_scale)
 
 
