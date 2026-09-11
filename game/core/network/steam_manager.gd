@@ -4,6 +4,7 @@ extends Node
 const Constants = preload("res://game/core/constants.gd")
 
 signal steam_initialized
+signal steam_auth_ticket_validated(steam_id: int, response: int)
 signal lobby_created(lobby_id: int)
 signal lobby_joined(lobby_id: int)
 signal lobby_join_failed(reason: String)
@@ -12,6 +13,8 @@ signal lobby_member_joined(steam_id: int)
 signal lobby_member_left(steam_id: int)
 signal persona_state_changed(steam_id: int)
 signal achievement_unlocked(achievement_name: String)
+
+const AUTH_SESSION_UNAVAILABLE := -1
 
 const LOBBY_TYPE_PRIVATE := 0
 const LOBBY_TYPE_FRIENDS := 1
@@ -120,6 +123,7 @@ func initialize_steam_server(data: Dictionary) -> void:
 
 	# Login
 	var token: String = data.get("steam_server_token", "")
+	_connect_steam_signals()
 	if token != "":
 		steam.gameServer_LogOn(token)
 	else:
@@ -132,7 +136,6 @@ func initialize_steam_server(data: Dictionary) -> void:
 		"Steam Dedicated Server Initialized on ports %d/%d" % [game_port, query_port],
 		"SteamManager"
 	)
-
 
 func _connect_steam_signals() -> void:
 	var steam: Object = Engine.get_singleton("Steam")
@@ -147,6 +150,9 @@ func _connect_steam_signals() -> void:
 		steam.lobby_chat_update.connect(_on_lobby_chat_update)
 	if not steam.persona_state_change.is_connected(_on_persona_state_change):
 		steam.persona_state_change.connect(_on_persona_state_change)
+	if steam.has_signal("validate_auth_ticket_response"):
+		if not steam.validate_auth_ticket_response.is_connected(_on_validate_auth_ticket_response):
+			steam.validate_auth_ticket_response.connect(_on_validate_auth_ticket_response)
 
 
 func _process(_delta: float) -> void:
@@ -166,7 +172,7 @@ func _process(_delta: float) -> void:
 
 
 func is_steam_running() -> bool:
-	return _steam_available
+	return _steam_available and Engine.get_singleton("Steam") != null
 
 
 ## Get current user's Steam ID
@@ -337,19 +343,24 @@ func get_auth_ticket() -> Dictionary:
 
 
 ## Begin Auth Session (Server Side)
-## Returns true if validation started
+## Returns k_EBeginAuthSessionResultOK only when Steam accepted the ticket.
+## A successful call still remains pending until validate_auth_ticket_response.
 ## steam_id: The client's Steam ID
 ## ticket: The auth ticket buffer
 
 
 func begin_auth_session(steam_id: int, ticket: Array) -> int:
 	if not _steam_available:
-		return 0
+		# Never report unavailable authentication as an accepted session.
+		return AUTH_SESSION_UNAVAILABLE
 
 	var steam: Object = Engine.get_singleton("Steam")
+	if not steam:
+		# The plugin class may exist while the runtime singleton is unavailable.
+		return AUTH_SESSION_UNAVAILABLE
 	# beginAuthSession( ticket_buffer, ticket_size, steam_id )
 	var result: int = steam.beginAuthSession(ticket, ticket.size(), steam_id)
-	return result  # 0 is OK
+	return result  # 0 means the asynchronous validation started
 
 
 ## End Auth Session
@@ -360,7 +371,8 @@ func end_auth_session(steam_id: int) -> void:
 		return
 
 	var steam: Object = Engine.get_singleton("Steam")
-	steam.endAuthSession(steam_id)
+	if steam:
+		steam.endAuthSession(steam_id)
 
 
 # ============================================================================
@@ -465,6 +477,12 @@ func _on_lobby_chat_update(
 
 func _on_persona_state_change(steam_id: int, _flags: int) -> void:
 	persona_state_changed.emit(steam_id)
+
+
+func _on_validate_auth_ticket_response(
+	steam_id: int, auth_session_response: int, _owner_steam_id: int
+) -> void:
+	steam_auth_ticket_validated.emit(steam_id, auth_session_response)
 
 
 # ============================================================================

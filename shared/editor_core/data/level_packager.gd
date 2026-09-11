@@ -211,8 +211,12 @@ static func read_manifest(mdsl_path: String) -> LevelManifest:
 	var reader := ZIPReader.new()
 	var err: Error = reader.open(mdsl_path)
 	if err != OK:
+		reader.close()
 		return null
 
+	if not reader.file_exists(MANIFEST_FILE):
+		reader.close()
+		return null
 	var content: PackedByteArray = reader.read_file(MANIFEST_FILE)
 	reader.close()
 
@@ -234,8 +238,12 @@ static func read_thumbnail(mdsl_path: String) -> Image:
 	var reader := ZIPReader.new()
 	var err: Error = reader.open(mdsl_path)
 	if err != OK:
+		reader.close()
 		return null
 
+	if not reader.file_exists(THUMBNAIL_FILE):
+		reader.close()
+		return null
 	var content: PackedByteArray = reader.read_file(THUMBNAIL_FILE)
 	reader.close()
 
@@ -319,27 +327,98 @@ static func _add_dir_to_zip(writer: ZIPPacker, base_dir: String, relative_path: 
 	dir.list_dir_end()
 
 
+static func _is_safe_zip_entry(entry_path: String, extraction_root: String) -> bool:
+	var normalized_path: String = entry_path.replace("\\", "/")
+	if normalized_path.is_empty() or normalized_path.contains("://"):
+		return false
+	if normalized_path.begins_with("/") or (
+		normalized_path.length() >= 2 and normalized_path[1] == ":"
+	):
+		return false
+
+	for component: String in normalized_path.split("/", true):
+		if component == "..":
+			return false
+
+	var root_path: String = ProjectSettings.globalize_path(extraction_root).simplify_path()
+	var target_path: String = ProjectSettings.globalize_path(
+		extraction_root.path_join(normalized_path)
+	).simplify_path()
+	if not (target_path == root_path or target_path.begins_with(root_path + "/")):
+		return false
+
+	var root_parent: DirAccess = DirAccess.open(root_path.get_base_dir())
+	if not root_parent or root_parent.is_link(root_path.get_file()):
+		return false
+
+	var current_path: String = root_path
+	for component: String in normalized_path.split("/", true):
+		if component.is_empty() or component == ".":
+			continue
+		current_path = current_path.path_join(component)
+		var parent_dir: DirAccess = DirAccess.open(current_path.get_base_dir())
+		if parent_dir and parent_dir.is_link(current_path.get_file()):
+			return false
+	return true
+
+
+static func _ensure_zip_directory(path: String) -> Error:
+	var absolute_path: String = ProjectSettings.globalize_path(path)
+	var dir_err: Error = DirAccess.make_dir_recursive_absolute(absolute_path)
+	if dir_err != OK and not DirAccess.dir_exists_absolute(absolute_path):
+		return dir_err
+	return OK
+
+
 static func _extract_zip(zip_path: String, output_dir: String) -> Error:
 	var reader := ZIPReader.new()
 	var err: Error = reader.open(zip_path)
 	if err != OK:
+		reader.close()
 		return err
 
-	DirAccess.make_dir_recursive_absolute(output_dir)
+	var root_err: Error = _ensure_zip_directory(output_dir)
+	if root_err != OK:
+		reader.close()
+		return root_err
 
 	var files: PackedStringArray = reader.get_files()
 	for file_path: String in files:
+		if not _is_safe_zip_entry(file_path, output_dir):
+			reader.close()
+			return ERR_INVALID_PARAMETER
+
+		var normalized_path: String = file_path.replace("\\", "/")
+		var out_path: String = output_dir.path_join(normalized_path)
+		if normalized_path.ends_with("/"):
+			var directory_err: Error = _ensure_zip_directory(out_path)
+			if directory_err != OK:
+				reader.close()
+				return directory_err
+			continue
+
+		if not reader.file_exists(file_path):
+			reader.close()
+			return ERR_FILE_CANT_READ
 		var content: PackedByteArray = reader.read_file(file_path)
-		var out_path: String = output_dir.path_join(file_path)
 
 		# Create subdirectories
-		var dir_path: String = out_path.get_base_dir()
-		DirAccess.make_dir_recursive_absolute(dir_path)
+		var dir_err: Error = _ensure_zip_directory(out_path.get_base_dir())
+		if dir_err != OK:
+			reader.close()
+			return dir_err
 
 		var out_file := FileAccess.open(out_path, FileAccess.WRITE)
-		if out_file:
-			out_file.store_buffer(content)
-			out_file.close()
+		if not out_file:
+			reader.close()
+			return ERR_FILE_CANT_OPEN
+		out_file.store_buffer(content)
+		out_file.flush()
+		var write_err: Error = out_file.get_error()
+		out_file.close()
+		if write_err != OK:
+			reader.close()
+			return write_err
 
 	reader.close()
 	return OK

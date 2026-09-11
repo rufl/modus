@@ -226,33 +226,110 @@ func _load_mod(mod_name: String) -> bool:
 ## Load mod from ZIP file
 
 
+func _is_safe_zip_entry(entry_path: String, extraction_root: String) -> bool:
+	var normalized_path: String = entry_path.replace("\\", "/")
+	if normalized_path.is_empty() or normalized_path.contains("://"):
+		return false
+	if normalized_path.begins_with("/") or (
+		normalized_path.length() >= 2 and normalized_path[1] == ":"
+	):
+		return false
+
+	for component: String in normalized_path.split("/", true):
+		if component == "..":
+			return false
+
+	var root_path: String = ProjectSettings.globalize_path(extraction_root).simplify_path()
+	var target_path: String = ProjectSettings.globalize_path(
+		extraction_root.path_join(normalized_path)
+	).simplify_path()
+	if not (target_path == root_path or target_path.begins_with(root_path + "/")):
+		return false
+
+	var root_parent: DirAccess = DirAccess.open(root_path.get_base_dir())
+	if not root_parent or root_parent.is_link(root_path.get_file()):
+		return false
+
+	var current_path: String = root_path
+	for component: String in normalized_path.split("/", true):
+		if component.is_empty() or component == ".":
+			continue
+		current_path = current_path.path_join(component)
+		var parent_dir: DirAccess = DirAccess.open(current_path.get_base_dir())
+		if parent_dir and parent_dir.is_link(current_path.get_file()):
+			return false
+	return true
+
+
+func _ensure_zip_directory(path: String) -> Error:
+	var absolute_path: String = ProjectSettings.globalize_path(path)
+	var dir_err: Error = DirAccess.make_dir_recursive_absolute(absolute_path)
+	if dir_err != OK and not DirAccess.dir_exists_absolute(absolute_path):
+		return dir_err
+	return OK
+
+
 func _load_zip_mod(mod_name: String, zip_path: String) -> bool:
+	# Try to open the archive before creating any extraction paths.
 	var reader: ZIPReader = ZIPReader.new()
 	var err: Error = reader.open(zip_path)
 	if err != OK:
+		reader.close()
 		push_error("[DedicatedServer] Cannot open ZIP: ", zip_path)
 		return false
 
 	# Extract to temp folder
 	var extract_path: String = "user://mods_extracted/" + mod_name + "/"
-	var abs_extract: String = extract_path.replace("user://", OS.get_user_data_dir() + "/")
-	DirAccess.make_dir_recursive_absolute(abs_extract)
+	var root_err: Error = _ensure_zip_directory(extract_path)
+	if root_err != OK:
+		reader.close()
+		push_error("[DedicatedServer] Cannot create ZIP extraction directory: ", extract_path)
+		return false
 
 	var files: PackedStringArray = reader.get_files()
 	for file_path: String in files:
+		if not _is_safe_zip_entry(file_path, extract_path):
+			reader.close()
+			push_error("[DedicatedServer] Unsafe ZIP entry: ", file_path)
+			return false
+
+		var normalized_path: String = file_path.replace("\\", "/")
+		var full_path: String = extract_path.path_join(normalized_path)
+		if normalized_path.ends_with("/"):
+			var directory_err: Error = _ensure_zip_directory(full_path)
+			if directory_err != OK:
+				reader.close()
+				push_error("[DedicatedServer] Cannot create ZIP directory: ", full_path)
+				return false
+			continue
+
+		if not reader.file_exists(file_path):
+			reader.close()
+			push_error("[DedicatedServer] Cannot read ZIP entry: ", file_path)
+			return false
 		var content: PackedByteArray = reader.read_file(file_path)
-		var full_path: String = extract_path + file_path
 
 		# Ensure directory exists
-		var dir_path: String = full_path.get_base_dir()
-		var abs_dir: String = dir_path.replace("user://", OS.get_user_data_dir() + "/")
-		DirAccess.make_dir_recursive_absolute(abs_dir)
+		var dir_err: Error = _ensure_zip_directory(full_path.get_base_dir())
+		if dir_err != OK:
+			reader.close()
+			push_error("[DedicatedServer] Cannot create ZIP directory: ", full_path.get_base_dir())
+			return false
 
 		# Write file
 		var file: FileAccess = FileAccess.open(full_path, FileAccess.WRITE)
-		if file:
-			file.store_buffer(content)
-			file.close()
+		if not file:
+			reader.close()
+			push_error("[DedicatedServer] Cannot open extracted ZIP file: ", full_path)
+			return false
+		file.store_buffer(content)
+		file.flush()
+		var write_err: Error = file.get_error()
+		file.close()
+		if write_err != OK:
+			reader.close()
+			push_error("[DedicatedServer] Cannot write extracted ZIP file: ", full_path)
+			return false
 
 	reader.close()
 

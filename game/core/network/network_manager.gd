@@ -48,7 +48,8 @@ var _violation_counts: Dictionary = {}  # peer_id -> int
 var _aim_suspicion_scores: Dictionary = {}  # peer_id -> float
 var _last_aim_vectors: Dictionary = {}  # peer_id -> Vector3
 var _last_fire_times: Dictionary = {}  # peer_id -> float (timestamp)
-var _peer_steam_ids: Dictionary = {}
+var _peer_steam_ids: Dictionary = {}  # Verified peer_id -> Steam ID
+var _pending_steam_ids: Dictionary = {}  # Auth-started peer_id -> Steam ID
 var _reconnect_attempts: int = 0
 var _max_reconnect_attempts: int = 5
 var _reconnect_delay_ms: int = 2000
@@ -80,6 +81,51 @@ func get_steam_manager() -> Node:
 func get_peer_steam_id(peer_id: int) -> int:
 	return int(_peer_steam_ids.get(peer_id, 0))
 
+func _bind_steam_auth_signal() -> void:
+	var steam: Node = get_steam_manager()
+	if steam and steam.has_signal("steam_auth_ticket_validated"):
+		if not steam.steam_auth_ticket_validated.is_connected(_on_steam_auth_ticket_validated):
+			steam.steam_auth_ticket_validated.connect(_on_steam_auth_ticket_validated)
+
+
+func _steam_auth_available() -> bool:
+	var steam: Node = get_steam_manager()
+	return (
+		_use_steam
+		and steam != null
+		and steam.has_method("is_steam_running")
+		and steam.is_steam_running()
+	)
+
+
+func _on_steam_auth_ticket_validated(steam_id: int, response: int) -> void:
+	var peer_id: int = 0
+	for pending_peer: Variant in _pending_steam_ids:
+		if int(_pending_steam_ids[pending_peer]) == steam_id:
+			peer_id = int(pending_peer)
+			break
+	if peer_id == 0:
+		return
+
+	if response != 0:
+		push_warning(
+			"[Network] Steam Auth rejected for peer %d (ID: %d, response: %d)"
+			% [peer_id, steam_id, response]
+		)
+		# Keep the pending entry until disconnect so its started session is ended.
+		multiplayer.disconnect_peer(peer_id)
+		return
+
+	for verified_peer: Variant in _peer_steam_ids:
+		if int(_peer_steam_ids[verified_peer]) == steam_id and int(verified_peer) != peer_id:
+			push_warning("[Network] Steam ID %d is already verified for peer %d" % [steam_id, verified_peer])
+			multiplayer.disconnect_peer(peer_id)
+			return
+
+	_pending_steam_ids.erase(peer_id)
+	_peer_steam_ids[peer_id] = steam_id
+	add_trusted_peer(peer_id)
+
 
 func _ready() -> void:
 	var gm: Node = get_node_or_null("/root/GameManager")
@@ -103,6 +149,7 @@ func _ready() -> void:
 			multiplayer.peer_connected.connect(_on_peer_connected)
 		if not multiplayer.peer_disconnected.is_connected(_on_peer_disconnected):
 			multiplayer.peer_disconnected.connect(_on_peer_disconnected)
+	_bind_steam_auth_signal()
 
 	_setup_rate_limits()
 
@@ -123,6 +170,11 @@ func _exit_tree() -> void:
 			multiplayer.peer_connected.disconnect(_on_peer_connected)
 		if multiplayer.peer_disconnected.is_connected(_on_peer_disconnected):
 			multiplayer.peer_disconnected.disconnect(_on_peer_disconnected)
+	var steam: Node = get_steam_manager()
+	if steam and steam.has_signal("steam_auth_ticket_validated"):
+		if steam.steam_auth_ticket_validated.is_connected(_on_steam_auth_ticket_validated):
+			steam.steam_auth_ticket_validated.disconnect(_on_steam_auth_ticket_validated)
+
 
 	# Timer signals
 	if _reconnect_timer:
@@ -1221,49 +1273,57 @@ func _on_peer_connected(id: int) -> void:
 
 ## Client -> Server: Verify Steam Auth Ticket
 
+
 @rpc("any_peer", "call_remote", "reliable")
 func verify_steam_ticket(ticket_bundle: Dictionary) -> void:
 	if not multiplayer.is_server():
 		return
 
+	if not _steam_auth_available():
+		push_warning("[Network] Rejected Steam ticket: Steam authentication is unavailable")
+		return
+
 	var peer_id: int = multiplayer.get_remote_sender_id()
+	if peer_id <= 0:
+		return
 	var ticket_gm: Node = get_node_or_null("/root/GameManager")
-	var network_mgr: Node = ticket_gm.get_core_system("network") if ticket_gm else null
-	if network_mgr and network_mgr.has_method("validate_rpc"):
-		if not network_mgr.validate_rpc(peer_id, "verify_steam_ticket", [ticket_bundle]):
-			push_warning("[Network] Invalid Steam ticket payload from peer %d" % peer_id)
-			return
+	var network_service: Variant = ticket_gm.get_core_system("network") if ticket_gm else null
+	var network_mgr: Node = network_service.network_manager if network_service else self
+	if not network_mgr or not network_mgr.has_method("validate_rpc"):
+		push_warning("[Network] Rejected Steam ticket: NetworkManager unavailable")
+		return
+	if not network_mgr.validate_rpc(peer_id, "verify_steam_ticket", [ticket_bundle]):
+		push_warning("[Network] Invalid Steam ticket payload from peer %d" % peer_id)
+		return
+
 	var steam_id: int = int(ticket_bundle.get("id", 0))
 	var ticket_buffer: Array = ticket_bundle.get("buffer", [])
-
-	if steam_id == 0 or ticket_buffer.is_empty():
+	if steam_id <= 0 or ticket_buffer.is_empty():
 		push_warning("[Network] Invalid ticket from peer %d" % peer_id)
-		# Don't kick immediately, allow ENet fallback?
-		# If server is secure, we should kick.
-		if config and config.server_mode == 1:  # Auth required
-			multiplayer.disconnect_peer(peer_id)
+		return
+
+	if _pending_steam_ids.has(peer_id) or _peer_steam_ids.has(peer_id):
+		push_warning("[Network] Duplicate Steam authentication request from peer %d" % peer_id)
 		return
 
 	var steam: Node = get_steam_manager()
-	if steam:
-		var result: int = steam.begin_auth_session(steam_id, ticket_buffer)
-		if result == 0:  # k_EBeginAuthSessionResultOK
-			var gm: Node = get_node_or_null("/root/GameManager")
-			if gm:
-				var logger: Variant = gm.get_core_system("logger")
-				if logger and logger.has_method("info"):
-					logger.info(
-						"[Network] Steam Auth started for peer %d (ID: %d)" % [peer_id, steam_id],
-						"Network"
-					)
-			# Store peer_id -> steam_id mapping for cleanup on disconnect
-			_peer_steam_ids[peer_id] = steam_id
-			add_trusted_peer(peer_id)  # Trust pending validation
-		else:
-			push_warning("[Network] Steam Auth failed to start for peer %d: %d" % [peer_id, result])
-			if config and config.server_mode == 1:
-				multiplayer.disconnect_peer(peer_id)
+	var result: int = steam.begin_auth_session(steam_id, ticket_buffer)
+	if result != 0:
+		push_warning("[Network] Steam Auth failed to start for peer %d: %d" % [peer_id, result])
+		multiplayer.disconnect_peer(peer_id)
+		return
 
+	# begin_auth_session only starts asynchronous validation. Do not identify or
+	# trust the peer until Steam emits a successful auth response.
+	_pending_steam_ids[peer_id] = steam_id
+	var gm: Node = get_node_or_null("/root/GameManager")
+	if gm:
+		var logger: Variant = gm.get_core_system("logger")
+		if logger and logger.has_method("info"):
+			logger.info(
+				"[Network] Steam Auth pending for peer %d (ID: %d)" % [peer_id, steam_id],
+				"Network"
+			)
 
 ## Peer disconnected handler
 
@@ -1276,24 +1336,35 @@ func _on_peer_disconnected(id: int) -> void:
 			logger.info("[Network] Peer disconnected: %d" % id, "Network")
 	peer_disconnected.emit(id)
 
-	# End Steam Auth Session if applicable
-	if multiplayer.is_server() and _use_steam:
-		if _peer_steam_ids.has(id):
-			var steam_id: int = _peer_steam_ids[id]
-			var steam: Node = get_steam_manager()
-			if steam and steam.has_method("end_auth_session"):
-				steam.end_auth_session(steam_id)
-				if gm:
-					var logger2: Variant = gm.get_core_system("logger")
-					if logger2 and logger2.has_method("info"):
-						logger2.info(
-							(
-								"[Network] Ended Steam auth session for peer %d (Steam ID: %d)"
-								% [id, steam_id]
-							),
-							"Network"
-						)
-			_peer_steam_ids.erase(id)
+	# Identity and trust must be removed for every transport mode.
+	var steam_id: int = 0
+	var had_auth_session := false
+	if _peer_steam_ids.has(id):
+		steam_id = int(_peer_steam_ids[id])
+		had_auth_session = steam_id > 0
+	if _pending_steam_ids.has(id):
+		if steam_id == 0:
+			steam_id = int(_pending_steam_ids[id])
+		had_auth_session = had_auth_session or steam_id > 0
+	_pending_steam_ids.erase(id)
+	_peer_steam_ids.erase(id)
+	remove_trusted_peer(id)
+
+	# End only sessions that were actually started, and only on the server.
+	if multiplayer.is_server() and had_auth_session and steam_id > 0:
+		var steam: Node = get_steam_manager()
+		if steam and steam.has_method("end_auth_session"):
+			steam.end_auth_session(steam_id)
+			if gm:
+				var logger2: Variant = gm.get_core_system("logger")
+				if logger2 and logger2.has_method("info"):
+					logger2.info(
+						(
+							"[Network] Ended Steam auth session for peer %d (Steam ID: %d)"
+							% [id, steam_id]
+						),
+						"Network"
+					)
 
 	# Clean up rate limit data
 	for limit_data: Dictionary in _rpc_rate_limits.values():
