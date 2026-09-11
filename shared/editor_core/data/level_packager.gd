@@ -364,6 +364,7 @@ static func read_thumbnail(mdsl_path: String) -> Image:
 		reader.close()
 		return null
 	var manifest := LevelManifest.from_dict(parsed)
+	manifest.thumbnail = manifest.thumbnail.replace("\\", "/")
 	if not _is_valid_package_path(manifest.thumbnail) or not reader.file_exists(manifest.thumbnail):
 		reader.close()
 		return null
@@ -523,7 +524,7 @@ static func _find_unresolved_scene_paths(path: String) -> PackedStringArray:
 	var content := file.get_as_text()
 	file.close()
 	var regex := RegEx.new()
-	if regex.compile("(?:res|user)://[^\\\"\\s]+") != OK:
+	if regex.compile("(?:res|user|file|https?)://[^\\\"\\s]+") != OK:
 		unresolved.append("invalid resource path scanner")
 		return unresolved
 	for match: RegExMatch in regex.search_all(content):
