@@ -1,23 +1,25 @@
 extends SceneTree
 
-const DEFAULT_PORT := 7791
 const TIMEOUT_SECONDS := 4.0
 
 var _role := ""
-var _port := DEFAULT_PORT
+var _port := 0
 var _peer: ENetMultiplayerPeer
 var _multiplayer: MultiplayerAPI
 var _timer: SceneTreeTimer
 
 func _initialize() -> void:
 	var args := OS.get_cmdline_user_args()
-	if args.is_empty() or (args[0] != "server" and args[0] != "client"):
-		push_error("Usage: enet_loopback_probe.gd server|client [port]")
+	if args.size() != 2 or (args[0] != "server" and args[0] != "client"):
+		push_error("Usage: enet_loopback_probe.gd server|client port")
 		quit(64)
 		return
 	_role = args[0]
-	if args.size() > 1:
-		_port = int(args[1])
+	_port = int(args[1])
+	if _port < 1 or _port > 65535:
+		push_error("ENet port must be between 1 and 65535")
+		quit(64)
+		return
 	_peer = ENetMultiplayerPeer.new()
 	_multiplayer = MultiplayerAPI.create_default_interface()
 	if _role == "server":
@@ -31,6 +33,7 @@ func _process(_delta: float) -> bool:
 	if _multiplayer:
 		_multiplayer.poll()
 	return false
+
 func _start_server() -> void:
 	var error := _peer.create_server(_port, 1)
 	if error != OK:

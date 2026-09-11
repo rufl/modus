@@ -31,12 +31,20 @@ jobs:
 
       - name: Install GDScript Toolkit
         run: python -m pip install gdtoolkit==4.5.0
+      - name: Install pinned GUT dependency for truth checks
+        run: bash tools/scripts/install-gut.sh
 
       - name: Check GDScript Formatting
-        run: gdformat --check --diff game/ tests/
+        run: gdformat --check --diff game/ shared/ standalone/ tests/
 
       - name: Run GDScript Linting
-        run: gdlint game/ tests/
+        run: gdlint game/ shared/ standalone/ tests/
+
+      - name: Check Project Truth
+        run: bash tools/check_project_truth.sh
+
+      - name: Check Export Smoke Helper
+        run: test -x tools/run_export_smoke.sh
 
   test:
     name: Run GUT Tests
@@ -203,6 +211,10 @@ jobs:
             "build/$EXPORT_PLATFORM/$EXPORT_EXECUTABLE"
           test -s "build/$EXPORT_PLATFORM/$EXPORT_EXECUTABLE"
           test -s "build/$EXPORT_PLATFORM/${EXPORT_EXECUTABLE%.*}.pck"
+          bash tools/run_export_smoke.sh \
+            --platform "$EXPORT_PLATFORM" \
+            --executable "build/$EXPORT_PLATFORM/$EXPORT_EXECUTABLE" \
+            --log "build/$EXPORT_PLATFORM/export-launch.log"
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4

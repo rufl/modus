@@ -24,7 +24,7 @@ summary report for Phase 0 triage.
 
 Options:
   --report PATH              Report output path. Default: docs/AUTOMATED_TEST_LANES_REPORT.md
-  --log-dir DIR              Directory for per-lane logs. Default: /tmp/modus_test_lanes_<timestamp>
+  --log-dir DIR              Directory for per-lane logs. Default: /tmp/modus_test_lanes_<timestamp>_<unique>
   --reuse-logs               Regenerate the report from complete logs in --log-dir without rerunning Godot.
   --include-gui-required     Include tests listed in the GUI-required manifest.
 USAGE
@@ -83,9 +83,12 @@ fi
 
 timestamp="$(date +%Y%m%d_%H%M%S)"
 if [[ -z "$log_dir" ]]; then
-    log_dir="/tmp/modus_test_lanes_${timestamp}"
+    # mktemp makes concurrent/repeated default runs independent without
+    # changing the durable-log behavior of an explicitly supplied directory.
+    log_dir="$(mktemp -d "${TMPDIR:-/tmp}/modus_test_lanes_${timestamp}.XXXXXX")"
+else
+    mkdir -p "$log_dir"
 fi
-mkdir -p "$log_dir"
 
 echo "======================================================================"
 echo "  MODUS TEST SUITE - Batched Execution"

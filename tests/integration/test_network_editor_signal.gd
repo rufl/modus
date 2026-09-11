@@ -1,31 +1,38 @@
 extends ModusGutTestBase
 
-# Test NetworkEditor signal emission with path parameter
-# Validates Critical Issue #2: NetworkEditor Signal Emission Fix
+## Integration tests for NetworkEditor synchronization and payload validation.
 
 var _network_editor: Node = null
-var _signal_received: bool = false
-var _received_path: String = ""
+var _test_scene: Node = null
+var _level_root: Node = null
+var _signal_received := false
+var _received_path := ""
 
 
 func before_each() -> void:
 	await modus_setup()
-	# Get NetworkEditor via NetworkService
-	var ns := NetworkSvc.get_service()
-	if ns and "network_editor" in ns:
-		_network_editor = ns.network_editor
-
-	# If not found via service, try direct path
+	var network_service := NetworkSvc.get_service()
+	if network_service:
+		_network_editor = network_service.network_editor
 	if not _network_editor:
 		_network_editor = get_node_or_null("/root/NetworkService/NetworkEditor")
 
 	_signal_received = false
 	_received_path = ""
+	_install_level_fixture()
 
 
 func after_each() -> void:
 	if _network_editor and _network_editor.node_deleted.is_connected(_on_node_deleted):
 		_network_editor.node_deleted.disconnect(_on_node_deleted)
+	if get_tree().current_scene == _test_scene:
+		get_tree().current_scene = null
+	if is_instance_valid(_test_scene):
+		_test_scene.queue_free()
+	await get_tree().process_frame
+	_test_scene = null
+	_level_root = null
+	_network_editor = null
 	modus_teardown()
 
 
@@ -34,91 +41,70 @@ func test_network_editor_exists() -> void:
 
 
 func test_node_deleted_signal_has_path_parameter() -> void:
+	assert_not_null(_network_editor, "NetworkEditor is required for deletion synchronization")
 	if not _network_editor:
-		_fail_test("NetworkEditor not available")
 		return
 
-	# Connect to the signal
 	_network_editor.node_deleted.connect(_on_node_deleted)
-
-	# Create a test node to delete
-	var test_root: Node = Node.new()
-	test_root.name = "TestLevelRoot"
-	add_child(test_root)
-
-	var test_node: Node = Node.new()
-	test_node.name = "TestNode"
-	test_root.add_child(test_node)
-
+	var test_node := _level_root.get_node("TestNode")
 	var expected_path: NodePath = test_node.get_path()
 
-	# Emit the signal as the NetworkEditor would
-	_network_editor.node_deleted.emit(expected_path)
+	# Invoke the production client-sync handler; do not emit the signal from the test.
+	_network_editor._sync_delete_node("TestNode")
 
-	# Verify signal was received with path parameter
-	assert_true(_signal_received, "node_deleted signal should be emitted")
-	assert_eq(_received_path, str(expected_path), "Signal should include the node path parameter")
-	assert_ne(_received_path, "", "Path parameter should not be empty")
-
-	# Cleanup
-	test_root.free()
+	assert_true(_signal_received, "Deleting a level node should emit node_deleted")
+	assert_eq(_received_path, str(expected_path), "node_deleted should contain the deleted node path")
+	assert_false(_received_path.is_empty(), "Deleted node path should not be empty")
+	await get_tree().process_frame
+	assert_null(_level_root.get_node_or_null("TestNode"))
 
 
 func test_node_deleted_signal_definition() -> void:
+	assert_not_null(_network_editor, "NetworkEditor is required for signal metadata coverage")
 	if not _network_editor:
-		_fail_test("NetworkEditor not available")
 		return
 
-	# Verify the signal exists and has the correct signature
-	var signals_list: Array = _network_editor.get_signal_list()
-	var found_signal: bool = false
+	var signal_info := _network_editor.get_signal_list().filter(
+		func(info: Dictionary) -> bool: return info.get("name") == "node_deleted"
+	)
+	assert_eq(signal_info.size(), 1, "NetworkEditor should define one node_deleted signal")
+	if signal_info.is_empty():
+		return
 
-	for sig: Dictionary in signals_list:
-		if sig["name"] == "node_deleted":
-			found_signal = true
-			# Check that it has exactly one argument
-			assert_eq(sig["args"].size(), 1, "node_deleted signal should have exactly 1 parameter")
-			if sig["args"].size() > 0:
-				assert_eq(sig["args"][0]["name"], "path", "Parameter should be named 'path'")
-				assert_eq(sig["args"][0]["type"], TYPE_STRING, "Parameter should be of type String")
-			break
-
-	assert_true(found_signal, "node_deleted signal should be defined in NetworkEditor")
+	var args: Array = signal_info[0].get("args", [])
+	assert_eq(args.size(), 1, "node_deleted should have exactly one argument")
+	if args.size() == 1:
+		assert_eq(args[0].get("name"), "path")
+		assert_eq(args[0].get("type"), TYPE_STRING)
 
 
 func test_editor_payload_validation_accepts_editor_shapes() -> void:
+	assert_not_null(_network_editor, "NetworkEditor is required for payload validation")
 	if not _network_editor:
-		_fail_test("NetworkEditor not available")
 		return
 
 	assert_true(
-		(
-			_network_editor
-			. _validate_editor_payload(
-				"place_block",
-				{
-					"type": "block_brush",
-					"position": Vector3.ZERO,
-					"size": Vector3.ONE,
-					"material_path": "",
-				}
-			)
+		_network_editor._validate_editor_payload(
+			"place_block",
+			{
+				"type": "block_brush",
+				"position": Vector3.ZERO,
+				"size": Vector3.ONE,
+				"material_path": "",
+			}
 		)
 	)
 	assert_true(
-		(
-			_network_editor
-			. _validate_editor_payload(
-				"place_entity",
-				{
-					"type": "entity_placer",
-					"subtype": "spawn_point",
-					"spawn_type": 1,
-					"enemy_id": "crawler",
-					"position": Vector3.ZERO,
-					"rotation_y": 0.0,
-				}
-			)
+		_network_editor._validate_editor_payload(
+			"place_entity",
+			{
+				"type": "entity_placer",
+				"subtype": "spawn_point",
+				"spawn_type": 1,
+				"enemy_id": "crawler",
+				"position": Vector3.ZERO,
+				"rotation_y": 0.0,
+			}
 		)
 	)
 	assert_true(
@@ -129,22 +115,19 @@ func test_editor_payload_validation_accepts_editor_shapes() -> void:
 
 
 func test_editor_payload_validation_rejects_unsafe_values() -> void:
+	assert_not_null(_network_editor, "NetworkEditor is required for payload validation")
 	if not _network_editor:
-		_fail_test("NetworkEditor not available")
 		return
 
 	assert_false(
-		(
-			_network_editor
-			. _validate_editor_payload(
-				"place_block",
-				{
-					"type": "block_brush",
-					"position": Vector3(INF, 0.0, 0.0),
-					"size": Vector3.ONE,
-					"material_path": "",
-				}
-			)
+		_network_editor._validate_editor_payload(
+			"place_block",
+			{
+				"type": "block_brush",
+				"position": Vector3(INF, 0.0, 0.0),
+				"size": Vector3.ONE,
+				"material_path": "",
+			}
 		)
 	)
 	assert_false(_network_editor._validate_editor_payload("delete_node", "../root"))
@@ -153,6 +136,22 @@ func test_editor_payload_validation_rejects_unsafe_values() -> void:
 			"paint_block", {"path": "Block", "material_path": "user://untrusted.tres"}
 		)
 	)
+
+
+func _install_level_fixture() -> void:
+	_test_scene = Node.new()
+	_test_scene.name = "NetworkEditorIntegrationScene"
+	add_child(_test_scene)
+	_level_root = Node.new()
+	_level_root.name = "LevelRoot"
+	_test_scene.add_child(_level_root)
+	var block := Node.new()
+	block.name = "Block"
+	_level_root.add_child(block)
+	var test_node := Node.new()
+	test_node.name = "TestNode"
+	_level_root.add_child(test_node)
+	get_tree().current_scene = _test_scene
 
 
 func _on_node_deleted(path: String) -> void:
