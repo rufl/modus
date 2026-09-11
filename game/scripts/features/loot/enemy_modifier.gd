@@ -29,11 +29,18 @@ func apply_to(enemy: Node3D) -> void:
 		enemy.apply_stat_multiplier("speed", speed_mult)
 		enemy.apply_stat_multiplier("scale", scale_mult)
 
+	# There is no enemy on-hit dispatch hook yet. Do not silently advertise
+	# an effect that can never reach a victim.
+	if on_hit_effect:
+		push_error(
+			"[EnemyModifier] On-hit effect '%s' is unsupported for enemy modifiers; effect disabled"
+			% on_hit_effect.effect_name
+		)
+
 	# Apply visuals
 	if visual_effect:
 		var vfx: Node3D = visual_effect.instantiate()
 		enemy.add_child(vfx)
-
 	# Apply name prefix (if label exists)
 	# (Logic to be handled by enemy wrapper)
 
@@ -66,14 +73,10 @@ static func create_tank() -> EnemyModifier:
 
 
 static func create_ghostly() -> EnemyModifier:
-	var m: EnemyModifier = EnemyModifier.new()
-	m.modifier_name = "Ghostly"
-	m.prefix = "Ghostly"
-	m.color = Color.AQUAMARINE
-	m.type = ModifierType.UTILITY
-	m.speed_mult = 1.2
-	# Logic would handle transparency
-	return m
+	push_error(
+		"[EnemyModifier] Ghostly is disabled: no safe enemy transparency/phase hook exists"
+	)
+	return null
 
 
 ## Elemental Affixes - Apply status effects on hit
@@ -133,39 +136,26 @@ static func create_poisonous() -> EnemyModifier:
 
 
 static func create_electrified() -> EnemyModifier:
-	var m: EnemyModifier = EnemyModifier.new()
-	m.modifier_name = "Electrified"
-	m.prefix = "Electrified"
-	m.color = Color.YELLOW
-	m.type = ModifierType.ELEMENTAL
-	m.damage_mult = 1.3
-	# Chain damage would need to be handled in combat
-	return m
+	push_error(
+		"[EnemyModifier] Electrified is disabled: no safe chain-damage hook exists"
+	)
+	return null
 
 
 static func create_vampiric() -> EnemyModifier:
-	var m: EnemyModifier = EnemyModifier.new()
-	m.modifier_name = "Vampiric"
-	m.prefix = "Vampiric"
-	m.color = Color.DARK_RED
-	m.type = ModifierType.ELEMENTAL
-	m.health_mult = 1.5
-	# Lifesteal would need to be handled in combat
-	return m
+	push_error(
+		"[EnemyModifier] Vampiric is disabled: no safe damage-dealt/lifesteal hook exists"
+	)
+	return null
 
 
-## Get a random modifier for elite enemies
-
-
+## Get a random supported modifier for elite enemies.
 static func get_random_modifier() -> EnemyModifier:
 	var options: Array[Callable] = [
 		create_frenzied,
 		create_tank,
-		create_ghostly,
 		create_burning,
 		create_freezing,
-		create_poisonous,
-		create_electrified,
-		create_vampiric
+		create_poisonous
 	]
 	return options[randi() % options.size()].call()

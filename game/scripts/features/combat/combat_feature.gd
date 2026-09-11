@@ -106,7 +106,7 @@ func apply_damage(target: Node, damage_info: DamageInfo) -> void:
 			return
 
 	# Calculate final damage
-	var final_damage: float = damage_calculator.calculate(damage_info)
+	var final_damage: float = damage_calculator.calculate(damage_info, target as Node3D)
 
 	# Cap damage at maximum
 	if final_damage > max_damage:

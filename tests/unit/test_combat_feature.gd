@@ -343,3 +343,37 @@ func test_damage_calculation_with_armor_penetration():
 	var final_damage: float = combat_feature.damage_calculator.calculate(damage_info)
 
 	assert_gt(final_damage, 0.0, "Damage with armor penetration should be positive")
+
+
+func test_hitbox_multipliers_use_target_hitbox_metadata() -> void:
+	var calculator := DamageCalculator.new(
+		{},
+		{
+			"hitboxes":
+			{
+				"headshot_multiplier": 2.5,
+				"bodyshot_multiplier": 1.0,
+				"limbshot_multiplier": 0.75
+			}
+		}
+	)
+	add_child_autofree(calculator)
+
+	var target := Node3D.new()
+	add_child_autofree(target)
+	var head := Node3D.new()
+	head.name = "HeadHitbox"
+	head.set_meta("hitbox_type", "head")
+	head.set_meta("hitbox_radius", 0.25)
+	head.position = Vector3(0.0, 2.0, 0.0)
+	target.add_child(head)
+
+	var head_info := DamageInfo.new()
+	head_info.base_amount = 10.0
+	head_info.hit_position = head.global_position
+	assert_almost_eq(calculator.calculate(head_info, target), 25.0, 0.01)
+
+	var body_info := DamageInfo.new()
+	body_info.base_amount = 10.0
+	body_info.hit_position = Vector3.ZERO
+	assert_almost_eq(calculator.calculate(body_info, target), 10.0, 0.01)

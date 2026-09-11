@@ -111,36 +111,50 @@ func _setup_navigation() -> void:
 
 
 ## Configures the component from a dictionary of movement parameters.
-
-
 func configure(config: Dictionary) -> void:
-	if "move_speed" in config:
-		speed = config.move_speed
-	# if "acceleration" in config: acceleration = config.acceleration
+	if config.has("move_speed"):
+		speed = _validated_non_negative(config.move_speed, speed, "move_speed")
+	elif config.has("speed"):
+		speed = _validated_non_negative(config.speed, speed, "speed")
+	if config.has("acceleration"):
+		acceleration = _validated_non_negative(config.acceleration, acceleration, "acceleration")
+	if config.has("rotation_speed"):
+		rotation_speed = _validated_non_negative(config.rotation_speed, rotation_speed, "rotation_speed")
+	if config.has("gravity"):
+		gravity = _validated_non_negative(config.gravity, gravity, "gravity")
 
+
+func _validated_non_negative(value: Variant, fallback: float, field_name: String) -> float:
+	if (typeof(value) != TYPE_FLOAT and typeof(value) != TYPE_INT) or not is_finite(float(value)):
+		push_error("[MovementComponent] Invalid %s; expected a finite non-negative number" % field_name)
+		return fallback
+	var numeric := float(value)
+	if numeric < 0.0:
+		push_error("[MovementComponent] Invalid %s; expected a finite non-negative number" % field_name)
+		return fallback
+	return numeric
 
 ## Configures the component with a single speed value.
 ## [param move_speed]: The movement speed in units per second.
 
-
 func configure_from_data(move_speed: float) -> void:
-	speed = move_speed
+	speed = _validated_non_negative(move_speed, speed, "move_speed")
 
 
 ## Configures advanced movement capabilities (jump, dash) from a dictionary.
-
-
 func configure_advanced(data: Dictionary) -> void:
 	if "can_jump" in data:
-		can_jump = data.can_jump
+		can_jump = bool(data.can_jump)
 	if "jump_height" in data:
-		jump_height = data.jump_height
+		jump_height = _validated_non_negative(data.jump_height, jump_height, "jump_height")
 	if "can_dash" in data:
-		can_dash = data.can_dash
+		can_dash = bool(data.can_dash)
 	if "dash_speed" in data:
-		dash_speed = data.dash_speed
+		dash_speed = _validated_non_negative(data.dash_speed, dash_speed, "dash_speed")
 	if "dash_cooldown" in data:
-		dash_cooldown = data.dash_cooldown
+		dash_cooldown = _validated_non_negative(data.dash_cooldown, dash_cooldown, "dash_cooldown")
+	if "acceleration" in data:
+		acceleration = _validated_non_negative(data.acceleration, acceleration, "acceleration")
 
 
 ## Initiates a jump if the parent body is on the floor.

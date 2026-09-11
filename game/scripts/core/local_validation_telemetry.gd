@@ -5,6 +5,32 @@ extends Node
 
 const DEFAULT_OUTPUT_DIRECTORY := "user://validation_telemetry"
 const SAMPLE_INTERVAL_SECONDS := 5.0
+const ALLOWED_INPUT_ACTIONS: Array[String] = [
+	"up",
+	"down",
+	"left",
+	"right",
+	"jump",
+	"pause",
+	"shoot",
+	"respawn",
+	"capture",
+	"look_up",
+	"look_down",
+	"look_left",
+	"look_right",
+	"chat_toggle",
+	"inventory",
+	"scoreboard",
+	"crouch",
+	"sprint",
+	"aim",
+	"reload",
+	"interact",
+	"quick_weapon_switch",
+	"melee",
+	"skill_tree",
+]
 
 var enabled: bool = false
 var session_id: String = ""
@@ -43,15 +69,28 @@ func _process(_delta: float) -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if not enabled or not event.is_action_type():
+	if not enabled or _log_file == null or not event.is_action_type():
 		return
-	var action := event.as_text().strip_edges()
-	if action.is_empty():
+	if _is_detectable_text_entry(event):
 		return
-	record_event("input_action", {"input": action})
+	for action_name: String in ALLOWED_INPUT_ACTIONS:
+		var pressed := event.is_action_pressed(action_name)
+		var released := event.is_action_released(action_name)
+		if not pressed and not released:
+			continue
+		record_event(
+			"input_action",
+			{
+				"action": action_name,
+				"state": "pressed" if pressed else "released",
+				"strength": event.get_action_strength(action_name),
+			}
+		)
 
 
 func start_session(p_session_id: String = "") -> String:
+	if not enabled:
+		return ""
 	if _log_file != null:
 		return session_id
 	if p_session_id.is_empty():
@@ -69,7 +108,9 @@ func start_session(p_session_id: String = "") -> String:
 	if DirAccess.make_dir_recursive_absolute(directory) != OK and not DirAccess.dir_exists_absolute(directory):
 		push_error("[LocalValidationTelemetry] Failed to create: %s" % directory)
 		return ""
-	log_file_path = directory.path_join("%s.jsonl" % session_id)
+	var available_path := _next_available_log_path(directory, session_id)
+	session_id = available_path.get_file().get_basename()
+	log_file_path = available_path
 	_log_file = FileAccess.open(log_file_path, FileAccess.WRITE)
 	if _log_file == null:
 		push_error("[LocalValidationTelemetry] Failed to open: %s" % log_file_path)
@@ -147,6 +188,24 @@ func _safe_name(value: String) -> String:
 	var cleaned := value.strip_edges().to_lower()
 	cleaned = cleaned.replace(" ", "_").replace("/", "_").replace("\\", "_")
 	return cleaned if not cleaned.is_empty() else "validation_session"
+
+
+func _next_available_log_path(directory: String, base_name: String) -> String:
+	var candidate := directory.path_join("%s.jsonl" % base_name)
+	var suffix := 1
+	while FileAccess.file_exists(candidate):
+		candidate = directory.path_join("%s_%d.jsonl" % [base_name, suffix])
+		suffix += 1
+	return candidate
+
+
+func _is_detectable_text_entry(event: InputEvent) -> bool:
+	if not event is InputEventKey:
+		return false
+	var key_event := event as InputEventKey
+	# Text-entry events have Unicode data without a physical/key mapping. Never
+	# record their text; mapped controls are represented by semantic action names.
+	return key_event.unicode > 0 and key_event.keycode == 0 and key_event.physical_keycode == 0 and key_event.key_label == 0
 
 
 func _env_truthy(name: String) -> bool:

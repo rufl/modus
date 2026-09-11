@@ -103,6 +103,9 @@ func change_state(new_state: EnemyState) -> void:
 func _on_target_spotted(new_target: Node3D) -> void:
 	target = new_target
 	_target_threat[new_target] = maxf(float(_target_threat.get(new_target, 0.0)), 1.0)
+	var behavior := str(get_meta("configured_behavior", "aggressive"))
+	if behavior in ["defensive", "support", "healer", "summoner", "rally"]:
+		return
 	if has_node("ChaseState"):
 		change_state(get_node("ChaseState"))
 

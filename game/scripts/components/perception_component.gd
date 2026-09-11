@@ -113,21 +113,23 @@ func set_vision_config(range_val: float, fov_val: float) -> void:
 
 
 func _scan_environment() -> void:
-	# Use GameManager.get_core_system("entity") for fast O(1) lookup instead of tree traversal
+	# Prefer the entity registry. Group scans are only a fallback for
+	# standalone scenes/tests that have not registered their entities.
 	var gm: Node = get_node_or_null("/root/GameManager")
 	var gs: Node = gm.get_core_system("gameplay") if gm else null
+	var registry: Node = gs.get("entity_registry") if gs else null
+	var registry_available: bool = is_instance_valid(registry)
 
 	var potential_targets: Array[Node] = []
-	if gs and gs.entity_registry:
-		_append_unique_targets(potential_targets, gs.entity_registry.get_all_players())
-
+	if registry_available:
+		_append_unique_targets(potential_targets, registry.get_all_players())
 		if aggressive_against_all:
-			_append_unique_targets(potential_targets, gs.entity_registry.get_all_enemies())
-
-	_append_unique_targets(potential_targets, get_tree().get_nodes_in_group("player"))
-	_append_unique_targets(potential_targets, get_tree().get_nodes_in_group("players"))
-	if aggressive_against_all:
-		_append_unique_targets(potential_targets, get_tree().get_nodes_in_group("enemies"))
+			_append_unique_targets(potential_targets, registry.get_all_enemies())
+	else:
+		_append_unique_targets(potential_targets, get_tree().get_nodes_in_group("player"))
+		_append_unique_targets(potential_targets, get_tree().get_nodes_in_group("players"))
+		if aggressive_against_all:
+			_append_unique_targets(potential_targets, get_tree().get_nodes_in_group("enemies"))
 
 	var best_target: Node3D = null
 	var min_dist: float = vision_range * 1.5

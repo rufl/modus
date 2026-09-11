@@ -97,6 +97,7 @@ var _target_position: Vector3 = Vector3.ZERO
 var _target_rotation: Vector3 = Vector3.ZERO
 var _is_remote: bool = false
 var _synchronizer: MultiplayerSynchronizer
+var _tier_modifier_applied: bool = false
 
 
 func _log(message: String, category: String = "Enemy") -> void:
@@ -260,6 +261,7 @@ func _ready() -> void:
 	if "ai_config" in data:
 		attack_type = data.ai_config.get("attack_type", "melee")
 		can_fly = data.ai_config.get("can_fly", false)
+	_apply_configured_tier_modifier(data)
 
 	# 6. Build display name (used for targeting HUD only, no overhead nameplate)
 	_build_display_name()
@@ -340,6 +342,25 @@ func _ready() -> void:
 	# Listen for debug toggle
 	if gs and gs.match_service:
 		gs.match_service.debug_vision_toggled.connect(_on_debug_vision_toggled)
+
+
+func _apply_configured_tier_modifier(data: Dictionary) -> void:
+	if _tier_modifier_applied:
+		return
+	var modifier_key := "tier_boss_modifier" if tier >= 4 else "tier_elite_modifier" if tier >= 3 else ""
+	if modifier_key.is_empty() or not data.get(modifier_key) is Dictionary:
+		return
+
+	var modifier_data: Dictionary = data[modifier_key]
+	var modifier := EnemyModifier.new()
+	modifier.modifier_name = modifier_key
+	modifier.prefix = ""
+	modifier.health_mult = float(modifier_data.get("health_mult", 1.0))
+	modifier.damage_mult = float(modifier_data.get("damage_mult", 1.0))
+	modifier.speed_mult = float(modifier_data.get("speed_mult", 1.0))
+	modifier.scale_mult = float(modifier_data.get("scale", 1.0))
+	apply_modifier(modifier)
+	_tier_modifier_applied = true
 
 
 func _load_config(_file_path: String = "") -> void:

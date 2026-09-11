@@ -2914,3 +2914,69 @@ func test_lod_affects_ai_update_rate() -> void:
 	else:
 		# LOD is optional, just verify update rate exists
 		assert_true("_ai_update_rate" in enemy, "Enemy should have AI update rate control")
+
+
+func test_support_behavior_selects_healer_state() -> void:
+	var body := CharacterBody3D.new()
+	add_child_autofree(body)
+	var controller := EnemyAIController.new()
+	body.add_child(controller)
+	EnemyAIFactory.create_states(
+		controller,
+		{
+			"role": "support",
+			"ai_config": {"behavior": "aggressive"},
+			"abilities": {"heal_allies": true, "heal_radius": 6.0, "heal_amount": 12.0}
+		}
+	)
+	assert_eq(controller.get_meta("configured_behavior"), "support")
+	assert_eq(controller.initial_state.name, "HealerState")
+
+
+
+func test_support_behavior_does_not_chase_spotted_targets() -> void:
+	var body := CharacterBody3D.new()
+	add_child_autofree(body)
+	var controller := EnemyAIController.new()
+	body.add_child(controller)
+	EnemyAIFactory.create_states(
+		controller,
+		{
+			"role": "support",
+			"ai_config": {"behavior": "aggressive"},
+			"abilities": {"heal_allies": true}
+		}
+	)
+	controller.ensure_initial_state()
+	var target := Node3D.new()
+	add_child_autofree(target)
+	controller._on_target_spotted(target)
+	assert_eq(controller.current_state.name, "HealerState")
+
+func test_perception_prefers_registry_over_duplicate_group_scan() -> void:
+	var gm: Node = get_node_or_null("/root/GameManager")
+	var gameplay: Node = gm.get_core_system("gameplay") if gm else null
+	var registry: Node = gameplay.entity_registry if gameplay else null
+	if not registry:
+		pass_test("Entity registry unavailable")
+		return
+
+	var group_only := Node3D.new()
+	group_only.name = "GroupOnlyTarget"
+	group_only.position = Vector3(0.5, 0.0, 0.0)
+	group_only.add_to_group("player")
+	add_child_autofree(group_only)
+
+	var registered := Node3D.new()
+	registered.name = "RegisteredTarget"
+	registered.position = Vector3(2.0, 0.0, 0.0)
+	registered.add_to_group("player")
+	add_child_autofree(registered)
+	registry.register_player(987654, registered)
+	_mark_ai_test_target(group_only)
+	_mark_ai_test_target(registered)
+
+	perception_component.vision_range = 20.0
+	perception_component.detection_radius = 20.0
+	perception_component._scan_environment()
+	assert_eq(ai_controller.target, registered)

@@ -17,7 +17,8 @@ var editor_state: Node = null
 var level_root: Node3D = null
 var grid_system: Node = null
 var undo_system: Object = null
-
+var hotbar: Node = null
+var asset_registry: Node = null
 
 func _ready() -> void:
 	parser = CommandParser.new()
@@ -25,11 +26,13 @@ func _ready() -> void:
 	visible = false
 
 
-func setup(state: Node, level: Node3D = null, grid: Node = null) -> void:
+func setup(
+	state: Node, level: Node3D = null, grid: Node = null, registry: Node = null
+) -> void:
 	editor_state = state
 	level_root = level
 	grid_system = grid
-
+	asset_registry = registry
 
 func _create_ui() -> void:
 	# Main styling
@@ -262,53 +265,119 @@ func _execute_command(result: CommandParser.ParseResult) -> void:
 
 
 func _exec_fill(args: Array) -> Dictionary:
+	if args.size() < 7 or args.size() > 8:
+		return {"success": false, "message": "Invalid fill arguments"}
+
 	var block_id: String = args[0]
 	var pos1: Vector3 = parser.resolve_coordinates(args[1], args[2], args[3])
 	var pos2: Vector3 = parser.resolve_coordinates(args[4], args[5], args[6])
-	var mode: String = args[7] if args.size() > 7 else "replace"
+	var mode: String = args[7].to_lower() if args.size() > 7 else "replace"
+
+	if mode != "replace" and mode != "hollow" and mode != "outline":
+		return {"success": false, "message": "Unsupported fill mode: %s" % mode}
 
 	if not level_root:
 		return {"success": false, "message": "No level root set"}
 
-	# Calculate bounds
+	# Calculate inclusive bounds in grid-cell coordinates.
 	var min_pos := Vector3(minf(pos1.x, pos2.x), minf(pos1.y, pos2.y), minf(pos1.z, pos2.z))
 	var max_pos := Vector3(maxf(pos1.x, pos2.x), maxf(pos1.y, pos2.y), maxf(pos1.z, pos2.z))
 
-	# Get grid size
 	var cell_size: float = 1.0
 	if grid_system and grid_system.has_method("get_cell_size"):
 		cell_size = grid_system.get_cell_size()
+	elif grid_system and "cell_size" in grid_system:
+		cell_size = grid_system.cell_size
+	if cell_size <= 0.0 or not is_finite(cell_size):
+		return {"success": false, "message": "Invalid grid cell size"}
 
-	# Calculate block count
-	var size: Vector3 = max_pos - min_pos + Vector3.ONE * cell_size
-	var count_x: int = int(size.x / cell_size)
-	var count_y: int = int(size.y / cell_size)
-	var count_z: int = int(size.z / cell_size)
-	var total_blocks: int = count_x * count_y * count_z
+	var count_x := maxi(1, int(round((max_pos.x - min_pos.x) / cell_size)) + 1)
+	var count_y := maxi(1, int(round((max_pos.y - min_pos.y) / cell_size)) + 1)
+	var count_z := maxi(1, int(round((max_pos.z - min_pos.z) / cell_size)) + 1)
+	var material: Material = _get_block_material(block_id)
+	var placed := 0
 
-	if mode == "hollow":
-		# Only outer shell
-		var x_faces: int = count_x * count_y * 2
-		var y_faces: int = count_x * (count_z - 2) * 2
-		var z_faces: int = (count_y - 2) * (count_z - 2) * 2
-		total_blocks = x_faces + y_faces + z_faces
-	elif mode == "outline":
-		# Only edges
-		total_blocks = 4 * (count_x + count_y + count_z - 4)
+	for x: int in range(count_x):
+		for y: int in range(count_y):
+			for z: int in range(count_z):
+				var boundary_axes := int(x == 0 or x == count_x - 1)
+				boundary_axes += int(y == 0 or y == count_y - 1)
+				boundary_axes += int(z == 0 or z == count_z - 1)
+				if mode == "hollow" and boundary_axes == 0:
+					continue
+				if mode == "outline" and boundary_axes < 2:
+					continue
 
-	# Create blocks (simplified - just create CSGBox covering the region)
-	var block := CSGBox3D.new()
-	block.size = size
-	block.position = min_pos + size * 0.5
-	block.set_meta("level_editor_placed", true)
-	block.set_meta("fill_command", true)
-	level_root.add_child(block)
+				var block := CSGBox3D.new()
+				block.size = Vector3.ONE * cell_size
+				block.position = min_pos + Vector3(x, y, z) * cell_size
+				block.set_meta("level_editor_placed", true)
+				block.set_meta("fill_command", true)
+				block.set_meta("block_id", block_id)
+				if material:
+					block.material = material
+				level_root.add_child(block)
+				_set_owner_recursive(block, _level_owner())
+				placed += 1
 
-	return {"success": true, "message": "Filled %d blocks with %s" % [total_blocks, block_id]}
+	return {"success": true, "message": "Filled %d blocks with %s (%s)" % [placed, block_id, mode]}
 
 
-## Setblock command
+func _get_block_material(block_id: String) -> Material:
+	var registry := _resolve_asset_registry()
+	if registry and registry.has_method("get_asset_by_id"):
+		var asset: Dictionary = registry.get_asset_by_id(block_id)
+		if asset.get("material") is Material:
+			return asset["material"]
+	return null
 
+
+func _resolve_asset_registry() -> Node:
+	if is_instance_valid(asset_registry):
+		return asset_registry
+	if editor_state:
+		var state_parent := editor_state.get_parent()
+		if state_parent:
+			var sibling := state_parent.get_node_or_null("AssetRegistry")
+			if sibling:
+				asset_registry = sibling
+				return asset_registry
+	var features := get_parent()
+	if features and "asset_registry" in features:
+		var registered: Variant = features.get("asset_registry")
+		if registered is Node:
+			asset_registry = registered
+			return asset_registry
+	return null
+
+
+func _resolve_hotbar() -> Node:
+	if is_instance_valid(hotbar):
+		return hotbar
+	var features := get_parent()
+	if features:
+		if features.has_method("get_hotbar"):
+			var resolved: Control = features.get_hotbar()
+			if resolved:
+				hotbar = resolved
+				return hotbar
+		if "hotbar" in features:
+			var owned: Variant = features.get("hotbar")
+			if owned is Node:
+				hotbar = owned
+				return hotbar
+	return null
+
+
+func _level_owner() -> Node:
+	return level_root
+
+func _set_owner_recursive(node: Node, owner_node: Node) -> void:
+	if not node:
+		return
+	node.owner = owner_node
+	for child: Node in node.get_children():
+		_set_owner_recursive(child, owner_node)
 
 func _exec_setblock(args: Array) -> Dictionary:
 	var pos: Vector3 = parser.resolve_coordinates(args[0], args[1], args[2])
@@ -451,6 +520,8 @@ func _exec_save(args: Array) -> Dictionary:
 	DirAccess.make_dir_recursive_absolute("user://levels")
 
 	var packed := PackedScene.new()
+	for child: Node in level_root.get_children():
+		_set_owner_recursive(child, _level_owner())
 	var err: Error = packed.pack(level_root)
 	if err != OK:
 		return {"success": false, "message": "Failed to pack level: %s" % error_string(err)}
@@ -466,6 +537,9 @@ func _exec_save(args: Array) -> Dictionary:
 
 
 func _exec_load(args: Array) -> Dictionary:
+	if args.size() != 1:
+		return {"success": false, "message": "Invalid load arguments"}
+
 	var filename: String = args[0]
 
 	if not level_root:
@@ -484,15 +558,21 @@ func _exec_load(args: Array) -> Dictionary:
 	if not scene:
 		return {"success": false, "message": "Failed to load level: %s" % path}
 
-	# Clear current level
-	for child: Node in level_root.get_children():
-		child.queue_free()
-
-	# Instantiate loaded level
+	# Instantiate and validate before touching the current level.
 	var instance: Node = scene.instantiate()
-	for child: Node in instance.get_children():
-		child.reparent(level_root)
-	instance.queue_free()
+	if not is_instance_valid(instance):
+		return {"success": false, "message": "Failed to instantiate level: %s" % path}
+
+	var loaded_children: Array[Node] = instance.get_children()
+	var owner_node := _level_owner()
+	for child: Node in level_root.get_children():
+		child.free()
+
+	for child: Node in loaded_children:
+		_set_owner_recursive(child, null)
+		child.reparent(level_root, false)
+		_set_owner_recursive(child, owner_node)
+	instance.free()
 
 	return {"success": true, "message": "Loaded level from %s" % path}
 
@@ -501,12 +581,14 @@ func _exec_load(args: Array) -> Dictionary:
 
 
 func _exec_clear(args: Array) -> Dictionary:
+	if args.size() != 0 and args.size() != 6:
+		return {"success": false, "message": "Invalid clear arguments (expected 0 or 6)"}
 	if not level_root:
 		return {"success": false, "message": "No level root set"}
 
 	var cleared: int = 0
 
-	if args.size() >= 6:
+	if args.size() == 6:
 		# Clear region
 		var min_pos: Vector3 = parser.resolve_coordinates(args[0], args[1], args[2])
 		var max_pos: Vector3 = parser.resolve_coordinates(args[3], args[4], args[5])
@@ -522,12 +604,12 @@ func _exec_clear(args: Array) -> Dictionary:
 					and pos.z >= min_pos.z
 					and pos.z <= max_pos.z
 				):
-					child.queue_free()
+					child.free()
 					cleared += 1
 	else:
 		# Clear all
 		for child: Node in level_root.get_children():
-			child.queue_free()
+			child.free()
 			cleared += 1
 
 	return {"success": true, "message": "Cleared %d objects" % cleared}
@@ -602,10 +684,29 @@ func _exec_clone(args: Array) -> Dictionary:
 
 
 func _exec_give(args: Array) -> Dictionary:
+	if args.size() < 1 or args.size() > 2:
+		return {"success": false, "message": "Invalid give arguments"}
+
 	var item_id: String = args[0]
 	var count: int = args[1] if args.size() > 1 else 1
+	if count <= 0:
+		return {"success": false, "message": "Give count must be positive"}
 
-	# Would integrate with hotbar here
+	var target_hotbar := _resolve_hotbar()
+	var registry := _resolve_asset_registry()
+	if not target_hotbar or not target_hotbar.has_method("add_asset"):
+		return {"success": false, "message": "Hotbar mutation is not supported"}
+	if not registry or not registry.has_method("get_asset_by_id"):
+		return {"success": false, "message": "Asset registry is not available"}
+
+	var asset: Dictionary = registry.get_asset_by_id(item_id)
+	if asset.is_empty():
+		return {"success": false, "message": "Unknown item: %s" % item_id}
+	asset["count"] = count
+	var slot: int = target_hotbar.add_asset(asset)
+	if slot < 0:
+		return {"success": false, "message": "Failed to add %s to hotbar" % item_id}
+
 	return {"success": true, "message": "Added %dx %s to hotbar" % [count, item_id]}
 
 

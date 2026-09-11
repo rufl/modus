@@ -209,6 +209,11 @@ func parse(input: String) -> ParseResult:
 		raw_args.append(tokens[i])
 
 	# Validate arg count
+	if result.command == "clear" and raw_args.size() != 0 and raw_args.size() != 6:
+		result.error_msg = "Invalid argument count (expected exactly 0 or 6)"
+		result.usage = cmd_def.usage
+		return result
+
 	if raw_args.size() < cmd_def.min_args:
 		result.error_msg = "Too few arguments (expected at least %d)" % cmd_def.min_args
 		result.usage = cmd_def.usage
@@ -218,7 +223,6 @@ func parse(input: String) -> ParseResult:
 		result.error_msg = "Too many arguments (expected at most %d)" % cmd_def.max_args
 		result.usage = cmd_def.usage
 		return result
-
 	# Parse and validate each argument
 	for i: int in range(raw_args.size()):
 		var arg_type: String = "string"

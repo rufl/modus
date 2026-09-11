@@ -21,7 +21,7 @@ func _init(damage_type_config: Dictionary = {}, config: Dictionary = {}) -> void
 
 
 ## Calculate final damage amount with all modifiers applied
-func calculate(damage_info: DamageInfo) -> float:
+func calculate(damage_info: DamageInfo, target: Node3D = null) -> float:
 	var base_damage: float = damage_info.base_amount
 
 	# Apply critical hit multiplier
@@ -42,7 +42,7 @@ func calculate(damage_info: DamageInfo) -> float:
 		damage_info.knockback_multiplier = type_config.get("knockback_multiplier", 1.0)
 
 	# Apply hitbox multiplier (headshot, bodyshot, limbshot)
-	base_damage = _apply_hitbox_multiplier(base_damage, damage_info)
+	base_damage = _apply_hitbox_multiplier(base_damage, damage_info, target)
 
 	# Ensure minimum damage
 	var min_damage: float = combat_config.get("min_damage", 0.1)
@@ -74,21 +74,113 @@ func _apply_armor_penetration(damage: float, armor_pen: float, damage_info: Dama
 	return damage * (1.0 - clampf(reduction, 0.0, max_reduction))
 
 
-## Apply hitbox multiplier based on hit location
-func _apply_hitbox_multiplier(damage: float, _damage_info: DamageInfo) -> float:
+## Apply hitbox multiplier based on hit location.
+##
+## Hit detection supplies a world-space impact point. When a target exposes
+## hitbox metadata, use it first; the positional fallback keeps legacy body
+## shots working for targets without explicit hitbox nodes.
+func _apply_hitbox_multiplier(
+	damage: float, damage_info: DamageInfo, target: Node3D = null
+) -> float:
 	var hitbox_config: Dictionary = combat_config.get("hitboxes", {})
+	var multiplier: float = float(hitbox_config.get("bodyshot_multiplier", 1.0))
+	if (
+		not is_instance_valid(target)
+		or damage_info.hit_position == Vector3.ZERO
+		or not damage_info.hit_position.is_finite()
+	):
+		return damage * multiplier
 
-	# Check if we have hit location information
-	# This would typically come from the hit detection system
-	# For now, we'll use a simple approach based on hit_position
-
-	# Default to bodyshot multiplier
-	var multiplier: float = hitbox_config.get("bodyshot_multiplier", 1.0)
-
-	# In a full implementation, you would determine the hit location
-	# based on the hit_position relative to the target's skeleton/hitboxes
+	var location: String = _resolve_hitbox_location(target, damage_info.hit_position)
+	match location:
+		"head":
+			multiplier = float(hitbox_config.get("headshot_multiplier", multiplier))
+		"limb", "arm", "leg":
+			multiplier = float(hitbox_config.get("limbshot_multiplier", multiplier))
 
 	return damage * multiplier
+
+
+func _resolve_hitbox_location(target: Node3D, hit_position: Vector3) -> String:
+	if target.has_method("get_hitbox_at_position"):
+		var resolved: Variant = target.get_hitbox_at_position(hit_position)
+		var method_location: String = _hitbox_location_from_value(resolved)
+		if not method_location.is_empty():
+			return method_location
+
+	var configured_hitboxes: Variant = target.get("hitboxes")
+	if configured_hitboxes is Dictionary:
+		for key: Variant in configured_hitboxes:
+			var hitbox: Variant = configured_hitboxes[key]
+			var location: String = _hitbox_location_from_value(hitbox)
+			if location.is_empty():
+				location = _normalize_hitbox_name(str(key))
+			if not location.is_empty() and _hitbox_contains_point(hitbox, target, hit_position):
+				return location
+
+	for child: Node in target.find_children("*", "Node3D", true, false):
+		var location := _hitbox_location_from_value(child)
+		if location.is_empty():
+			continue
+		var radius: float = float(child.get_meta("hitbox_radius", 0.5))
+		if child.global_position.distance_squared_to(hit_position) <= radius * radius:
+			return location
+
+	# Last-resort humanoid proportions for legacy targets with no hitbox data.
+	var local_hit: Vector3 = target.to_local(hit_position)
+	if local_hit.y >= 1.5:
+		return "head"
+	if local_hit.y <= 0.75 or absf(local_hit.x) >= 0.45:
+		return "limb"
+	return "body"
+
+
+func _hitbox_location_from_value(value: Variant) -> String:
+	if value is Node:
+		var node: Node = value
+		for key: String in ["hitbox_type", "hitbox", "body_part", "location"]:
+			if node.has_meta(key):
+				var metadata_location := _normalize_hitbox_name(str(node.get_meta(key)))
+				if not metadata_location.is_empty():
+					return metadata_location
+		return _normalize_hitbox_name(node.name)
+	if value is Dictionary:
+		var data: Dictionary = value
+		for key: String in ["hitbox_type", "hitbox", "body_part", "location", "type"]:
+			if data.has(key):
+				var dictionary_location := _normalize_hitbox_name(str(data[key]))
+				if not dictionary_location.is_empty():
+					return dictionary_location
+	return _normalize_hitbox_name(str(value)) if value is String else ""
+
+
+func _normalize_hitbox_name(value: String) -> String:
+	var normalized := value.to_lower().strip_edges()
+	if normalized.contains("head"):
+		return "head"
+	if normalized.contains("limb") or normalized.contains("arm"):
+		return "limb"
+	if normalized.contains("leg") or normalized.contains("foot") or normalized.contains("hand"):
+		return "limb"
+	if normalized in ["body", "torso", "chest", "spine", "hips"]:
+		return "body"
+	return ""
+
+
+func _hitbox_contains_point(value: Variant, target: Node3D, hit_position: Vector3) -> bool:
+	if value is Node3D:
+		var node: Node3D = value
+		var radius: float = float(node.get_meta("hitbox_radius", 0.5))
+		return node.global_position.distance_squared_to(hit_position) <= radius * radius
+	if not value is Dictionary:
+		return false
+	var data: Dictionary = value
+	var center: Variant = data.get("center", data.get("position", null))
+	if center is Vector3:
+		var radius := float(data.get("radius", 0.5))
+		var world_center: Vector3 = target.global_transform * center
+		return world_center.distance_squared_to(hit_position) <= radius * radius
+	return true
 
 
 ## Get damage type name from enum value
