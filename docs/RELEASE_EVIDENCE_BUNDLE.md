@@ -2,8 +2,8 @@
 
 > **Documentation status: maintained reference.** These artifacts prove only the named capture boundary; they are not manual gameplay, performance, multiplayer, or release approval.
 
-**Updated:** August 4, 2026
-**Status:** EVIDENCE INDEX COMPLETE — release approval remains blocked by manual evidence, provenance, packaging, and external/runtime clearance
+**Updated:** September 11, 2026
+**Status:** EVIDENCE INDEX COMPLETE — release approval remains blocked by manual evidence, packaging, and external/runtime clearance
 
 This published index preserves dated observations and curated media; it is not a fresh verification run. Raw `logs/`, generated reports, and historical session documents remain local-only and are absent from fresh clones. See [report regeneration](DOCUMENTATION_TRUTH.md#regenerating-local-reports) for commands and prerequisites. The August menu images predate the subsequent artwork removal and do not prove the current rendered menu.
 
@@ -98,4 +98,4 @@ Published context: [Performance Baseline Proof](PERFORMANCE_BASELINE_PROOF.md). 
 - Additional display-synchronized benchmark rows covering declared hardware and modes.
 - ~~A known-limits matrix for networking, Steam, editor, performance, and content scope.~~ See [Known-Limits Matrix](KNOWN_LIMITS_MATRIX.md); it is source/evidence-bounded and does not replace runtime proof.
 - Provenance clearance is complete for the current 218-row ledger. The twelve private Suno tracks were removed; Quaternius animation assets and derived resources are cleared under CC0; author-confirmed project resources, liquid/skybox assets, editor icons, shaders, effect textures, weapon icons, and retro prototype textures are classified MIT; the map overview is a MODUS capture artifact.
-- Installer inspection remains blocked: the repository contains no installer definition/toolchain. Executable export and resource notice proof are complete for all three configured presets; Windows runtime, Steam/Workshop service proof, manual evidence, and provenance clearance remain open.
+- Installer inspection remains blocked: the repository contains no installer definition/toolchain. Executable export and resource notice proof are complete for all three configured presets; target-Windows runtime, Steam/Workshop service proof, and manual evidence remain open.

@@ -63,15 +63,15 @@ Always handle a missing optional service. Feature profiles can leave services un
 The repository contains ENet hosting/joining, rate limits, an RPC whitelist, movement validation/prediction, a dedicated-server node, Steam adapter code, and multiplayer feature modules. Current proof is narrower:
 
 - profile startup passes;
-- September focused local real-ENet lifecycle/inventory/late-join observations supersede older sandbox socket failures for that narrow scope; latency/reconnect/dedicated-client proof remains open;
-- real Steam/GodotSteam has no current runtime evidence;
+- September focused local real-ENet lifecycle, inventory, reconnect, late-join, and authority-validation observations supersede older sandbox socket failures for those narrow scopes; representative latency, dedicated-client, and hostile-client proof remains open;
+- authenticated local GodotSteam initialization has been observed; two-account Steam, Workshop, relay/P2P, and public-service proof remain open;
 - source-level authority and validation code is not a security certification.
 
 See `docs/MULTIPLAYER_AUTHORITY_MODEL.md`, `docs/technical/STEAM_INTEGRATION.md`, and the generated readiness report.
 
 ## Editor and modding boundary
 
-The embedded editor has focused save/export/reload round-trip proof. The standalone editor preset and scene exist, but its UI has explicit TODOs for undo/redo and mod export, and no current exported-app evidence. Local Workshop simulation proves filesystem behavior only; it does not prove Steam Workshop.
+The embedded editor has focused save/export/reload round-trip proof. The standalone editor now has focused runtime history and `.mdsl` export coverage, but native exported-app startup, full graphical workflow, and real Steam Workshop transfer remain unproven. Local Workshop simulation proves filesystem behavior only; it does not prove Steam Workshop.
 
 The sample mod and package validator provide bounded SDK evidence. They do not establish arbitrary asset replacement, packaging, distribution, or compatibility for every mod shape.
 

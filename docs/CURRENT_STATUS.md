@@ -160,11 +160,11 @@ This source inventory is not equivalent to complete runtime or user-experience p
 
 The two-count is the scope of `tools/validate_production_readiness.sh`, not exhaustive release or legal clearance. The current 218-row provenance ledger clears all 218 assets; the twelve private Suno tracks were removed rather than distributed, the Quaternius Universal Animation Library plus derived Godot resources are cleared under CC0, and the author-confirmed liquid, skybox, resource, model, editor-icon, shader, effect-texture, weapon-icon, and retro prototype assets are classified MIT. The generated map overview is classified as a MODUS capture artifact.
 
-Additional open proof: network latency and automatic reconnect, real Steam/GodotSteam, live complete editor UI, real Workshop publication, display-synchronized performance, and a refreshed full aggregate. Local real-ENet behavior and all four formerly missing props now have focused proof; stock Godot still requires the explicit audio patch described in [Known Limits](KNOWN_LIMITS_MATRIX.md).
+Additional open proof: representative WAN latency, hostile-client soak, dedicated-client sessions, two-account Steam, real Workshop publication, live complete editor UI, display-synchronized performance, and installer/runtime clearance. Local real-ENet behavior, authenticated local Steam initialization, the refreshed full aggregate, and all four formerly missing props have focused proof; stock Godot still requires the explicit audio patch described in [Known Limits](KNOWN_LIMITS_MATRIX.md).
 
 ## Project Inventory
 
-| Metric | Retained August 4 inventory |
+| Metric | Current retained inventory |
 | --- | ---: |
 | Project autoloads | 2 |
 | Unit test files | 71 |

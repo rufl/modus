@@ -16,7 +16,7 @@ Use these maintained files when documents disagree:
 4. [Root Changelog](../CHANGELOG.md) for completed or retired work and its historical proof scope.
 5. [Release Evidence Bundle](RELEASE_EVIDENCE_BUNDLE.md) for curated captures, provenance, and release exclusions.
 
-The August 4 aggregate (1440/1440 tests, 20,475 assertions) is a historical run, not the current suite total. September 9 focused repairs do not refresh that aggregate. Manual gameplay and the release-version gate remain blocked; the validator's two-blocker snapshot is not legal/distribution clearance. Consult the consolidated status rather than duplicating totals in new guides.
+The August 4 aggregate (1440/1440 tests, 20,475 assertions) is historical, not the current suite total. The September 10 refreshed aggregate is 1,568/1,568 tests with 21,718 assertions across 135 scripts; two GUI-required files remain skipped. Manual gameplay and the release-version gate remain blocked; the validator's two-blocker snapshot is not legal/distribution clearance. Consult the consolidated status rather than duplicating totals in new guides.
 
 ## Local-Only Retention
 

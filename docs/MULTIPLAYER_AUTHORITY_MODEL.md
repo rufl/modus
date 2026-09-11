@@ -67,6 +67,6 @@ The exact validator must use server-known state. Never trust a client-provided p
 
 ## Current proof boundary
 
-Focused network-manager, whitelist, movement-sync, and multiplayer compatibility tests exist. [Current Status](CURRENT_STATUS.md) consolidates dated aggregate and September local real-ENet observations; older socket-sandbox reports are historical boundaries, not current capability checks. A refreshed full aggregate, latency/reconnect behavior, and real Steam/GodotSteam proof remain open.
+Focused network-manager, whitelist, movement-sync, reconnect, inventory, late-join, and multiplayer compatibility tests exist. [Current Status](CURRENT_STATUS.md) consolidates the September aggregate and local real-ENet observations; older socket-sandbox reports are historical boundaries, not current capability checks. Representative WAN latency, hostile-client soak, dedicated-client sessions, two-account Steam, and Workshop proof remain open.
 
 Production closure requires a complete RPC audit, hostile-client tests, connected-peer runtime evidence, reconnect/state-recovery tests, and external review appropriate to the threat model.

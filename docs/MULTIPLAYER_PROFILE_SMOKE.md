@@ -20,4 +20,4 @@ The smoke launches Godot headlessly with `MODUS_FEATURE_PROFILE=multiplayer_demo
 - `standard` remains the default single-player profile and does not enable `network`.
 - `multiplayer_demo` explicitly enables `network` plus the core gameplay features required by the pitch path.
 - The profile does not prove two peers connected, Steam availability, or gameplay synchronization.
-- At this July 13 invocation's boundary, ENet host/join was blocked by sandbox localhost socket creation. Later focused local ENet observations are documented in [Current Status](CURRENT_STATUS.md); real Steam/GodotSteam remains unproven.
+- At this July 13 invocation's boundary, ENet host/join was blocked by sandbox localhost socket creation. Later focused local ENet observations and authenticated local GodotSteam initialization are documented in [Current Status](CURRENT_STATUS.md); two-account Steam, Workshop, and representative WAN proof remain open.

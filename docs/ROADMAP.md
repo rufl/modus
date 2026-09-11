@@ -2,7 +2,7 @@
 
 > **Documentation status: maintained reference.** This document expands the root roadmap by product area. It does not promote implementation presence into runtime or release proof.
 
-**Updated:** August 4, 2026
+**Updated:** September 11, 2026
 **Current version:** `0.9.5-beta`  
 **Current readiness:** NOT READY
 
@@ -15,7 +15,7 @@
 - Manual gameplay: 0 imported evidence files / 0.00 recorded hours.
 - Performance: one bounded 66.4-second, 130-sample showcase capture; production targets remain unproven.
 - Release: blocked at `0.9.5-beta`.
-Published readiness remains NOT READY. The two-validator-blocker snapshot covers manual evidence and release version only; 69 of the current 218 provenance-ledger rows remain unverified. Local-only raw evidence and generated outputs do not certify a fresh clone; see [report regeneration](DOCUMENTATION_TRUTH.md#local-only-retention).
+Published readiness remains NOT READY. The two-validator-blocker snapshot covers manual evidence and release version only; the current 218-row provenance ledger is fully cleared, while packaging, external service, and target-runtime proof remain open. Local-only raw evidence and generated outputs do not certify a fresh clone; see [report regeneration](DOCUMENTATION_TRUTH.md#local-only-retention).
 
 See [Documentation Truth](DOCUMENTATION_TRUTH.md) and [Current Status](CURRENT_STATUS.md) for details.
 
@@ -45,7 +45,7 @@ See [Documentation Truth](DOCUMENTATION_TRUTH.md) and [Current Status](CURRENT_S
 | Authority/security | Validation, whitelist, and rate-limit code exist | Adversarial live-client and latency tests |
 | Dedicated server | Headless/config paths exist | Real client/server session evidence |
 | Lag compensation | Shared RTT-bounded player/enemy rewind and combat integration; focused physics/weapon proof passes | Client-view/interpolation calibration and representative high-latency sessions |
-| Steam/GodotSteam | Conditional structures exist | Authenticated client/app/API proof |
+| Steam/GodotSteam | Conditional structures exist; authenticated local initialization has been observed | Two-account Steam, Workshop, relay/P2P, and public-service proof |
 
 ## Editor, Mods, and Workshop
 

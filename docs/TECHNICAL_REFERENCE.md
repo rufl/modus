@@ -63,7 +63,7 @@ Primary sources:
 
 `NetworkManager` contains hosting/joining, validation, rate limits, snapshots, prediction/reconciliation, and stats methods. `RPCWhitelist.ALLOWED_RPCS` denies unknown method names at the whitelist boundary, but many listed RPCs do not request additional validators. This is not a security audit or production certification.
 
-ENet two-peer and real Steam proof remain open as described in the generated reports.
+Local ENet lifecycle and connected-client observations exist for the documented localhost scope; representative WAN/two-peer sessions and real Steam/Workshop service proof remain open. Authenticated local GodotSteam initialization has been observed separately. This is not a security audit or production certification.
 
 ## Player and movement
 
