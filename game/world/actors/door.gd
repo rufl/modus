@@ -142,6 +142,24 @@ func _perform_close() -> void:
 		anim_player.play_backwards("open")
 
 
+## Restore a persisted state through the same transition handlers used by
+## authoritative gameplay, including animation and state signals.
+func restore_state(locked: bool, open: bool) -> bool:
+	is_locked = locked
+	_update_prompt()
+	if open:
+		# Persisted state must survive the restore frame; normal gameplay can
+		# still auto-close subsequent interactions.
+		var restore_auto_close: bool = auto_close
+		auto_close = false
+		_perform_open()
+		auto_close = restore_auto_close
+	else:
+		_perform_close()
+	_update_prompt()
+	return is_locked == locked and is_open == open
+
+
 func _has_key(interactor: Node) -> bool:
 	# Integrate with Inventory system when available
 	# For now, return false if key required

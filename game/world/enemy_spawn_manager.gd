@@ -181,6 +181,39 @@ func _spawn_special_enemy(ename: String, pos: Vector3, enemy_id: String) -> void
 			)
 
 
+## Prepare an enemy without entering the scene tree. Save restoration uses this
+## to validate and instantiate all replacements before removing live enemies.
+func prepare_enemy_for_restore(pos: Vector3, enemy_id: String, rot: Vector3) -> Node:
+	if not _world:
+		return null
+	var spawn_pos: Vector3 = _find_valid_spawn_position(pos)
+	var enemy: Node3D = EnemyScene.instantiate()
+	if not enemy:
+		return null
+	enemy.name = "Enemy_" + str(Time.get_ticks_msec())
+	var spawn_transform := Transform3D(Basis.from_euler(rot), spawn_pos)
+	enemy.transform = (
+		(_world as Node3D).global_transform.affine_inverse() * spawn_transform
+		if _world is Node3D
+		else spawn_transform
+	)
+	if "enemy_id" in enemy:
+		enemy.enemy_id = enemy_id
+	return enemy
+
+
+func commit_enemy_restore(enemy: Node) -> bool:
+	if not enemy or not _world:
+		return false
+	_world.add_child(enemy, true)
+	_match_stats["enemies_spawned"] += 1
+	var events: Node = GameManager.get_core_system("events")
+	if GameManager and events and events.has_method("emit"):
+		events.emit("enemy_spawned", {"enemy": enemy, "position": enemy.global_position})
+	enemy_spawned.emit(enemy, enemy.global_position)
+	return enemy.is_inside_tree()
+
+
 ## Spawn an enemy at a specific position (public API)
 
 

@@ -104,13 +104,16 @@ func load_game(slot: String = QUICKSAVE_SLOT) -> void:
 		load_failed.emit("Load failed or empty data")
 		return
 
-	# Version check
-	if save_data.get("version", "") != SAVE_VERSION:
-		push_warning("Save version mismatch, attempting load anyway")
+	# Validate every destructive section before changing live nodes.
+	if not _validate_world_data(save_data):
+		load_failed.emit("Invalid save data")
+		return
 
-	await deserialize_world(save_data)
+	if not await deserialize_world(save_data):
+		load_failed.emit("World restoration failed")
+		return
 
-	# Sync to all clients
+	# Sync to all clients only after the authoritative world was restored.
 	_sync_load_to_clients.rpc(save_data)
 
 	GameManager.get_core_system("logger").info(
@@ -122,8 +125,144 @@ func load_game(slot: String = QUICKSAVE_SLOT) -> void:
 @rpc("authority", "call_remote", "reliable")
 func _sync_load_to_clients(save_data: Dictionary) -> void:
 	# Clients receive world state from server
-	await deserialize_world(save_data)
+	if not _validate_world_data(save_data):
+		load_failed.emit("Invalid synchronized save data")
+		return
+	if not await deserialize_world(save_data):
+		load_failed.emit("Synchronized world restoration failed")
+		return
 	load_completed.emit(save_data.get("slot", "unknown"))
+
+
+func _validate_world_data(data: Dictionary) -> bool:
+	if data.has("enemies") and not _validate_enemy_records(data["enemies"]):
+		return false
+	if data.has("items") and not _validate_item_records(data["items"]):
+		return false
+	if data.has("environment") and not _validate_environment_records(data["environment"]):
+		return false
+	if data.has("players") and not _validate_player_records(data["players"]):
+		return false
+	return true
+
+
+func _validate_player_records(data: Variant) -> bool:
+	if not data is Array:
+		return false
+	for record: Variant in data:
+		if not record is Dictionary:
+			return false
+		if not record.has("peer_id") or not record.peer_id is int:
+			return false
+		if record.has("position") and not _is_valid_vec3_array(record.position):
+			return false
+		if record.has("rotation") and not _is_valid_vec3_array(record.rotation):
+			return false
+	return true
+
+
+func _validate_enemy_records(data: Variant) -> bool:
+	if not data is Array:
+		return false
+	var world: Node = get_tree().current_scene
+	if not world or not world.has_method("prepare_enemy_for_restore") \
+			or not world.has_method("commit_enemy_restore"):
+		return false
+	var config: Node = GameManager.get_core_system("config")
+	var max_enemies: int = int(config.get_value("enemies.max_count", 30)) if config else 30
+	if data.size() > max_enemies:
+		return false
+	var data_service: Node = GameManager.get_core_system("data")
+	if not data_service or not data_service.has_method("get_enemy_data"):
+		return false
+	for record: Variant in data:
+		if not record is Dictionary:
+			return false
+		var enemy_id: Variant = record.get("id", "")
+		if not enemy_id is String or enemy_id.strip_edges().is_empty():
+			return false
+		if not _is_valid_vec3_array(record.get("position", null)):
+			return false
+		if not _is_valid_vec3_array(record.get("rotation", null)):
+			return false
+		var health: Variant = record.get("health", 100.0)
+		if (health is bool) or not (health is int or health is float) or not is_finite(float(health)):
+			return false
+		if float(health) < 0.0:
+			return false
+		if data_service.get_enemy_data(enemy_id).is_empty():
+			return false
+	return true
+
+
+func _validate_item_records(data: Variant) -> bool:
+	if not data is Array:
+		return false
+	for record: Variant in data:
+		if not record is Dictionary:
+			return false
+		var scene_path: Variant = record.get("scene_path", "")
+		if not scene_path is String or scene_path.is_empty():
+			return false
+		if not ResourceLoader.exists(scene_path, "PackedScene"):
+			return false
+		if not _is_valid_vec3_array(record.get("position", null)):
+			return false
+		if not _is_valid_vec3_array(record.get("rotation", null)):
+			return false
+		if record.has("name") and not record.name is String:
+			return false
+		if record.has("item_data") and not record.item_data is Dictionary:
+			return false
+		if record.has("owner_peer_id") and not record.owner_peer_id is int:
+			return false
+		if record.has("rarity_tier") and not record.rarity_tier is int:
+			return false
+	return true
+
+
+func _validate_environment_records(data: Variant) -> bool:
+	if not data is Dictionary:
+		return false
+	for key: String in ["doors", "destructibles"]:
+		if data.has(key) and not data[key] is Array:
+			return false
+		for record: Variant in data.get(key, []):
+			if not record is Dictionary:
+				return false
+			var path: Variant = record.get("path", "")
+			if not path is String or path.is_empty():
+				return false
+			var actor: Node = get_node_or_null(path)
+			if not actor:
+				return false
+			if key == "doors":
+				if not actor.has_method("restore_state"):
+					return false
+				if record.has("is_open") and not record.is_open is bool:
+					return false
+				if record.has("is_locked") and not record.is_locked is bool:
+					return false
+			else:
+				if not actor.has_method("restore_state"):
+					return false
+				if record.has("is_broken") and not record.is_broken is bool:
+					return false
+	return true
+
+
+func _is_valid_vec3_array(value: Variant) -> bool:
+	if not value is Array or value.size() != 3:
+		return false
+	for component: Variant in value:
+		if component is bool or not (component is int or component is float):
+			return false
+		if not is_finite(float(component)):
+			return false
+	return true
+
+
+
 
 
 ## Serialize entire world state
@@ -153,28 +292,29 @@ func serialize_world() -> Dictionary:
 ## Deserialize and restore world state
 
 
-# FIXED: Made async to properly await the async deserialization methods
-func deserialize_world(data: Dictionary) -> void:
-	# Match state
+func deserialize_world(data: Dictionary) -> bool:
+	if not _validate_world_data(data):
+		return false
+
+	# Match state and players are non-destructive; enemy/item restoration is
+	# staged before their existing nodes are removed.
 	if data.has("match"):
+		if not data.match is Dictionary:
+			return false
 		_deserialize_match(data["match"])
 
-	# Players
 	if data.has("players"):
 		_deserialize_players(data["players"])
 
-	# Enemies - FIXED: Await the async deserialization to prevent race conditions
-	if data.has("enemies"):
-		await _deserialize_enemies(data["enemies"])
+	if data.has("enemies") and not await _deserialize_enemies(data["enemies"]):
+		return false
 
-	# Items
-	if data.has("items"):
-		await _deserialize_items(data["items"])
+	if data.has("items") and not await _deserialize_items(data["items"]):
+		return false
 
-	# Environment
-	if data.has("environment"):
-		_deserialize_environment(data["environment"])
-
+	if data.has("environment") and not _deserialize_environment(data["environment"]):
+		return false
+	return true
 
 # -------------------------------------------------------------------------
 # Serialization Helpers
@@ -306,33 +446,48 @@ func _serialize_enemies() -> Array:
 	return enemies_data
 
 
-func _deserialize_enemies(data: Array) -> void:
-	# Clear existing enemies first
+func _deserialize_enemies(data: Array) -> bool:
+	var world: Node = get_tree().current_scene
+	if not world or not world.has_method("prepare_enemy_for_restore") \
+			or not world.has_method("commit_enemy_restore"):
+		return false
+
+	# Instantiate every replacement off-tree first. A failed record therefore
+	# cannot erase the currently active enemies.
+	var staged: Array[Dictionary] = []
+	for enemy_data: Dictionary in data:
+		var enemy: Node = world.prepare_enemy_for_restore(
+			_array_to_vec3(enemy_data.position),
+			enemy_data.id,
+			_array_to_vec3(enemy_data.rotation)
+		)
+		if not enemy:
+			for entry: Dictionary in staged:
+				entry.enemy.free()
+			return false
+		staged.append({"enemy": enemy, "health": float(enemy_data.get("health", 100.0))})
+
 	for node in get_tree().get_nodes_in_group("enemies"):
 		node.queue_free()
-
-	# Wait a frame for cleanup
 	await get_tree().process_frame
 
-	# Respawn enemies from save
-	for enemy_data: Dictionary in data:
-		var enemy_id: String = enemy_data.get("id", "basic_enemy")
-		var position: Vector3 = _array_to_vec3(enemy_data.get("position", [0, 0, 0]))
-		var health: float = enemy_data.get("health", 100)
+	for entry: Dictionary in staged:
+		var enemy: Node = entry.enemy
+		if not world.commit_enemy_restore(enemy):
+			for rollback_entry: Dictionary in staged:
+				var rollback_enemy: Node = rollback_entry.enemy
+				if is_instance_valid(rollback_enemy):
+					rollback_enemy.queue_free()
+			return false
+		if "health" in enemy:
+			enemy.health = entry.health
 
-		# Spawn enemy (using world's spawn method if available)
-		var world: Node = get_tree().current_scene
-		if world and world.has_method("spawn_enemy_at"):
-			var enemy: Node = world.spawn_enemy_at(position, enemy_id)
-			if enemy and "health" in enemy:
-				enemy.health = health
-
-	# Optimize AI after spawning all enemies (stagger updates for performance)
 	if multiplayer.is_server():
 		await get_tree().process_frame
 		var ps: Node = GameManager.get_core_system("performance")
 		if ps and ps.has_method("optimize_ai_pathfinding"):
 			ps.optimize_ai_pathfinding()
+	return true
 
 
 func _serialize_items() -> Array:
@@ -359,58 +514,65 @@ func _serialize_items() -> Array:
 	return items_data
 
 
-func _deserialize_items(data: Array) -> void:
-	# Clear existing items first
-	for node in get_tree().get_nodes_in_group("items"):
-		node.queue_free()
+func _deserialize_items(data: Array) -> bool:
+	var world: Node = get_tree().current_scene
+	if not world:
+		return false
 
-	# Wait a frame for cleanup
-	await get_tree().process_frame
-
-	# Spawn items from save data
+	# Fully instantiate and configure replacements before deleting live items.
+	var staged: Array[Node3D] = []
 	var items_per_batch: int = 5
-	var count: int = 0
+	for index: int in range(data.size()):
+		var item_data: Dictionary = data[index]
+		var scene: PackedScene = load(item_data.scene_path) as PackedScene
+		if not scene:
+			for staged_item: Node3D in staged:
+				staged_item.free()
+			return false
+		var item: Node = scene.instantiate()
+		if not item or not item is Node3D:
+			if item:
+				item.free()
+			for staged_item: Node3D in staged:
+				staged_item.free()
+			return false
 
-	for item_data: Dictionary in data:
-		count += 1
-		# Yield every few items to avoid freezing
-		if count % items_per_batch == 0:
+		var item_3d: Node3D = item as Node3D
+		var world_transform := Transform3D(
+			Basis.from_euler(_array_to_vec3(item_data.rotation)),
+			_array_to_vec3(item_data.position)
+		)
+		item_3d.transform = (
+			(world as Node3D).global_transform.affine_inverse() * world_transform
+			if world is Node3D
+			else world_transform
+		)
+		if "pickup_name" in item and item_data.has("name"):
+			item.pickup_name = item_data.name
+		if item is PickupBase:
+			item.item_data = item_data.get("item_data", {}).duplicate(true)
+			item.owner_peer_id = int(item_data.get("owner_peer_id", 0))
+			item.rarity_tier = int(item_data.get("rarity_tier", -1))
+		staged.append(item_3d)
+
+		# Keep batching without exposing a partially restored world.
+		if (index + 1) % items_per_batch == 0:
 			await get_tree().process_frame
 
-		var scene_path: String = item_data.get("scene_path", "")
-		if scene_path.is_empty() or not ResourceLoader.exists(scene_path):
-			continue
+	for node in get_tree().get_nodes_in_group("items"):
+		node.queue_free()
+	await get_tree().process_frame
 
-		var scene: Resource = load(scene_path)
-		if scene:
-			var item: Node3D = scene.instantiate()
-			var world: Node = get_tree().current_scene
-			var world_transform := Transform3D(
-				Basis.from_euler(_array_to_vec3(item_data.get("rotation", [0, 0, 0]))),
-				_array_to_vec3(item_data.get("position", [0, 0, 0]))
-			)
-			item.transform = (
-				(world as Node3D).global_transform.affine_inverse() * world_transform
-				if world is Node3D
-				else world_transform
-			)
-			if "pickup_name" in item and item_data.has("name"):
-				item.pickup_name = item_data["name"]
-			if item is PickupBase:
-				item.item_data = item_data.get("item_data", {}).duplicate(true)
-				item.owner_peer_id = int(item_data.get("owner_peer_id", 0))
-				item.rarity_tier = int(item_data.get("rarity_tier", -1))
-			# Restore all spawn fields before the existing world spawner observes the item.
-			world.add_child(item, true)
-			var loot := LootSvc.get_instance()
-			if loot and item is PickupBase:
-				loot._track_pickup(item, item.owner_peer_id, item.rarity_tier)
-
+	for item: Node3D in staged:
+		world.add_child(item, true)
+		var loot := LootSvc.get_instance()
+		if loot and item is PickupBase:
+			loot._track_pickup(item, item.owner_peer_id, item.rarity_tier)
+	return true
 
 func _serialize_environment() -> Dictionary:
 	var env_data: Dictionary = {"doors": [], "destructibles": []}
 
-	# Doors
 	for door in get_tree().get_nodes_in_group("doors"):
 		env_data["doors"].append(
 			{
@@ -420,27 +582,41 @@ func _serialize_environment() -> Dictionary:
 			}
 		)
 
-	# Destructibles
-	for destr in get_tree().get_nodes_in_group("destructibles"):
+	# DestructibleObject uses the singular group; keep compatibility with
+	# scenes that use the plural group and avoid duplicate records.
+	var destructibles: Array[Node] = []
+	for group_name: String in ["destructible", "destructibles", "breakables"]:
+		for destr: Node in get_tree().get_nodes_in_group(group_name):
+			if destr not in destructibles:
+				destructibles.append(destr)
+	for destr: Node in destructibles:
 		env_data["destructibles"].append(
 			{
 				"path": destr.get_path(),
 				"is_broken": destr.is_broken if "is_broken" in destr else false
 			}
 		)
-
 	return env_data
 
 
-func _deserialize_environment(data: Dictionary) -> void:
-	# Restore doors
+func _deserialize_environment(data: Dictionary) -> bool:
 	for door_data: Dictionary in data.get("doors", []):
-		var door: Node = get_node_or_null(door_data.get("path", ""))
-		if door:
-			if "is_open" in door:
-				door.is_open = door_data.get("is_open", false)
+		var door: Node = get_node_or_null(door_data.path)
+		if not door or not door.has_method("restore_state"):
+			return false
+		if not door.restore_state(
+			bool(door_data.get("is_locked", false)),
+			bool(door_data.get("is_open", false))
+		):
+			return false
 
-
+	for destr_data: Dictionary in data.get("destructibles", []):
+		var destr: Node = get_node_or_null(destr_data.path)
+		if not destr or not destr.has_method("restore_state"):
+			return false
+		if not destr.restore_state(bool(destr_data.get("is_broken", false))):
+			return false
+	return true
 # -------------------------------------------------------------------------
 # Utility Functions
 # -------------------------------------------------------------------------

@@ -154,57 +154,21 @@ func _send_state_update(
 
 
 func apply_movement(input: RefCounted) -> void:
-	## Apply movement from input command (identical on client and server)
-	## CRITICAL: This MUST be deterministic!
-
-	if not player:
+	## Apply one command through the player's shared movement stack.
+	## Both prediction and server replay use this exact path.
+	if not player or not input:
 		return
 
-	# Get movement component if it exists
-	var movement_comp: Node = player.get_node_or_null("MovementComponent")
-
-	if movement_comp and movement_comp.has_method("process_input"):
-		# Use existing movement component
-		movement_comp.process_input(input, input.delta_time)
-	else:
-		# Fallback: Simple movement implementation
-		_simple_movement(input)
+	if player.has_method("process_input_command"):
+		player.process_input_command(input)
 
 
-func _simple_movement(input: RefCounted) -> void:
-	## Simple movement fallback (if no MovementComponent)
-	var delta: float = input.delta_time
-
-	# Get speed
-	var speed := 5.0  # Default
-	if "move_speed" in player:
-		speed = player.move_speed
-	if player.has_method("get_movement_modifier"):
-		speed *= player.get_movement_modifier()
-
-	if input.sprint and "sprint_multiplier" in player:
-		speed *= player.sprint_multiplier
-
-	# Calculate movement direction
-	var move_dir := Vector3(input.move_direction.x, 0.0, input.move_direction.y)
-
-	# Transform to player's facing direction
-	move_dir = move_dir.rotated(Vector3.UP, player.rotation.y)
-
-	# Apply velocity
-	player.velocity.x = move_dir.x * speed
-	player.velocity.z = move_dir.z * speed
-
-	# Gravity
-	if not player.is_on_floor():
-		player.velocity.y -= 9.8 * delta
-
-	# Jump
-	if input.jump and player.is_on_floor():
-		player.velocity.y = 5.0  # Jump strength
-
-	# Move
-	player.move_and_slide()
+func is_prediction_active() -> bool:
+	return (
+		is_physics_processing()
+		and net_config != null
+		and net_config.enable_client_prediction
+	)
 
 
 func _cleanup_acknowledged_inputs() -> void:

@@ -96,14 +96,50 @@ func process_physics(delta: float) -> void:
 	if not player or not input_component:
 		return
 
-	# Input State
-	var is_crouching: bool = input_component.is_crouching
-	var is_sprinting: bool = input_component.is_sprinting and not is_crouching
-	var input_dir: Vector2 = input_component.move_vector
-	var wish_input_jump: bool = input_component.wish_jump
+	_process_movement(
+		delta,
+		input_component.move_vector,
+		input_component.is_crouching,
+		input_component.is_sprinting,
+		input_component.wish_jump
+	)
+
+
+func process_command(input_command: RefCounted, delta: float = -1.0) -> void:
+	## Simulate movement from a captured command, never from live Input state.
+	if not player or not input_command:
+		return
+
+	var command_delta: float = delta
+	if command_delta <= 0.0:
+		command_delta = input_command.delta_time
+	_process_movement(
+		command_delta,
+		input_command.move_direction,
+		input_command.crouch,
+		input_command.sprint,
+		input_command.jump
+	)
+
+
+func _process_movement(
+	delta: float,
+	input_dir: Vector2,
+	is_crouching: bool,
+	is_sprinting: bool,
+	wish_input_jump: bool
+) -> void:
+	if not player:
+		return
+
+	is_sprinting = is_sprinting and not is_crouching
+	if "is_crouching" in player:
+		player.is_crouching = is_crouching
+	if "is_sprinting" in player:
+		player.is_sprinting = is_sprinting
 
 	# Sync state from player (fix for powerup compatibility)
-	if player and "has_double_jump" in player:
+	if "has_double_jump" in player:
 		has_double_jump = player.has_double_jump
 
 	# --- Double Tap to Fly ---
@@ -150,10 +186,7 @@ func process_physics(delta: float) -> void:
 
 	# Jump Buffering
 	if wish_input_jump:
-		# Simple buffer: reset timer if button is held/pressed
-		# Note: "wish_jump" from input is usually polled "is_action_pressed".
-		# We might want "just_pressed" tracked in input component for cleaner buffer.
-		# For now, we mimic original behavior:
+		# A command's jump flag is an edge; local input may keep this held.
 		_jump_buffer_timer = jump_buffer_time
 		_wish_jump = true
 	else:
@@ -183,7 +216,7 @@ func process_physics(delta: float) -> void:
 
 	# Movement Logic
 	if can_fly:
-		_fly_move(wish_dir, delta, speed_mod)
+		_fly_move(wish_dir, delta, speed_mod, wish_input_jump, is_crouching, is_sprinting)
 	elif on_floor:
 		if advanced_movement and "is_sliding" in advanced_movement and advanced_movement.is_sliding:
 			player.velocity = advanced_movement.apply_slide_movement(player.velocity, delta)
@@ -198,16 +231,8 @@ func process_physics(delta: float) -> void:
 	else:
 		_air_move(wish_dir, delta)
 
-	# Note: Slope handling is implicit in move_and_slide via CharacterBody3D settings,
-	# but custom slide/friction can be added here if needed.
-
 	# Track velocity for next frame to detect landing impact speed.
-	# Godot's move_and_slide updates velocity, so we track Y from the previous frame
-	# to know how fast we were falling before hitting the ground.
-	# The player.velocity is modified here by air/ground move functions.
-
 	_last_velocity_y = player.velocity.y
-
 
 func _try_toggle_fly_mode() -> bool:
 	# Check for permission (God Mode or already flying to toggle off?)
@@ -320,7 +345,14 @@ func _air_move(wish_dir: Vector3, delta: float) -> void:
 	_accelerate(wish_dir, air_speed_cap * modifier, accel, delta)
 
 
-func _fly_move(wish_dir: Vector3, delta: float, speed_mod: float = 1.0) -> void:
+func _fly_move(
+	wish_dir: Vector3,
+	delta: float,
+	speed_mod: float = 1.0,
+	wish_input_jump: bool = false,
+	is_crouching: bool = false,
+	is_sprinting: bool = false
+) -> void:
 	const FLY_SPEED: float = 15.0
 	const FLY_ACCEL: float = 8.0
 	const FLY_FRICTION: float = 3.0
@@ -330,9 +362,9 @@ func _fly_move(wish_dir: Vector3, delta: float, speed_mod: float = 1.0) -> void:
 		fly_speed *= player.get_movement_modifier()
 
 	var vertical_dir: float = 0.0
-	if input_component.wish_jump:
+	if wish_input_jump:
 		vertical_dir = 1.0
-	elif input_component.is_crouching or input_component.is_sprinting:
+	elif is_crouching or is_sprinting:
 		vertical_dir = -1.0
 
 	var full_wish_dir: Vector3 = wish_dir + Vector3(0, vertical_dir, 0)

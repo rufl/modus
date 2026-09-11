@@ -14,6 +14,44 @@ signal pool_stats_updated(stats: Dictionary)
 @export var shell_casing_pool_size: int = 100
 @export var enable_stats: bool = false
 
+const MAX_POOL_MULTIPLIER: int = 2
+var _overflow_warning_emitted: Dictionary = {}
+
+
+func _pool_capacity(configured_size: int) -> int:
+	return maxi(configured_size, 0) * MAX_POOL_MULTIPLIER
+
+
+func _can_create(configured_size: int, pool_size: int, active_size: int) -> bool:
+	return pool_size + active_size < _pool_capacity(configured_size)
+
+
+func _warn_pool_exhausted(pool_name: String) -> void:
+	if _overflow_warning_emitted.has(pool_name):
+		return
+	_overflow_warning_emitted[pool_name] = true
+	push_warning("[Effects] %s pool exhausted; preserving active effects" % pool_name)
+
+
+func _deactivate_node(node: Node) -> void:
+	node.process_mode = Node.PROCESS_MODE_DISABLED
+	node.set_process(false)
+	node.set_physics_process(false)
+
+
+func _activate_node(node: Node) -> void:
+	node.process_mode = Node.PROCESS_MODE_INHERIT
+	node.set_process(true)
+	node.set_physics_process(true)
+
+func _trim_or_pool(node: Node, pool: Array, configured_size: int) -> void:
+	# Keep the configured warm pool; trim overflow on return so active effects
+	# are never recycled or displaced to make room.
+	if pool.size() >= maxi(configured_size, 0):
+		node.queue_free()
+		return
+	pool.append(node)
+
 ## Pools
 var _muzzle_flash_pool: Array[Node3D] = []
 var _particle_pool: Array[GPUParticles3D] = []
@@ -44,29 +82,32 @@ func _ready() -> void:
 
 
 func _prewarm_pools() -> void:
-	## Pre-create pool objects to avoid runtime allocation
-	for i in muzzle_flash_pool_size:
+	## Pre-create pool objects to avoid runtime allocation.
+	for i in range(maxi(muzzle_flash_pool_size, 0)):
 		var flash := _create_muzzle_flash_instance()
-		flash.visible = false
 		add_child(flash)
+		flash.visible = false
+		_deactivate_node(flash)
 		_muzzle_flash_pool.append(flash)
 
-	for i in particle_pool_size:
+	for i in range(maxi(particle_pool_size, 0)):
 		var particles := _create_particle_instance()
-		particles.emitting = false
 		add_child(particles)
+		particles.emitting = false
+		_deactivate_node(particles)
 		_particle_pool.append(particles)
 
-	for i in light_pool_size:
+	for i in range(maxi(light_pool_size, 0)):
 		var light := _create_light_instance()
-		light.visible = false
 		add_child(light)
+		light.visible = false
+		_deactivate_node(light)
 		_light_pool.append(light)
 
-	for i in shell_casing_pool_size:
+	for i in range(maxi(shell_casing_pool_size, 0)):
 		var shell := _create_shell_instance()
-		shell.visible = false
 		add_child(shell)
+		_deactivate_shell(shell)
 		_shell_casing_pool.append(shell)
 
 
@@ -137,6 +178,17 @@ func _create_shell_instance() -> RigidBody3D:
 	return shell
 
 
+func _deactivate_shell(shell: RigidBody3D) -> void:
+	shell.visible = false
+	shell.freeze = true
+	shell.sleeping = true
+	shell.set_physics_process(false)
+	shell.process_mode = Node.PROCESS_MODE_DISABLED
+	var collision := shell.get_node_or_null("Collision") as CollisionShape3D
+	if collision:
+		collision.disabled = true
+
+
 ## Muzzle Flash API
 func spawn_muzzle_flash(
 	pos: Vector3, color: Color = Color.ORANGE, scale: float = 1.0, lifetime: float = 0.05
@@ -147,14 +199,18 @@ func spawn_muzzle_flash(
 		flash = _muzzle_flash_pool.pop_back()
 		if enable_stats:
 			_stats.muzzle_flash_reuses += 1
-	else:
+	elif _can_create(
+		muzzle_flash_pool_size, _muzzle_flash_pool.size(), _active_muzzle_flashes.size()
+	):
 		flash = _create_muzzle_flash_instance()
 		add_child(flash)
 		if enable_stats:
 			_stats.muzzle_flash_spawns += 1
+	else:
+		_warn_pool_exhausted("muzzle flash")
+		return null
 
-	# Configure
-	flash.global_position = pos
+	_activate_node(flash)
 	flash.visible = true
 
 	var light := flash.get_node("Light") as OmniLight3D
@@ -194,9 +250,9 @@ func _return_muzzle_flash(flash: Node3D) -> void:
 	if mesh_instance:
 		mesh_instance.set_surface_override_material(0, null)
 
-	flash.visible = false
+	_deactivate_node(flash)
 	_active_muzzle_flashes.erase(flash)
-	_muzzle_flash_pool.append(flash)
+	_trim_or_pool(flash, _muzzle_flash_pool, muzzle_flash_pool_size)
 
 
 ## Particle API
@@ -215,11 +271,16 @@ func spawn_particles(
 		particles = _particle_pool.pop_back()
 		if enable_stats:
 			_stats.particle_reuses += 1
-	else:
+	elif _can_create(particle_pool_size, _particle_pool.size(), _active_particles.size()):
 		particles = _create_particle_instance()
 		add_child(particles)
 		if enable_stats:
 			_stats.particle_spawns += 1
+	else:
+		_warn_pool_exhausted("particle")
+		return null
+
+	_activate_node(particles)
 
 	# Configure
 	particles.global_position = pos
@@ -283,8 +344,9 @@ func _return_particles(particles: GPUParticles3D) -> void:
 	particles.process_material = null
 	particles.draw_pass_1 = null
 	particles.emitting = false
+	_deactivate_node(particles)
 	_active_particles.erase(particles)
-	_particle_pool.append(particles)
+	_trim_or_pool(particles, _particle_pool, particle_pool_size)
 
 
 ## Light API
@@ -301,11 +363,16 @@ func spawn_light(
 		light = _light_pool.pop_back()
 		if enable_stats:
 			_stats.light_reuses += 1
-	else:
+	elif _can_create(light_pool_size, _light_pool.size(), _active_lights.size()):
 		light = _create_light_instance()
 		add_child(light)
 		if enable_stats:
 			_stats.light_spawns += 1
+	else:
+		_warn_pool_exhausted("light")
+		return null
+
+	_activate_node(light)
 
 	# Configure
 	light.global_position = pos
@@ -324,14 +391,14 @@ func spawn_light(
 
 	return light
 
-
 func _return_light(light: OmniLight3D) -> void:
 	if not is_instance_valid(light):
 		return
 
 	light.visible = false
+	_deactivate_node(light)
 	_active_lights.erase(light)
-	_light_pool.append(light)
+	_trim_or_pool(light, _light_pool, light_pool_size)
 
 
 ## Shell Casing API
@@ -348,11 +415,16 @@ func spawn_shell_casing(
 		shell = _shell_casing_pool.pop_back()
 		if enable_stats:
 			_stats.shell_reuses += 1
-	else:
+	elif _can_create(
+		shell_casing_pool_size, _shell_casing_pool.size(), _active_shells.size()
+	):
 		shell = _create_shell_instance()
 		add_child(shell)
 		if enable_stats:
 			_stats.shell_spawns += 1
+	else:
+		_warn_pool_exhausted("shell casing")
+		return null
 
 	# Configure mesh based on type
 	var mesh_instance := shell.get_node("Mesh") as MeshInstance3D
@@ -388,6 +460,10 @@ func spawn_shell_casing(
 	var shape := collision.shape as CylinderShape3D
 	shape.height = shell_mesh.height
 	shape.radius = shell_mesh.top_radius
+	_activate_node(shell)
+	shell.freeze = false
+	shell.sleeping = false
+	collision.disabled = false
 
 	# Position and physics
 	shell.global_position = pos
@@ -414,11 +490,11 @@ func _return_shell(shell: RigidBody3D) -> void:
 	if mesh_instance:
 		mesh_instance.mesh = null
 
-	shell.visible = false
+	_deactivate_shell(shell)
 	shell.linear_velocity = Vector3.ZERO
 	shell.angular_velocity = Vector3.ZERO
 	_active_shells.erase(shell)
-	_shell_casing_pool.append(shell)
+	_trim_or_pool(shell, _shell_casing_pool, shell_casing_pool_size)
 
 
 ## Stats API

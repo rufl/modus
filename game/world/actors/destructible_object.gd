@@ -38,6 +38,22 @@ func take_damage(damage_info: Variant) -> void:
 		break_object()
 
 
+
+
+func restore_state(broken: bool) -> bool:
+	if broken:
+		break_object()
+		return is_broken
+
+	is_broken = false
+	health = max_health
+	if collision_shape:
+		collision_shape.set_deferred("disabled", false)
+	if mesh_instance:
+		mesh_instance.visible = true
+	return not is_broken
+
+
 func break_object() -> void:
 	if is_broken:
 		return

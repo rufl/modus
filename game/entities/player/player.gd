@@ -19,6 +19,9 @@ const COMBAT_SERVICE_SCRIPT = preload("res://game/scripts/features/combat/combat
 const SPECTATOR_SCENE: PackedScene = preload("res://game/scenes/entities/spectator.tscn")
 const RAGDOLL_SCENE: PackedScene = preload("res://game/entities/common/mannequin_ragdoll.tscn")
 const GlobalEnums = preload("res://game/core/enums.gd")
+const MovementComponentScript = preload(
+	"res://game/entities/player/components/player_movement_component.gd"
+)
 
 # Constants for Magic Numbers
 const FALL_DEATH_Y_THRESHOLD: float = -50.0
@@ -507,16 +510,79 @@ func get_command_look_delta() -> Vector2:
 	return delta
 
 
+func process_input_command(input_command: RefCounted) -> void:
+	## Apply one captured movement command through the normal movement stack.
+	## Actions remain on their authoritative weapon/lifecycle paths.
+	if not input_command or is_dead:
+		return
+
+	var command_delta: float = input_command.delta_time
+	if rope_movement and rope_movement.is_active:
+		rope_movement.process_physics(command_delta)
+		return
+
+	var command_movement: Node = movement_component
+	if not command_movement:
+		command_movement = _ensure_command_movement_component()
+	if command_movement and command_movement.has_method("process_command"):
+		command_movement.process_command(input_command, command_delta)
+		move_and_slide()
+
+
+func _ensure_command_movement_component() -> Node:
+	if movement_component:
+		return movement_component
+	if not MovementComponentScript:
+		return null
+
+	movement_component = MovementComponentScript.new()
+	movement_component.name = "MovementComponent"
+	add_child(movement_component)
+	movement_component.setup(
+		self,
+		null,
+		rocket_jump_system,
+		advanced_movement,
+		rope_movement
+	)
+	return movement_component
+
+
+func _process_authoritative_actions() -> void:
+	## Keep weapon actions on the existing authoritative path.
+	if not input_component or not weapon_manager or is_downed:
+		return
+
+	var fire_input: Dictionary = input_component.get_fire_input()
+	weapon_manager.fire(fire_input.is_pressed, fire_input.just_pressed)
+
+	if input_component.wish_reload:
+		weapon_manager.start_reload()
+		input_component.wish_reload = false
+
+
 func _physics_process(delta: float) -> void:
 	if get_tree().paused:
 		return
 
 	if _melee_cooldown > 0:
 		_melee_cooldown -= delta
+	if not is_dead:
+		_process_authoritative_actions()
+
 
 	# A predicting client owns its movement; disabled prediction keeps normal physics.
 	var predictor: Node = get_node_or_null("PlayerMovementPredictor")
-	if predictor and predictor.is_physics_processing():
+	var prediction_active: bool = (
+		predictor != null
+		and predictor.has_method("is_prediction_active")
+		and predictor.is_prediction_active()
+	)
+	var movement_state_machine: Node = get_node_or_null("MovementStateMachine")
+	if movement_state_machine:
+		# State scripts read live input and must not add a second movement step.
+		movement_state_machine.set_physics_process(not prediction_active)
+	if prediction_active:
 		# The predictor handles its own movement application and server sync.
 		# When using prediction, we skip the legacy physics process.
 		if not is_multiplayer_authority():
@@ -534,14 +600,6 @@ func _physics_process(delta: float) -> void:
 		rope_movement.process_physics(delta)
 		return
 
-	if input_component:
-		if not is_downed:
-			var fire_input: Dictionary = input_component.get_fire_input()
-			weapon_manager.fire(fire_input.is_pressed, fire_input.just_pressed)
-
-		if input_component.wish_reload and not is_downed:
-			weapon_manager.start_reload()
-			input_component.wish_reload = false
 
 	if movement_component:
 		if input_component:

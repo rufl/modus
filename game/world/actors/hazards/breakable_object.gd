@@ -106,6 +106,23 @@ func receive_damage(amount: float, source: Node = null) -> void:
 		break_object(source)
 
 
+
+
+func restore_state(broken: bool) -> bool:
+	if broken:
+		break_object()
+		return is_broken
+
+	is_broken = false
+	current_health = max_health
+	_damage_taken = 0.0
+	if _visual_mesh:
+		_visual_mesh.visible = true
+	for child: Node in find_children("*", "CollisionShape3D", true, false):
+		(child as CollisionShape3D).set_deferred("disabled", false)
+	return not is_broken
+
+
 ## Break the object and spawn debris
 
 

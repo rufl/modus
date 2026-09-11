@@ -336,6 +336,18 @@ func spawn_enemy_at(
 	return null
 
 
+func prepare_enemy_for_restore(pos: Vector3, enemy_id: String, rot: Vector3) -> Node:
+	if spawn_manager and spawn_manager.has_method("prepare_enemy_for_restore"):
+		return spawn_manager.prepare_enemy_for_restore(pos, enemy_id, rot)
+	return null
+
+
+func commit_enemy_restore(enemy: Node) -> bool:
+	if spawn_manager and spawn_manager.has_method("commit_enemy_restore"):
+		return spawn_manager.commit_enemy_restore(enemy)
+	return false
+
+
 ## Start stuck detection timer for enemies
 
 

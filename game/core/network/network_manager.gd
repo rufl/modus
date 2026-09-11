@@ -34,8 +34,9 @@ signal pre_tick
 signal post_tick
 
 const MAX_PREDICTION_BUFFER_SIZE: int = 64
+const MAX_SERVER_TICKS_PER_FRAME: int = 8
 
-var config: Resource = null  # Will be NetworkConfig type at runtime
+var config: NetworkConfig = null
 var delta_compressor: RefCounted = null  # DeltaCompression instance
 
 var _rpc_rate_limits: Dictionary = {}  # method -> {calls_per_sec, last_call_time}
@@ -65,6 +66,7 @@ var _max_players: int = 16
 var _steam_manager: Node = null
 var _tick_accumulator: float = 0.0
 var _tick_timer: float = 0.0
+var _tick_overrun_warning_active: bool = false
 var _current_tick: int = 0
 var _prediction_buffer: Array[Dictionary] = []
 
@@ -192,15 +194,45 @@ func _load_network_config() -> void:
 	if gm:
 		var cm: Variant = gm.get_core_system("config")
 		if cm and cm.has_method("get_value"):
-			_use_steam = cm.get_value("network.use_steam_networking", false)
-			_fallback_to_enet = cm.get_value("network.fallback_to_enet", true)
-			_default_port = int(cm.get_value("network.default_port", 9999))
-			_max_players = int(cm.get_value("network.max_players", 16))
+			_use_steam = bool(
+				_get_first_config_value(
+					cm, ["network.connection.use_steam", "network.use_steam_networking"], false
+				)
+			)
+			_fallback_to_enet = bool(
+				_get_first_config_value(
+					cm, ["network.connection.fallback_to_enet", "network.fallback_to_enet"], true
+				)
+			)
+			_default_port = int(
+				_get_first_config_value(
+					cm, ["network.connection.default_port", "network.default_port"], 9999
+				)
+			)
+			_max_players = int(
+				_get_first_config_value(
+					cm, ["network.connection.max_players", "network.max_players"], 16
+				)
+			)
 
 			# Load reconnection settings from config
-			_max_reconnect_attempts = int(cm.get_value("network.max_reconnect_attempts", 5))
-			_reconnect_delay_ms = int(cm.get_value("network.reconnect_delay_ms", 2000))
-			_reconnect_window_sec = cm.get_value("network.reconnect_window", 60.0)
+			_max_reconnect_attempts = int(
+				_get_first_config_value(
+					cm, ["network.connection.max_reconnect_attempts", "network.max_reconnect_attempts"], 5
+				)
+			)
+			_reconnect_delay_ms = int(
+				_get_first_config_value(
+					cm, ["network.connection.reconnect_delay_ms", "network.reconnect_delay_ms"], 2000
+				)
+			)
+			_reconnect_window_sec = float(
+				_get_first_config_value(
+					cm,
+					["network.connection.reconnect_window_seconds", "network.reconnect_window"],
+					60.0
+				)
+			)
 
 	if gm:
 		var logger: Variant = gm.get_core_system("logger")
@@ -217,15 +249,25 @@ func _load_network_config() -> void:
 ## Load NetworkConfig resource (new netcode architecture)
 
 
+func _get_first_config_value(
+	cm: Variant, paths: Array[String], default_value: Variant
+) -> Variant:
+	for path: String in paths:
+		var value: Variant = cm.get_value(path, null)
+		if value != null and not value is Dictionary:
+			return value
+	return default_value
+
+
 func _load_network_config_resource() -> void:
 	var config_path: String = "res://game/core/network/default_network_config.tres"
 	var config_script_path: String = "res://game/core/network/network_config.gd"
 
 	var gm: Node = get_node_or_null("/root/GameManager")
+	var created_default: bool = false
 
 	if ResourceLoader.exists(config_path):
-		config = load(config_path)
-		# Override max_players from config if available
+		config = load(config_path) as NetworkConfig
 		if config:
 			_max_players = config.max_players
 		if gm:
@@ -234,12 +276,20 @@ func _load_network_config_resource() -> void:
 				logger.info("[Network] NetworkConfig loaded", "Network")
 				logger.info(config.get_config_summary(), "Network")
 	else:
-		# Create default config using dynamic load
 		var config_script: Script = load(config_script_path)
 		if config_script:
-			config = config_script.new()
+			config = config_script.new() as NetworkConfig
+			created_default = true
 
-	# Synchronize with JSON5 config (Bridge Legacy -> New System)
+	if not config:
+		push_error("[Network] Failed to create NetworkConfig")
+		return
+
+	# Presets provide defaults; explicit JSON settings below always win.
+	if created_default:
+		config.apply_preset(config.active_preset, false)
+
+	# Synchronize with JSON5 config (Bridge Legacy -> New System).
 	if gm:
 		var cm: Variant = gm.get_core_system("config")
 		if cm and cm.has_method("get_value"):
@@ -249,21 +299,33 @@ func _load_network_config_resource() -> void:
 					"[Network] Synchronizing JSON5 config with NetworkResource...", "Network"
 				)
 
-			# Server Settings
-			var json_tick: int = cm.get_value("network.tick_rate", 60)
+			var json_tick: int = int(
+				_get_first_config_value(
+					cm, ["network.tick_rate.server", "network.tick_rate", "system.tick_rate"], 60
+				)
+			)
 			if json_tick != config.server_tick_rate:
 				config.server_tick_rate = json_tick
 				if logger_sync and logger_sync.has_method("info"):
 					logger_sync.info("  - server_tick_rate: %d (from JSON)" % json_tick, "Network")
 
-			var json_max: int = cm.get_value("network.max_players", 16)
+			var json_max: int = int(
+				_get_first_config_value(
+					cm, ["network.connection.max_players", "network.max_players"], 16
+				)
+			)
 			if json_max != config.max_players:
 				config.max_players = json_max
 				if logger_sync and logger_sync.has_method("info"):
 					logger_sync.info("  - max_players: %d (from JSON)" % json_max, "Network")
 
-			# Lag Compensation
-			var json_lag: bool = cm.get_value("network.lag_compensation_enabled", true)
+			var json_lag: bool = bool(
+				_get_first_config_value(
+					cm,
+					["network.lag_compensation.enabled", "network.lag_compensation_enabled"],
+					true
+				)
+			)
 			if json_lag != config.enable_lag_compensation:
 				config.enable_lag_compensation = json_lag
 				if logger_sync and logger_sync.has_method("info"):
@@ -271,8 +333,16 @@ func _load_network_config_resource() -> void:
 						"  - enable_lag_compensation: %s (from JSON)" % json_lag, "Network"
 					)
 
-			# History Duration (ms -> sec)
-			var json_hist_ms: float = cm.get_value("network.lag_compensation_max_ms", 1000.0)
+			var json_hist_ms: float = float(
+				_get_first_config_value(
+					cm,
+					[
+						"network.lag_compensation.max_window_ms",
+						"network.lag_compensation_max_ms"
+					],
+					1000.0
+				)
+			)
 			var json_hist_sec: float = json_hist_ms / 1000.0
 			if not is_equal_approx(json_hist_sec, config.lag_comp_history_duration):
 				config.lag_comp_history_duration = json_hist_sec
@@ -282,19 +352,25 @@ func _load_network_config_resource() -> void:
 						"Network"
 					)
 
-			# Interpolation (if disabled in JSON, disable logic)
-			if not cm.get_value("network.interpolation_enabled", true):
+			var interpolation_enabled: bool = bool(
+				_get_first_config_value(
+					cm,
+					["network.snapshot_buffer.interpolation_enabled", "network.interpolation_enabled"],
+					true
+				)
+			)
+			if not interpolation_enabled:
 				config.interpolation_delay = 0.0
 				if logger_sync and logger_sync.has_method("info"):
 					logger_sync.info("  - interpolation_delay: 0.0s (Disabled via JSON)", "Network")
-		config.active_preset = 2  # NetworkConfig.NetworkPreset.BROADBAND
-		config.apply_preset(config.active_preset)
-		config.apply_preset(config.active_preset)
-		if gm:
-			var logger2: Variant = gm.get_core_system("logger")
-			if logger2 and logger2.has_method("info"):
-				logger2.info("[Network] Created default NetworkConfig", "Network")
 
+	_max_players = config.max_players
+	config.refresh_derived_values()
+
+	if created_default and gm:
+		var logger2: Variant = gm.get_core_system("logger")
+		if logger2 and logger2.has_method("info"):
+			logger2.info("[Network] Created default NetworkConfig", "Network")
 
 ## Initialize method for GameCore service pattern
 
@@ -469,22 +545,35 @@ func _process(delta: float) -> void:
 
 
 func _run_server_tick(delta: float) -> void:
-	_tick_accumulator += delta
-	var tick_duration: float = config.frame_duration_ms / 1000.0
+	var tick_duration: float = maxf(config.frame_duration_ms / 1000.0, 0.000001)
+	_tick_accumulator += maxf(delta, 0.0)
 
-	# Process ticks (may be multiple per frame if framerate drops)
-	while _tick_accumulator >= tick_duration:
+	var ticks_to_process: int = mini(
+		MAX_SERVER_TICKS_PER_FRAME, int(_tick_accumulator / tick_duration)
+	)
+	for _tick_index: int in range(ticks_to_process):
 		pre_tick.emit()
 
-		# Game logic updates happen here via signals
-		# Components/systems connect to tick_completed to update
+		# Game logic updates happen here via signals.
+		# Components/systems connect to tick_completed to update.
 		_current_tick += 1
 		tick_completed.emit()
-
 		post_tick.emit()
 
 		_tick_accumulator -= tick_duration
 		_tick_timer += tick_duration
+
+	# Drop stale whole-tick backlog after the bounded catch-up budget. Keeping
+	# only the fractional remainder prevents a permanent runaway catch-up loop.
+	if ticks_to_process == MAX_SERVER_TICKS_PER_FRAME and _tick_accumulator >= tick_duration:
+		if not _tick_overrun_warning_active:
+			push_warning(
+				"[Network] Server tick catch-up budget exceeded; dropping stale tick backlog"
+			)
+			_tick_overrun_warning_active = true
+		_tick_accumulator = fmod(_tick_accumulator, tick_duration)
+	else:
+		_tick_overrun_warning_active = false
 
 
 func _validate_movement(_delta: float) -> void:

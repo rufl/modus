@@ -48,12 +48,18 @@ var snapshot_buffer_size: int = 3
 
 func _calculate_derived_values() -> void:
 	## Recalculate values that depend on tick rate
-	frame_duration_ms = 1000.0 / float(server_tick_rate)
-	snapshot_buffer_size = ceili(interpolation_delay * float(client_update_rate))
+	frame_duration_ms = 1000.0 / float(maxi(server_tick_rate, 1))
+	snapshot_buffer_size = ceili(interpolation_delay * float(maxi(client_update_rate, 1)))
 
 
-func apply_preset(preset: NetworkPreset) -> void:
-	## Apply predefined network configuration preset
+func refresh_derived_values() -> void:
+	## Recalculate derived values after all explicit settings are applied.
+	_calculate_derived_values()
+
+
+func apply_preset(preset: NetworkPreset, recalculate_derived: bool = true) -> void:
+	## Apply predefined network configuration preset.
+	active_preset = preset
 	match preset:
 		NetworkPreset.LOW_BANDWIDTH:
 			server_tick_rate = 20
@@ -88,11 +94,10 @@ func apply_preset(preset: NetworkPreset) -> void:
 				"[Network] Applied COMPETITIVE preset (128Hz server)", "Core"
 			)
 
-	_calculate_derived_values()
+	if recalculate_derived:
+		_calculate_derived_values()
 
 
-func _init() -> void:
-	_calculate_derived_values()
 
 
 func get_config_summary() -> String:
