@@ -1,6 +1,7 @@
 @tool
 extends PanelContainer
 
+
 # Helper function to safely log messages
 func _log(message: String, category: String = "Game") -> void:
 	var logger: Node = GameManager.get_core_system("logger")
@@ -8,7 +9,6 @@ func _log(message: String, category: String = "Game") -> void:
 		logger.info(message, category)
 	else:
 		print("[%s] %s" % [category, message])
-
 
 
 signal level_selected(item_id: String)
@@ -406,12 +406,12 @@ func _show_upload_details_dialog(level_path: String, manifest: LevelPackager.Lev
 	dialog.title = "Upload to Workshop"
 	dialog.dialog_text = ""
 	dialog.min_size = Vector2(500, 450)
-	
+
 	# Create form layout
 	var vbox := VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 10)
 	dialog.add_child(vbox)
-	
+
 	# Add warning about local-only mode if Steam not available
 	if not workshop_manager.steam_available:
 		var warning_panel := PanelContainer.new()
@@ -424,73 +424,74 @@ func _show_upload_details_dialog(level_path: String, manifest: LevelPackager.Lev
 		warning_label.add_theme_color_override("font_color", Color(1.0, 0.8, 0.0))  # Yellow warning
 		warning_panel.add_child(warning_label)
 		vbox.add_child(warning_panel)
-	
+
 	# Title field
 	var title_label := Label.new()
 	title_label.text = "Title:"
 	vbox.add_child(title_label)
-	
+
 	var title_edit := LineEdit.new()
 	title_edit.text = manifest.name
 	title_edit.placeholder_text = "Enter level title"
 	vbox.add_child(title_edit)
-	
+
 	# Description field
 	var desc_label := Label.new()
 	desc_label.text = "Description:"
 	vbox.add_child(desc_label)
-	
+
 	var desc_edit := TextEdit.new()
 	desc_edit.text = manifest.description
 	desc_edit.placeholder_text = "Enter level description"
 	desc_edit.custom_minimum_size = Vector2(0, 100)
 	vbox.add_child(desc_edit)
-	
+
 	# Tags field
 	var tags_label := Label.new()
 	tags_label.text = "Tags (comma-separated):"
 	vbox.add_child(tags_label)
-	
+
 	var tags_edit := LineEdit.new()
 	tags_edit.text = ",".join(manifest.tags)
 	tags_edit.placeholder_text = "e.g. deathmatch, arena, small"
 	vbox.add_child(tags_edit)
-	
+
 	# Visibility option
 	var visibility_label := Label.new()
 	visibility_label.text = "Visibility:"
 	vbox.add_child(visibility_label)
-	
+
 	var visibility_option := OptionButton.new()
 	visibility_option.add_item("Public", 0)
 	visibility_option.add_item("Friends Only", 1)
 	visibility_option.add_item("Private", 2)
 	vbox.add_child(visibility_option)
-	
+
 	# Connect OK button
-	dialog.confirmed.connect(func() -> void:
-		var title: String = title_edit.text.strip_edges()
-		var description: String = desc_edit.text.strip_edges()
-		var tags_str: String = tags_edit.text.strip_edges()
-		var tags: Array[String] = []
-		
-		# Parse tags
-		if not tags_str.is_empty():
-			for tag in tags_str.split(","):
-				var clean_tag := tag.strip_edges()
-				if not clean_tag.is_empty():
-					tags.append(clean_tag)
-		
-		# Validate
-		if title.is_empty():
-			push_error("[WorkshopBrowser] Title cannot be empty")
-			return
-		
-		# Upload with metadata
-		workshop_manager.upload_level(level_path, title, description, tags)
-		_log("[WorkshopBrowser] Uploading: %s" % title, "Log")
+	dialog.confirmed.connect(
+		func() -> void:
+			var title: String = title_edit.text.strip_edges()
+			var description: String = desc_edit.text.strip_edges()
+			var tags_str: String = tags_edit.text.strip_edges()
+			var tags: Array[String] = []
+
+			# Parse tags
+			if not tags_str.is_empty():
+				for tag in tags_str.split(","):
+					var clean_tag := tag.strip_edges()
+					if not clean_tag.is_empty():
+						tags.append(clean_tag)
+
+			# Validate
+			if title.is_empty():
+				push_error("[WorkshopBrowser] Title cannot be empty")
+				return
+
+			# Upload with metadata
+			workshop_manager.upload_level(level_path, title, description, tags)
+			_log("[WorkshopBrowser] Uploading: %s" % title, "Log")
 	)
-	
+
 	add_child(dialog)
 	dialog.popup_centered()
 

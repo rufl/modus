@@ -208,10 +208,7 @@ func _build_audio_tab() -> void:
 
 	# Master Volume
 	_create_volume_slider(
-		_audio_tab,
-		"Master",
-		"audio.master_volume",
-		AudioServer.get_bus_index("Master")
+		_audio_tab, "Master", "audio.master_volume", AudioServer.get_bus_index("Master")
 	)
 
 	# SFX Volume

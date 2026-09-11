@@ -2,6 +2,7 @@
 class_name WorkshopManager
 extends Node
 
+
 # Helper function to safely log messages
 func _log(message: String, category: String = "Game") -> void:
 	var logger: Node = GameManager.get_core_system("logger")
@@ -9,7 +10,6 @@ func _log(message: String, category: String = "Game") -> void:
 		logger.info(message, category)
 	else:
 		print("[%s] %s" % [category, message])
-
 
 
 signal upload_started(item_id: String)
@@ -20,7 +20,6 @@ signal download_completed(item_id: String, success: bool, local_path: String)
 signal items_loaded(items: Array[Dictionary])
 signal subscription_changed(item_id: String, subscribed: bool)
 signal browse_failed(query: String, reason: String)
-
 
 const WORKSHOP_CACHE := "user://workshop/"
 const WORKSHOP_DOWNLOADS := "user://workshop/downloads/"
@@ -45,6 +44,7 @@ const _STEAM_UGC_QUERY_METHODS: Array[String] = [
 	"addRequiredTag",
 	"setMatchAnyTag",
 ]
+
 
 func _ready() -> void:
 	name = "WorkshopManager"
@@ -112,14 +112,17 @@ func _detect_steam_ugc_capability() -> bool:
 			missing_methods.append(method_name)
 	if not missing_methods.is_empty():
 		_steam_ugc_unavailable_reason = (
-			"Steam Workshop browsing is unavailable: GodotSteam is missing UGC methods: %s. "
-			+ "Install a GodotSteam build with ISteamUGC query support."
-		) % ", ".join(missing_methods)
+			(
+				"Steam Workshop browsing is unavailable: GodotSteam is missing UGC methods: %s. "
+				+ "Install a GodotSteam build with ISteamUGC query support."
+			)
+			% ", ".join(missing_methods)
+		)
 		return false
 	if not steam.has_signal("ugc_query_completed"):
 		_steam_ugc_unavailable_reason = (
 			"Steam Workshop browsing is unavailable: GodotSteam is missing the "
-			"ugc_query_completed callback signal. Install a GodotSteam build with UGC query support."
+			+ "ugc_query_completed callback signal. Install a GodotSteam build with UGC query support."
 		)
 		return false
 	return true
@@ -146,11 +149,10 @@ func _release_active_browse_query() -> void:
 	_active_browse_query_handle = 0
 	_active_browse_query_text = ""
 
+
 func _on_steam_shutdown() -> void:
 	steam_ugc_available = false
-	_steam_ugc_unavailable_reason = (
-		"Steam Workshop browsing is unavailable: Steam shut down while the Workshop request was active"
-	)
+	_steam_ugc_unavailable_reason = ("Steam Workshop browsing is unavailable: Steam shut down while the Workshop request was active")
 	if _active_browse_query_handle != 0:
 		_fail_browse(_active_browse_query_text, _steam_ugc_unavailable_reason)
 
@@ -369,8 +371,10 @@ func _steam_browse(query: String, tags: PackedStringArray, sort_by: String) -> v
 	if app_id <= 0:
 		_fail_browse(
 			query,
-			"Steam Workshop browsing is unavailable: GodotSteam reports no current app ID. "
-			+ "Initialize Steam with the configured Workshop app ID before browsing."
+			(
+				"Steam Workshop browsing is unavailable: GodotSteam reports no current app ID. "
+				+ "Initialize Steam with the configured Workshop app ID before browsing."
+			)
 		)
 		return
 
@@ -393,8 +397,10 @@ func _steam_browse(query: String, tags: PackedStringArray, sort_by: String) -> v
 	if query_handle <= 0:
 		_fail_browse(
 			query,
-			"Steam Workshop browsing could not create a UGC query. "
-			+ "Verify the configured app ID and Workshop configuration."
+			(
+				"Steam Workshop browsing could not create a UGC query. "
+				+ "Verify the configured app ID and Workshop configuration."
+			)
 		)
 		return
 
@@ -404,7 +410,9 @@ func _steam_browse(query: String, tags: PackedStringArray, sort_by: String) -> v
 	if not query.is_empty():
 		var search_result: Variant = steam.call("setSearchText", query_handle, query)
 		if search_result is bool and not search_result:
-			_fail_browse(query, "Steam rejected the Workshop search text; use a shorter non-empty query.")
+			_fail_browse(
+				query, "Steam rejected the Workshop search text; use a shorter non-empty query."
+			)
 			return
 
 	for tag: String in tags:
@@ -415,8 +423,10 @@ func _steam_browse(query: String, tags: PackedStringArray, sort_by: String) -> v
 		if tag_result is bool and not tag_result:
 			_fail_browse(
 				query,
-				"Steam rejected Workshop tag '%s'. Check that the tag is non-empty and supported by the app."
-				% clean_tag
+				(
+					"Steam rejected Workshop tag '%s'. Check that the tag is non-empty and supported by the app."
+					% clean_tag
+				)
 			)
 			return
 
@@ -445,6 +455,7 @@ func _fail_browse(query: String, reason: String) -> void:
 	_release_active_browse_query()
 	push_error("[WorkshopManager] %s" % reason)
 	browse_failed.emit(query, reason)
+
 
 func _local_browse(query: String, tags: PackedStringArray, _sort_by: String) -> void:
 	var results: Array[Dictionary] = []
@@ -493,9 +504,13 @@ func _on_ugc_query_completed(
 		_release_active_browse_query()
 		_fail_browse(
 			query,
-			"Steam Workshop UGC query failed with result code %d. "
-			+ "Verify Steam is running, the app is authorized, and Workshop is enabled."
-			% result
+			(
+				"Steam Workshop UGC query failed with result code %d. "
+				+ (
+					"Verify Steam is running, the app is authorized, and Workshop is enabled."
+					% result
+				)
+			)
 		)
 		return
 
@@ -535,7 +550,8 @@ func _convert_steam_ugc_metadata(raw_item: Dictionary) -> Dictionary:
 		"created": int(raw_item.get("time_created", 0)),
 		"updated": int(raw_item.get("time_updated", 0)),
 		"local_path": "",
-		"downloads": int(
+		"downloads":
+		int(
 			raw_item.get("total_unique_subscriptions", raw_item.get("num_unique_subscriptions", 0))
 		),
 		"rating": score,

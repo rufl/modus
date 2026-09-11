@@ -159,7 +159,7 @@ func _play_tick_sound(new_value: float) -> void:
 func _load_from_config() -> void:
 	if config_key.is_empty():
 		return
-	
+
 	var config: Node = GameManager.get_core_system("config")
 	if not config or not config.has_method("get_value"):
 		return
@@ -172,7 +172,7 @@ func _load_from_config() -> void:
 func _save_to_config(val: float) -> void:
 	if config_key.is_empty():
 		return
-	
+
 	var config: Node = GameManager.get_core_system("config")
 	if not config or not config.has_method("set_value"):
 		return
@@ -216,7 +216,7 @@ func _exit_tree() -> void:
 		drag_started.disconnect(_on_internal_drag_started)
 	if drag_ended.is_connected(_on_internal_drag_ended):
 		drag_ended.disconnect(_on_internal_drag_ended)
-	
+
 	# Clean up timer if it exists
 	if _commit_timer and _commit_timer.timeout.is_connected(_on_commit_timer_timeout):
 		_commit_timer.timeout.disconnect(_on_commit_timer_timeout)

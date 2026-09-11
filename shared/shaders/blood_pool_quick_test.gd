@@ -1,6 +1,7 @@
 @tool
 extends EditorScript
 
+
 # Helper function to safely log messages
 func _log(message: String, category: String = "Game") -> void:
 	var logger: Node = GameManager.get_core_system("logger")
@@ -8,7 +9,6 @@ func _log(message: String, category: String = "Game") -> void:
 		logger.info(message, category)
 	else:
 		print("[%s] %s" % [category, message])
-
 
 
 ## Quick test script to verify blood pool shader setup

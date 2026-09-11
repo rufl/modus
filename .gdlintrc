@@ -25,3 +25,5 @@ disable:
   - function-name
   # Definition order is a style preference - we group by functionality
   - class-definitions-order
+  # gdformat does not wrap inline enum/API documentation; formatting remains the authority
+  - max-line-length

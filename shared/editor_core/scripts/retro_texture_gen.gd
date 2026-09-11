@@ -1,10 +1,10 @@
 @tool
 extends SceneTree
 
+
 # Helper function to safely log messages
 func _log(message: String, category: String = "Game") -> void:
 	print("[%s] %s" % [category, message])
-
 
 
 const TEXTURE_DIR: String = "res://shared/editor_core/textures/retro/"
@@ -36,7 +36,15 @@ func _generate_concrete() -> void:
 			var base := Color(0.16, 0.19, 0.22)
 			var shade: float = 0.06 + v * 0.10
 			var seam: bool = x % 64 == 0 or y % 64 == 0
-			img.set_pixel(x, y, Color(base.r + shade, base.g + shade, base.b + shade, 1.0) if not seam else Color(0.07, 0.09, 0.11))
+			img.set_pixel(
+				x,
+				y,
+				(
+					Color(base.r + shade, base.g + shade, base.b + shade, 1.0)
+					if not seam
+					else Color(0.07, 0.09, 0.11)
+				)
+			)
 
 	img.save_png(TEXTURE_DIR + "wall_concrete_01.png")
 
@@ -49,8 +57,16 @@ func _generate_metal() -> void:
 			var panel_y: int = y % 64
 			var seam: bool = panel_x < 3 or panel_y < 3
 			var rivet: bool = (panel_x == 8 or panel_x == 56) and (panel_y == 8 or panel_y == 56)
-			var base := Color(0.11, 0.16, 0.19) if (int(x / 64) + int(y / 64)) % 2 == 0 else Color(0.14, 0.19, 0.22)
-			img.set_pixel(x, y, Color(0.05, 0.08, 0.10) if seam else Color(0.42, 0.30, 0.12) if rivet else base)
+			var base := (
+				Color(0.11, 0.16, 0.19)
+				if (int(x / 64) + int(y / 64)) % 2 == 0
+				else Color(0.14, 0.19, 0.22)
+			)
+			img.set_pixel(
+				x,
+				y,
+				Color(0.05, 0.08, 0.10) if seam else Color(0.42, 0.30, 0.12) if rivet else base
+			)
 
 	img.save_png(TEXTURE_DIR + "wall_metal_01.png")
 

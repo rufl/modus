@@ -44,17 +44,17 @@ func _ready() -> void:
 
 func _exit_tree() -> void:
 	_cleanup_focus_management()
-	
+
 	# Disconnect close button signal to prevent memory leak
 	if _close_button and _close_button.pressed.is_connected(_on_close_pressed):
 		_close_button.pressed.disconnect(_on_close_pressed)
-	
+
 	# Disconnect all button callbacks
 	for btn_data: Dictionary in _buttons:
 		if btn_data.has("button") and btn_data.button:
 			var button: Button = btn_data.button
 			var callback: Callable = btn_data.get("callback", Callable())
-			
+
 			if callback.is_valid() and button.pressed.is_connected(callback):
 				button.pressed.disconnect(callback)
 			elif btn_data.get("is_cancel", false) and button.pressed.is_connected(cancel):

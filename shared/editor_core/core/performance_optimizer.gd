@@ -43,9 +43,6 @@ func _load_thumbnail_texture(asset_path: String, size: Vector2i) -> Texture2D:
 	return _generate_placeholder_thumbnail(asset_path, size)
 
 
-
-
-
 ## Render a PackedScene thumbnail when a scene tree is available.
 ## Callers in async UI flows should await this method for scene assets.
 func get_cached_thumbnail_async(asset_path: String, size: Vector2i) -> Texture2D:
@@ -91,6 +88,7 @@ func get_cached_thumbnail_async(asset_path: String, size: Vector2i) -> Texture2D
 	_asset_thumbnail_cache[cache_key] = thumbnail
 	viewport.queue_free()
 	return thumbnail
+
 
 func _generate_placeholder_thumbnail(asset_path: String, size: Vector2i) -> Texture2D:
 	# Create a colored placeholder based on asset type

@@ -97,19 +97,19 @@ func _build_pause_ui() -> void:
 
 	# Initial focus
 	resume_btn.grab_focus()
-	
+
 	# Build focus list dynamically
 	var focus_list: Array[Control] = [resume_btn, options_btn, save_btn]
-	
+
 	# Add LAN button to focus if it exists
 	for child in vbox.get_children():
 		if child is Button and child.text == "Open to LAN":
 			focus_list.append(child)
 			break
-	
+
 	focus_list.append(quit_menu_btn)
 	focus_list.append(quit_desk_btn)
-	
+
 	register_focus_controls(focus_list, "pause_menu")
 
 
@@ -130,13 +130,13 @@ func _create_menu_button(label: String, callback: Callable) -> Button:
 	btn.text = label
 	btn.custom_minimum_size = Vector2(250, 48)
 	btn.focus_mode = Control.FOCUS_ALL
-	
+
 	# Wrap callback to prevent spam during transitions
 	var wrapped_callback := func() -> void:
 		if is_transitioning():
 			return
 		callback.call()
-	
+
 	btn.pressed.connect(wrapped_callback)
 	return btn
 
@@ -169,11 +169,7 @@ func _on_open_to_lan_pressed() -> void:
 			),
 			"buttons":
 			[
-				{
-					"text": "Open to LAN",
-					"callback": _start_lan_server,
-					"style": "primary"
-				},
+				{"text": "Open to LAN", "callback": _start_lan_server, "style": "primary"},
 				{"text": "Cancel", "is_cancel": true}
 			]
 		}

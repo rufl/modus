@@ -2,6 +2,7 @@
 class_name LevelDebugOverlay
 extends CanvasLayer
 
+
 # Helper function to safely log messages
 func _log(message: String, category: String = "Game") -> void:
 	var logger = GameManager.get_core_system("logger")
@@ -9,7 +10,6 @@ func _log(message: String, category: String = "Game") -> void:
 		logger.info(message, category)
 	else:
 		print("[%s] %s" % [category, message])
-
 
 
 signal overlay_toggled(enabled: bool)

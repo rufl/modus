@@ -16,7 +16,6 @@ signal save_completed(path: String)
 signal load_completed(path: String)
 signal autosave_completed
 
-
 const QUICKSAVE_PATH := "user://level_editor_quicksave.tscn"
 const AUTOSAVE_DIR := "user://level_editor_autosaves/"
 const MAX_AUTOSAVES := 5
@@ -33,7 +32,6 @@ func setup(root: Node) -> void:
 	scene_root = root
 	if scene_root and is_instance_valid(scene_root) and scene_root.has_signal("tree_exiting"):
 		scene_root.tree_exiting.connect(_on_scene_root_exiting)
-
 
 
 ## Release the timer and scene lifecycle connection.
@@ -55,6 +53,7 @@ func cleanup() -> void:
 
 func _on_scene_root_exiting() -> void:
 	cleanup()
+
 
 ## Quick save current level
 
@@ -175,6 +174,7 @@ func autosave() -> bool:
 		autosave_completed.emit()
 		return true
 
+
 ## Start autosave timer
 func start_autosave(interval: float = 300.0) -> void:
 	if interval <= 0.0:
@@ -209,6 +209,7 @@ func start_autosave(interval: float = 300.0) -> void:
 func stop_autosave() -> void:
 	if autosave_timer and is_instance_valid(autosave_timer) and not autosave_timer.is_stopped():
 		autosave_timer.stop()
+
 
 ## Generate thumbnail from current viewport
 

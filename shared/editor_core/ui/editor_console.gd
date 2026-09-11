@@ -20,19 +20,19 @@ var undo_system: Object = null
 var hotbar: Node = null
 var asset_registry: Node = null
 
+
 func _ready() -> void:
 	parser = CommandParser.new()
 	_create_ui()
 	visible = false
 
 
-func setup(
-	state: Node, level: Node3D = null, grid: Node = null, registry: Node = null
-) -> void:
+func setup(state: Node, level: Node3D = null, grid: Node = null, registry: Node = null) -> void:
 	editor_state = state
 	level_root = level
 	grid_system = grid
 	asset_registry = registry
+
 
 func _create_ui() -> void:
 	# Main styling
@@ -372,12 +372,14 @@ func _resolve_hotbar() -> Node:
 func _level_owner() -> Node:
 	return level_root
 
+
 func _set_owner_recursive(node: Node, owner_node: Node) -> void:
 	if not node:
 		return
 	node.owner = owner_node
 	for child: Node in node.get_children():
 		_set_owner_recursive(child, owner_node)
+
 
 func _exec_setblock(args: Array) -> Dictionary:
 	var pos: Vector3 = parser.resolve_coordinates(args[0], args[1], args[2])
@@ -427,8 +429,9 @@ func _get_node_bounds(node: Node3D, fallback_size: float) -> AABB:
 		var mesh_instance := node as MeshInstance3D
 		var local_bounds := mesh_instance.mesh.get_aabb()
 		return AABB(mesh_instance.global_transform * local_bounds.position, local_bounds.size)
-	return AABB(node.global_position - Vector3.ONE * fallback_size * 0.5, Vector3.ONE * fallback_size)
-
+	return AABB(
+		node.global_position - Vector3.ONE * fallback_size * 0.5, Vector3.ONE * fallback_size
+	)
 
 
 ## Summon command

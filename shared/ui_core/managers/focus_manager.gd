@@ -1,5 +1,6 @@
 extends Node
 
+
 # Helper function to safely log messages
 func _log(message: String, category: String = "Game") -> void:
 	var logger_service: Node = GameManager.get_core_system("logger")
@@ -7,7 +8,6 @@ func _log(message: String, category: String = "Game") -> void:
 		logger_service.info(message, category)
 	else:
 		print("[%s] %s" % [category, message])
-
 
 
 signal focus_changed(control: Control)

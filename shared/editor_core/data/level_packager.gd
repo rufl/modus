@@ -63,8 +63,14 @@ class LevelManifest:
 
 	static func _is_valid_dict(data: Dictionary) -> bool:
 		for field_name: String in [
-			"id", "name", "author", "description", "version", "thumbnail",
-			"level_file", "workshop_id"
+			"id",
+			"name",
+			"author",
+			"description",
+			"version",
+			"thumbnail",
+			"level_file",
+			"workshop_id"
 		]:
 			if data.has(field_name) and not data[field_name] is String:
 				return false
@@ -138,7 +144,6 @@ static func package_level(
 		result.error_msg = manifest_error
 		return result
 
-
 	if manifest.name.is_empty():
 		manifest.name = level_root.name
 	if manifest.id.is_empty():
@@ -161,12 +166,12 @@ static func package_level(
 		return result
 
 	# Keep each staging directory unique so concurrent exports cannot overwrite one another.
-	var temp_dir := "user://temp_package_%s_%s/" % [
-		_generate_id(), str(Time.get_ticks_usec())
-	]
+	var temp_dir := "user://temp_package_%s_%s/" % [_generate_id(), str(Time.get_ticks_usec())]
 	var root_err := _ensure_zip_directory(temp_dir)
 	if root_err != OK:
-		return _package_failure(result, temp_dir, "Failed to create staging directory: %s" % error_string(root_err))
+		return _package_failure(
+			result, temp_dir, "Failed to create staging directory: %s" % error_string(root_err)
+		)
 
 	var assets := _collect_assets(level_root)
 	var asset_map := _build_asset_map(assets)
@@ -178,38 +183,58 @@ static func package_level(
 	var level_path := temp_dir.path_join(level_rel_path)
 	var level_parent_err := _ensure_zip_directory(level_path.get_base_dir())
 	if level_parent_err != OK:
-		return _package_failure(result, temp_dir, "Failed to create level directory: %s" % error_string(level_parent_err))
+		return _package_failure(
+			result,
+			temp_dir,
+			"Failed to create level directory: %s" % error_string(level_parent_err)
+		)
 	var packed := PackedScene.new()
 	var pack_err: Error = packed.pack(level_root)
 	if pack_err != OK:
-		return _package_failure(result, temp_dir, "Failed to pack level: %s" % error_string(pack_err))
+		return _package_failure(
+			result, temp_dir, "Failed to pack level: %s" % error_string(pack_err)
+		)
 	var save_err: Error = ResourceSaver.save(packed, level_path)
 	if save_err != OK or not FileAccess.file_exists(level_path):
 		if save_err == OK:
 			save_err = ERR_FILE_CANT_WRITE
-		return _package_failure(result, temp_dir, "Failed to save level: %s" % error_string(save_err))
+		return _package_failure(
+			result, temp_dir, "Failed to save level: %s" % error_string(save_err)
+		)
 
 	for source_path: String in assets:
 		var destination_rel: String = asset_map[source_path]
 		var destination_path := temp_dir.path_join(destination_rel)
 		var destination_dir_err := _ensure_zip_directory(destination_path.get_base_dir())
 		if destination_dir_err != OK:
-			return _package_failure(result, temp_dir, "Failed to create asset directory: %s" % error_string(destination_dir_err))
+			return _package_failure(
+				result,
+				temp_dir,
+				"Failed to create asset directory: %s" % error_string(destination_dir_err)
+			)
 		var copy_err: Error = DirAccess.copy_absolute(
 			ProjectSettings.globalize_path(source_path),
 			ProjectSettings.globalize_path(destination_path)
 		)
 		if copy_err != OK:
-			return _package_failure(result, temp_dir, "Failed to copy asset '%s': %s" % [source_path, error_string(copy_err)])
+			return _package_failure(
+				result,
+				temp_dir,
+				"Failed to copy asset '%s': %s" % [source_path, error_string(copy_err)]
+			)
 		if not FileAccess.file_exists(destination_path):
-			return _package_failure(result, temp_dir, "Copied asset is missing: %s" % destination_rel)
+			return _package_failure(
+				result, temp_dir, "Copied asset is missing: %s" % destination_rel
+			)
 
 	# Rewrite every text resource independently so references are relative to its package location.
-	var rewrite_err := _rewrite_text_resource(
-		level_path, level_rel_path, temp_dir, asset_map
-	)
+	var rewrite_err := _rewrite_text_resource(level_path, level_rel_path, temp_dir, asset_map)
 	if rewrite_err != OK:
-		return _package_failure(result, temp_dir, "Failed to rewrite level resource paths: %s" % error_string(rewrite_err))
+		return _package_failure(
+			result,
+			temp_dir,
+			"Failed to rewrite level resource paths: %s" % error_string(rewrite_err)
+		)
 	for source_path: String in assets:
 		var asset_path := temp_dir.path_join(asset_map[source_path])
 		if not _is_text_resource(asset_path):
@@ -225,19 +250,28 @@ static func package_level(
 				asset_path, asset_map[source_path], temp_dir, asset_map
 			)
 			if rewrite_err != OK:
-				return _package_failure(result, temp_dir, "Failed to rewrite asset '%s': %s" % [source_path, error_string(rewrite_err)])
+				return _package_failure(
+					result,
+					temp_dir,
+					"Failed to rewrite asset '%s': %s" % [source_path, error_string(rewrite_err)]
+				)
 			if asset_path.get_extension().to_lower() == "tscn":
 				var unresolved_asset := _find_unresolved_scene_paths(asset_path)
 				if not unresolved_asset.is_empty():
 					return _package_failure(
-						result, temp_dir,
-						"Packaged scene asset has unresolved references: %s" % ", ".join(unresolved_asset)
+						result,
+						temp_dir,
+						(
+							"Packaged scene asset has unresolved references: %s"
+							% ", ".join(unresolved_asset)
+						)
 					)
 
 	var unresolved := _find_unresolved_scene_paths(level_path)
 	if not unresolved.is_empty():
 		return _package_failure(
-			result, temp_dir,
+			result,
+			temp_dir,
 			"Packaged scene has unresolved resource references: %s" % ", ".join(unresolved)
 		)
 
@@ -245,7 +279,11 @@ static func package_level(
 	var thumbnail_path := temp_dir.path_join(thumbnail_rel_path)
 	var thumbnail_parent_err := _ensure_zip_directory(thumbnail_path.get_base_dir())
 	if thumbnail_parent_err != OK:
-		return _package_failure(result, temp_dir, "Failed to create thumbnail directory: %s" % error_string(thumbnail_parent_err))
+		return _package_failure(
+			result,
+			temp_dir,
+			"Failed to create thumbnail directory: %s" % error_string(thumbnail_parent_err)
+		)
 	var thumbnail_err: Error
 	if thumbnail:
 		thumbnail_err = thumbnail.save_png(thumbnail_path)
@@ -256,7 +294,9 @@ static func package_level(
 	if thumbnail_err != OK or not FileAccess.file_exists(thumbnail_path):
 		if thumbnail_err == OK:
 			thumbnail_err = ERR_FILE_CANT_WRITE
-		return _package_failure(result, temp_dir, "Failed to save thumbnail: %s" % error_string(thumbnail_err))
+		return _package_failure(
+			result, temp_dir, "Failed to save thumbnail: %s" % error_string(thumbnail_err)
+		)
 
 	var manifest_json := JSONHelperClass.safe_stringify(manifest.to_dict(), "\t")
 	if manifest_json.is_empty():
@@ -271,20 +311,26 @@ static func package_level(
 	if manifest_err != OK or not FileAccess.file_exists(temp_dir.path_join(MANIFEST_FILE)):
 		if manifest_err == OK:
 			manifest_err = ERR_FILE_CANT_WRITE
-		return _package_failure(result, temp_dir, "Failed to save manifest: %s" % error_string(manifest_err))
+		return _package_failure(
+			result, temp_dir, "Failed to save manifest: %s" % error_string(manifest_err)
+		)
 
 	var safe_name := manifest.name.to_snake_case().validate_filename()
 	if safe_name.is_empty():
 		safe_name = manifest.id.validate_filename()
 	var output_dir_err := _ensure_zip_directory(output_dir)
 	if output_dir_err != OK:
-		return _package_failure(result, temp_dir, "Failed to create output directory: %s" % error_string(output_dir_err))
+		return _package_failure(
+			result, temp_dir, "Failed to create output directory: %s" % error_string(output_dir_err)
+		)
 	var zip_path := output_dir.path_join(safe_name + "." + MDSL_EXTENSION)
 	var zip_err: Error = _create_zip(temp_dir, zip_path)
 	if zip_err != OK or not FileAccess.file_exists(zip_path):
 		if zip_err == OK:
 			zip_err = ERR_FILE_CANT_WRITE
-		return _package_failure(result, temp_dir, "Failed to create ZIP: %s" % error_string(zip_err))
+		return _package_failure(
+			result, temp_dir, "Failed to create ZIP: %s" % error_string(zip_err)
+		)
 
 	_remove_directory(temp_dir)
 	if DirAccess.dir_exists_absolute(ProjectSettings.globalize_path(temp_dir)):
@@ -298,13 +344,16 @@ static func package_level(
 	return result
 
 
-static func _package_failure(result: PackageResult, temp_dir: String, message: String) -> PackageResult:
+static func _package_failure(
+	result: PackageResult, temp_dir: String, message: String
+) -> PackageResult:
 	_remove_directory(temp_dir)
 	if DirAccess.dir_exists_absolute(ProjectSettings.globalize_path(temp_dir)):
 		result.error_msg = "%s; failed to clean staging directory" % message
 	else:
 		result.error_msg = message
 	return result
+
 
 ## Extract a .mdsl package
 static func extract_level(mdsl_path: String, output_dir: String) -> ExtractResult:
@@ -372,10 +421,7 @@ static func extract_level(mdsl_path: String, output_dir: String) -> ExtractResul
 		_cleanup_failed_extraction(output_dir, output_preexisting)
 		result.error_msg = "Manifest level_file and thumbnail must differ"
 		return result
-	if (
-		result.manifest.level_file == MANIFEST_FILE
-		or result.manifest.thumbnail == MANIFEST_FILE
-	):
+	if result.manifest.level_file == MANIFEST_FILE or result.manifest.thumbnail == MANIFEST_FILE:
 		_cleanup_failed_extraction(output_dir, output_preexisting)
 		result.error_msg = "Manifest paths cannot replace manifest.json"
 		return result
@@ -449,6 +495,8 @@ static func _validate_archive_entries(reader: ZIPReader) -> bool:
 static func _cleanup_failed_extraction(output_dir: String, output_preexisting: bool) -> void:
 	if not output_preexisting:
 		_remove_directory(output_dir)
+
+
 ## Read manifest from .mdsl without full extraction
 
 
@@ -525,6 +573,7 @@ static func read_thumbnail(mdsl_path: String) -> Image:
 		return null
 	return img
 
+
 ## Collect all referenced assets, including transitive ResourceLoader dependencies.
 static func _collect_assets(level_root: Node) -> Array[String]:
 	var assets: Array[String] = []
@@ -548,7 +597,9 @@ static func _collect_node_assets(node: Node, assets: Array[String], visited: Dic
 		_collect_node_assets(child, assets, visited)
 
 
-static func _collect_variant_assets(value: Variant, assets: Array[String], visited: Dictionary) -> void:
+static func _collect_variant_assets(
+	value: Variant, assets: Array[String], visited: Dictionary
+) -> void:
 	if value is Resource:
 		var resource: Resource = value
 		var object_key := "resource:%s" % str(resource.get_instance_id())
@@ -640,30 +691,36 @@ static func _format_binary_dependency_error(
 		var package_dependency: String = asset_map.get(normalized_dependency, "")
 		if package_dependency.is_empty():
 			dependency_messages.append(
-				"'%s' is not included in the package (no package-relative target exists)"
-				% dependency_entry
+				(
+					"'%s' is not included in the package (no package-relative target exists)"
+					% dependency_entry
+				)
 			)
 		else:
 			var relative_dependency := _relative_package_path(
 				source_package_dir, package_dependency
 			)
 			dependency_messages.append(
-				"'%s' must be remapped to package-relative '%s' (packaged at '%s')"
-				% [dependency_entry, relative_dependency, package_dependency]
+				(
+					"'%s' must be remapped to package-relative '%s' (packaged at '%s')"
+					% [dependency_entry, relative_dependency, package_dependency]
+				)
 			)
 	if dependency_messages.is_empty():
 		dependency_messages.append("dependency list is malformed or empty")
 	return (
-		"Cannot rewrite binary asset '%s' (package path '%s'): unresolved dependency%s: %s. "
-		+ "Binary resource references cannot be rewritten; convert the asset to a text resource "
-		+ "or remove the dependency."
-	) % [
-		source_path,
-		source_package_path,
-		"" if dependency_messages.size() == 1 else "ies",
-		", ".join(dependency_messages)
-	]
-
+		(
+			"Cannot rewrite binary asset '%s' (package path '%s'): unresolved dependency%s: %s. "
+			+ "Binary resource references cannot be rewritten; convert the asset to a text resource "
+			+ "or remove the dependency."
+		)
+		% [
+			source_path,
+			source_package_path,
+			"" if dependency_messages.size() == 1 else "ies",
+			", ".join(dependency_messages)
+		]
+	)
 
 
 static func _rewrite_text_resource(
@@ -724,7 +781,7 @@ static func _find_unresolved_scene_paths(path: String) -> PackedStringArray:
 	var content := file.get_as_text()
 	file.close()
 	var regex := RegEx.new()
-	if regex.compile("(?:res|user|file|https?)://[^\\\"\\s]+") != OK:
+	if regex.compile('(?:res|user|file|https?)://[^\\"\\s]+') != OK:
 		unresolved.append("invalid resource path scanner")
 		return unresolved
 	for match: RegExMatch in regex.search_all(content):
@@ -750,9 +807,7 @@ static func _create_zip(source_dir: String, zip_path: String) -> Error:
 	return OK
 
 
-static func _add_dir_to_zip(
-	writer: ZIPPacker, base_dir: String, relative_path: String
-) -> Error:
+static func _add_dir_to_zip(writer: ZIPPacker, base_dir: String, relative_path: String) -> Error:
 	var dir := DirAccess.open(base_dir.path_join(relative_path))
 	if not dir:
 		return ERR_CANT_OPEN
@@ -785,6 +840,7 @@ static func _add_dir_to_zip(
 	dir.list_dir_end()
 	return OK
 
+
 static func _is_safe_zip_entry(entry_path: String, extraction_root: String) -> bool:
 	var normalized_path: String = entry_path.replace("\\", "/")
 	if not _is_valid_archive_entry(normalized_path):
@@ -792,9 +848,9 @@ static func _is_safe_zip_entry(entry_path: String, extraction_root: String) -> b
 	if normalized_path.ends_with("/"):
 		normalized_path = normalized_path.trim_suffix("/")
 	var root_path: String = ProjectSettings.globalize_path(extraction_root).simplify_path()
-	var target_path: String = ProjectSettings.globalize_path(
-		extraction_root.path_join(normalized_path)
-	).simplify_path()
+	var target_path: String = (
+		ProjectSettings.globalize_path(extraction_root.path_join(normalized_path)).simplify_path()
+	)
 	if not (target_path == root_path or target_path.begins_with(root_path + "/")):
 		return false
 
@@ -895,7 +951,6 @@ static func _remove_directory(path: String) -> void:
 		file_name = dir.get_next()
 	dir.list_dir_end()
 	DirAccess.remove_absolute(absolute_path)
-
 
 
 static func _generate_id() -> String:

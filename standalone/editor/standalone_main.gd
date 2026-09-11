@@ -147,8 +147,6 @@ func _on_help_menu_pressed(id: int) -> void:
 			_show_about_dialog()
 
 
-
-
 func _new_level() -> void:
 	# Clear the level root
 	if _editor and _editor.level_root:
@@ -232,17 +230,21 @@ func _export_mod_to_directory(output_dir: String) -> bool:
 func _show_documentation_dialog() -> void:
 	_show_message(
 		"MODUS Editor Documentation",
-		"Use the maintained editor guide at standalone/editor/README.md and the "
-		+ "round-trip proof at docs/EDITOR_ROUNDTRIP_PROOF.md."
+		(
+			"Use the maintained editor guide at standalone/editor/README.md and the "
+			+ "round-trip proof at docs/EDITOR_ROUNDTRIP_PROOF.md."
+		)
 	)
 
 
 func _show_shortcuts_dialog() -> void:
 	_show_message(
 		"Keyboard Shortcuts",
-		"B: Block  P: Paint  E: Eraser  T: Entity  S: Spawn  C: Connect\n"
-		+ "G: Grid  R: Rotate  [ / ]: Brush Size\n"
-		+ "RMB + WASD: Fly camera"
+		(
+			"B: Block  P: Paint  E: Eraser  T: Entity  S: Spawn  C: Connect\n"
+			+ "G: Grid  R: Rotate  [ / ]: Brush Size\n"
+			+ "RMB + WASD: Fly camera"
+		)
 	)
 
 

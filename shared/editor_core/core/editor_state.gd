@@ -150,18 +150,12 @@ func handle_3d_input(camera: Camera3D, event: InputEvent, grid_system: Node) -> 
 				return LocalEditorGlobals.AFTER_GUI_INPUT_STOP
 			KEY_BRACKETLEFT:
 				brush_size = Vector3i(
-					max(1, brush_size.x - 1),
-					max(1, brush_size.y - 1),
-					max(1, brush_size.z - 1)
+					max(1, brush_size.x - 1), max(1, brush_size.y - 1), max(1, brush_size.z - 1)
 				)
 				brush_size_changed.emit(brush_size)
 				return LocalEditorGlobals.AFTER_GUI_INPUT_STOP
 			KEY_BRACKETRIGHT:
-				brush_size = Vector3i(
-					brush_size.x + 1,
-					brush_size.y + 1,
-					brush_size.z + 1
-				)
+				brush_size = Vector3i(brush_size.x + 1, brush_size.y + 1, brush_size.z + 1)
 				brush_size_changed.emit(brush_size)
 				return LocalEditorGlobals.AFTER_GUI_INPUT_STOP
 			KEY_ESCAPE:

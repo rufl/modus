@@ -1,6 +1,7 @@
 class_name MultiplayerMenuScreen
 extends BaseScreen
 
+
 # Helper function to safely log messages
 func _log(message: String, category: String = "Game") -> void:
 	var logger: Node = GameManager.get_core_system("logger")
@@ -8,7 +9,6 @@ func _log(message: String, category: String = "Game") -> void:
 		logger.info(message, category)
 	else:
 		print("[%s] %s" % [category, message])
-
 
 
 const HOST_GAME_SCREEN: String = "res://shared/ui_core/screens/host_game_screen.tscn"
@@ -205,7 +205,12 @@ func _on_host_requested(connection_settings: Dictionary, match_settings: Diction
 	var logger: Node = GameManager.get_core_system("logger")
 	if logger and logger.has_method("info"):
 		logger.info(
-			str("[MultiplayerMenuScreen] Hosting with: %s, %s" % [connection_settings, match_settings]),
+			str(
+				(
+					"[MultiplayerMenuScreen] Hosting with: %s, %s"
+					% [connection_settings, match_settings]
+				)
+			),
 			"Log"
 		)
 

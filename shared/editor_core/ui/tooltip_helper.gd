@@ -73,8 +73,6 @@ const PLAYTEST := """Playtest Level (F6)
 Launch the current level for a quick gameplay check."""
 
 
-
-
 static func get_tool_tooltip(tool_name: String) -> String:
 	match tool_name:
 		"block_brush":

@@ -2,6 +2,7 @@
 class_name EditorNetworkAdapter
 extends Node
 
+
 # Helper function to safely log messages
 func _log(message: String, category: String = "Game") -> void:
 	var logger: Node = GameManager.get_core_system("logger")
@@ -9,7 +10,6 @@ func _log(message: String, category: String = "Game") -> void:
 		logger.info(message, category)
 	else:
 		print("[%s] %s" % [category, message])
-
 
 
 signal cursor_updated(peer_id: int, pos: Vector3, normal: Vector3)
@@ -35,7 +35,9 @@ func _on_connected_to_server() -> void:
 		editor_state.is_networked = true
 		var logger: Node = GameManager.get_core_system("logger")
 		if logger and logger.has_method("info"):
-			logger.info("[EditorNetwork] Connected to server, enabling networked mode", "EditorNetwork")
+			logger.info(
+				"[EditorNetwork] Connected to server, enabling networked mode", "EditorNetwork"
+			)
 
 
 func _on_peer_connected(id: int) -> void:
@@ -130,7 +132,9 @@ func _validate_editor_rpc_rate(peer_id: int, method: String, args: Array) -> boo
 		return false
 	var gm: Node = get_node_or_null("/root/GameManager")
 	var network_svc: Variant = gm.get_core_system("network") if gm else null
-	var network_manager: Variant = network_svc.network_manager if network_svc is NetworkSvc else null
+	var network_manager: Variant = (
+		network_svc.network_manager if network_svc is NetworkSvc else null
+	)
 	if not network_manager or not network_manager.has_method("validate_rpc"):
 		return false
 	return network_manager.validate_rpc(peer_id, method, args)
@@ -183,14 +187,21 @@ func _is_bounded_string(value: Variant, maximum: int) -> bool:
 	if not value is String:
 		return false
 	var text: String = value
-	return not text.is_empty() and text.length() <= maximum and not text.contains("\n") and not text.contains("\r")
+	return (
+		not text.is_empty()
+		and text.length() <= maximum
+		and not text.contains("\n")
+		and not text.contains("\r")
+	)
 
 
 func _is_safe_relative_path(value: Variant) -> bool:
 	if not _is_bounded_string(value, 256):
 		return false
 	var path: String = value
-	return not path.begins_with("/") and not path.contains("..") and not NodePath(path).is_absolute()
+	return (
+		not path.begins_with("/") and not path.contains("..") and not NodePath(path).is_absolute()
+	)
 
 
 func _is_level_subtree_path(value: Variant) -> bool:
@@ -207,7 +218,6 @@ func _is_finite_vector(value: Variant) -> bool:
 	return value is Vector3 and value.is_finite()
 
 
-	
 func _is_positive_bounded_vector(value: Variant, maximum: float) -> bool:
 	if not _is_finite_vector(value):
 		return false
@@ -220,6 +230,8 @@ func _is_positive_bounded_vector(value: Variant, maximum: float) -> bool:
 		and vector.y <= maximum
 		and vector.z <= maximum
 	)
+
+
 func _is_finite_number(value: Variant) -> bool:
 	return (value is float or value is int) and is_finite(float(value))
 
@@ -260,7 +272,10 @@ func _validate_action_payload(action: String, data: Dictionary) -> bool:
 				and _is_finite_vector(data.get("position"))
 				and _is_positive_bounded_vector(data.get("size"), 100.0)
 				and data.size() <= 8
-				and (data.get("material_path", "") == "" or _is_material_path(data.get("material_path")))
+				and (
+					data.get("material_path", "") == ""
+					or _is_material_path(data.get("material_path"))
+				)
 			)
 		"paint_node":
 			return (
@@ -272,12 +287,17 @@ func _validate_action_payload(action: String, data: Dictionary) -> bool:
 		"place_entity":
 			if data.get("type", "") != "entity_placer":
 				return false
-			if not _is_finite_vector(data.get("position")) or not _is_finite_number(data.get("rotation_y")):
+			if (
+				not _is_finite_vector(data.get("position"))
+				or not _is_finite_number(data.get("rotation_y"))
+			):
 				return false
 			if data.get("subtype", "") == "static":
 				return _is_allowed_scene_path(data.get("scene_path", ""))
 			var spawn_type: Variant = data.get("spawn_type")
-			var identifier: Variant = data.get("enemy_id", "") if spawn_type == 1 else data.get("item_id", "")
+			var identifier: Variant = (
+				data.get("enemy_id", "") if spawn_type == 1 else data.get("item_id", "")
+			)
 			return (
 				data.get("subtype", "") == "spawn_point"
 				and spawn_type is int

@@ -149,13 +149,9 @@ func _restore_state() -> void:
 func _request_back() -> void:
 	# Prevent multiple back requests during transition
 	var ui_svc := UISystem.get_service()
-	if (
-		ui_svc
-		and ui_svc.ui_manager
-		and ui_svc.ui_manager.is_transitioning()
-	):
+	if ui_svc and ui_svc.ui_manager and ui_svc.ui_manager.is_transitioning():
 		return
-	
+
 	screen_exiting.emit()
 	back_requested.emit()
 

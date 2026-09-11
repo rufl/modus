@@ -8,9 +8,11 @@ signal back_pressed
 
 @onready var back_button: Button = $VBoxContainer/BackButton
 
+
 func _ready() -> void:
 	if back_button:
 		back_button.pressed.connect(_on_back_pressed)
+
 
 func _on_back_pressed() -> void:
 	back_pressed.emit()

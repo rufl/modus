@@ -1,5 +1,6 @@
 extends "res://shared/ui_core/screens/base_screen.gd"
 
+
 # Helper function to safely log messages
 func _log(message: String, category: String = "Game") -> void:
 	var logger: Node = GameManager.get_core_system("logger")
@@ -7,7 +8,6 @@ func _log(message: String, category: String = "Game") -> void:
 		logger.info(message, category)
 	else:
 		print("[%s] %s" % [category, message])
-
 
 
 const WORLD_SCENE: String = "res://game/world/maps/map.tscn"
@@ -46,8 +46,8 @@ func _on_ready() -> void:
 	# Connect to localization
 	var localization: Node = GameManager.get_core_system("localization")
 	if localization and localization.has_signal("language_changed"):
-		var lang_signal_connected: bool = (
-			localization.language_changed.is_connected(_on_language_changed)
+		var lang_signal_connected: bool = localization.language_changed.is_connected(
+			_on_language_changed
 		)
 		if not lang_signal_connected:
 			if not localization.language_changed.is_connected(_on_language_changed):
@@ -57,7 +57,7 @@ func _on_ready() -> void:
 func _start_menu_music() -> void:
 	# Wait a frame for audio system to be fully initialized
 	await get_tree().process_frame
-	
+
 	var audio: Node = GameManager.get_core_system("audio")
 	if audio and audio.has_method("play_next_track"):
 		# Check if music is already playing using public API
@@ -431,7 +431,9 @@ func _setup_focus() -> void:
 
 	register_focus_controls(buttons, "main_menu")
 	for i: int in range(buttons.size()):
-		buttons[i].focus_neighbor_top = buttons[(i - 1 + buttons.size()) % buttons.size()].get_path()
+		buttons[i].focus_neighbor_top = (
+			buttons[(i - 1 + buttons.size()) % buttons.size()].get_path()
+		)
 		buttons[i].focus_neighbor_bottom = buttons[(i + 1) % buttons.size()].get_path()
 
 
@@ -526,13 +528,15 @@ func _on_language_changed(_lang: String) -> void:
 	var localization: Node = GameManager.get_core_system("localization")
 	if not localization or not localization.has_method("translate"):
 		return
-	
+
 	if _play_btn:
 		_play_btn.text = _translate_or_fallback(localization, "menu_play", "Play")
 	if _showcase_btn:
 		_showcase_btn.text = _translate_or_fallback(localization, "menu_showcase", "Showcase")
 	if _multiplayer_btn:
-		_multiplayer_btn.text = _translate_or_fallback(localization, "menu_multiplayer", "Multiplayer")
+		_multiplayer_btn.text = _translate_or_fallback(
+			localization, "menu_multiplayer", "Multiplayer"
+		)
 	if _options_btn:
 		_options_btn.text = _translate_or_fallback(localization, "menu_options", "Options")
 	if _mods_btn:

@@ -246,6 +246,6 @@ func _exit_tree() -> void:
 		focus_exited.disconnect(_on_focus_exited)
 	if resized.is_connected(_on_resized):
 		resized.disconnect(_on_resized)
-	
+
 	# Cancel any running tweens
 	_cancel_tween()
