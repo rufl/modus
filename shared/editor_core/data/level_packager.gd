@@ -179,6 +179,13 @@ static func package_level(
 			)
 			if rewrite_err != OK:
 				return _package_failure(result, temp_dir, "Failed to rewrite asset '%s': %s" % [source_path, error_string(rewrite_err)])
+			if asset_path.get_extension().to_lower() == "tscn":
+				var unresolved_asset := _find_unresolved_scene_paths(asset_path)
+				if not unresolved_asset.is_empty():
+					return _package_failure(
+						result, temp_dir,
+						"Packaged scene asset has unresolved references: %s" % ", ".join(unresolved_asset)
+					)
 
 	var unresolved := _find_unresolved_scene_paths(level_path)
 	if not unresolved.is_empty():

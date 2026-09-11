@@ -31,6 +31,16 @@ var _parameter_panel: PanelContainer = null
 var _preview_viewport: SubViewport = null
 var _preset_manager: PanelContainer = null
 var _zone_list: Tree = null
+var _create_zone_button: Button = null
+var _delete_zone_button: Button = null
+var _apply_preset_button: Button = null
+var _weather_select: OptionButton = null
+var _gravity_slider: HSlider = null
+var _fog_slider: HSlider = null
+var _preset_list: ItemList = null
+var _save_preset_button: Button = null
+var _load_preset_button: Button = null
+var _delete_preset_button: Button = null
 var _zones: Dictionary = {}
 var _presets: Dictionary = {}
 var _selected_zone: EnvironmentVolume = null
@@ -60,29 +70,25 @@ func _create_ui() -> void:
 	_main_container.add_child(_zone_toolbar)
 
 	# Create zone button
-	var create_btn := Button.new()
-	create_btn.text = "Create Zone"
-	create_btn.pressed.connect(_on_create_zone_pressed)
-	_zone_toolbar.add_child(create_btn)
+	_create_zone_button = Button.new()
+	_create_zone_button.text = "Create Zone"
+	_zone_toolbar.add_child(_create_zone_button)
 
 	# Delete zone button
-	var delete_btn := Button.new()
-	delete_btn.text = "Delete Zone"
-	delete_btn.pressed.connect(_on_delete_zone_pressed)
-	_zone_toolbar.add_child(delete_btn)
+	_delete_zone_button = Button.new()
+	_delete_zone_button.text = "Delete Zone"
+	_zone_toolbar.add_child(_delete_zone_button)
 
 	# Apply preset button
-	var apply_preset_btn := Button.new()
-	apply_preset_btn.text = "Apply Preset"
-	apply_preset_btn.pressed.connect(_on_apply_preset_pressed)
-	_zone_toolbar.add_child(apply_preset_btn)
+	_apply_preset_button = Button.new()
+	_apply_preset_button.text = "Apply Preset"
+	_zone_toolbar.add_child(_apply_preset_button)
 
 	# Zone list/tree view
 	_zone_list = Tree.new()
 	_zone_list.name = "ZoneList"
 	_zone_list.hide_root = true
 	_main_container.add_child(_zone_list)
-	_zone_list.item_selected.connect(_on_zone_selected)
 
 	# Parameter tuning panel
 	_parameter_panel = PanelContainer.new()
@@ -99,42 +105,39 @@ func _create_ui() -> void:
 	weather_label.text = "Weather Override:"
 	param_container.add_child(weather_label)
 
-	var weather_select := OptionButton.new()
-	weather_select.name = "WeatherSelect"
-	weather_select.add_item("None", -1)
-	weather_select.add_item("Clear", 0)
-	weather_select.add_item("Rain", 1)
-	weather_select.add_item("Snow", 2)
-	weather_select.add_item("Storm", 3)
-	weather_select.add_item("Windy", 4)
-	weather_select.item_selected.connect(_on_weather_override_changed)
-	param_container.add_child(weather_select)
+	_weather_select = OptionButton.new()
+	_weather_select.name = "WeatherSelect"
+	_weather_select.add_item("None", -1)
+	_weather_select.add_item("Clear", 0)
+	_weather_select.add_item("Rain", 1)
+	_weather_select.add_item("Snow", 2)
+	_weather_select.add_item("Storm", 3)
+	_weather_select.add_item("Windy", 4)
+	param_container.add_child(_weather_select)
 
 	# Gravity multiplier
 	var gravity_label := Label.new()
 	gravity_label.text = "Gravity Multiplier:"
 	param_container.add_child(gravity_label)
 
-	var gravity_slider := HSlider.new()
-	gravity_slider.name = "GravitySlider"
-	gravity_slider.min_value = 0.0
-	gravity_slider.max_value = 3.0
-	gravity_slider.value = 1.0
-	gravity_slider.value_changed.connect(_on_gravity_multiplier_changed)
-	param_container.add_child(gravity_slider)
+	_gravity_slider = HSlider.new()
+	_gravity_slider.name = "GravitySlider"
+	_gravity_slider.min_value = 0.0
+	_gravity_slider.max_value = 3.0
+	_gravity_slider.value = 1.0
+	param_container.add_child(_gravity_slider)
 
 	# Fog density
 	var fog_label := Label.new()
 	fog_label.text = "Fog Density Override:"
 	param_container.add_child(fog_label)
 
-	var fog_slider := HSlider.new()
-	fog_slider.name = "FogSlider"
-	fog_slider.min_value = -1.0  # -1 means no override
-	fog_slider.max_value = 1.0
-	fog_slider.value = -1.0
-	fog_slider.value_changed.connect(_on_fog_density_changed)
-	param_container.add_child(fog_slider)
+	_fog_slider = HSlider.new()
+	_fog_slider.name = "FogSlider"
+	_fog_slider.min_value = -1.0  # -1 means no override
+	_fog_slider.max_value = 1.0
+	_fog_slider.value = -1.0
+	param_container.add_child(_fog_slider)
 
 	_main_container.add_child(_parameter_panel)
 
@@ -157,35 +160,96 @@ func _create_ui() -> void:
 		_preset_manager.add_child(preset_container)
 
 		# Preset list
-		var preset_list := ItemList.new()
-		preset_list.name = "PresetList"
-		preset_container.add_child(preset_list)
+		_preset_list = ItemList.new()
+		_preset_list.name = "PresetList"
+		preset_container.add_child(_preset_list)
 
 		# Preset buttons
 		var preset_buttons := HBoxContainer.new()
 		preset_container.add_child(preset_buttons)
 
-		var save_preset_btn := Button.new()
-		save_preset_btn.text = "Save Preset"
-		save_preset_btn.pressed.connect(_on_save_preset_pressed)
-		preset_buttons.add_child(save_preset_btn)
+		_save_preset_button = Button.new()
+		_save_preset_button.text = "Save Preset"
+		preset_buttons.add_child(_save_preset_button)
 
-		var load_preset_btn := Button.new()
-		load_preset_btn.text = "Load Preset"
-		load_preset_btn.pressed.connect(_on_load_preset_pressed)
-		preset_buttons.add_child(load_preset_btn)
+		_load_preset_button = Button.new()
+		_load_preset_button.text = "Load Preset"
+		preset_buttons.add_child(_load_preset_button)
 
-		var delete_preset_btn := Button.new()
-		delete_preset_btn.text = "Delete Preset"
-		delete_preset_btn.pressed.connect(_on_delete_preset_pressed)
-		preset_buttons.add_child(delete_preset_btn)
+		_delete_preset_button = Button.new()
+		_delete_preset_button.text = "Delete Preset"
+		preset_buttons.add_child(_delete_preset_button)
 
 		_main_container.add_child(_preset_manager)
 
 
 func _connect_signals() -> void:
-	# Connect UI element signals
-	pass
+	_connect_button_signal(
+		_create_zone_button, _on_create_zone_pressed, "Create Zone"
+	)
+	_connect_button_signal(
+		_delete_zone_button, _on_delete_zone_pressed, "Delete Zone"
+	)
+	_connect_button_signal(
+		_apply_preset_button, _on_apply_preset_pressed, "Apply Preset"
+	)
+	_connect_tree_signal(_zone_list, _on_zone_selected, "Zone List")
+	_connect_option_signal(_weather_select, _on_weather_override_changed, "Weather Select")
+	_connect_slider_signal(
+		_gravity_slider, _on_gravity_multiplier_changed, "Gravity Slider"
+	)
+	_connect_slider_signal(_fog_slider, _on_fog_density_changed, "Fog Slider")
+
+	if show_preset_manager:
+		_connect_button_signal(
+			_save_preset_button, _on_save_preset_pressed, "Save Preset"
+		)
+		_connect_button_signal(
+			_load_preset_button, _on_load_preset_pressed, "Load Preset"
+		)
+		_connect_button_signal(
+			_delete_preset_button, _on_delete_preset_pressed, "Delete Preset"
+		)
+
+
+func _connect_button_signal(
+	button: Button, handler: Callable, control_name: String
+) -> void:
+	if not button or not is_instance_valid(button):
+		push_error("EnvironmentZoneEditor: %s control is unavailable." % control_name)
+		return
+	if not button.pressed.is_connected(handler):
+		button.pressed.connect(handler)
+
+
+func _connect_tree_signal(
+	tree: Tree, handler: Callable, control_name: String
+) -> void:
+	if not tree or not is_instance_valid(tree):
+		push_error("EnvironmentZoneEditor: %s control is unavailable." % control_name)
+		return
+	if not tree.item_selected.is_connected(handler):
+		tree.item_selected.connect(handler)
+
+
+func _connect_option_signal(
+	option: OptionButton, handler: Callable, control_name: String
+) -> void:
+	if not option or not is_instance_valid(option):
+		push_error("EnvironmentZoneEditor: %s control is unavailable." % control_name)
+		return
+	if not option.item_selected.is_connected(handler):
+		option.item_selected.connect(handler)
+
+
+func _connect_slider_signal(
+	slider: Range, handler: Callable, control_name: String
+) -> void:
+	if not slider or not is_instance_valid(slider):
+		push_error("EnvironmentZoneEditor: %s control is unavailable." % control_name)
+		return
+	if not slider.value_changed.is_connected(handler):
+		slider.value_changed.connect(handler)
 
 
 ## Create a new environment zone

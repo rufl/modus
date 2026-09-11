@@ -104,12 +104,64 @@ func get_input_vector(
 	return Input.get_vector(negative_x, positive_x, negative_y, positive_y, dz)
 
 
-## Get axis value for a single axis
+## Get a device-scoped axis value for two actions.
+##
+## Input.get_axis() does not accept a device ID, so using it here would allow
+## keyboard or another gamepad's action state to leak into this player.
 func get_axis(negative_action: String, positive_action: String) -> float:
 	if not has_device():
 		return 0.0
 
-	return Input.get_axis(negative_action, positive_action)
+	var negative_strength := Input.get_action_strength(negative_action, assigned_device_id)
+	var positive_strength := Input.get_action_strength(positive_action, assigned_device_id)
+	return positive_strength - negative_strength
+
+
+## Process the polling hook once per frame.
+##
+## The base component deliberately does not invent gameplay actions. Derived
+## components may override _process_input() to translate this player's
+## device-scoped queries into gameplay behavior.
+func _process(delta: float) -> void:
+	_process_input(delta)
+
+
+## Extension hook for polling-based input behavior.
+##
+## This default is intentional: SplitscreenInputComponent only owns device
+## assignment, filtering, and input queries. A concrete player input component
+## must override this hook to implement gameplay behavior.
+func _process_input(_delta: float) -> void:
+	return
+
+
+## Handle input events
+func _unhandled_input(event: InputEvent) -> void:
+	if not has_device() or not _is_assigned_device_event(event):
+		return
+
+	_handle_input_event(event)
+
+
+## Return whether an event is a raw joypad event from this component's device.
+##
+## Keyboard, mouse, window, and action events do not identify a gamepad device,
+## so they are rejected by default to preserve splitscreen input isolation.
+func _is_assigned_device_event(event: InputEvent) -> bool:
+	if event is InputEventJoypadButton:
+		return (event as InputEventJoypadButton).device == assigned_device_id
+	if event is InputEventJoypadMotion:
+		return (event as InputEventJoypadMotion).device == assigned_device_id
+	return false
+
+
+## Extension hook for a filtered raw joypad event.
+##
+## This default is intentional: the base component filters and exposes events
+## but does not choose gameplay actions. Derived components may override this
+## hook when they need event-driven behavior.
+func _handle_input_event(_event: InputEvent) -> void:
+	return
 
 
 ## Trigger vibration on this player's gamepad
@@ -161,32 +213,6 @@ func is_joy_button_pressed(button: JoyButton) -> bool:
 		return false
 
 	return Input.is_joy_button_pressed(assigned_device_id, button)
-
-
-## Process input events (override in derived classes)
-func _process_input(_delta: float) -> void:
-	pass
-
-
-## Handle input events
-func _unhandled_input(event: InputEvent) -> void:
-	# Filter events by device
-	if not has_device():
-		return
-
-	# Check if event is from our assigned device
-	if event is InputEventJoypadButton or event is InputEventJoypadMotion:
-		var joy_event: InputEvent = event as InputEvent
-		if joy_event.device != assigned_device_id:
-			return  # Ignore events from other devices
-
-	# Process the event
-	_handle_input_event(event)
-
-
-## Handle a filtered input event (override in derived classes)
-func _handle_input_event(_event: InputEvent) -> void:
-	pass
 
 
 ## Get input summary for debugging

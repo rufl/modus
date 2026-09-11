@@ -6,6 +6,16 @@ extends GutTest
 var input_component: SplitscreenInputComponent
 var gamepad_controller: GamepadController
 
+class RecordingSplitscreenInputComponent extends SplitscreenInputComponent:
+	var processed_deltas: Array[float] = []
+	var received_events: Array[InputEvent] = []
+
+	func _process_input(delta: float) -> void:
+		processed_deltas.append(delta)
+
+	func _handle_input_event(event: InputEvent) -> void:
+		received_events.append(event)
+
 
 func before_each() -> void:
 	input_component = SplitscreenInputComponent.new()
@@ -198,3 +208,45 @@ func test_get_input_vector_with_custom_deadzone() -> void:
 
 	# Should return a vector (even if zero without actual input)
 	assert_typeof(vector, TYPE_VECTOR2, "Should return Vector2")
+
+
+## Test: Polling hook is dispatched for extension components
+func test_process_input_virtual_hook() -> void:
+	var recorder := RecordingSplitscreenInputComponent.new()
+	add_child_autofree(recorder)
+
+	recorder._process(0.25)
+
+	assert_eq(recorder.processed_deltas.size(), 1, "Polling hook should be called once")
+	assert_eq(recorder.processed_deltas[0], 0.25, "Polling hook should receive delta")
+
+
+## Test: Unhandled input only dispatches matching joypad events
+func test_unhandled_input_filters_to_assigned_device() -> void:
+	var recorder := RecordingSplitscreenInputComponent.new()
+	add_child_autofree(recorder)
+	recorder.set_device(2, gamepad_controller, 0)
+
+	var other_device_event := InputEventJoypadButton.new()
+	other_device_event.device = 1
+	recorder._unhandled_input(other_device_event)
+
+	var matching_event := InputEventJoypadButton.new()
+	matching_event.device = 2
+	recorder._unhandled_input(matching_event)
+
+	assert_eq(recorder.received_events.size(), 1, "Only the assigned device event should dispatch")
+	assert_eq(recorder.received_events[0], matching_event, "Matching event should reach the extension hook")
+
+
+## Test: Keyboard input is rejected by the default device filter
+func test_unhandled_input_rejects_non_joypad_events() -> void:
+	var recorder := RecordingSplitscreenInputComponent.new()
+	add_child_autofree(recorder)
+	recorder.set_device(0, gamepad_controller, 0)
+
+	var key_event := InputEventKey.new()
+	key_event.pressed = true
+	recorder._unhandled_input(key_event)
+
+	assert_eq(recorder.received_events.size(), 0, "Keyboard events must not cross device isolation")
