@@ -16,6 +16,23 @@ It combines fast FPS combat, movement, weapons, loot, enemy AI, procedural map g
 
 MODUS is not presented as a shipped game or production-ready SDK. Manual gameplay evidence, release packaging, Workshop publication, and broader external runtime validation remain open. The project keeps those boundaries visible while the underlying systems are developed and tested.
 
+## Read This Before Cloning
+
+MODUS is a developer project, not a ready-to-play Steam game and not a one-click Godot template. Expect to inspect source, install the matching tools, wait for Godot imports, and validate the path you care about.
+
+The parts most likely to frustrate you:
+
+- There is no installer, released build, configured Workshop item, or bundled GodotSteam extension.
+- The expected environment is Godot 4.7 on a writable machine with Bash; the repository does not pin a portable editor binary.
+- Optional Steam/GodotSteam and Voxel Tools integrations may be unavailable. Fallbacks keep some paths running but do not provide feature parity.
+- The Showcase route is an automated smoke path, not proof that the game feels good. Manual gameplay evidence is still zero reviewed hours.
+- Multiplayer proof is strongest on local ENet and focused authority contracts. WAN sessions, two-account Steam, Workshop service operations, and target-Windows runtime remain open.
+- The editor and mod loader have useful source and focused tests, but exported-app UX, every mod package shape, and real Workshop transfer are not turnkey.
+- The current release line is `0.9.5-beta`; production readiness is explicitly **NOT READY**.
+
+If you want a polished game to play immediately, MODUS is the wrong download. If you want an inspectable FPS systems lab that you can bend, profile, test, and extend, it is the right kind of unfinished.
+
+
 ## Why MODUS
 
 MODUS takes the parts that make FPS games worth mastering:
@@ -42,13 +59,22 @@ The project is mechanics-first: velocity, pressure, readable systems, strange we
 
 ## Start Here
 
-1. Open the repository in Godot 4.7 or set `GODOT_BIN` to a Godot 4.7 executable.
-2. Let Godot import the project.
-3. Run the configured main scene: `res://shared/ui_core/screens/main_menu_screen.tscn`.
-4. Use `res://game/world/maps/showcase.tscn` for the maintained showcase route.
-5. Follow [Getting Started](docs/getting_started.md) and [Showcase Route](docs/SHOWCASE_ROUTE.md).
+1. Install Godot 4.7 in the 4.7 line and ensure `godot` is on `PATH`, or set `GODOT_BIN`.
+2. Clone the repository and open it with `godot --editor --path .`.
+3. Wait for the first asset import; generated `.import`/`.uid` sidecars are normal and should not be deleted while Godot is open.
+4. Run the configured main scene: `res://shared/ui_core/screens/main_menu_screen.tscn`.
+5. Use `res://game/world/maps/showcase.tscn` for the maintained showcase route.
+6. Read [Getting Started](docs/getting_started.md), [Known Limits](docs/KNOWN_LIMITS_MATRIX.md), and [Showcase Route](docs/SHOWCASE_ROUTE.md) before judging a missing feature.
 
-The repository does not guarantee a clean first run on every machine. Optional Steam/GodotSteam and Voxel Tools integrations can be unavailable; the code includes fallback paths, but those fallbacks do not prove feature parity.
+For a fast source/setup check before launching the UI:
+
+```bash
+bash tools/check_documentation_truth.sh
+bash tools/check_project_truth.sh
+bash tools/check_headless_runner_manifest.sh
+```
+
+The repository does not guarantee a clean first run on every machine. Missing optional integrations, import issues, renderer differences, unsupported hardware, and the absence of a graphical session are environment boundaries, not silently successful fallbacks.
 
 ## Proven Showcase Route <!-- craft-ignore: maintained project reference -->
 

@@ -4,10 +4,12 @@
 
 ## Requirements
 
-- Godot 4.7 or newer in the 4.7 line expected by `project.godot`.
+- Godot 4.7 in the 4.7 line expected by `project.godot`; newer major/minor versions are not a supported assumption.
 - Bash for repository verification scripts.
 - A writable `/tmp` for the isolated headless runner environment.
 - A graphical session for editor, visual, input, and manual gameplay evidence.
+
+There is no installer, portable Godot binary, bundled GodotSteam extension, configured Workshop item, or supported released build in this repository. The first editor launch performs an asset import and can expose renderer, driver, or missing-integration issues before the main scene is usable.
 
 No GodotSteam extension is bundled. Steam-specific behavior requires separate installation and proof.
 
