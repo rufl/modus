@@ -218,7 +218,7 @@ func validate_key_lock_progression(context: RefCounted) -> ValidationResult:
 		result.is_valid = true
 		return result
 
-	# Build a map of key colors to their positions
+	# Build key positions from placement records and locked doors from cell metadata.
 	var key_positions: Dictionary = {}  # Color -> Vector2i
 	var locked_door_positions: Dictionary = {}  # Color -> Array[Vector2i]
 
@@ -227,18 +227,31 @@ func validate_key_lock_progression(context: RefCounted) -> ValidationResult:
 		if not placement:
 			continue
 
-		if placement.get("is_key", false):
-			var color: String = placement.get("color", "")
-			var pos: Vector2i = placement.get("grid_position", Vector2i(-1, -1))
-			if color != "" and pos != Vector2i(-1, -1):
-				key_positions[color] = pos
-		elif placement.get("is_door", false):
-			var color: String = placement.get("color", "")
-			var pos: Vector2i = placement.get("grid_position", Vector2i(-1, -1))
-			if color != "" and pos != Vector2i(-1, -1):
-				if not locked_door_positions.has(color):
-					locked_door_positions[color] = []
-				locked_door_positions[color].append(pos)
+		var color: String = placement.get("color", "")
+		var pos: Vector2i = placement.get("grid_position", Vector2i(-1, -1))
+		if color == "" or pos == Vector2i(-1, -1):
+			continue
+		if placement.get("is_door", false):
+			if not locked_door_positions.has(color):
+				locked_door_positions[color] = []
+			locked_door_positions[color].append(pos)
+		else:
+			key_positions[color] = pos
+
+	for y in range(context.grid.size()):
+		var row: Array = context.grid[y] as Array
+		if not row:
+			continue
+		for x in range(row.size()):
+			var cell: Cell = row[x] as Cell
+			if not cell or not cell.metadata.get("has_locked_door", false):
+				continue
+			var door_color: String = cell.metadata.get("door_color", "")
+			if door_color == "":
+				continue
+			if not locked_door_positions.has(door_color):
+				locked_door_positions[door_color] = []
+			locked_door_positions[door_color].append(Vector2i(x, y))
 
 	# Validate each locked door has a corresponding key placed earlier
 	for color: String in locked_door_positions:
@@ -246,21 +259,35 @@ func validate_key_lock_progression(context: RefCounted) -> ValidationResult:
 			result.error_message = "Locked door with color '%s' has no corresponding key" % color
 			return result
 
+	var player_start := _find_player_start_position(context)
+	if player_start == Vector2i(-1, -1):
+		result.error_message = "Cannot validate key-lock progression without a player start"
+		return result
+
+	for color: String in locked_door_positions:
 		var key_pos: Vector2i = key_positions[color]
 		var doors: Array = locked_door_positions[color]
 
-		# Check if key is reachable before any door (simplified check)
-		# In a full implementation, this would use pathfinding to verify order
+		if not _is_valid_grid_position(context.grid, key_pos):
+			result.error_message = "Key '%s' is outside the generated grid" % color
+			return result
+
+		if not _flood_fill_reaches(context.grid, player_start, key_pos):
+			result.error_message = "Key '%s' is unreachable from the player start" % color
+			return result
+
 		for door_pos: Vector2i in doors:
-			# Simple heuristic: key should be "earlier" in the map (closer to start)
-			# This is a placeholder - full implementation would need proper analysis
-			if key_pos.length() > door_pos.length():
-				result.warnings.append(
-					(
-						"Key '%s' may be placed after its locked door " % color
-						+ "(needs progression analysis)"
-					)
+			if not _is_valid_grid_position(context.grid, door_pos):
+				result.error_message = "Locked door '%s' is outside the generated grid" % color
+				return result
+
+			var blocked := {door_pos: true}
+			if not _flood_fill_reaches(context.grid, player_start, key_pos, blocked):
+				result.error_message = (
+					"Key '%s' is behind a locked door and cannot be collected before progression"
+					% color
 				)
+				return result
 
 	result.is_valid = true
 	return result
@@ -320,6 +347,7 @@ func _find_player_start_position(context: RefCounted) -> Vector2i:
 			):
 				return room_cell
 
+
 	# Last resort: find first walkable cell
 	for y in range(context.grid.size()):
 		for x in range(context.grid[y].size()):
@@ -358,6 +386,44 @@ func _is_walkable_cell(cell: Cell) -> bool:
 		]
 	)
 
+
+## Check whether a grid position exists and is walkable.
+func _is_valid_grid_position(grid: Array, position: Vector2i) -> bool:
+	if position.y < 0 or position.y >= grid.size():
+		return false
+	var row: Array = grid[position.y] as Array
+	if not row or position.x < 0 or position.x >= row.size():
+		return false
+	return _is_walkable_cell(row[position.x] as Cell)
+
+
+## Flood fill while treating selected cells as progression blockers.
+func _flood_fill_reaches(
+	grid: Array, start: Vector2i, target: Vector2i, blocked: Dictionary = {}
+) -> bool:
+	if blocked.has(start) or blocked.has(target):
+		return false
+	if not _is_valid_grid_position(grid, start) or not _is_valid_grid_position(grid, target):
+		return false
+
+	var visited: Dictionary = {}
+	var queue: Array[Vector2i] = [start]
+	while not queue.is_empty():
+		var current: Vector2i = queue.pop_front()
+		if visited.has(current) or blocked.has(current):
+			continue
+		if not _is_valid_grid_position(grid, current):
+			continue
+		if current == target:
+			return true
+
+		visited[current] = true
+		queue.append(Vector2i(current.x + 1, current.y))
+		queue.append(Vector2i(current.x - 1, current.y))
+		queue.append(Vector2i(current.x, current.y + 1))
+		queue.append(Vector2i(current.x, current.y - 1))
+
+	return false
 
 ## Flood fill to count reachable cells from start position
 func _flood_fill_count(grid: Array, start: Vector2i) -> int:
