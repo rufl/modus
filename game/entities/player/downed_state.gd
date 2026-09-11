@@ -230,6 +230,14 @@ func request_revive_stop() -> void:
 	_sync_revive_state.rpc(false, NodePath())
 
 
+## Sync revive state to all clients
+
+@rpc("authority", "call_local", "reliable")
+func _sync_revive_state(being_revived: bool, reviver: NodePath) -> void:
+	is_being_revived = being_revived
+	reviver_path = reviver
+
+
 func get_bleedout_progress() -> float:
 	if bleedout_time <= 0:
 		return 1.0

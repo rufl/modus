@@ -609,7 +609,7 @@ func _scan_music_folder() -> void:
 			file = dir.get_next()
 		dir.list_dir_end()
 	else:
-		push_error("[AudioSystem] Failed to open music directory: %s" % path)
+		pass
 
 	# Safe access during initialization
 	var gm: Node = get_node_or_null("/root/GameManager")
