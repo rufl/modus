@@ -16,7 +16,9 @@ static func integrate_ui_inputs() -> void:
 	# Find player
 	var player := _find_local_player()
 	if not player:
-		push_warning("[UIInputIntegration] No local player found yet")
+		var tree := Engine.get_main_loop() as SceneTree
+		if tree:
+			tree.process_frame.connect(integrate_ui_inputs, CONNECT_ONE_SHOT)
 		return
 
 	# Connect input signals
@@ -43,13 +45,14 @@ static func _find_ui_input_manager() -> Node:
 
 
 static func _find_local_player() -> Node:
-	## Find local player in scene tree
+	## Find player in the scene tree using the canonical group and legacy alias.
 	var world: Node = Engine.get_main_loop().root.find_child("World", true, false) as Node
 	if not world:
 		return null
 
-	# Find player with local authority
-	var players_array: Array = world.get_tree().get_nodes_in_group("players")
+	var players_array: Array = world.get_tree().get_nodes_in_group("player")
+	if players_array.is_empty():
+		players_array = world.get_tree().get_nodes_in_group("players")
 	for player: Node in players_array:
 		if player.has_method("is_multiplayer_authority"):
 			if player.is_multiplayer_authority():
