@@ -3,6 +3,7 @@
 > **Documentation status: maintained reference.** Published readiness is consolidated in `docs/DOCUMENTATION_TRUTH.md` and `docs/CURRENT_STATUS.md`. Generated reports are local invocation records; narrower claims below apply only to the named subsystem or workflow.
 
 ## Unreleased
+- 2026-09-12 `[runtime]` `[truth:runtime]`: fixed dedicated-server map startup by deferring the scene change until autoload initialization completes. The exported Linux dedicated-server artifact now launches and exits cleanly through `tools/run_export_smoke.sh` on Godot 4.7.2.
 - 2026-09-11 `[distribution]` `[truth:runtime]`: added a `Linux Desktop` export preset, fixed runtime mission discovery from read-only exported resources, and passed the bounded Linux export smoke on the current Godot 4.7.2 environment. This is a local reproducible artifact, not a published release, installer, signing claim, Steam build, target-Windows proof, or long-session result.
 - 2026-09-11 `[quality]` `[truth:test]`: normalized 56 GDScript files with the CI-pinned `gdformat` 4.5.0, removed the remaining lint failures, and preserved GodotSteam camelCase mocks through the lint configuration. Focused `gdformat --check --diff game/ tests/` and `gdlint game/ tests/` now pass.
 - 2026-09-11 `[quality]` `[truth:test]`: aligned the CI quality gate across `game/`, `shared/`, `standalone/`, and `tests/`; formatted 27 additional shared/standalone files, repaired the Workshop parser's adjacent-string syntax, and made the full 776-file `gdformat`/`gdlint` scope pass.

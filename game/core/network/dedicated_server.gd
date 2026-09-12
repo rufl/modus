@@ -367,10 +367,11 @@ func _start_hosting() -> void:
 			logger.info("[DedicatedServer] Max players: %d" % max_players, "DedicatedServer")
 			logger.info("[DedicatedServer] Loaded mods: %s" % str(loaded_mods), "DedicatedServer")
 
-	# Load map
+	# Load the map after autoload initialization finishes; changing scenes in
+	# an autoload's _ready callback races the scene tree's child bookkeeping.
 	var map_path: String = config.get("map", "res://game/world.tscn")
 	if ResourceLoader.exists(map_path):
-		get_tree().change_scene_to_file(map_path)
+		get_tree().call_deferred("change_scene_to_file", map_path)
 
 	server_started.emit()
 
