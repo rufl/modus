@@ -38,6 +38,7 @@ Report paths and `logs/` are ignored local outputs. See [report regeneration and
 
 The September 10 refreshed headless aggregate passed 1,568/1,568 tests with 21,718 assertions across 135 scripts using the patched Godot 4.7.2 binary; the category report passed Unit 1,166/1,166, Integration 227/227 with 2 GUI-required files skipped, and Property 175/175. Manual, provenance, packaging, benchmark, GUI-required, and external proof remain open. `[truth:test]`
 - Progress 2026-09-12 dedicated-server export repair: deferred the configured map scene change until autoload initialization completes, eliminating the exported Linux server's `Parent node is busy adding/removing children` runtime error. `tools/run_export_smoke.sh --platform linux` passes against the rebuilt dedicated-server artifact. `[truth:runtime]` `[truth:test]`
+- Progress 2026-09-12 save/load repair: accepted integer-valued JSON floats for persisted peer/ownership fields, reset CharacterBody3D velocity during player restoration, and replaced the missing `enemies.max_count` lookup with a bounded fallback. Golden-demo smoke passes all 8 framework-loop steps. `[truth:runtime]` `[truth:test]`
 
 ## Active Queue
 

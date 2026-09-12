@@ -8,6 +8,7 @@ signal load_failed(error: String)
 const SAVE_VERSION: String = "1.0"
 const SAVE_DIR: String = "user://saves/"
 const QUICKSAVE_SLOT: String = "quicksave"
+const MAX_SAVED_ENEMIES: int = 128
 
 var save_slots: Array[String] = [QUICKSAVE_SLOT, "slot1", "slot2", "slot3"]
 
@@ -136,12 +137,16 @@ func _sync_load_to_clients(save_data: Dictionary) -> void:
 
 func _validate_world_data(data: Dictionary) -> bool:
 	if data.has("enemies") and not _validate_enemy_records(data["enemies"]):
+		push_warning("[GameStateManager] Save validation failed: enemies")
 		return false
 	if data.has("items") and not _validate_item_records(data["items"]):
+		push_warning("[GameStateManager] Save validation failed: items")
 		return false
 	if data.has("environment") and not _validate_environment_records(data["environment"]):
+		push_warning("[GameStateManager] Save validation failed: environment")
 		return false
 	if data.has("players") and not _validate_player_records(data["players"]):
+		push_warning("[GameStateManager] Save validation failed: players")
 		return false
 	return true
 
@@ -152,7 +157,7 @@ func _validate_player_records(data: Variant) -> bool:
 	for record: Variant in data:
 		if not record is Dictionary:
 			return false
-		if not record.has("peer_id") or not record.peer_id is int:
+		if not record.has("peer_id") or not _is_integer_value(record.peer_id):
 			return false
 		if record.has("position") and not _is_valid_vec3_array(record.position):
 			return false
@@ -172,7 +177,12 @@ func _validate_enemy_records(data: Variant) -> bool:
 	):
 		return false
 	var config: Node = GameManager.get_core_system("config")
-	var max_enemies: int = int(config.get_value("enemies.max_count", 30)) if config else 30
+	var configured_max: Variant = config.get_value("enemies.max_count", null) if config else null
+	var max_enemies: int = MAX_SAVED_ENEMIES
+	if configured_max is int or configured_max is float:
+		var candidate_max: int = int(configured_max)
+		if candidate_max > 0:
+			max_enemies = candidate_max
 	if data.size() > max_enemies:
 		return false
 	var data_service: Node = GameManager.get_core_system("data")
@@ -221,11 +231,19 @@ func _validate_item_records(data: Variant) -> bool:
 			return false
 		if record.has("item_data") and not record.item_data is Dictionary:
 			return false
-		if record.has("owner_peer_id") and not record.owner_peer_id is int:
+		if record.has("owner_peer_id") and not _is_integer_value(record.owner_peer_id):
 			return false
-		if record.has("rarity_tier") and not record.rarity_tier is int:
+		if record.has("rarity_tier") and not _is_integer_value(record.rarity_tier):
 			return false
 	return true
+
+
+func _is_integer_value(value: Variant) -> bool:
+	if value is int:
+		return true
+	if value is float:
+		return is_equal_approx(value, round(value))
+	return false
 
 
 func _validate_environment_records(data: Variant) -> bool:
@@ -406,7 +424,8 @@ func _deserialize_players(data: Array) -> void:
 			if node.get_multiplayer_authority() == peer_id:
 				node.global_position = _array_to_vec3(player_data.get("position", [0, 0, 0]))
 				node.global_rotation = _array_to_vec3(player_data.get("rotation", [0, 0, 0]))
-
+				if node is CharacterBody3D:
+					node.velocity = Vector3.ZERO
 				# The server restores lifecycle and health once, then replicates both.
 				if not multiplayer.has_multiplayer_peer() or multiplayer.is_server():
 					var hp: float = player_data.get("health", 100)

@@ -694,11 +694,12 @@ func _validate_position() -> bool:
 
 		_log_warning(
 			(
-				"[Enemy %s] Position extreme: (%.1f, %.1f, %.1f) - checking bounds"
+				"[Enemy %s] Position extreme: (%.1f, %.1f, %.1f) - attempting recovery"
 				% [name, pos.x, pos.y, pos.z]
 			)
 		)
-		# Don't kill, just log - let spawn coordinator handle stuck detection
+		_recover_from_invalid_position("Extreme")
+		return false
 
 	return true
 
