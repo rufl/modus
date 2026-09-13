@@ -166,7 +166,7 @@ See [Editor Round-Trip Proof](docs/EDITOR_ROUNDTRIP_PROOF.md) and [Workshop Loca
 
 ### Performance
 
-One compatibility-renderer showcase capture exists on Intel Arc A770/Mesa: 66.4 seconds, 130 samples, and a 108.55 ms maximum frame-time spike. It was unthrottled and produced extreme enemy-position warnings. Do not use its average FPS as a player-facing target.
+One compatibility-renderer showcase capture exists on Intel Arc A770/Mesa: 66.4 seconds, 130 samples, and a 108.55 ms maximum frame-time spike. The historical capture emitted extreme enemy-position warnings; current enemy runtime attempts bounded recovery for those positions. Do not use its average FPS as a player-facing target.
 
 No display-synchronized solo, splitscreen, multiplayer, low-end hardware, or long-session target has been validated. See [Performance Baseline Proof](docs/PERFORMANCE_BASELINE_PROOF.md).
 

@@ -40,6 +40,7 @@ The September 10 refreshed headless aggregate passed 1,568/1,568 tests with 21,7
 - Progress 2026-09-12 dedicated-server export repair: deferred the configured map scene change until autoload initialization completes, eliminating the exported Linux server's `Parent node is busy adding/removing children` runtime error. `tools/run_export_smoke.sh --platform linux` passes against the rebuilt dedicated-server artifact. `[truth:runtime]` `[truth:test]`
 - Progress 2026-09-12 save/load repair: accepted integer-valued JSON floats for persisted peer/ownership fields, reset CharacterBody3D velocity during player restoration, and replaced the missing `enemies.max_count` lookup with a bounded fallback. Golden-demo smoke passes all 8 framework-loop steps. `[truth:runtime]` `[truth:test]`
 - Progress 2026-09-12 UI input integration repair: matched runtime player discovery to the canonical `player` group and deferred one frame when player setup had not completed. Golden-demo smoke passes without the previous missing-local-player warning. `[truth:runtime]` `[truth:test]`
+- Progress 2026-09-13 enemy recovery hardening: extreme enemy coordinates now use the existing recovery chain instead of remaining active outside the playable area. Golden-demo runtime remains 8/8; stress and long-session proof remain open. `[truth:runtime]` `[truth:source-audit]`
 
 ## Active Queue
 

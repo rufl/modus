@@ -4,6 +4,7 @@
 
 ## Unreleased
 - 2026-09-12 `[ui]` `[truth:runtime]`: fixed player-input integration startup races by using the canonical `player` group and retrying after the player enters the scene tree. Golden-demo smoke no longer emits the missing-local-player warning.
+- 2026-09-13 `[runtime]` `[truth:source-audit]`: enemy position validation now attempts bounded recovery for extreme coordinates instead of only logging and continuing; display-synchronized, stress, and long-session behavior remain unproven.
 - 2026-09-12 `[save]` `[truth:runtime]`: fixed encrypted world-load validation for JSON round-tripped integer fields, restored player velocity to zero on load, and raised the safe fallback enemy-record bound so the golden-demo save/load path accepts valid showcase state. `tools/run_showcase_golden_demo_smoke.sh --strict` passes all 8 steps.
 - 2026-09-12 `[runtime]` `[truth:runtime]`: fixed dedicated-server map startup by deferring the scene change until autoload initialization completes. The exported Linux dedicated-server artifact now launches and exits cleanly through `tools/run_export_smoke.sh` on Godot 4.7.2.
 - 2026-09-11 `[distribution]` `[truth:runtime]`: added a `Linux Desktop` export preset, fixed runtime mission discovery from read-only exported resources, and passed the bounded Linux export smoke on the current Godot 4.7.2 environment. This is a local reproducible artifact, not a published release, installer, signing claim, Steam build, target-Windows proof, or long-session result.

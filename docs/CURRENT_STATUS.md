@@ -152,7 +152,7 @@ This source inventory is not equivalent to complete runtime or user-experience p
 - Human-operated golden-demo feel and failure recovery: **UNPROVEN**; the F8 recorder workflow is ready but contains no human observations yet.
 - Bounded performance CSV: **PASS** for evidence shape/duration.
 - Display-synchronized gameplay, splitscreen, multiplayer, low-end hardware, and long-session performance: **UNPROVEN**.
-- The capture's 108.55 ms maximum frame time and extreme enemy-position warnings remain active concerns.
+- The historical capture's 108.55 ms maximum frame time remains an active concern; extreme enemy positions now trigger bounded recovery, but long-session behavior is unproven.
 
 ## Current Validator-Tracked Blockers
 
