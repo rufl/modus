@@ -3,6 +3,7 @@
 > **Documentation status: maintained reference.** Published readiness is consolidated in `docs/DOCUMENTATION_TRUTH.md` and `docs/CURRENT_STATUS.md`. Generated reports are local invocation records; narrower claims below apply only to the named subsystem or workflow.
 
 ## Unreleased
+- 2026-09-13 `[docs]` `[truth:docs]`: expanded the README pre-clone boundary to state the missing installer/released build/Workshop/GodotSteam prerequisites, first-launch import risks, fallback limitations, and the still-open exported-editor and long-session proof.
 - 2026-09-12 `[ui]` `[truth:runtime]`: fixed player-input integration startup races by using the canonical `player` group and retrying after the player enters the scene tree. Golden-demo smoke no longer emits the missing-local-player warning.
 - 2026-09-13 `[runtime]` `[truth:source-audit]`: enemy position validation now attempts bounded recovery for extreme coordinates instead of only logging and continuing; display-synchronized, stress, and long-session behavior remain unproven.
 - 2026-09-12 `[save]` `[truth:runtime]`: fixed encrypted world-load validation for JSON round-tripped integer fields, restored player velocity to zero on load, and raised the safe fallback enemy-record bound so the golden-demo save/load path accepts valid showcase state. `tools/run_showcase_golden_demo_smoke.sh --strict` passes all 8 steps.

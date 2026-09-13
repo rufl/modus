@@ -22,12 +22,12 @@ MODUS is a developer project, not a ready-to-play Steam game and not a one-click
 
 The parts most likely to frustrate you:
 
-- There is no installer or published release. A reproducible Linux desktop export can now be built locally, but it is not a signed, supported download and target-Windows runtime remains open.
-- The expected environment is Godot 4.7 on a writable machine with Bash; the repository does not pin a portable editor binary.
+- There is no installer, released build, configured Workshop item, or bundled GodotSteam extension. A reproducible Linux desktop export can be built locally, but it is not a signed, supported download.
+- The expected environment is Godot 4.7 in the 4.7 line on a writable machine with Bash; the repository does not pin a portable editor binary.
+- First launch performs asset imports and may expose renderer, driver, or missing-integration issues before the main scene is usable.
 - Optional Steam/GodotSteam and Voxel Tools integrations may be unavailable. Fallbacks keep some paths running but do not provide feature parity.
 - The Showcase route is an automated smoke path, not proof that the game feels good. Manual gameplay evidence is still zero reviewed hours.
-- Multiplayer proof is strongest on local ENet and focused authority contracts. WAN sessions, two-account Steam, Workshop service operations, and target-Windows runtime remain open.
-- The editor and mod loader have useful source and focused tests, but exported-app UX, every mod package shape, and real Workshop transfer are not turnkey.
+- Multiplayer proof is strongest on local ENet and focused authority contracts. WAN sessions, Steam, Workshop, target-Windows, exported-editor, and long-session proof remain open.
 - The current release line is `0.9.5-beta`; production readiness is explicitly **NOT READY**.
 
 If you want a polished game to play immediately, MODUS is the wrong download. If you want an inspectable FPS systems lab that you can bend, profile, test, and extend, it is the right kind of unfinished.
